@@ -36,6 +36,7 @@ part 'app_database.g.dart';
     IdMap,
     SyncMeta,
     LocationQueue,
+    ContactAttempts,
     Notifications,
     KvSettings,
   ],
@@ -44,7 +45,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -69,6 +70,14 @@ class AppDatabase extends _$AppDatabase {
           await customStatement(
             'CREATE INDEX IF NOT EXISTS idx_notes_customer ON notes (customer_id, created_at DESC)',
           );
+          await customStatement('CREATE INDEX IF NOT EXISTS idx_location_queue_t ON location_queue (t)');
+        },
+        onUpgrade: (m, from, to) async {
+          // v2 (0.2.0): contact attempts + location queue time index.
+          if (from < 2) {
+            await m.createTable(contactAttempts);
+            await customStatement('CREATE INDEX IF NOT EXISTS idx_location_queue_t ON location_queue (t)');
+          }
         },
         beforeOpen: (details) async {
           await customStatement('PRAGMA foreign_keys = ON');

@@ -419,6 +419,29 @@ class SyncMeta extends Table {
   Set<Column> get primaryKey => {id};
 }
 
+// ── contact attempts (FR-M-014, contract 1.2.0) ───────────────────────────────
+@DataClassName('ContactAttemptRow')
+class ContactAttempts extends Table {
+  TextColumn get clientId => text()();
+  TextColumn get serverId => text().nullable()();
+  TextColumn get customerId => text()();
+
+  /// call | sms | whatsapp
+  TextColumn get channel => text()();
+
+  /// Index into the customer's phones — never the number itself.
+  IntColumn get phoneIndex => integer().nullable()();
+  DateTimeColumn get at => dateTime()();
+
+  /// connected | no_answer | busy | switched_off | wrong_number | sent
+  TextColumn get outcome => text().nullable()();
+  TextColumn get note => text().nullable()();
+  TextColumn get syncState => text().withDefault(const Constant('queued'))();
+
+  @override
+  Set<Column> get primaryKey => {clientId};
+}
+
 // ── location (P2) ────────────────────────────────────────────────────────────
 @DataClassName('LocationPointRow')
 class LocationQueue extends Table {

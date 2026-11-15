@@ -203,7 +203,7 @@ class SyncMutation {
   /// Contract enum `SyncMutation.entity`. Pushing anything else is a bug.
   static const entities = {
     'visit', 'collection', 'note', 'promise', 'promise_cancel', 'deposit', //
-    'attendance_event', 'tag', 'location_proposal', 'visit_checkout', 'handover_decision', 'cash_closing',
+    'attendance_event', 'tag', 'location_proposal', 'visit_checkout', 'handover_decision', 'cash_closing', 'contact_attempt',
   };
 }
 

@@ -33,6 +33,7 @@ class FakeFieldApi implements HttpClientAdapter {
   bool offline = false;
   bool expireCursor = false;
   bool upgradeRequired = false;
+  String trackingProvider = 'free'; // admin setting location.trackingProvider
   int pushCalls = 0;
 
   final _log = <_Change>[];
@@ -43,6 +44,8 @@ class FakeFieldApi implements HttpClientAdapter {
   var _mediaSeq = 0;
   final _mediaBySha = <String, String>{};
   final uploadedMedia = <String>[]; // tests
+  final locationPoints = <Json>[]; // tests
+  final heartbeats = <Json>[]; // tests
   var _password = 'demo1234';
   var _mustChange = true;
   var _cashOnHand = 820000; // ৳8,200 from yesterday
@@ -71,7 +74,7 @@ class FakeFieldApi implements HttpClientAdapter {
   static const flags = {
     'module.customers': true, 'module.tags': true, 'module.collections': true, 'module.cash': true, //
     'module.visits': true, 'module.notes': true, 'module.promises': true, 'module.attendance': true,
-    'module.handovers': true, 'module.location': false, 'module.notifications': true, 'module.sync': true,
+    'module.handovers': true, 'module.location': true, 'module.notifications': true, 'module.sync': true,
     'module.reports': false, 'module.microfinance': false,
   };
 
@@ -86,6 +89,8 @@ class FakeFieldApi implements HttpClientAdapter {
         'dailyTargetPoisha': 4000000,
         'dailyVisitTarget': 20,
         'hotline': '০১৭০০-০০০০০০',
+        'location.trackingProvider': trackingProvider,
+        'location.sampling': {'fastSec': 15, 'slowSec': 45, 'stillSec': 180, 'distanceFilterM': 25, 'maxAccuracyM': 50},
       };
 
   /// Simulates an office-side change (e.g. a new handover) for demos/tests.
@@ -173,6 +178,13 @@ class FakeFieldApi implements HttpClientAdapter {
         _receiptSeq += (b['size'] as int?) ?? 200;
         return _json(201, {'prefix': 'BRL01-FS014', 'businessDate': b['businessDate'], 'from': from, 'to': _receiptSeq});
       case ('POST', '/devices/push-token'):
+        return _json(204, null);
+      case ('POST', '/location/points'):
+        final pts = ((body as Json)['points'] as List).cast<Json>();
+        locationPoints.addAll(pts);
+        return _json(200, {'accepted': pts.length, 'rejected': const <Json>[]});
+      case ('POST', '/location/heartbeat'):
+        heartbeats.add(body as Json);
         return _json(204, null);
       case ('POST', '/media/upload-url'):
         final b = body as Json;

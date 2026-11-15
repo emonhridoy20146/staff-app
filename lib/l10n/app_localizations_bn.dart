@@ -240,7 +240,7 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get primerLocationBody =>
-      'আদায় ও ভিজিটে আপনার অবস্থান যুক্ত করতে। স্ক্রিন বন্ধ থাকলেও ডিউটি ট্র্যাকিংয়ের জন্য \"সবসময় অনুমতি দিন\" বেছে নিন।';
+      'আদায় ও ভিজিটে আপনার অবস্থান যুক্ত করতে এবং ডিউটির সময় অবস্থান জানাতে। \"অ্যাপ ব্যবহারের সময়\" অনুমতিই যথেষ্ট: একটি নোটিফিকেশন দেখিয়ে স্ক্রিন বন্ধ থাকলেও ট্র্যাকিং চলে।';
 
   @override
   String get primerCamera => 'ক্যামেরা';
@@ -1379,4 +1379,86 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get actionMore => 'আরও';
+
+  @override
+  String get callHowWasIt => 'কল কেমন হলো?';
+
+  @override
+  String get callConnected => 'কথা হয়েছে';
+
+  @override
+  String get callNoAnswer => 'ধরেননি';
+
+  @override
+  String get callBusy => 'ব্যস্ত';
+
+  @override
+  String get callSwitchedOff => 'ফোন বন্ধ';
+
+  @override
+  String get callWrongNumber => 'ভুল নম্বর';
+
+  @override
+  String get callUnknown => 'কল করা হয়েছে';
+
+  @override
+  String get callSaved => 'কল সংরক্ষিত';
+
+  @override
+  String timelineCall(String outcome) {
+    return 'কল · $outcome';
+  }
+
+  @override
+  String get trackingNotificationTitle => 'ডিউটিতে · অবস্থান শেয়ার হচ্ছে';
+
+  @override
+  String get trackingNotificationText => 'কাজ শেষ করলে বন্ধ হবে।';
+
+  @override
+  String get trackingTitle => 'লোকেশন ট্র্যাকিং';
+
+  @override
+  String trackingOn(String provider) {
+    return 'চালু · $provider';
+  }
+
+  @override
+  String get trackingOff => 'বন্ধ (শুধু ডিউটির সময় চলে)';
+
+  @override
+  String get trackingProviderFree => 'স্ট্যান্ডার্ড';
+
+  @override
+  String get trackingProviderPaid => 'প্রিমিয়াম';
+
+  @override
+  String get trackingFallback =>
+      'এই অ্যাপ ভার্সনে প্রিমিয়াম ট্র্যাকিং নেই; স্ট্যান্ডার্ড চলছে।';
+
+  @override
+  String trackingLastPoint(String time) {
+    return 'শেষ অবস্থান $time';
+  }
+
+  @override
+  String trackingPending(String count) {
+    return '$countটি অবস্থান অপেক্ষায়';
+  }
+
+  @override
+  String visitSuggestTitle(String name) {
+    return '$name-এর কাছে আছেন?';
+  }
+
+  @override
+  String visitSuggestBody(String minutes) {
+    return '$minutes মিনিট ধরে এখানে আছেন। ভিজিট রেকর্ড করবেন?';
+  }
+
+  @override
+  String get visitSuggestNo => 'এখন না';
+
+  @override
+  String get visitSuggestYes => 'ভিজিট লিখুন';
 }

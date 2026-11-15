@@ -31,7 +31,7 @@ System journeys J-1…J-12 and the FR traceability matrix: `field-api/docs/07-te
 Devices (minimum set): **Xiaomi Redmi (MIUI/HyperOS, 2–3 GB)**, **Samsung Galaxy A0x/A1x**, **Realme or Oppo (ColorOS)**, **Vivo (Funtouch)**, **one Android 8/9 device**, **one Android 14/15 device**.
 
 **Install & onboarding**
-- [ ] Fresh install, permissions primer, "Allow all the time" location flow works per Android version
+- [ ] Fresh install, permissions primer, "While using the app" location flow works per Android version (no background permission asked)
 - [ ] Battery optimisation guide opens the correct OEM settings page
 - [ ] Bangla renders correctly everywhere (conjuncts ক্ষ ঙ্গ ন্ত্র, reph, ya-phala, hasanta), no clipped matras at font scale 1.3
 **Offline & sync**
@@ -49,6 +49,10 @@ Devices (minimum set): **Xiaomi Redmi (MIUI/HyperOS, 2–3 GB)**, **Samsung Gala
 - [ ] 9 h duty test (bike + walk) battery ≤ 12 %; persistent notification visible; no points after work-out; tracking resumes after reboot while on duty
 - [ ] OEM killing: lock screen for 1 h on Xiaomi/Oppo/Vivo; heartbeat gaps visible in admin if killed
 - [ ] Mock GPS app → flagged
+- [ ] Notification shows on work-in and disappears on work-out; Me tab card says "On · standard"
+- [ ] Admin sets `location.trackingProvider = paid` on this build → Me tab shows the fallback note, heartbeat reports it; tracking continues
+- [ ] Visit suggestion appears after 5 min at a customer pin; "Not now" hides it for that customer
+- [ ] Android 14+: foreground service type `location` accepted (no crash at work-in)
 **Usability & accessibility**
 - [ ] Sunlight readability outdoors (high-contrast mode on/off)
 - [ ] TalkBack reads Bangla labels and amounts in words

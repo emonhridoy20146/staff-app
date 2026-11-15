@@ -94,7 +94,7 @@ class AttendanceService {
         'type': type.wire,
         'at': at.toIso8601String(),
         'deviceTime': device.toIso8601String(),
-        'geo': fix?.toJson() ?? {'lat': 0, 'lng': 0, 'accuracyM': 99999, 'mock': false},
+        ...geoFields(fix, _ref.read(locationEngineProvider).lastFailureReason),
       });
     });
     unawaited(_ref.read(syncEngineProvider).kick(reason: 'attendance'));

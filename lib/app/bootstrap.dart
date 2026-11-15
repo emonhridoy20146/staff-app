@@ -9,10 +9,12 @@ import '../core/db/db_connection.dart';
 import '../core/device/device_identity.dart';
 import '../core/feature/feature_manifest.dart';
 import '../core/location/location_engine.dart';
+import '../core/location/tracking/tracking_provider.dart';
 import '../core/media/media.dart';
 import '../core/providers.dart';
 import '../core/sync/sync_handlers.dart';
 import '../core/time/clock.dart';
+import '../features/location/location.dart';
 import '../features/visits/visits.dart';
 import 'features.dart';
 
@@ -46,6 +48,8 @@ Future<ProviderContainer> bootstrap(Env env, {List<Override> extra = const []}) 
     if (env.isDemo) ...[
       fakeApiProvider.overrideWithValue(FakeFieldApi(clock: clock)),
       locationEngineProvider.overrideWithValue(FakeLocationEngine()),
+      // Demo never tracks for real: no foreground service, no GPS stream.
+      trackingProvidersProvider.overrideWithValue([FakeTrackingProvider(), FakeTrackingProvider(id: 'paid', isAvailable: false)]),
     ],
     ...extra,
   ]);
@@ -96,6 +100,7 @@ ProviderContainer buildTestContainer({required Clock clock, FakeFieldApi? api, L
     locationEngineProvider.overrideWithValue(FakeLocationEngine()),
     photoCapturerProvider.overrideWithValue(FakePhotoCapturer()),
     mapTilesEnabledProvider.overrideWithValue(false),
+    trackingProvidersProvider.overrideWithValue([FakeTrackingProvider(), FakeTrackingProvider(id: 'paid', isAvailable: false)]),
     ...extra,
   ]);
   return c;
