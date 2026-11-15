@@ -6,7 +6,9 @@ plugins {
 
 android {
     namespace = "bd.howlader.staff_app"
-    compileSdk = flutter.compileSdkVersion
+    // flutter_local_notifications and androidx.core 1.19 need API 37 to compile
+    // against; targetSdk (runtime behaviour) stays on the Flutter default.
+    compileSdk = 37
     ndkVersion = flutter.ndkVersion
 
     compileOptions {

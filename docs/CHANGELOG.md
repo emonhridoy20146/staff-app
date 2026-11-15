@@ -12,6 +12,7 @@
 - Location primer text: "While using the app" is enough; the app does not request background location (ADR-M12).
 - Today: a hidden extension card no longer leaves an empty gap.
 - Demo and test builds use a fake tracker (no real GPS stream).
+- Android `compileSdk` 37 (needed by `flutter_local_notifications` and `androidx.core` 1.19; the CI APK build failed on 36). `targetSdk` unchanged.
 ### Not done / known gaps
 - Server location module (ingest, heartbeat) is not built yet in field-api; until then those calls fail quietly and points stay queued on the phone.
 - No battery level in the heartbeat: `battery_plus` conflicts with `connectivity_plus` 7.3.2 (dbus version); revisit when either updates.
