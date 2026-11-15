@@ -36,6 +36,9 @@ class FakeFieldApi implements HttpClientAdapter {
   String trackingProvider = 'free'; // admin setting location.trackingProvider
   int pushCalls = 0;
 
+  /// Next N pushed mutations get `rejected` + `retryable: true` (1.5.0).
+  int transientRejects = 0;
+
   final _log = <_Change>[];
   final _applied = <String, Json>{}; // mutationId → result
   final appliedPayloads = <String, Json>{}; // mutationId → payload (tests)
@@ -280,6 +283,11 @@ class FakeFieldApi implements HttpClientAdapter {
       }
       final entity = m['entity'] as String;
       final payload = (m['payload'] as Json?) ?? const {};
+      if (transientRejects > 0) {
+        transientRejects--;
+        results.add({'mutationId': id, 'result': 'rejected', 'retryable': true, 'error': _problem(503, 'ERP_UNAVAILABLE', 'try later')});
+        continue;
+      }
       appliedPayloads[id] = payload;
       Json r;
       if (entity == 'collection' && payload['customerId'] == 'c-1008') {

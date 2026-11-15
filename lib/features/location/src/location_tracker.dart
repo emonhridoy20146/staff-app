@@ -259,7 +259,7 @@ class LocationTracker {
         'appVersion': _ref.read(deviceIdentityProvider).appVersion,
         'pendingPoints': await pendingCount(),
         'pendingMutations': await _ref.read(outboxReaderProvider).unsyncedCount(),
-        // Not in the 1.2.0 heartbeat schema yet (reported): which provider runs.
+        // Declared in contract 1.5.0.
         'trackingProvider': s.providerId,
         'trackingProviderFallback': s.fellBack,
       });

@@ -54,6 +54,7 @@ class SyncStatus {
 /// * Push: outbox FIFO by createdAt, honouring `dependsOn`, batches ≤ 50.
 ///   applied/replayed → done; conflict → done + entity shows conflict;
 ///   rejected → failed (stays visible in Problems, never deleted);
+///   rejected + retryable → pending again with backoff (1.5.0);
 ///   network/5xx → pending with exponential backoff.
 /// * Pull: cursor loop until hasMore=false; one transaction per page;
 ///   cursor saved after commit; 410 → bootstrap (outbox untouched).
@@ -241,6 +242,19 @@ class SyncEngine {
               attempts: Value(attempts),
               nextAttemptAt: Value(_clock.nowUtc().add(_backoff.delayFor(attempts))),
               lastError: const Value('NO_RESULT'),
+            ),
+          );
+          continue;
+        }
+        if (r.result == 'rejected' && r.retryable) {
+          // Transient server failure (1.5.0): stays pending, same id later.
+          final attempts = m.attempts + 1;
+          await (_db.update(_db.outbox)..where((t) => t.mutationId.equals(m.mutationId))).write(
+            OutboxCompanion(
+              state: const Value('pending'),
+              attempts: Value(attempts),
+              nextAttemptAt: Value(_clock.nowUtc().add(_backoff.delayFor(attempts))),
+              lastError: Value(r.error?.code ?? 'RETRYABLE'),
             ),
           );
           continue;

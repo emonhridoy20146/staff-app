@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Howlader Field Operations API
-  version: 1.4.0
+  version: 1.5.0
   description: |
     Contract owned by field-api. Consumers (admin-web, staff-app) generate types from this file.
     Conventions (auth, pagination, idempotency, errors) are described in docs/05-api-contract.md.
@@ -1052,7 +1052,7 @@ paths:
         required: true
         content:
           application/json:
-            schema: { type: object, properties: { battery: { type: number }, charging: { type: boolean }, gpsEnabled: { type: boolean }, permission: { type: string, enum: [always, while_in_use, denied] }, bgRestricted: { type: boolean }, appVersion: { type: string }, pendingPoints: { type: integer }, pendingMutations: { type: integer } } }
+            schema: { type: object, properties: { battery: { type: number }, charging: { type: boolean }, gpsEnabled: { type: boolean }, permission: { type: string, enum: [always, while_in_use, denied] }, bgRestricted: { type: boolean }, appVersion: { type: string }, pendingPoints: { type: integer }, pendingMutations: { type: integer }, trackingProvider: { type: string, enum: [free, paid], description: 'Plugin actually running on the device (1.5.0)' }, trackingProviderFallback: { type: boolean, description: 'true when the setting asked for paid but the app fell back to free (1.5.0)' } } }
       responses:
         '204': { description: OK }
   /location/latest:
@@ -1092,9 +1092,9 @@ paths:
     get:
       tags: [sync]
       operationId: syncBootstrap
-      parameters: [ { $ref: '#/components/parameters/Cursor' } ]
+      parameters: [ { $ref: '#/components/parameters/Cursor' }, { name: limit, in: query, schema: { type: integer, default: 100, minimum: 1, maximum: 200 } } ]
       responses:
-        '200': { description: Paged snapshot of the whole scope; final page returns pullCursor }
+        '200': { description: 'Paged snapshot of the whole scope; the final page has nextCursor null and returns pullCursor (schema declared in 1.5.0)', content: { application/json: { schema: { $ref: '#/components/schemas/SyncBootstrapResponse' } } } }
   /sync/pull:
     get:
       tags: [sync]
@@ -1407,7 +1407,7 @@ components:
       properties: { mode: { type: string, enum: [live, record_only, mock] }, lastSuccessAt: { type: string }, lagSec: { type: integer }, consecutiveFailures: { type: integer }, circuit: { type: string, enum: [closed, open, half_open] }, outboxPending: { type: integer }, outboxFailed: { type: integer } }
     DeviceSyncState:
       type: object
-      properties: { userId: { type: string }, deviceId: { type: string }, lastPullAt: { type: string }, lastPushAt: { type: string }, pendingReported: { type: integer }, lastError: { type: string }, appVersion: { type: string } }
+      properties: { userId: { type: string }, userName: { type: string }, deviceId: { type: string }, lastPullAt: { type: string }, lastPushAt: { type: string }, pendingReported: { type: integer }, lastError: { type: string }, appVersion: { type: string } }
     CustomerStatus: { type: string, enum: [overdue, due_today, promised_today, paid_up, current, bad_suggested, tagged_bad] }
     CustomerLocation:
       type: object
@@ -1721,7 +1721,7 @@ components:
       properties: { fastSec: { type: integer, default: 15 }, slowSec: { type: integer, default: 45 }, stillSec: { type: integer, default: 180 }, distanceFilterM: { type: integer, default: 25 }, maxAccuracyM: { type: integer, default: 50 } }
     LatestLocation:
       type: object
-      properties: { userId: { type: string }, name: { type: string }, lat: { type: number }, lng: { type: number }, accuracyM: { type: number }, recordedAt: { type: string }, freshness: { type: string, enum: [fresh, stale, lost] }, battery: { type: number }, onBreak: { type: boolean }, mock: { type: boolean }, activity: { type: string }, todayVisits: { type: integer }, todayCollectedPoisha: { type: integer } }
+      properties: { userId: { type: string }, name: { type: string }, lat: { type: number }, lng: { type: number }, accuracyM: { type: number }, recordedAt: { type: string }, freshness: { type: string, enum: [fresh, stale, lost] }, battery: { type: number }, onBreak: { type: boolean }, mock: { type: boolean }, activity: { type: string }, todayVisits: { type: integer }, todayCollectedPoisha: { type: integer }, trackingProvider: { type: string, enum: [free, paid], description: 'From the last heartbeat (1.5.0)' }, trackingProviderFallback: { type: boolean } }
     Stop:
       type: object
       properties: { start: { type: string }, end: { type: string }, dwellMin: { type: integer }, lat: { type: number }, lng: { type: number }, customerId: { type: [string, 'null'] }, customerName: { type: [string, 'null'] }, distanceToPinM: { type: [integer, 'null'] }, visitId: { type: [string, 'null'] } }
@@ -1744,6 +1744,11 @@ components:
             promise → POST /promises body · deposit → DepositCreate · attendance_event → POST /attendance/events body ·
             tag → PUT /customers/{id}/tag body (+ customerId) · location_proposal → POST /customers/{id}/location-proposals body (+ customerId) ·
             contact_attempt → ContactAttemptCreate
+            Declared in 1.5.0: collection and deposit may carry `idempotencyKey` (uuid); without it the mutationId is the key ·
+            visit_checkout → { visitId | visitClientId, checkOutAt, outcome? } · promise_cancel → { promiseId, reason } ·
+            cash_closing → { businessDate, note? } · handover_decision → { handoverId, decision: accept|reject, reason? (required to reject) } ·
+            tag payload may carry `ifMatch` (customer version).
+            Every mutation is idempotent by mutationId; the same id with a different payload is rejected with IDEMPOTENCY_MISMATCH.
         createdAt: { type: string, format: date-time }
     SyncPushRequest:
       type: object
@@ -1751,6 +1756,7 @@ components:
       properties:
         deviceId: { type: string }
         lastPullCursor: { type: string }
+        pendingCount: { type: integer, minimum: 0, description: 'Mutations still queued on the device after this batch; shown in sync health (1.5.0)' }
         mutations: { type: array, maxItems: 100, items: { $ref: '#/components/schemas/SyncMutation' } }
     SyncPushResponse:
       type: object
@@ -1767,6 +1773,9 @@ components:
               status: { type: string }
               conflict: { type: object, properties: { code: { type: string }, message: { $ref: '#/components/schemas/I18nText' } } }
               error: { $ref: '#/components/schemas/Problem' }
+              retryable: { type: boolean, description: 'Only on rejected: true means a transient server failure, keep the item queued (1.5.0)' }
+              receiptNo: { type: string }
+              eventId: { type: string }
     SyncChange:
       type: object
       properties:
@@ -1802,6 +1811,17 @@ components:
         - $ref: '#/components/schemas/ContactAttemptCreate'
         - type: object
           properties: { id: { type: string }, userId: { type: string }, receivedAt: { type: string, format: date-time } }
+    SyncBootstrapResponse:
+      type: object
+      properties:
+        items: { type: array, items: { type: object, properties: { entity: { type: string }, op: { type: string, enum: [upsert] }, id: { type: string }, data: { type: object, additionalProperties: true, description: 'Same shape as SyncChange.data for the entity' } } } }
+        nextCursor: { type: [string, 'null'] }
+        pullCursor: { type: string, description: 'Only on the final page: use it for the first GET /sync/pull' }
+        permissions: { type: object, properties: { version: { type: integer }, keys: { type: array, items: { type: string } } } }
+        flags: { type: object, additionalProperties: { type: boolean } }
+        settings: { type: object, additionalProperties: true }
+        cash: { $ref: '#/components/schemas/CashPosition' }
+        serverTime: { type: string, format: date-time }
     SyncPullResponse:
       type: object
       properties:

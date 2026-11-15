@@ -8,12 +8,12 @@
 - Call logging (FR-M-014): after a call the app asks how it went and records a `contact_attempt` offline (phone index only, never the number); shown on the customer timeline.
 - Database schema 2: `contact_attempts` table and a `location_queue (t)` index, with a v1 → v2 migration test.
 ### Changed
-- Contract pinned to field-api `openapi.yaml` 1.4.0 (adopted 1.2.0: `geo: null` + `geoUnavailableReason` replaces the 0/0/99999 stop-gap; `contact_attempt` mutation entity; location ingest and heartbeat). 1.3.0 and 1.4.0 are additive and need no app change yet.
+- Contract pinned to field-api `openapi.yaml` 1.5.0 (adopted 1.2.0: `geo: null` + `geoUnavailableReason` replaces the 0/0/99999 stop-gap; `contact_attempt` mutation entity; location ingest and heartbeat). 1.5.0: heartbeat declares `trackingProvider` / `trackingProviderFallback`; a push result `rejected` with `retryable: true` now stays queued with backoff instead of going to Problems.
 - Location primer text: "While using the app" is enough; the app does not request background location (ADR-M12).
 - Today: a hidden extension card no longer leaves an empty gap.
 - Demo and test builds use a fake tracker (no real GPS stream).
 ### Not done / known gaps
-- Heartbeat schema has no field for which provider runs or the fallback; the app sends `trackingProvider` and `trackingProviderFallback` as extra fields (reported to field-api).
+- Server location module (ingest, heartbeat) is not built yet in field-api; until then those calls fail quietly and points stay queued on the phone.
 - No battery level in the heartbeat: `battery_plus` conflicts with `connectivity_plus` 7.3.2 (dbus version); revisit when either updates.
 - Free provider limits: no activity recognition (speed is used), no restart after a phone reboot (tracking resumes when the app is opened while on duty), more exposed to OEM battery savers.
 - Note editing (PATCH /notes/{id}, 1.3.0) not built yet.
