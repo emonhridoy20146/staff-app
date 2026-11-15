@@ -1,0 +1,843 @@
+{
+  "@@locale": "en",
+  "appName": "Howlader Field",
+  "appTagline": "Field collection & visits",
+  "navToday": "Today",
+  "navCustomers": "Customers",
+  "navMap": "Map",
+  "navMe": "Me",
+  "actionCollect": "Collect",
+  "actionVisit": "Visit",
+  "actionPromise": "Promise",
+  "actionNote": "Note",
+  "actionCall": "Call",
+  "actionNavigate": "Navigate",
+  "actionDetails": "Details",
+  "actionSave": "Save",
+  "actionCancel": "Cancel",
+  "actionContinue": "Continue",
+  "actionBack": "Back",
+  "actionDone": "Done",
+  "actionRetry": "Try again",
+  "actionSyncNow": "Sync now",
+  "actionAccept": "Accept",
+  "actionReject": "Reject",
+  "actionUndo": "Undo",
+  "actionChange": "Change",
+  "actionSeeAll": "See all",
+  "actionShareReceipt": "Share receipt",
+  "actionNewPromise": "New promise",
+  "loginTitle": "Sign in",
+  "loginSubtitle": "Use the phone number and password from your branch manager",
+  "loginPhone": "Phone number",
+  "loginPassword": "Password",
+  "loginButton": "Sign in",
+  "loginErrorInvalid": "Phone number or password is wrong",
+  "loginErrorNetwork": "No internet. The first sign-in needs internet.",
+  "loginErrorLocked": "Account locked. Contact your branch manager.",
+  "loginDemoHint": "Demo: 01712345678 / demo1234",
+  "showPassword": "Show password",
+  "hidePassword": "Hide password",
+  "changePasswordTitle": "Set a new password",
+  "changePasswordBody": "For your security, choose a new password before you start.",
+  "changePasswordCurrent": "Current password",
+  "changePasswordNew": "New password (at least 8 characters)",
+  "changePasswordConfirm": "Confirm new password",
+  "changePasswordMismatch": "The two passwords do not match",
+  "changePasswordTooShort": "Use at least 8 characters",
+  "changePasswordWrong": "Current password is wrong",
+  "changePasswordOnline": "Changing the password needs internet",
+  "pinSetupTitle": "Set a 4-digit PIN",
+  "pinSetupBody": "You will use this PIN to open the app quickly. It stays on this phone.",
+  "pinConfirmTitle": "Enter the PIN again",
+  "pinMismatch": "PINs did not match. Try again.",
+  "pinWeak": "Too easy to guess. Avoid 1234 or 1111.",
+  "pinUnlockTitle": "Enter your PIN",
+  "pinUnlockGreeting": "Welcome back, {name}",
+  "@pinUnlockGreeting": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "pinWrong": "Wrong PIN. {left} tries left.",
+  "@pinWrong": {
+    "placeholders": {
+      "left": {
+        "type": "int"
+      }
+    }
+  },
+  "pinLockedOut": "Too many wrong PINs. Sign in with your password. Your saved work is safe.",
+  "pinForgot": "Forgot PIN? Sign in with password",
+  "keypadBackspace": "Delete",
+  "keypadClear": "Clear",
+  "consentTitle": "What this app records",
+  "consentIntro": "Please read this before you start work.",
+  "consentDutyOnly": "Location is recorded only while you are on duty (from work-in to work-out). Never outside duty hours.",
+  "consentWhy": "It is used to show visits on the map, confirm collections and plan routes.",
+  "consentVisible": "When tracking is on you will always see a notification and a status chip.",
+  "consentPhotos": "Photos are taken only with the camera, with date, time and place.",
+  "consentRetention": "Location points are deleted after 90 days.",
+  "consentAgree": "I understand and agree",
+  "consentVersion": "Privacy notice {version}",
+  "@consentVersion": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "primerTitle": "Allow these on your phone",
+  "primerBody": "The app needs a few permissions to work in the field.",
+  "primerLocation": "Location",
+  "primerLocationBody": "To attach your position to collections and visits. Choose \"Allow all the time\" so duty tracking works with the screen off.",
+  "primerCamera": "Camera",
+  "primerCameraBody": "For visit and deposit-slip photos. The gallery is never used.",
+  "primerNotifications": "Notifications",
+  "primerNotificationsBody": "For promise reminders and messages from your manager.",
+  "primerBattery": "Battery optimisation",
+  "primerBatteryBody": "Some phones stop apps in the background. We will show you how to keep this app running during duty.",
+  "primerAllow": "Allow",
+  "primerAllowed": "Allowed",
+  "primerLater": "Later",
+  "bootstrapTitle": "Getting your customers",
+  "bootstrapBody": "Downloading your assigned customers so you can work offline.",
+  "bootstrapFailed": "Could not download. Check internet and try again.",
+  "greetingMorning": "Good morning, {name}",
+  "@greetingMorning": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "greetingAfternoon": "Good afternoon, {name}",
+  "@greetingAfternoon": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "greetingEvening": "Good evening, {name}",
+  "@greetingEvening": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "syncSynced": "Synced",
+  "syncSyncing": "Syncing…",
+  "syncQueued": "{count} waiting",
+  "@syncQueued": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "syncProblems": "{count} problems",
+  "@syncProblems": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "syncOffline": "Offline",
+  "savedOnPhone": "Saved on phone · will sync",
+  "reachedServer": "Reached the server",
+  "dutyOff": "Off duty",
+  "dutyOn": "On duty",
+  "dutyOnSince": "On duty · since {time}",
+  "@dutyOnSince": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "dutyOnBreak": "On break",
+  "dutyBreakSince": "On break · {duration}",
+  "@dutyBreakSince": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "dutyTracking": "Tracking on",
+  "dutyStartWork": "Start work",
+  "dutyEndWork": "End work",
+  "dutyStartBreak": "Start break",
+  "dutyEndBreak": "End break",
+  "dutyNotStarted": "You have not started work today",
+  "dutyEnded": "Work ended at {time}",
+  "@dutyEnded": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "todayCollected": "Collected today",
+  "todayOfTarget": "of {target}",
+  "@todayOfTarget": {
+    "placeholders": {
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "todayVisits": "Visits",
+  "todayCashOnHand": "Cash on hand",
+  "todayProblemsBanner": "{count} problems need your attention",
+  "@todayProblemsBanner": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "todayHandoverBanner": "{name} is handing customers to you",
+  "@todayHandoverBanner": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "todayPromisedSection": "Promised today",
+  "todayDueSection": "Due today",
+  "todayOverdueSection": "Overdue · nearest first",
+  "todayAllDone": "All caught up",
+  "todayAllDoneBody": "No promises or dues left for today.",
+  "todayCashWarning": "Cash on hand is {pct}% of your limit. Please deposit soon.",
+  "@todayCashWarning": {
+    "placeholders": {
+      "pct": {
+        "type": "String"
+      }
+    }
+  },
+  "customersTitle": "Customers",
+  "customersSearch": "Search name, phone or code",
+  "filterAll": "All",
+  "filterDueToday": "Due today",
+  "filterOverdue": "Overdue",
+  "filterPromisedToday": "Promised today",
+  "filterMine": "Mine",
+  "filterBadSuggested": "Possibly bad",
+  "filterTagged": "Tagged",
+  "filterNoPin": "No pin",
+  "sortBy": "Sort",
+  "sortDistance": "Nearest",
+  "sortDaysOverdue": "Most overdue",
+  "sortAmount": "Highest balance",
+  "sortName": "Name",
+  "customersEmpty": "No customers match",
+  "customersEmptyBody": "Try another filter or search.",
+  "customersCount": "{count} customers",
+  "@customersCount": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "statusOverdue": "Overdue",
+  "statusOverdueDays": "{days} days overdue",
+  "@statusOverdueDays": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
+  "statusDueToday": "Due today",
+  "statusPromised": "Promised",
+  "statusCurrent": "Current",
+  "statusPaid": "Paid up",
+  "statusBadSuggested": "Possibly bad",
+  "statusTagged": "Tagged",
+  "statusPending": "Pending",
+  "statusMock": "Fake GPS",
+  "statusQueued": "On phone",
+  "statusSent": "Waiting for ERP",
+  "statusPosted": "Posted",
+  "statusConflict": "Manager is reviewing",
+  "statusRejected": "Not accepted",
+  "statusResolved": "Resolved",
+  "statusVoided": "Voided",
+  "detailOutstanding": "Total outstanding",
+  "detailAsOfErp": "As per ERP · {time}",
+  "@detailAsOfErp": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "detailPendingField": "Your {amount} is waiting to post in ERP",
+  "@detailPendingField": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "detailPlans": "Plans",
+  "detailInstallment": "Installment",
+  "detailInstallments": "{paid} of {total} paid",
+  "@detailInstallments": {
+    "placeholders": {
+      "paid": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "detailFinalDue": "Final due {date}",
+  "@detailFinalDue": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "detailSchedule": "Schedule",
+  "detailTimeline": "Timeline",
+  "detailNotes": "Notes",
+  "detailVisits": "Visits",
+  "detailPromises": "Promises",
+  "detailGuarantor": "Guarantor",
+  "detailNoPin": "No map pin for this customer",
+  "detailBadSuggestion": "Possibly bad customer",
+  "detailBadSuggestionBody": "Final due date passed on {date} with {amount} outstanding. This is only a suggestion.",
+  "@detailBadSuggestionBody": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "detailTaggedBy": "Tagged by {name}: {reason}",
+  "@detailTaggedBy": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "detailOpenPromise": "Promised {amount} on {date}",
+  "@detailOpenPromise": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "detailNothingYet": "Nothing here yet",
+  "scheduleDue": "Due",
+  "schedulePaid": "Paid",
+  "scheduleOverdue": "Overdue",
+  "scheduleUpcoming": "Upcoming",
+  "schedulePartial": "Partly paid",
+  "timelineErpPayment": "Paid {amount} at {source}",
+  "@timelineErpPayment": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "source": {
+        "type": "String"
+      }
+    }
+  },
+  "timelineOffice": "office",
+  "timelineField": "field",
+  "timelineCollection": "Collected {amount}",
+  "@timelineCollection": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "timelineVisit": "Visit · {outcome}",
+  "@timelineVisit": {
+    "placeholders": {
+      "outcome": {
+        "type": "String"
+      }
+    }
+  },
+  "timelinePromise": "Promise {amount} for {date}",
+  "@timelinePromise": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "collectTitle": "Collect payment",
+  "collectStepAmount": "Amount",
+  "collectStepMethod": "Method",
+  "collectStepReview": "Review",
+  "collectChipInstallment": "Installment {amount}",
+  "@collectChipInstallment": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "collectChipOverdue": "Overdue {amount}",
+  "@collectChipOverdue": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "collectChipPromise": "Promise {amount}",
+  "@collectChipPromise": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "collectOverOutstanding": "More than the outstanding balance. It will be flagged for review.",
+  "collectEnterAmount": "Enter amount",
+  "collectMethodCash": "Cash",
+  "collectMethodBkash": "bKash",
+  "collectMethodNagad": "Nagad",
+  "collectMethodRocket": "Rocket",
+  "collectMethodBank": "Bank",
+  "collectMethodOther": "Other",
+  "collectTxnId": "Transaction ID",
+  "collectTxnInvalid": "Check the transaction ID (letters and numbers, 8–20)",
+  "collectPhysicalReceipt": "Paper receipt no. (optional)",
+  "collectPayerName": "Paid by (if not the customer)",
+  "collectNote": "Note (optional)",
+  "collectReviewCustomer": "Customer",
+  "collectReviewPlan": "Plan",
+  "collectReviewAmount": "Amount",
+  "collectReviewMethod": "Method",
+  "collectReviewReceipt": "Receipt no.",
+  "collectGpsAccurate": "Location {meters} m accurate",
+  "@collectGpsAccurate": {
+    "placeholders": {
+      "meters": {
+        "type": "String"
+      }
+    }
+  },
+  "collectGpsSearching": "Finding location…",
+  "collectGpsNone": "No location. It will be saved and flagged.",
+  "collectGpsMock": "Fake location detected. It will be flagged.",
+  "collectHoldToConfirm": "Hold to confirm",
+  "collectHoldHint": "Keep holding…",
+  "collectSuccessTitle": "Collection saved",
+  "collectCashLimitBlocked": "Cash on hand is over your limit. Deposit cash before collecting more.",
+  "collectNoReceipts": "No receipt numbers left. Connect to the internet once.",
+  "collectOfflineReceipt": "Offline receipt number used. It will be reviewed.",
+  "receiptTitle": "Field receipt",
+  "receiptPendingErp": "Waiting to post in ERP",
+  "receiptCollector": "Collected by",
+  "receiptHotline": "Hotline",
+  "visitTitle": "Visit check-in",
+  "visitOutcome": "What happened?",
+  "visitOutcomePaid": "Paid",
+  "visitOutcomePartial": "Paid part",
+  "visitOutcomePromised": "Promised",
+  "visitOutcomeNotHome": "Not at home",
+  "visitOutcomeRefused": "Refused",
+  "visitOutcomeShifted": "Moved address",
+  "visitOutcomeDead": "Customer died",
+  "visitOutcomeReturn": "Wants to return product",
+  "visitOutcomeOther": "Other",
+  "visitTakePhoto": "Take photo",
+  "visitRetake": "Retake",
+  "visitPhotoAdded": "Photo added",
+  "visitCameraOnly": "Camera only. The gallery cannot be used.",
+  "visitSaved": "Visit saved",
+  "visitFar": "You are {distance} from the customer pin",
+  "@visitFar": {
+    "placeholders": {
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
+  "promiseTitle": "Promise to pay",
+  "promiseDate": "Date",
+  "promiseAmount": "Amount",
+  "promiseToday": "Today",
+  "promiseTomorrow": "Tomorrow",
+  "promiseIn3": "In 3 days",
+  "promiseIn7": "In 7 days",
+  "promisePickDate": "Pick date",
+  "promiseReminder": "You will get a reminder at 9:00 AM that day.",
+  "promiseSaved": "Promise saved",
+  "noteTitle": "Add note",
+  "noteHint": "Write what happened…",
+  "noteCategory": "Type",
+  "noteCatGeneral": "General",
+  "noteCatAddress": "Address",
+  "noteCatFamily": "Family",
+  "noteCatPayment": "Payment",
+  "noteSaved": "Note saved",
+  "tagTitle": "Tag as bad customer",
+  "untagTitle": "Remove tag",
+  "tagReason": "Reason",
+  "tagReasonLongOverdue": "Long overdue",
+  "tagReasonAbsconded": "Absconded",
+  "tagReasonRefuses": "Refuses to pay",
+  "tagReasonOther": "Other",
+  "tagReasonHint": "Explain (at least 10 characters)",
+  "tagSaved": "Tag saved · manager will review",
+  "meTitle": "Me",
+  "meAttendance": "Attendance",
+  "meCash": "Cash",
+  "meHandovers": "Handovers",
+  "meSyncCentre": "Sync centre",
+  "meSettings": "Settings",
+  "meLogout": "Sign out",
+  "meInToday": "In {time}",
+  "@meInToday": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "meBreakTotal": "Break {duration}",
+  "@meBreakTotal": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "meLate": "Late {minutes} min",
+  "@meLate": {
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      }
+    }
+  },
+  "cashOnHand": "On hand",
+  "cashLimit": "Limit {amount}",
+  "@cashLimit": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "cashDeposit": "Record deposit",
+  "cashDepositTitle": "Cash deposit",
+  "cashDepositTo": "Deposited to",
+  "cashDestCashier": "Branch cashier",
+  "cashDestBank": "Bank",
+  "cashDestManager": "Manager",
+  "cashReference": "Reference / slip no.",
+  "cashDepositSaved": "Deposit saved · waiting for verification",
+  "cashDeposits": "Deposits",
+  "cashNoDeposits": "No deposits yet",
+  "cashTodayCash": "Cash today",
+  "cashTodayMobile": "Mobile today",
+  "syncCentreTitle": "Sync centre",
+  "syncLastSuccess": "Last synced {time}",
+  "@syncLastSuccess": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "syncNever": "Not synced yet",
+  "syncOldest": "Oldest waiting item: {time}",
+  "@syncOldest": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "syncWaitingTitle": "Waiting to upload",
+  "syncNothingWaiting": "Everything is uploaded",
+  "syncProblemsTitle": "Problems",
+  "syncNoProblems": "No problems",
+  "syncProblemManager": "Your manager has been notified.",
+  "syncProblemMoneyHint": "Money items are never deleted. Contact your manager.",
+  "syncEntityCollection": "Collections",
+  "syncEntityVisit": "Visits",
+  "syncEntityNote": "Notes",
+  "syncEntityPromise": "Promises",
+  "syncEntityDeposit": "Deposits",
+  "syncEntityAttendance": "Attendance",
+  "syncEntityTag": "Tags",
+  "syncEntityOther": "Other",
+  "syncDetails": "Details",
+  "settingsTitle": "Settings",
+  "settingsLanguage": "Language",
+  "settingsDigits": "Numbers",
+  "settingsDigitsBn": "বাংলা ১২৩",
+  "settingsDigitsEn": "English 123",
+  "settingsTheme": "Theme",
+  "settingsThemeSystem": "System",
+  "settingsThemeLight": "Light",
+  "settingsThemeDark": "Dark",
+  "settingsHighContrast": "High contrast (for sunlight)",
+  "settingsPrivacy": "Privacy notice",
+  "settingsAbout": "About",
+  "settingsVersion": "Version {version}",
+  "@settingsVersion": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "logoutTitle": "Sign out?",
+  "logoutBlocked": "{count} items are not uploaded yet. Connect to the internet and sync first. Nothing will be deleted.",
+  "@logoutBlocked": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "logoutConfirm": "All data on this phone will be removed.",
+  "handoverTitle": "Handover",
+  "handoverFrom": "From {name}",
+  "@handoverFrom": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "handoverCustomers": "Customers",
+  "handoverOutstanding": "Outstanding",
+  "handoverOverdue": "Overdue",
+  "handoverOpenPromises": "Open promises",
+  "handoverExpires": "Respond by {time}",
+  "@handoverExpires": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "handoverNeedsInternet": "Internet is needed to accept or reject",
+  "handoverAccepted": "Handover accepted",
+  "handoverRejected": "Handover rejected",
+  "handoverNone": "No handovers",
+  "workInTitle": "Start your day",
+  "workInBody": "Your location is recorded from now until you end work.",
+  "workOutTitle": "End of day",
+  "workOutUnsynced": "{count} items not uploaded yet. They are safe on your phone and will upload when online.",
+  "@workOutUnsynced": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "workOutCollections": "Collections",
+  "workOutCash": "Cash",
+  "workOutMobile": "Mobile",
+  "workOutVisits": "Visits",
+  "workOutPromises": "Promises made",
+  "updateTitle": "Update required",
+  "updateBody": "A newer version is needed. Your saved work stays on the phone and will upload after the update.",
+  "updateButton": "Update",
+  "errorGeneric": "Something went wrong",
+  "errorNeedsInternet": "Internet required",
+  "offlineSaved": "No internet — saved on phone",
+  "demoBanner": "Demo mode · sample data",
+  "required": "Required",
+  "actionTag": "Tag",
+  "actionUntag": "Remove tag",
+  "tagSeverity": "Level",
+  "tagSeverityWatch": "Watch",
+  "tagSeverityBad": "Bad",
+  "tagSeverityLegal": "Legal action",
+  "tagReasonBrokenPromise": "Broke promises again and again",
+  "tagReasonFraud": "Fraud suspected",
+  "tagReasonCleared": "Has paid up",
+  "tagReasonMistake": "Tagged by mistake",
+  "tagReasonTooShort": "Write at least 10 characters",
+  "untagSaved": "Tag removal sent · manager will review",
+  "tagPendingReview": "Waiting for manager review",
+  "promiseCancel": "Cancel promise",
+  "promiseCancelled": "Promise cancelled",
+  "promiseNote": "Note (optional)",
+  "promiseReplaces": "This replaces the current promise of {amount} on {date}.",
+  "@promiseReplaces": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "promiseStatusOpen": "Open",
+  "promiseStatusKept": "Kept",
+  "promiseStatusPartial": "Partly kept",
+  "promiseStatusBroken": "Broken",
+  "promiseStatusCancelled": "Cancelled",
+  "promiseStatusSuperseded": "Replaced",
+  "reminderTitle": "Promise today: {name}",
+  "@reminderTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "reminderBody": "{amount} promised for today.",
+  "@reminderBody": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "handoverReasonHint": "Why are you rejecting? (at least 10 characters)",
+  "handoverReason": "Reason: {reason}",
+  "@handoverReason": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "handoverStatusPending": "Waiting for you",
+  "handoverStatusAccepted": "Accepted",
+  "handoverStatusRejected": "Rejected",
+  "handoverStatusOther": "Closed",
+  "handoverOpenConflicts": "Open problems",
+  "syncProblemRejected": "Not accepted: {reason}",
+  "@syncProblemRejected": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "syncProblemConflict": "Needs office check: {reason}",
+  "@syncProblemConflict": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "syncWaitingSince": "{count} items · since {time}",
+  "@syncWaitingSince": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "syncMediaTitle": "Photos waiting",
+  "syncMediaCount": "{count} photos",
+  "@syncMediaCount": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "syncRetryAll": "Retry problems",
+  "syncBlockedUpgrade": "Update the app to continue syncing",
+  "settingsLanguageBn": "বাংলা",
+  "settingsLanguageEn": "English",
+  "settingsDevice": "Device {id}",
+  "@settingsDevice": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "meStaffCode": "Staff code {code}",
+  "@meStaffCode": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "meBranch": "{branch} branch",
+  "@meBranch": {
+    "placeholders": {
+      "branch": {
+        "type": "String"
+      }
+    }
+  },
+  "logoutButton": "Sign out and remove data",
+  "mapNoPins": "No customers with a map pin",
+  "mapTilesOffline": "Map needs internet · pins still shown",
+  "mapMyLocation": "My location",
+  "mapPinsCount": "{count} on map",
+  "@mapPinsCount": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "mapAttribution": "Map data © OpenStreetMap contributors",
+  "todayNotifications": "Notifications",
+  "todayProgressTitle": "Today's progress",
+  "todayNoTarget": "No target set",
+  "todayCollectFab": "Collect",
+  "todayMore": "{count} more",
+  "@todayMore": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "todayReceiptsLow": "Only {count} receipt numbers left. Connect to get more.",
+  "@todayReceiptsLow": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "actionMore": "More"
+}

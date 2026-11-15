@@ -1,0 +1,152 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
+
+import '../../../../core/settings/ui_prefs.dart';
+import '../../../../core/theme/tokens.dart';
+import '../../../../core/ui/chips.dart';
+import '../../../../core/ui/common.dart';
+import '../../../../l10n/app_localizations.dart';
+import '../customer_providers.dart';
+import '../domain/customer.dart';
+import 'customer_tile.dart';
+
+String filterLabel(AppLocalizations l, CustomerFilter f) => switch (f) {
+      CustomerFilter.all => l.filterAll,
+      CustomerFilter.dueToday => l.filterDueToday,
+      CustomerFilter.overdue => l.filterOverdue,
+      CustomerFilter.promisedToday => l.filterPromisedToday,
+      CustomerFilter.mine => l.filterMine,
+      CustomerFilter.badSuggested => l.filterBadSuggested,
+      CustomerFilter.tagged => l.filterTagged,
+      CustomerFilter.noPin => l.filterNoPin,
+    };
+
+String sortLabel(AppLocalizations l, CustomerSort s) => switch (s) {
+      CustomerSort.distance => l.sortDistance,
+      CustomerSort.daysOverdue => l.sortDaysOverdue,
+      CustomerSort.amount => l.sortAmount,
+      CustomerSort.name => l.sortName,
+    };
+
+class CustomerListScreen extends ConsumerStatefulWidget {
+  const CustomerListScreen({super.key});
+  @override
+  ConsumerState<CustomerListScreen> createState() => _CustomerListScreenState();
+}
+
+class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
+  late final TextEditingController _q = TextEditingController(text: ref.read(customerSearchProvider));
+
+  @override
+  void dispose() {
+    _q.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final f = ref.watch(fmtProvider);
+    final t = Theme.of(context).textTheme;
+    final cs = Theme.of(context).colorScheme;
+    final filter = ref.watch(customerFilterProvider);
+    final sort = ref.watch(customerSortProvider);
+    final list = ref.watch(filteredCustomersProvider);
+    final all = ref.watch(allCustomersProvider).value ?? const [];
+    final today = ref.watch(todayProvider);
+    int countFor(CustomerFilter x) => all.where((c) => matchesFilter(c, x, today: today)).length;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(l.customersTitle),
+        actions: [const SyncChip(), const SizedBox(width: Space.s8)],
+      ),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(Space.screen, 0, Space.screen, Space.s8),
+            child: TextField(
+              controller: _q,
+              onChanged: (v) => ref.read(customerSearchProvider.notifier).state = v,
+              style: t.bodyLarge,
+              decoration: InputDecoration(
+                hintText: l.customersSearch,
+                prefixIcon: const Icon(Icons.search_rounded),
+                suffixIcon: _q.text.isEmpty
+                    ? null
+                    : IconButton(
+                        tooltip: l.keypadClear,
+                        icon: const Icon(Icons.close_rounded),
+                        onPressed: () {
+                          _q.clear();
+                          ref.read(customerSearchProvider.notifier).state = '';
+                        },
+                      ),
+                border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(Radii.full)), borderSide: BorderSide.none),
+                enabledBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(Radii.full)), borderSide: BorderSide.none),
+                focusedBorder: OutlineInputBorder(borderRadius: const BorderRadius.all(Radius.circular(Radii.full)), borderSide: BorderSide(color: cs.primary, width: 2)),
+                fillColor: cs.surfaceContainerHigh,
+              ),
+            ),
+          ),
+          SizedBox(
+            height: 56,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: Space.screen, vertical: Space.s4),
+              children: [
+                for (final x in CustomerFilter.values.where((x) => x != CustomerFilter.mine))
+                  Padding(
+                    padding: const EdgeInsets.only(right: Space.s8),
+                    child: FilterChip(
+                      selected: filter == x,
+                      showCheckmark: false,
+                      label: Text(x == CustomerFilter.all ? filterLabel(l, x) : '${filterLabel(l, x)} ${f.num(countFor(x))}'),
+                      onSelected: (_) => ref.read(customerFilterProvider.notifier).state = x,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(Space.screen, Space.s4, Space.s4, 0),
+            child: Row(
+              children: [
+                Text(l.customersCount(f.num(list.value?.length ?? 0)), style: t.bodyMedium!.copyWith(color: cs.onSurfaceVariant)),
+                const Spacer(),
+                PopupMenuButton<CustomerSort>(
+                  initialValue: sort,
+                  onSelected: (s) => ref.read(customerSortProvider.notifier).state = s,
+                  itemBuilder: (_) => [for (final s in CustomerSort.values) PopupMenuItem(value: s, child: Text(sortLabel(l, s)))],
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: Space.s12, vertical: Space.s12),
+                    child: Row(children: [
+                      Icon(Icons.swap_vert_rounded, size: 20, color: cs.primary),
+                      const SizedBox(width: Space.s4),
+                      Text(sortLabel(l, sort), style: t.labelLarge!.copyWith(color: cs.primary)),
+                    ]),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: list.when(
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (e, _) => Center(child: Text(l.errorGeneric)),
+              data: (items) => items.isEmpty
+                  ? EmptyState(icon: Icons.person_search_rounded, title: l.customersEmpty, body: l.customersEmptyBody)
+                  : ListView.separated(
+                      padding: const EdgeInsets.only(bottom: 96),
+                      itemCount: items.length,
+                      separatorBuilder: (_, _) => const Divider(indent: 76, height: 1),
+                      itemBuilder: (_, i) => CustomerTile(customer: items[i], onTap: () => context.push('/customers/${items[i].id}')),
+                    ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

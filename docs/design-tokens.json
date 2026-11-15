@@ -1,0 +1,197 @@
+{
+  "version": "1.0.0",
+  "source": "admin-web/docs/03-design-guide.md §2 (canonical); must equal staff-app copy",
+  "color": {
+    "brand": {
+      "50": "#EEF3FF",
+      "100": "#DCE5FF",
+      "200": "#BACBFF",
+      "300": "#8EA8FF",
+      "400": "#5F7DF7",
+      "500": "#3D5AE8",
+      "600": "#2C44CC",
+      "700": "#2437A6",
+      "800": "#1F3085",
+      "900": "#1C2B6B",
+      "950": "#121A42"
+    },
+    "neutral": {
+      "0": "#FFFFFF",
+      "25": "#FBFCFD",
+      "50": "#F6F7F9",
+      "100": "#EDEFF3",
+      "200": "#DDE1E8",
+      "300": "#C4CAD4",
+      "400": "#98A1B0",
+      "500": "#6B7587",
+      "600": "#4D5666",
+      "700": "#374050",
+      "800": "#232A36",
+      "900": "#151A23",
+      "950": "#0B0E14"
+    },
+    "semantic": {
+      "success": {
+        "fg": "#166534",
+        "bg": "#E8F6EC",
+        "fgDark": "#4ADE80",
+        "bgDark": "#0F2A1A"
+      },
+      "warning": {
+        "fg": "#92400E",
+        "bg": "#FEF3C7",
+        "fgDark": "#FBBF24",
+        "bgDark": "#2E2208"
+      },
+      "danger": {
+        "fg": "#B91C1C",
+        "bg": "#FDECEC",
+        "fgDark": "#F87171",
+        "bgDark": "#2D1212"
+      },
+      "info": {
+        "fg": "#0369A1",
+        "bg": "#E6F4FB",
+        "fgDark": "#38BDF8",
+        "bgDark": "#0B2230"
+      }
+    },
+    "status": {
+      "overdue": {
+        "fg": "#C62828",
+        "bg": "#FDECEC",
+        "fgDark": "#F87171",
+        "bgDark": "#2D1212",
+        "icon": "clock-alert"
+      },
+      "dueToday": {
+        "fg": "#92400E",
+        "bg": "#FEF3C7",
+        "fgDark": "#FBBF24",
+        "bgDark": "#2E2208",
+        "icon": "calendar-clock"
+      },
+      "promised": {
+        "fg": "#6D28D9",
+        "bg": "#F1EAFE",
+        "fgDark": "#A78BFA",
+        "bgDark": "#1F1536",
+        "icon": "handshake"
+      },
+      "current": {
+        "fg": "#2C44CC",
+        "bg": "#EEF3FF",
+        "fgDark": "#7C93FA",
+        "bgDark": "#141B3D",
+        "icon": "circle-dot"
+      },
+      "paid": {
+        "fg": "#166534",
+        "bg": "#E8F6EC",
+        "fgDark": "#4ADE80",
+        "bgDark": "#0F2A1A",
+        "icon": "badge-check"
+      },
+      "badSuggested": {
+        "fg": "#C2410C",
+        "bg": "#FFF1E8",
+        "border": "dashed #C2410C",
+        "fgDark": "#FB923C",
+        "bgDark": "#2E1A0C",
+        "icon": "flag-outline"
+      },
+      "tagged": {
+        "fg": "#FFFFFF",
+        "bg": "#7F1D1D",
+        "fgDark": "#FFFFFF",
+        "bgDark": "#B91C1C",
+        "icon": "flag-filled"
+      },
+      "pending": {
+        "fg": "#475569",
+        "bg": "#EEF1F5",
+        "fgDark": "#A9B1BF",
+        "bgDark": "#1A2030",
+        "icon": "cloud-upload"
+      },
+      "mock": {
+        "fg": "#9D174D",
+        "bg": "#FCE7F3",
+        "fgDark": "#F472B6",
+        "bgDark": "#2E1020",
+        "icon": "shield-alert"
+      }
+    },
+    "dark": {
+      "background": "#0B0E14",
+      "surface": "#121722",
+      "raised": "#1A2030",
+      "border": "#262E3F",
+      "text": "#E7EAF0",
+      "textSecondary": "#A9B1BF",
+      "primary": "#7C93FA"
+    },
+    "chart": [
+      "#2C44CC",
+      "#0EA5A4",
+      "#F59E0B",
+      "#DB2777",
+      "#7C3AED",
+      "#65A30D",
+      "#0284C7",
+      "#EA580C"
+    ],
+    "paymentMethod": {
+      "cash": "#2C44CC",
+      "bkash": "#DB2777",
+      "nagad": "#EA580C",
+      "rocket": "#7C3AED",
+      "bank_transfer": "#0EA5A4",
+      "other_mobile": "#64748B"
+    }
+  },
+  "font": {
+    "sans": [
+      "Inter",
+      "Noto Sans Bengali"
+    ],
+    "displayBn": "Hind Siliguri",
+    "mono": "JetBrains Mono",
+    "bnLineHeightMultiplier": 1.15
+  },
+  "space": [
+    0,
+    2,
+    4,
+    8,
+    12,
+    16,
+    20,
+    24,
+    32,
+    40,
+    48,
+    64
+  ],
+  "radius": {
+    "xs": 4,
+    "sm": 6,
+    "md": 8,
+    "lg": 12,
+    "xl": 16,
+    "xxl": 28,
+    "full": 9999
+  },
+  "motion": {
+    "fastMs": 120,
+    "baseMs": 200,
+    "slowMs": 300,
+    "standard": "cubic-bezier(.2,0,0,1)",
+    "emphasized": "cubic-bezier(.3,0,0,1)"
+  },
+  "touchTarget": {
+    "appDp": 48,
+    "webCoarsePx": 44,
+    "webFinePx": 40
+  }
+}

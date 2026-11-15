@@ -1,0 +1,1382 @@
+// ignore: unused_import
+import 'package:intl/intl.dart' as intl;
+
+import 'app_localizations.dart';
+
+// ignore_for_file: type=lint
+
+/// The translations for English (`en`).
+class AppLocalizationsEn extends AppLocalizations {
+  AppLocalizationsEn([String locale = 'en']) : super(locale);
+
+  @override
+  String get appName => 'Howlader Field';
+
+  @override
+  String get appTagline => 'Field collection & visits';
+
+  @override
+  String get navToday => 'Today';
+
+  @override
+  String get navCustomers => 'Customers';
+
+  @override
+  String get navMap => 'Map';
+
+  @override
+  String get navMe => 'Me';
+
+  @override
+  String get actionCollect => 'Collect';
+
+  @override
+  String get actionVisit => 'Visit';
+
+  @override
+  String get actionPromise => 'Promise';
+
+  @override
+  String get actionNote => 'Note';
+
+  @override
+  String get actionCall => 'Call';
+
+  @override
+  String get actionNavigate => 'Navigate';
+
+  @override
+  String get actionDetails => 'Details';
+
+  @override
+  String get actionSave => 'Save';
+
+  @override
+  String get actionCancel => 'Cancel';
+
+  @override
+  String get actionContinue => 'Continue';
+
+  @override
+  String get actionBack => 'Back';
+
+  @override
+  String get actionDone => 'Done';
+
+  @override
+  String get actionRetry => 'Try again';
+
+  @override
+  String get actionSyncNow => 'Sync now';
+
+  @override
+  String get actionAccept => 'Accept';
+
+  @override
+  String get actionReject => 'Reject';
+
+  @override
+  String get actionUndo => 'Undo';
+
+  @override
+  String get actionChange => 'Change';
+
+  @override
+  String get actionSeeAll => 'See all';
+
+  @override
+  String get actionShareReceipt => 'Share receipt';
+
+  @override
+  String get actionNewPromise => 'New promise';
+
+  @override
+  String get loginTitle => 'Sign in';
+
+  @override
+  String get loginSubtitle =>
+      'Use the phone number and password from your branch manager';
+
+  @override
+  String get loginPhone => 'Phone number';
+
+  @override
+  String get loginPassword => 'Password';
+
+  @override
+  String get loginButton => 'Sign in';
+
+  @override
+  String get loginErrorInvalid => 'Phone number or password is wrong';
+
+  @override
+  String get loginErrorNetwork =>
+      'No internet. The first sign-in needs internet.';
+
+  @override
+  String get loginErrorLocked => 'Account locked. Contact your branch manager.';
+
+  @override
+  String get loginDemoHint => 'Demo: 01712345678 / demo1234';
+
+  @override
+  String get showPassword => 'Show password';
+
+  @override
+  String get hidePassword => 'Hide password';
+
+  @override
+  String get changePasswordTitle => 'Set a new password';
+
+  @override
+  String get changePasswordBody =>
+      'For your security, choose a new password before you start.';
+
+  @override
+  String get changePasswordCurrent => 'Current password';
+
+  @override
+  String get changePasswordNew => 'New password (at least 8 characters)';
+
+  @override
+  String get changePasswordConfirm => 'Confirm new password';
+
+  @override
+  String get changePasswordMismatch => 'The two passwords do not match';
+
+  @override
+  String get changePasswordTooShort => 'Use at least 8 characters';
+
+  @override
+  String get changePasswordWrong => 'Current password is wrong';
+
+  @override
+  String get changePasswordOnline => 'Changing the password needs internet';
+
+  @override
+  String get pinSetupTitle => 'Set a 4-digit PIN';
+
+  @override
+  String get pinSetupBody =>
+      'You will use this PIN to open the app quickly. It stays on this phone.';
+
+  @override
+  String get pinConfirmTitle => 'Enter the PIN again';
+
+  @override
+  String get pinMismatch => 'PINs did not match. Try again.';
+
+  @override
+  String get pinWeak => 'Too easy to guess. Avoid 1234 or 1111.';
+
+  @override
+  String get pinUnlockTitle => 'Enter your PIN';
+
+  @override
+  String pinUnlockGreeting(String name) {
+    return 'Welcome back, $name';
+  }
+
+  @override
+  String pinWrong(int left) {
+    return 'Wrong PIN. $left tries left.';
+  }
+
+  @override
+  String get pinLockedOut =>
+      'Too many wrong PINs. Sign in with your password. Your saved work is safe.';
+
+  @override
+  String get pinForgot => 'Forgot PIN? Sign in with password';
+
+  @override
+  String get keypadBackspace => 'Delete';
+
+  @override
+  String get keypadClear => 'Clear';
+
+  @override
+  String get consentTitle => 'What this app records';
+
+  @override
+  String get consentIntro => 'Please read this before you start work.';
+
+  @override
+  String get consentDutyOnly =>
+      'Location is recorded only while you are on duty (from work-in to work-out). Never outside duty hours.';
+
+  @override
+  String get consentWhy =>
+      'It is used to show visits on the map, confirm collections and plan routes.';
+
+  @override
+  String get consentVisible =>
+      'When tracking is on you will always see a notification and a status chip.';
+
+  @override
+  String get consentPhotos =>
+      'Photos are taken only with the camera, with date, time and place.';
+
+  @override
+  String get consentRetention => 'Location points are deleted after 90 days.';
+
+  @override
+  String get consentAgree => 'I understand and agree';
+
+  @override
+  String consentVersion(String version) {
+    return 'Privacy notice $version';
+  }
+
+  @override
+  String get primerTitle => 'Allow these on your phone';
+
+  @override
+  String get primerBody =>
+      'The app needs a few permissions to work in the field.';
+
+  @override
+  String get primerLocation => 'Location';
+
+  @override
+  String get primerLocationBody =>
+      'To attach your position to collections and visits. Choose \"Allow all the time\" so duty tracking works with the screen off.';
+
+  @override
+  String get primerCamera => 'Camera';
+
+  @override
+  String get primerCameraBody =>
+      'For visit and deposit-slip photos. The gallery is never used.';
+
+  @override
+  String get primerNotifications => 'Notifications';
+
+  @override
+  String get primerNotificationsBody =>
+      'For promise reminders and messages from your manager.';
+
+  @override
+  String get primerBattery => 'Battery optimisation';
+
+  @override
+  String get primerBatteryBody =>
+      'Some phones stop apps in the background. We will show you how to keep this app running during duty.';
+
+  @override
+  String get primerAllow => 'Allow';
+
+  @override
+  String get primerAllowed => 'Allowed';
+
+  @override
+  String get primerLater => 'Later';
+
+  @override
+  String get bootstrapTitle => 'Getting your customers';
+
+  @override
+  String get bootstrapBody =>
+      'Downloading your assigned customers so you can work offline.';
+
+  @override
+  String get bootstrapFailed =>
+      'Could not download. Check internet and try again.';
+
+  @override
+  String greetingMorning(String name) {
+    return 'Good morning, $name';
+  }
+
+  @override
+  String greetingAfternoon(String name) {
+    return 'Good afternoon, $name';
+  }
+
+  @override
+  String greetingEvening(String name) {
+    return 'Good evening, $name';
+  }
+
+  @override
+  String get syncSynced => 'Synced';
+
+  @override
+  String get syncSyncing => 'Syncing…';
+
+  @override
+  String syncQueued(String count) {
+    return '$count waiting';
+  }
+
+  @override
+  String syncProblems(String count) {
+    return '$count problems';
+  }
+
+  @override
+  String get syncOffline => 'Offline';
+
+  @override
+  String get savedOnPhone => 'Saved on phone · will sync';
+
+  @override
+  String get reachedServer => 'Reached the server';
+
+  @override
+  String get dutyOff => 'Off duty';
+
+  @override
+  String get dutyOn => 'On duty';
+
+  @override
+  String dutyOnSince(String time) {
+    return 'On duty · since $time';
+  }
+
+  @override
+  String get dutyOnBreak => 'On break';
+
+  @override
+  String dutyBreakSince(String duration) {
+    return 'On break · $duration';
+  }
+
+  @override
+  String get dutyTracking => 'Tracking on';
+
+  @override
+  String get dutyStartWork => 'Start work';
+
+  @override
+  String get dutyEndWork => 'End work';
+
+  @override
+  String get dutyStartBreak => 'Start break';
+
+  @override
+  String get dutyEndBreak => 'End break';
+
+  @override
+  String get dutyNotStarted => 'You have not started work today';
+
+  @override
+  String dutyEnded(String time) {
+    return 'Work ended at $time';
+  }
+
+  @override
+  String get todayCollected => 'Collected today';
+
+  @override
+  String todayOfTarget(String target) {
+    return 'of $target';
+  }
+
+  @override
+  String get todayVisits => 'Visits';
+
+  @override
+  String get todayCashOnHand => 'Cash on hand';
+
+  @override
+  String todayProblemsBanner(String count) {
+    return '$count problems need your attention';
+  }
+
+  @override
+  String todayHandoverBanner(String name) {
+    return '$name is handing customers to you';
+  }
+
+  @override
+  String get todayPromisedSection => 'Promised today';
+
+  @override
+  String get todayDueSection => 'Due today';
+
+  @override
+  String get todayOverdueSection => 'Overdue · nearest first';
+
+  @override
+  String get todayAllDone => 'All caught up';
+
+  @override
+  String get todayAllDoneBody => 'No promises or dues left for today.';
+
+  @override
+  String todayCashWarning(String pct) {
+    return 'Cash on hand is $pct% of your limit. Please deposit soon.';
+  }
+
+  @override
+  String get customersTitle => 'Customers';
+
+  @override
+  String get customersSearch => 'Search name, phone or code';
+
+  @override
+  String get filterAll => 'All';
+
+  @override
+  String get filterDueToday => 'Due today';
+
+  @override
+  String get filterOverdue => 'Overdue';
+
+  @override
+  String get filterPromisedToday => 'Promised today';
+
+  @override
+  String get filterMine => 'Mine';
+
+  @override
+  String get filterBadSuggested => 'Possibly bad';
+
+  @override
+  String get filterTagged => 'Tagged';
+
+  @override
+  String get filterNoPin => 'No pin';
+
+  @override
+  String get sortBy => 'Sort';
+
+  @override
+  String get sortDistance => 'Nearest';
+
+  @override
+  String get sortDaysOverdue => 'Most overdue';
+
+  @override
+  String get sortAmount => 'Highest balance';
+
+  @override
+  String get sortName => 'Name';
+
+  @override
+  String get customersEmpty => 'No customers match';
+
+  @override
+  String get customersEmptyBody => 'Try another filter or search.';
+
+  @override
+  String customersCount(String count) {
+    return '$count customers';
+  }
+
+  @override
+  String get statusOverdue => 'Overdue';
+
+  @override
+  String statusOverdueDays(String days) {
+    return '$days days overdue';
+  }
+
+  @override
+  String get statusDueToday => 'Due today';
+
+  @override
+  String get statusPromised => 'Promised';
+
+  @override
+  String get statusCurrent => 'Current';
+
+  @override
+  String get statusPaid => 'Paid up';
+
+  @override
+  String get statusBadSuggested => 'Possibly bad';
+
+  @override
+  String get statusTagged => 'Tagged';
+
+  @override
+  String get statusPending => 'Pending';
+
+  @override
+  String get statusMock => 'Fake GPS';
+
+  @override
+  String get statusQueued => 'On phone';
+
+  @override
+  String get statusSent => 'Waiting for ERP';
+
+  @override
+  String get statusPosted => 'Posted';
+
+  @override
+  String get statusConflict => 'Manager is reviewing';
+
+  @override
+  String get statusRejected => 'Not accepted';
+
+  @override
+  String get statusResolved => 'Resolved';
+
+  @override
+  String get statusVoided => 'Voided';
+
+  @override
+  String get detailOutstanding => 'Total outstanding';
+
+  @override
+  String detailAsOfErp(String time) {
+    return 'As per ERP · $time';
+  }
+
+  @override
+  String detailPendingField(String amount) {
+    return 'Your $amount is waiting to post in ERP';
+  }
+
+  @override
+  String get detailPlans => 'Plans';
+
+  @override
+  String get detailInstallment => 'Installment';
+
+  @override
+  String detailInstallments(String paid, String total) {
+    return '$paid of $total paid';
+  }
+
+  @override
+  String detailFinalDue(String date) {
+    return 'Final due $date';
+  }
+
+  @override
+  String get detailSchedule => 'Schedule';
+
+  @override
+  String get detailTimeline => 'Timeline';
+
+  @override
+  String get detailNotes => 'Notes';
+
+  @override
+  String get detailVisits => 'Visits';
+
+  @override
+  String get detailPromises => 'Promises';
+
+  @override
+  String get detailGuarantor => 'Guarantor';
+
+  @override
+  String get detailNoPin => 'No map pin for this customer';
+
+  @override
+  String get detailBadSuggestion => 'Possibly bad customer';
+
+  @override
+  String detailBadSuggestionBody(String date, String amount) {
+    return 'Final due date passed on $date with $amount outstanding. This is only a suggestion.';
+  }
+
+  @override
+  String detailTaggedBy(String name, String reason) {
+    return 'Tagged by $name: $reason';
+  }
+
+  @override
+  String detailOpenPromise(String amount, String date) {
+    return 'Promised $amount on $date';
+  }
+
+  @override
+  String get detailNothingYet => 'Nothing here yet';
+
+  @override
+  String get scheduleDue => 'Due';
+
+  @override
+  String get schedulePaid => 'Paid';
+
+  @override
+  String get scheduleOverdue => 'Overdue';
+
+  @override
+  String get scheduleUpcoming => 'Upcoming';
+
+  @override
+  String get schedulePartial => 'Partly paid';
+
+  @override
+  String timelineErpPayment(String amount, String source) {
+    return 'Paid $amount at $source';
+  }
+
+  @override
+  String get timelineOffice => 'office';
+
+  @override
+  String get timelineField => 'field';
+
+  @override
+  String timelineCollection(String amount) {
+    return 'Collected $amount';
+  }
+
+  @override
+  String timelineVisit(String outcome) {
+    return 'Visit · $outcome';
+  }
+
+  @override
+  String timelinePromise(String amount, String date) {
+    return 'Promise $amount for $date';
+  }
+
+  @override
+  String get collectTitle => 'Collect payment';
+
+  @override
+  String get collectStepAmount => 'Amount';
+
+  @override
+  String get collectStepMethod => 'Method';
+
+  @override
+  String get collectStepReview => 'Review';
+
+  @override
+  String collectChipInstallment(String amount) {
+    return 'Installment $amount';
+  }
+
+  @override
+  String collectChipOverdue(String amount) {
+    return 'Overdue $amount';
+  }
+
+  @override
+  String collectChipPromise(String amount) {
+    return 'Promise $amount';
+  }
+
+  @override
+  String get collectOverOutstanding =>
+      'More than the outstanding balance. It will be flagged for review.';
+
+  @override
+  String get collectEnterAmount => 'Enter amount';
+
+  @override
+  String get collectMethodCash => 'Cash';
+
+  @override
+  String get collectMethodBkash => 'bKash';
+
+  @override
+  String get collectMethodNagad => 'Nagad';
+
+  @override
+  String get collectMethodRocket => 'Rocket';
+
+  @override
+  String get collectMethodBank => 'Bank';
+
+  @override
+  String get collectMethodOther => 'Other';
+
+  @override
+  String get collectTxnId => 'Transaction ID';
+
+  @override
+  String get collectTxnInvalid =>
+      'Check the transaction ID (letters and numbers, 8–20)';
+
+  @override
+  String get collectPhysicalReceipt => 'Paper receipt no. (optional)';
+
+  @override
+  String get collectPayerName => 'Paid by (if not the customer)';
+
+  @override
+  String get collectNote => 'Note (optional)';
+
+  @override
+  String get collectReviewCustomer => 'Customer';
+
+  @override
+  String get collectReviewPlan => 'Plan';
+
+  @override
+  String get collectReviewAmount => 'Amount';
+
+  @override
+  String get collectReviewMethod => 'Method';
+
+  @override
+  String get collectReviewReceipt => 'Receipt no.';
+
+  @override
+  String collectGpsAccurate(String meters) {
+    return 'Location $meters m accurate';
+  }
+
+  @override
+  String get collectGpsSearching => 'Finding location…';
+
+  @override
+  String get collectGpsNone => 'No location. It will be saved and flagged.';
+
+  @override
+  String get collectGpsMock => 'Fake location detected. It will be flagged.';
+
+  @override
+  String get collectHoldToConfirm => 'Hold to confirm';
+
+  @override
+  String get collectHoldHint => 'Keep holding…';
+
+  @override
+  String get collectSuccessTitle => 'Collection saved';
+
+  @override
+  String get collectCashLimitBlocked =>
+      'Cash on hand is over your limit. Deposit cash before collecting more.';
+
+  @override
+  String get collectNoReceipts =>
+      'No receipt numbers left. Connect to the internet once.';
+
+  @override
+  String get collectOfflineReceipt =>
+      'Offline receipt number used. It will be reviewed.';
+
+  @override
+  String get receiptTitle => 'Field receipt';
+
+  @override
+  String get receiptPendingErp => 'Waiting to post in ERP';
+
+  @override
+  String get receiptCollector => 'Collected by';
+
+  @override
+  String get receiptHotline => 'Hotline';
+
+  @override
+  String get visitTitle => 'Visit check-in';
+
+  @override
+  String get visitOutcome => 'What happened?';
+
+  @override
+  String get visitOutcomePaid => 'Paid';
+
+  @override
+  String get visitOutcomePartial => 'Paid part';
+
+  @override
+  String get visitOutcomePromised => 'Promised';
+
+  @override
+  String get visitOutcomeNotHome => 'Not at home';
+
+  @override
+  String get visitOutcomeRefused => 'Refused';
+
+  @override
+  String get visitOutcomeShifted => 'Moved address';
+
+  @override
+  String get visitOutcomeDead => 'Customer died';
+
+  @override
+  String get visitOutcomeReturn => 'Wants to return product';
+
+  @override
+  String get visitOutcomeOther => 'Other';
+
+  @override
+  String get visitTakePhoto => 'Take photo';
+
+  @override
+  String get visitRetake => 'Retake';
+
+  @override
+  String get visitPhotoAdded => 'Photo added';
+
+  @override
+  String get visitCameraOnly => 'Camera only. The gallery cannot be used.';
+
+  @override
+  String get visitSaved => 'Visit saved';
+
+  @override
+  String visitFar(String distance) {
+    return 'You are $distance from the customer pin';
+  }
+
+  @override
+  String get promiseTitle => 'Promise to pay';
+
+  @override
+  String get promiseDate => 'Date';
+
+  @override
+  String get promiseAmount => 'Amount';
+
+  @override
+  String get promiseToday => 'Today';
+
+  @override
+  String get promiseTomorrow => 'Tomorrow';
+
+  @override
+  String get promiseIn3 => 'In 3 days';
+
+  @override
+  String get promiseIn7 => 'In 7 days';
+
+  @override
+  String get promisePickDate => 'Pick date';
+
+  @override
+  String get promiseReminder => 'You will get a reminder at 9:00 AM that day.';
+
+  @override
+  String get promiseSaved => 'Promise saved';
+
+  @override
+  String get noteTitle => 'Add note';
+
+  @override
+  String get noteHint => 'Write what happened…';
+
+  @override
+  String get noteCategory => 'Type';
+
+  @override
+  String get noteCatGeneral => 'General';
+
+  @override
+  String get noteCatAddress => 'Address';
+
+  @override
+  String get noteCatFamily => 'Family';
+
+  @override
+  String get noteCatPayment => 'Payment';
+
+  @override
+  String get noteSaved => 'Note saved';
+
+  @override
+  String get tagTitle => 'Tag as bad customer';
+
+  @override
+  String get untagTitle => 'Remove tag';
+
+  @override
+  String get tagReason => 'Reason';
+
+  @override
+  String get tagReasonLongOverdue => 'Long overdue';
+
+  @override
+  String get tagReasonAbsconded => 'Absconded';
+
+  @override
+  String get tagReasonRefuses => 'Refuses to pay';
+
+  @override
+  String get tagReasonOther => 'Other';
+
+  @override
+  String get tagReasonHint => 'Explain (at least 10 characters)';
+
+  @override
+  String get tagSaved => 'Tag saved · manager will review';
+
+  @override
+  String get meTitle => 'Me';
+
+  @override
+  String get meAttendance => 'Attendance';
+
+  @override
+  String get meCash => 'Cash';
+
+  @override
+  String get meHandovers => 'Handovers';
+
+  @override
+  String get meSyncCentre => 'Sync centre';
+
+  @override
+  String get meSettings => 'Settings';
+
+  @override
+  String get meLogout => 'Sign out';
+
+  @override
+  String meInToday(String time) {
+    return 'In $time';
+  }
+
+  @override
+  String meBreakTotal(String duration) {
+    return 'Break $duration';
+  }
+
+  @override
+  String meLate(String minutes) {
+    return 'Late $minutes min';
+  }
+
+  @override
+  String get cashOnHand => 'On hand';
+
+  @override
+  String cashLimit(String amount) {
+    return 'Limit $amount';
+  }
+
+  @override
+  String get cashDeposit => 'Record deposit';
+
+  @override
+  String get cashDepositTitle => 'Cash deposit';
+
+  @override
+  String get cashDepositTo => 'Deposited to';
+
+  @override
+  String get cashDestCashier => 'Branch cashier';
+
+  @override
+  String get cashDestBank => 'Bank';
+
+  @override
+  String get cashDestManager => 'Manager';
+
+  @override
+  String get cashReference => 'Reference / slip no.';
+
+  @override
+  String get cashDepositSaved => 'Deposit saved · waiting for verification';
+
+  @override
+  String get cashDeposits => 'Deposits';
+
+  @override
+  String get cashNoDeposits => 'No deposits yet';
+
+  @override
+  String get cashTodayCash => 'Cash today';
+
+  @override
+  String get cashTodayMobile => 'Mobile today';
+
+  @override
+  String get syncCentreTitle => 'Sync centre';
+
+  @override
+  String syncLastSuccess(String time) {
+    return 'Last synced $time';
+  }
+
+  @override
+  String get syncNever => 'Not synced yet';
+
+  @override
+  String syncOldest(String time) {
+    return 'Oldest waiting item: $time';
+  }
+
+  @override
+  String get syncWaitingTitle => 'Waiting to upload';
+
+  @override
+  String get syncNothingWaiting => 'Everything is uploaded';
+
+  @override
+  String get syncProblemsTitle => 'Problems';
+
+  @override
+  String get syncNoProblems => 'No problems';
+
+  @override
+  String get syncProblemManager => 'Your manager has been notified.';
+
+  @override
+  String get syncProblemMoneyHint =>
+      'Money items are never deleted. Contact your manager.';
+
+  @override
+  String get syncEntityCollection => 'Collections';
+
+  @override
+  String get syncEntityVisit => 'Visits';
+
+  @override
+  String get syncEntityNote => 'Notes';
+
+  @override
+  String get syncEntityPromise => 'Promises';
+
+  @override
+  String get syncEntityDeposit => 'Deposits';
+
+  @override
+  String get syncEntityAttendance => 'Attendance';
+
+  @override
+  String get syncEntityTag => 'Tags';
+
+  @override
+  String get syncEntityOther => 'Other';
+
+  @override
+  String get syncDetails => 'Details';
+
+  @override
+  String get settingsTitle => 'Settings';
+
+  @override
+  String get settingsLanguage => 'Language';
+
+  @override
+  String get settingsDigits => 'Numbers';
+
+  @override
+  String get settingsDigitsBn => 'বাংলা ১২৩';
+
+  @override
+  String get settingsDigitsEn => 'English 123';
+
+  @override
+  String get settingsTheme => 'Theme';
+
+  @override
+  String get settingsThemeSystem => 'System';
+
+  @override
+  String get settingsThemeLight => 'Light';
+
+  @override
+  String get settingsThemeDark => 'Dark';
+
+  @override
+  String get settingsHighContrast => 'High contrast (for sunlight)';
+
+  @override
+  String get settingsPrivacy => 'Privacy notice';
+
+  @override
+  String get settingsAbout => 'About';
+
+  @override
+  String settingsVersion(String version) {
+    return 'Version $version';
+  }
+
+  @override
+  String get logoutTitle => 'Sign out?';
+
+  @override
+  String logoutBlocked(String count) {
+    return '$count items are not uploaded yet. Connect to the internet and sync first. Nothing will be deleted.';
+  }
+
+  @override
+  String get logoutConfirm => 'All data on this phone will be removed.';
+
+  @override
+  String get handoverTitle => 'Handover';
+
+  @override
+  String handoverFrom(String name) {
+    return 'From $name';
+  }
+
+  @override
+  String get handoverCustomers => 'Customers';
+
+  @override
+  String get handoverOutstanding => 'Outstanding';
+
+  @override
+  String get handoverOverdue => 'Overdue';
+
+  @override
+  String get handoverOpenPromises => 'Open promises';
+
+  @override
+  String handoverExpires(String time) {
+    return 'Respond by $time';
+  }
+
+  @override
+  String get handoverNeedsInternet => 'Internet is needed to accept or reject';
+
+  @override
+  String get handoverAccepted => 'Handover accepted';
+
+  @override
+  String get handoverRejected => 'Handover rejected';
+
+  @override
+  String get handoverNone => 'No handovers';
+
+  @override
+  String get workInTitle => 'Start your day';
+
+  @override
+  String get workInBody =>
+      'Your location is recorded from now until you end work.';
+
+  @override
+  String get workOutTitle => 'End of day';
+
+  @override
+  String workOutUnsynced(String count) {
+    return '$count items not uploaded yet. They are safe on your phone and will upload when online.';
+  }
+
+  @override
+  String get workOutCollections => 'Collections';
+
+  @override
+  String get workOutCash => 'Cash';
+
+  @override
+  String get workOutMobile => 'Mobile';
+
+  @override
+  String get workOutVisits => 'Visits';
+
+  @override
+  String get workOutPromises => 'Promises made';
+
+  @override
+  String get updateTitle => 'Update required';
+
+  @override
+  String get updateBody =>
+      'A newer version is needed. Your saved work stays on the phone and will upload after the update.';
+
+  @override
+  String get updateButton => 'Update';
+
+  @override
+  String get errorGeneric => 'Something went wrong';
+
+  @override
+  String get errorNeedsInternet => 'Internet required';
+
+  @override
+  String get offlineSaved => 'No internet — saved on phone';
+
+  @override
+  String get demoBanner => 'Demo mode · sample data';
+
+  @override
+  String get required => 'Required';
+
+  @override
+  String get actionTag => 'Tag';
+
+  @override
+  String get actionUntag => 'Remove tag';
+
+  @override
+  String get tagSeverity => 'Level';
+
+  @override
+  String get tagSeverityWatch => 'Watch';
+
+  @override
+  String get tagSeverityBad => 'Bad';
+
+  @override
+  String get tagSeverityLegal => 'Legal action';
+
+  @override
+  String get tagReasonBrokenPromise => 'Broke promises again and again';
+
+  @override
+  String get tagReasonFraud => 'Fraud suspected';
+
+  @override
+  String get tagReasonCleared => 'Has paid up';
+
+  @override
+  String get tagReasonMistake => 'Tagged by mistake';
+
+  @override
+  String get tagReasonTooShort => 'Write at least 10 characters';
+
+  @override
+  String get untagSaved => 'Tag removal sent · manager will review';
+
+  @override
+  String get tagPendingReview => 'Waiting for manager review';
+
+  @override
+  String get promiseCancel => 'Cancel promise';
+
+  @override
+  String get promiseCancelled => 'Promise cancelled';
+
+  @override
+  String get promiseNote => 'Note (optional)';
+
+  @override
+  String promiseReplaces(String amount, String date) {
+    return 'This replaces the current promise of $amount on $date.';
+  }
+
+  @override
+  String get promiseStatusOpen => 'Open';
+
+  @override
+  String get promiseStatusKept => 'Kept';
+
+  @override
+  String get promiseStatusPartial => 'Partly kept';
+
+  @override
+  String get promiseStatusBroken => 'Broken';
+
+  @override
+  String get promiseStatusCancelled => 'Cancelled';
+
+  @override
+  String get promiseStatusSuperseded => 'Replaced';
+
+  @override
+  String reminderTitle(String name) {
+    return 'Promise today: $name';
+  }
+
+  @override
+  String reminderBody(String amount) {
+    return '$amount promised for today.';
+  }
+
+  @override
+  String get handoverReasonHint =>
+      'Why are you rejecting? (at least 10 characters)';
+
+  @override
+  String handoverReason(String reason) {
+    return 'Reason: $reason';
+  }
+
+  @override
+  String get handoverStatusPending => 'Waiting for you';
+
+  @override
+  String get handoverStatusAccepted => 'Accepted';
+
+  @override
+  String get handoverStatusRejected => 'Rejected';
+
+  @override
+  String get handoverStatusOther => 'Closed';
+
+  @override
+  String get handoverOpenConflicts => 'Open problems';
+
+  @override
+  String syncProblemRejected(String reason) {
+    return 'Not accepted: $reason';
+  }
+
+  @override
+  String syncProblemConflict(String reason) {
+    return 'Needs office check: $reason';
+  }
+
+  @override
+  String syncWaitingSince(String count, String time) {
+    return '$count items · since $time';
+  }
+
+  @override
+  String get syncMediaTitle => 'Photos waiting';
+
+  @override
+  String syncMediaCount(String count) {
+    return '$count photos';
+  }
+
+  @override
+  String get syncRetryAll => 'Retry problems';
+
+  @override
+  String get syncBlockedUpgrade => 'Update the app to continue syncing';
+
+  @override
+  String get settingsLanguageBn => 'বাংলা';
+
+  @override
+  String get settingsLanguageEn => 'English';
+
+  @override
+  String settingsDevice(String id) {
+    return 'Device $id';
+  }
+
+  @override
+  String meStaffCode(String code) {
+    return 'Staff code $code';
+  }
+
+  @override
+  String meBranch(String branch) {
+    return '$branch branch';
+  }
+
+  @override
+  String get logoutButton => 'Sign out and remove data';
+
+  @override
+  String get mapNoPins => 'No customers with a map pin';
+
+  @override
+  String get mapTilesOffline => 'Map needs internet · pins still shown';
+
+  @override
+  String get mapMyLocation => 'My location';
+
+  @override
+  String mapPinsCount(String count) {
+    return '$count on map';
+  }
+
+  @override
+  String get mapAttribution => 'Map data © OpenStreetMap contributors';
+
+  @override
+  String get todayNotifications => 'Notifications';
+
+  @override
+  String get todayProgressTitle => 'Today\'s progress';
+
+  @override
+  String get todayNoTarget => 'No target set';
+
+  @override
+  String get todayCollectFab => 'Collect';
+
+  @override
+  String todayMore(String count) {
+    return '$count more';
+  }
+
+  @override
+  String todayReceiptsLow(String count) {
+    return 'Only $count receipt numbers left. Connect to get more.';
+  }
+
+  @override
+  String get actionMore => 'More';
+}

@@ -1,0 +1,4 @@
+tags:
+  screenshots:
+    # Golden screenshots of key screens; regenerate with --update-goldens.
+    timeout: 2x

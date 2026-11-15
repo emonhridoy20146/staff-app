@@ -1,0 +1,97 @@
+import 'dart:convert';
+
+import 'package:drift/drift.dart';
+
+import '../api/api_models.dart';
+import '../db/app_database.dart';
+import '../time/clock.dart';
+
+/// Write side of the offline sync engine (04-architecture §5.1).
+///
+/// Use cases call [enqueue] **inside the same DB transaction** that writes
+/// the local entity, so the entity and its mutation are saved atomically.
+/// The mutation id is the entity's clientId (UUIDv7 created once at save time)
+/// and is the server's idempotency key — never regenerate it.
+class OutboxWriter {
+  OutboxWriter(this._db, this._clock);
+  final AppDatabase _db;
+  final Clock _clock;
+
+  Future<void> enqueue({
+    required String mutationId,
+    required String entity,
+    required Json payload,
+    String op = 'create',
+    List<String> dependsOn = const [],
+  }) async {
+    assert(SyncMutation.entities.contains(entity), 'Unknown mutation entity "$entity" — add it to the contract first');
+    await _db.into(_db.outbox).insert(
+          OutboxCompanion.insert(
+            mutationId: mutationId,
+            entity: entity,
+            op: op,
+            payloadJson: jsonEncode(payload),
+            dependsOnJson: Value(jsonEncode(dependsOn)),
+            createdAt: _clock.nowUtc(),
+          ),
+          // Same id twice = same mutation: keep the original (idempotent save).
+          mode: InsertMode.insertOrIgnore,
+        );
+  }
+}
+
+/// Read helpers for UI (counts, problems) — streams from the local DB.
+class OutboxReader {
+  OutboxReader(this._db);
+  final AppDatabase _db;
+
+  Stream<int> watchPendingCount() {
+    final c = _db.outbox.mutationId.count();
+    final q = _db.selectOnly(_db.outbox)
+      ..addColumns([c])
+      ..where(_db.outbox.state.isIn(['pending', 'sending']));
+    return q.map((r) => r.read(c) ?? 0).watchSingle();
+  }
+
+  Stream<int> watchFailedCount() {
+    final c = _db.outbox.mutationId.count();
+    final q = _db.selectOnly(_db.outbox)
+      ..addColumns([c])
+      ..where(_db.outbox.state.equals('failed'));
+    return q.map((r) => r.read(c) ?? 0).watchSingle();
+  }
+
+  /// Counts of unsent mutations by entity (sync centre).
+  Stream<Map<String, int>> watchPendingByEntity() {
+    final c = _db.outbox.mutationId.count();
+    final q = _db.selectOnly(_db.outbox)
+      ..addColumns([_db.outbox.entity, c])
+      ..where(_db.outbox.state.isIn(['pending', 'sending', 'failed']))
+      ..groupBy([_db.outbox.entity]);
+    return q.watch().map((rows) => {for (final r in rows) r.read(_db.outbox.entity)!: r.read(c) ?? 0});
+  }
+
+  Stream<DateTime?> watchOldestPending() {
+    final m = _db.outbox.createdAt.min();
+    final q = _db.selectOnly(_db.outbox)
+      ..addColumns([m])
+      ..where(_db.outbox.state.isIn(['pending', 'sending', 'failed']));
+    return q.map((r) => r.read(m)).watchSingle();
+  }
+
+  Stream<List<OutboxRow>> watchFailed() =>
+      (_db.select(_db.outbox)..where((t) => t.state.equals('failed'))..orderBy([(t) => OrderingTerm.asc(t.createdAt)])).watch();
+
+  Future<int> unsyncedCount() async {
+    final c = _db.outbox.mutationId.count();
+    final q = _db.selectOnly(_db.outbox)
+      ..addColumns([c])
+      ..where(_db.outbox.state.isIn(['pending', 'sending', 'failed']));
+    final m = _db.mediaQueue.clientId.count();
+    final mq = _db.selectOnly(_db.mediaQueue)
+      ..addColumns([m])
+      ..where(_db.mediaQueue.state.isIn(['pending', 'failed']));
+    // Unsent photos count too: logout must never discard them (CLAUDE.md §2.2).
+    return (await q.map((r) => r.read(c) ?? 0).getSingle()) + (await mq.map((r) => r.read(m) ?? 0).getSingle());
+  }
+}
