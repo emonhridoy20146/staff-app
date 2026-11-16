@@ -34,6 +34,7 @@ class FakeFieldApi implements HttpClientAdapter {
   bool expireCursor = false;
   bool upgradeRequired = false;
   String trackingProvider = 'free'; // admin setting location.trackingProvider
+  bool selfieRequired = true; // attendance.selfieRequired (master switch)
   List<String> selfieEvents = const ['work_in', 'break_start', 'break_end', 'work_out']; // attendance.selfieEvents
   int pushCalls = 0;
 
@@ -94,6 +95,7 @@ class FakeFieldApi implements HttpClientAdapter {
         'dailyVisitTarget': 20,
         'hotline': '০১৭০০-০০০০০০',
         'location.trackingProvider': trackingProvider,
+        'attendance.selfieRequired': selfieRequired,
         'attendance.selfieEvents': selfieEvents,
         'location.sampling': {'fastSec': 15, 'slowSec': 45, 'stillSec': 180, 'distanceFilterM': 25, 'maxAccuracyM': 50},
       };

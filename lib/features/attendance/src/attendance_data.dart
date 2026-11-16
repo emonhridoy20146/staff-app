@@ -69,11 +69,14 @@ class AttendanceService {
 
   DateTime dhakaMidnightUtc() => parseBusinessDate(_clock.businessDate()).subtract(dhakaOffset);
 
-  /// Events that need a front-camera photo. Server setting
-  /// `attendance.selfieEvents` (list of wire types); default all four,
-  /// as the owner asked on 2026-11-16 (amends OD-12).
+  /// Events that need a front-camera photo (contract 1.8.0): master switch
+  /// `attendance.selfieRequired` (default true) and the list
+  /// `attendance.selfieEvents` (default all four, as the owner asked on
+  /// 2026-11-16; amends OD-12). Both come resolved for the user's branch.
   Set<AttendanceEventType> selfieEvents() {
-    final v = _ref.read(serverSettingsProvider)['attendance.selfieEvents'];
+    final settings = _ref.read(serverSettingsProvider);
+    if (settings['attendance.selfieRequired'] == false) return const {};
+    final v = settings['attendance.selfieEvents'];
     if (v is! List) return AttendanceEventType.values.toSet();
     return {for (final w in v.whereType<String>()) ?_tryWire(w)};
   }

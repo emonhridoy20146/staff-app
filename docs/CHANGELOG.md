@@ -2,12 +2,11 @@
 
 ## [0.4.0] — 2026-11-16
 ### Added
-- Attendance photo (FR-ATT-001, owner request 2026-11-16): work-in, break start, break end and work-out open the front camera, and nothing is recorded without the photo (camera only, no gallery). The server setting `attendance.selfieEvents` (list of event types) chooses which events need it; default is all four. The photo is watermarked (time, event, staff code, GPS) and uploaded as media kind `selfie`.
+- Contract pinned to field-api 1.8.0.
+- Attendance photo (FR-ATT-001, owner request 2026-11-16): work-in, break start, break end and work-out open the front camera, and nothing is recorded without the photo (camera only, no gallery). Server settings (contract 1.8.0, resolved per branch): `attendance.selfieRequired` is the master switch (default on) and `attendance.selfieEvents` lists the events (default all four). The server never rejects an event without a photo; it flags the day `no_selfie`, so the app enforces the camera step. The photo is watermarked (time, event, staff code, GPS) and uploaded as media kind `selfie`.
 - Outbox state `held`: a mutation saved on the phone but not sent until its photo is confirmed, then released with `selfieMediaId`. Duty status changes on the phone right away. Each attendance event depends on the previous one of the day, so the server always receives them in order. Held items count as unsynced (sign-out guard, sync centre).
 ### Changed
 - OD-12 amended by the owner: the selfie is no longer optional at work-in only. See `08-decisions.md`.
-### Needs field-api
-- Setting `attendance.selfieEvents` (default all four), and `selfieMediaId` accepted on every event type (requested).
 
 ## [0.3.0] — 2026-11-16
 ### Added

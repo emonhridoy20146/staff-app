@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Howlader Field Operations API
-  version: 1.7.0
+  version: 1.8.0
   description: |
     Contract owned by field-api. Consumers (admin-web, staff-app) generate types from this file.
     Conventions (auth, pagination, idempotency, errors) are described in docs/05-api-contract.md.
@@ -980,10 +980,17 @@ paths:
                 deviceTime: { type: string, format: date-time }
                 geo: { oneOf: [ { $ref: '#/components/schemas/GeoFix' }, { type: 'null' } ], description: 'null when no GPS fix could be taken (1.2.0); send geoUnavailableReason' }
                 geoUnavailableReason: { $ref: '#/components/schemas/GeoUnavailableReason' }
-                selfieMediaId: { type: string }
+                selfieMediaId: { type: string, description: "Front-camera photo (media kind `selfie`) uploaded by this user. Stored on every event type. Required at the event types in setting `attendance.selfieEvents` while `attendance.selfieRequired` is true (defaults: true, all four types); an event without it is still stored and flagged `no_selfie` (1.8.0)." }
       responses:
         '201': { description: Created, content: { application/json: { schema: { $ref: '#/components/schemas/AttendanceDay' } } } }
         '409': { $ref: '#/components/responses/Problem' }
+    get:
+      tags: [attendance]
+      operationId: listAttendanceEvents
+      description: "One staff member's raw events of a business date, oldest first, with photo, place and flags per event (1.8.0). Permission attendance.view; a user outside the caller's branches is 404. The photo is read with GET /media/{id}/url."
+      parameters: [ { name: userId, in: query, required: true, schema: { type: string } }, { name: date, in: query, required: true, schema: { type: string, format: date } } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/AttendanceEvent' } } } } }
   /attendance/me/today:
     get:
       tags: [attendance]
@@ -1240,8 +1247,9 @@ paths:
       description: |
         Async export, built by the worker within about a minute, kept 7 days, visible only to the requester (1.6.0 documents params).
         `params` per type: staff_performance → { period, date, branchId?, userId? } · collections → { from, to, branchId? } (≤ 92 days) ·
-        attendance → { from, to, branchId? } (≤ 62 days) · overdue_customers, cash_positions → { branchId? }.
-        `format: pdf` and `type: audit` are answered with 422 BUSINESS_RULE (`export_format_unavailable` / `export_type_unavailable`) until they are built.
+        attendance → { from, to, branchId? } (≤ 62 days) · overdue_customers, cash_positions → { branchId? } ·
+        audit → { from, to, branchId? } (≤ 31 days; also needs `audit.view`, else 403) (1.7.1).
+        `format: pdf` is answered with 422 BUSINESS_RULE (`export_format_unavailable`) until it is built.
       requestBody:
         required: true
         content:
@@ -1745,6 +1753,19 @@ components:
         autoClosed: { type: boolean }
         corrected: { type: boolean }
         flags: { type: array, items: { type: string } }
+    AttendanceEvent:
+      type: object
+      description: A stored attendance event as managers see it (1.8.0)
+      required: [id, type, at, flags]
+      properties:
+        id: { type: string }
+        type: { type: string, enum: [work_in, break_start, break_end, work_out] }
+        at: { type: string, format: date-time }
+        geo: { type: [object, 'null'], properties: { lat: { type: number }, lng: { type: number }, accuracyM: { type: number }, mock: { type: boolean } } }
+        selfieMediaId: { type: [string, 'null'] }
+        flags: { type: array, items: { type: string }, description: 'e.g. no_selfie, no_location, mock_location, clock_skew, late_sync' }
+        source: { type: string, enum: [app, correction, system] }
+        replaced: { type: boolean, description: 'true when a correction replaced this event; it no longer counts in the day' }
     LocationPoint:
       type: object
       required: [t, lat, lng, acc]

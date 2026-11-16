@@ -30,6 +30,16 @@ void main() {
     expect(s.needsSelfie(AttendanceEventType.breakStart), isFalse);
   });
 
+  test('master switch off: no photo needed at any event', () async {
+    h.api.selfieRequired = false;
+    await h.signIn();
+    final s = h.read(attendanceServiceProvider);
+    for (final t in AttendanceEventType.values) {
+      expect(s.needsSelfie(t), isFalse, reason: t.name);
+    }
+    await s.record(AttendanceEventType.workIn);
+  });
+
   test('offline: events wait for their photos, then reach the server in order with selfieMediaId', () async {
     await h.signIn();
     final s = h.read(attendanceServiceProvider);
