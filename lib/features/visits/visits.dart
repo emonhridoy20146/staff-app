@@ -2,4 +2,4 @@
 library;
 
 export 'manifest.dart';
-export 'src/visits.dart' show todayVisitCountProvider, linkVisitPhotos, outcomeLabel;
+export 'src/visits.dart' show todayVisitCountProvider, todayVisitSplitProvider, linkVisitPhotos, outcomeLabel;

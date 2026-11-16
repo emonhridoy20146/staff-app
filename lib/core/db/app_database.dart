@@ -37,6 +37,7 @@ part 'app_database.g.dart';
     SyncMeta,
     LocationQueue,
     ContactAttempts,
+    CoworkSessions,
     Notifications,
     KvSettings,
   ],
@@ -45,7 +46,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -81,6 +82,13 @@ class AppDatabase extends _$AppDatabase {
           // v3 (0.3.0): manager's reason on pin proposals.
           if (from < 3) {
             await m.addColumn(locationProposals, locationProposals.decisionReason);
+          }
+          // v4 (0.6.0): co-work sessions; recorder and co-work fields on visits.
+          if (from < 4) {
+            await m.createTable(coworkSessions);
+            await m.addColumn(visits, visits.userId);
+            await m.addColumn(visits, visits.coWorkSessionId);
+            await m.addColumn(visits, visits.coWorkParticipantIdsJson);
           }
         },
         beforeOpen: (details) async {

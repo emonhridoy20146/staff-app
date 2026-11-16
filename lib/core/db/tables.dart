@@ -236,6 +236,18 @@ class Visits extends Table {
   TextColumn get source => text().withDefault(const Constant('manual'))();
   TextColumn get syncState => text().withDefault(const Constant('queued'))();
 
+  /// Recorder's user id from the server; null = recorded on this phone (v4).
+  TextColumn get userId => text().nullable()();
+
+  /// Co-work session the visit was made in (v4, contract 1.9.0). Set at save
+  /// time by the recorder; cleared when the server could not confirm it
+  /// (flag `cowork_invalid`).
+  TextColumn get coWorkSessionId => text().nullable()();
+
+  /// Partners (user ids, without the recorder): our estimate at save time,
+  /// replaced by the server's `coWork.participantIds` on pull (v4).
+  TextColumn get coWorkParticipantIdsJson => text().nullable()();
+
   @override
   Set<Column> get primaryKey => {clientId};
 }
@@ -443,6 +455,30 @@ class ContactAttempts extends Table {
 
   @override
   Set<Column> get primaryKey => {clientId};
+}
+
+// ── co-work (feature: cowork, contract 1.9.0) ─────────────────────────────────
+/// A co-work session I am invited to or a member of (pull entity
+/// `cowork_session`). Server-owned: changed only by online calls and pull.
+@DataClassName('CoworkSessionRow')
+class CoworkSessions extends Table {
+  @override
+  String get tableName => 'cowork_sessions';
+  TextColumn get id => text()();
+  TextColumn get businessDate => text()();
+
+  /// open | ended
+  TextColumn get status => text()();
+  TextColumn get createdBy => text()();
+  TextColumn get note => text().nullable()();
+
+  /// CoworkMember[] as JSON (userId, name, status, invitedBy, invitedAt, respondedAt, leftAt).
+  TextColumn get membersJson => text()();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get endedAt => dateTime().nullable()();
+
+  @override
+  Set<Column> get primaryKey => {id};
 }
 
 // ── location (P2) ────────────────────────────────────────────────────────────

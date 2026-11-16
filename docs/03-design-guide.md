@@ -148,10 +148,15 @@ Large header (surfaceContainer): name bn (titleLarge) + en (bodyMedium), code, p
 ### 5.5 Visit check-in
 Camera screen (custom, camera package) with overlay guide; shutter 72 dp; after capture: preview with watermark (date-time, staff code, lat/lng), retake/use; outcome chips (large); note field; save. If GPS accuracy > 50 m: shows "অবস্থান খোঁজা হচ্ছে…" up to 20 s then allows save with flag.
 
+**Co-work visit (0.6.0):** when the staff member has an accepted co-work partner and is on duty, a `SwitchListTile` card sits under the GPS banner: "কো-ওয়ার্ক ভিজিট", subtitle names the partners ("… সবার হিসাবে যোগ হবে"); on by default, tinted `secondaryContainer` while on; off says it will be a single visit.
+
 ### 5.6 Map
 flutter_map with TileProvider config; pins = status glyph markers; clustering; my location button; filter chips row; tap pin → bottom sheet (peek 160 dp: name, outstanding, status, last note; expanded: last 3 notes, last visit, open promise, actions Collect/Visit/Navigate/Details). Offline: cached tiles of visited areas (and optional area packs, P4).
 
 **Controls overlay (0.5.0):** top row = Map/List `SegmentedButton` (icons + labels) and the sync chip; below it a horizontally scrolling row of multi-select `FilterChip`s with counts (OR match) plus a clear chip when any is on; then the count pill ("ম্যাপে N জন" / "N জন গ্রাহক") and the "N without location" chip. List mode reuses `CustomerTile` sorted nearest first (distance from the last fix; no fix → a note above the list), customers without a pin last.
+
+### 5.6a Co-work (0.6.0)
+Today card (order 4, after the progress card): an invitation is a `secondaryContainer` card (groups icon, "{name} আজ আপনার সাথে একসাথে কাজ করতে চান", other members, the note in quotes, a "needs internet" line, Reject outlined + Accept filled, 48 dp). My group is a surface card: title, today's co-work visit count in primary, one row per member (40 dp initial avatar, name, green tick or a "waiting" pending badge; me first, marked "(আপনি)"), Leave (outlined, confirm dialog) and Ask more (tonal, only while seats are left). Off duty with no group: nothing; on duty with no group: a one-line "Work with a colleague" tile. The `/cowork` screen repeats the invitation and group cards, then "কাকে ডাকবেন?" with seats left, a card of `CheckboxListTile`s (avatar, name, code, coloured status: on duty / not on duty / in another group / in this group) and an optional note; the send button appears at the bottom with the count. Timeline: joint visits carry a "কো-ওয়ার্ক" badge (current tone) and "সাথে …" / "লিখেছেন …".
 
 ### 5.7 Me
 Attendance card (today timeline: in, breaks, out; buttons বিরতি শুরু/শেষ, কাজ শেষ); Cash card (on hand, limit meter, deposit button, deposit history); Handovers; Sync centre (queued counts by type, last sync, Problems list with explanations and "manager notified" state, Sync now); My performance (month); Settings (language, digits, theme, high contrast, text size preview, PIN/biometric, privacy notice, battery optimisation guide, about/version, logout).

@@ -200,7 +200,8 @@ class _ProgressCard extends ConsumerWidget {
     final f = ref.watch(fmtProvider);
     final access = ref.watch(accessProvider);
     final totals = ref.watch(todayTotalsProvider).value ?? const DayTotals();
-    final visits = ref.watch(todayVisitCountProvider).value ?? 0;
+    final split = ref.watch(todayVisitSplitProvider).value ?? (solo: 0, coWork: 0);
+    final visits = split.solo + split.coWork;
     final target = ((ref.watch(serverSettingsProvider)['dailyTargetPoisha'] as num?) ?? 0).toInt();
     final ratio = target <= 0 ? 0.0 : (totals.total / target).clamp(0.0, 1.0);
     final showCash = access.flag('module.cash') && access.can(Perm.cashView);
@@ -227,7 +228,14 @@ class _ProgressCard extends ConsumerWidget {
         Row(children: [
           Expanded(child: _Metric(icon: Icons.payments_outlined, label: l.cashTodayCash, value: f.money(totals.cash))),
           Expanded(child: _Metric(icon: Icons.phone_android_rounded, label: l.cashTodayMobile, value: f.money(totals.mobile))),
-          Expanded(child: _Metric(icon: Icons.where_to_vote_outlined, label: l.todayVisits, value: f.num(visits))),
+          Expanded(
+            child: _Metric(
+              icon: Icons.where_to_vote_outlined,
+              label: l.todayVisits,
+              value: f.num(visits),
+              hint: split.coWork > 0 ? l.todayVisitsJoint(f.num(split.coWork)) : null,
+            ),
+          ),
         ]),
         if (showCash) ...[
           const Divider(height: Space.s32),
@@ -239,10 +247,13 @@ class _ProgressCard extends ConsumerWidget {
 }
 
 class _Metric extends StatelessWidget {
-  const _Metric({required this.icon, required this.label, required this.value});
+  const _Metric({required this.icon, required this.label, required this.value, this.hint});
   final IconData icon;
   final String label;
   final String value;
+
+  /// Small line under the value (e.g. "4 joint").
+  final String? hint;
   @override
   Widget build(BuildContext context) {
     final t = Theme.of(context).textTheme;
@@ -255,6 +266,7 @@ class _Metric extends StatelessWidget {
       ]),
       const SizedBox(height: 2),
       Text(value, style: AppTheme.tabular(t.titleMedium!)),
+      if (hint != null) Text(hint!, style: t.bodySmall!.copyWith(color: cs.primary), maxLines: 1, overflow: TextOverflow.ellipsis),
     ]);
   }
 }

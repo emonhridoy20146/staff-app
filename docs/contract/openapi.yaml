@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Howlader Field Operations API
-  version: 1.8.0
+  version: 1.9.1
   description: |
     Contract owned by field-api. Consumers (admin-web, staff-app) generate types from this file.
     Conventions (auth, pagination, idempotency, errors) are described in docs/05-api-contract.md.
@@ -785,6 +785,69 @@ paths:
       responses:
         '204': { description: Ended (effectiveTo=now) }
 
+  /cowork/requests:
+    post:
+      tags: [cowork]
+      operationId: requestCowork
+      description: |
+        Ask colleagues of the same branch to work together today (1.9.0). Idempotent by clientId. If the caller is already in an
+        open session, the invitees are added to it. Online only. Permission cowork.use.
+        422 BUSINESS_RULE: COWORK_INVALID_INVITEE (not active field staff of the caller's branch, or the caller), COWORK_TOO_MANY (over setting cowork.maxMembers).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [clientId, toUserIds], properties: { clientId: { type: string, format: uuid }, toUserIds: { type: array, minItems: 1, maxItems: 10, items: { type: string } }, note: { type: string, maxLength: 300 } } }
+      responses:
+        '201': { description: Created, content: { application/json: { schema: { $ref: '#/components/schemas/CoworkSession' } } } }
+        '200': { description: Replay of the same clientId, content: { application/json: { schema: { $ref: '#/components/schemas/CoworkSession' } } } }
+  /cowork/colleagues:
+    get:
+      tags: [cowork]
+      operationId: coworkColleagues
+      description: "Whom the caller may invite: active field staff of the caller's branch, without the caller, ordered by employee code (1.9.0). Online only. Permission cowork.use."
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/CoworkColleague' } } } } }
+  /cowork/sessions/mine:
+    get:
+      tags: [cowork]
+      operationId: myCoworkSessions
+      description: "Today's sessions where the caller is invited or a member, newest first (1.9.0). Permission cowork.use."
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/CoworkSession' } } } } }
+  /cowork/sessions/{id}/respond:
+    post:
+      tags: [cowork]
+      operationId: respondCowork
+      description: 'Accept or reject an invitation (1.9.0). 409 INVALID_STATE: NOT_INVITED, SESSION_ENDED, ALREADY_IN_SESSION (accepted in another open session).'
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      requestBody: { required: true, content: { application/json: { schema: { type: object, required: [decision], properties: { decision: { type: string, enum: [accept, reject] } } } } } }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/CoworkSession' } } } }
+  /cowork/sessions/{id}/leave:
+    post:
+      tags: [cowork]
+      operationId: leaveCowork
+      description: 'Leave a session (1.9.0). Idempotent. Recording work-out leaves automatically.'
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/CoworkSession' } } } }
+  /cowork/sessions:
+    get:
+      tags: [cowork]
+      operationId: listCoworkSessions
+      description: 'Sessions in scope for managers, newest first, with visitsCount (1.9.0). Permission cowork.view.'
+      parameters: [ { $ref: '#/components/parameters/BranchId' }, { name: userId, in: query, schema: { type: string } }, { name: from, in: query, schema: { type: string, format: date } }, { name: to, in: query, schema: { type: string, format: date } }, { $ref: '#/components/parameters/Limit' }, { $ref: '#/components/parameters/Cursor' } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: object, properties: { items: { type: array, items: { $ref: '#/components/schemas/CoworkSession' } }, nextCursor: { type: [string, 'null'] } } } } } }
+  /cowork/sessions/{id}:
+    get:
+      tags: [cowork]
+      operationId: getCoworkSession
+      description: 'One session with visitsCount (1.9.0). Permission cowork.view; out of scope is 404. Its visits: GET /visits?coWorkSessionId='
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/CoworkSession' } } } }
   /handovers:
     get:
       tags: [handovers]
@@ -833,7 +896,7 @@ paths:
     get:
       tags: [visits]
       operationId: listVisits
-      parameters: [ { $ref: '#/components/parameters/BranchId' }, { name: userId, in: query, schema: { type: string } }, { name: customerId, in: query, schema: { type: string } }, { name: date, in: query, schema: { type: string, format: date }, description: 'One Dhaka business day; wins over from/to' }, { name: from, in: query, schema: { type: string, format: date }, description: 'Inclusive Dhaka day (1.4.0)' }, { name: to, in: query, schema: { type: string, format: date }, description: 'Inclusive Dhaka day (1.4.0)' }, { name: outcome, in: query, schema: { type: string }, description: 'Visit outcome (1.4.0)' }, { $ref: '#/components/parameters/Limit' }, { $ref: '#/components/parameters/Cursor' } ]
+      parameters: [ { $ref: '#/components/parameters/BranchId' }, { name: userId, in: query, schema: { type: string }, description: 'Visits this person recorded, plus co-work visits they took part in (1.9.0)' }, { name: customerId, in: query, schema: { type: string } }, { name: date, in: query, schema: { type: string, format: date }, description: 'One Dhaka business day; wins over from/to' }, { name: from, in: query, schema: { type: string, format: date }, description: 'Inclusive Dhaka day (1.4.0)' }, { name: to, in: query, schema: { type: string, format: date }, description: 'Inclusive Dhaka day (1.4.0)' }, { name: outcome, in: query, schema: { type: string }, description: 'Visit outcome (1.4.0)' }, { name: coWork, in: query, schema: { type: string, enum: ['true', 'false'] }, description: 'Only co-work visits, or only single visits (1.9.0)' }, { name: coWorkSessionId, in: query, schema: { type: string }, description: 'Visits of one co-work session (1.9.0)' }, { $ref: '#/components/parameters/Limit' }, { $ref: '#/components/parameters/Cursor' } ]
       responses:
         '200': { description: OK, content: { application/json: { schema: { type: object, properties: { items: { type: array, items: { $ref: '#/components/schemas/VisitListItem' } }, nextCursor: { type: [string, 'null'] } } } } } }
     post:
@@ -1118,7 +1181,7 @@ paths:
       operationId: syncBootstrap
       parameters: [ { $ref: '#/components/parameters/Cursor' }, { name: limit, in: query, schema: { type: integer, default: 100, minimum: 1, maximum: 200 } } ]
       responses:
-        '200': { description: 'Paged snapshot of the whole scope; the final page has nextCursor null and returns pullCursor (schema declared in 1.5.0)', content: { application/json: { schema: { $ref: '#/components/schemas/SyncBootstrapResponse' } } } }
+        '200': { description: "Paged snapshot for a fresh device; the final page has nextCursor null and returns pullCursor (schema declared in 1.5.0). Entities, in this order (1.9.1): attendance_day (today, id userId:date), cowork_session (today's), customer (whole scope), location_proposal (own pending), promise (own open), visit (today's, own and joint). Older history is not included; it is read online.", content: { application/json: { schema: { $ref: '#/components/schemas/SyncBootstrapResponse' } } } }
   /sync/pull:
     get:
       tags: [sync]
@@ -1659,11 +1722,43 @@ components:
         geoUnavailableReason: { $ref: '#/components/schemas/GeoUnavailableReason' }
         photoMediaIds: { type: array, items: { type: string } }
         source: { type: string, enum: [manual, suggested] }
+        coWorkSessionId: { type: string, description: 'Set when the visit was made together with co-work partners (1.9.0). The server works out who took part.' }
     Visit:
       allOf:
         - $ref: '#/components/schemas/VisitCreate'
         - type: object
-          properties: { id: { type: string }, userId: { type: string }, checkOutAt: { type: [string, 'null'] }, distanceToPinM: { type: [integer, 'null'] }, flags: { type: array, items: { type: string } } }
+          properties: { id: { type: string }, userId: { type: string }, checkOutAt: { type: [string, 'null'] }, distanceToPinM: { type: [integer, 'null'] }, flags: { type: array, items: { type: string } }, coWork: { oneOf: [ { $ref: '#/components/schemas/VisitCoWork' }, { type: 'null' } ], description: 'null for a single visit (1.9.0)' } }
+    VisitCoWork:
+      type: object
+      description: 'Who else took part in a co-work visit: the session members accepted at checkInAt, without the recorder (1.9.0)'
+      properties: { sessionId: { type: string }, participantIds: { type: array, items: { type: string } }, participants: { type: array, description: 'Names, on list rows only', items: { type: object, properties: { id: { type: string }, name: { type: string } } } } }
+    CoworkColleague:
+      type: object
+      required: [id, name, employeeCode, onDutyToday, inSession]
+      properties:
+        id: { type: string }
+        name: { type: string, description: 'Plain display name, like other person names in v1' }
+        employeeCode: { type: string }
+        onDutyToday: { type: boolean, description: 'Worked in and not yet worked out at the time of the call; on a break counts as on duty' }
+        inSession: { type: boolean, description: 'Already an accepted member of another open session today (accepting an invitation would give ALREADY_IN_SESSION)' }
+    CoworkMember:
+      type: object
+      properties: { userId: { type: string }, name: { type: string }, status: { type: string, enum: [invited, accepted, rejected, left] }, invitedBy: { type: string }, invitedAt: { type: string, format: date-time }, respondedAt: { type: [string, 'null'] }, leftAt: { type: [string, 'null'] } }
+    CoworkSession:
+      type: object
+      description: 'Staff working together for one business day (1.9.0)'
+      required: [id, businessDate, status, members]
+      properties:
+        id: { type: string }
+        businessDate: { type: string, format: date }
+        branchId: { type: string }
+        status: { type: string, enum: [open, ended] }
+        createdBy: { type: string }
+        note: { type: [string, 'null'] }
+        members: { type: array, items: { $ref: '#/components/schemas/CoworkMember' } }
+        createdAt: { type: string, format: date-time }
+        endedAt: { type: [string, 'null'] }
+        visitsCount: { type: integer, description: 'Co-work visits recorded in this session (manager list and detail only)' }
     Note:
       type: object
       properties: { id: { type: string }, clientId: { type: string }, customerId: { type: string }, author: { type: object, properties: { id: { type: string }, name: { type: string } } }, category: { type: string }, text: { type: string }, voiceMediaId: { type: [string, 'null'] }, createdAt: { type: string, format: date-time }, editableUntil: { type: string, format: date-time } }
@@ -1845,7 +1940,7 @@ components:
       type: object
       properties:
         seq: { type: integer }
-        entity: { type: string, enum: [customer, collection, visit, note, promise, tag, handover, assignment, area, deposit, attendance_day, notification, broadcast, setting, contact_attempt, location_proposal] }
+        entity: { type: string, enum: [customer, collection, visit, note, promise, tag, handover, assignment, area, deposit, attendance_day, notification, broadcast, setting, contact_attempt, location_proposal, cowork_session] }
         op: { type: string, enum: [upsert, delete] }
         id: { type: string }
         data:
@@ -1856,7 +1951,8 @@ components:
             customer → CustomerDetail · collection → Collection · visit → Visit · note → Note · promise → Promise ·
             tag → Tag (with customerId) · handover → Handover · assignment → Assignment · area → Area · deposit → Deposit ·
             attendance_day → AttendanceDay · notification → Notification · broadcast → Broadcast · setting → { key, value } ·
-            contact_attempt → ContactAttempt · location_proposal → OwnLocationProposal (1.7.0; sent only to the staff member who proposed, on create and on the manager's decision)
+            contact_attempt → ContactAttempt · location_proposal → OwnLocationProposal (1.7.0; sent only to the staff member who proposed, on create and on the manager's decision) ·
+            cowork_session → CoworkSession (1.9.0; sent to every invited or member user on each change)
         reason: { type: string }
     ContactAttemptCreate:
       type: object
@@ -1934,6 +2030,9 @@ components:
         breakMin: { type: integer }
         fieldMin: { type: integer }
         distanceKm: { type: number }
+        soloVisits: { type: integer, description: 'Visits recorded alone (1.9.0)' }
+        coWorkVisits: { type: integer, description: 'Joint visits this person took part in, as recorder or as partner; one joint visit counts once per person (1.9.0)' }
+        visitCredit: { type: number, description: 'soloVisits + coWorkVisits × setting cowork.visitCredit; the figure visit targets use (1.9.0)' }
     OverdueBucket:
       type: object
       properties: { count: { type: integer }, amountPoisha: { type: integer } }
