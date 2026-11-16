@@ -49,6 +49,7 @@ Master IDs, statuses and permission keys: `field-api/docs/02-requirements.md`. A
 | FR-M-021 **[ADDED]** | My performance screen: month-to-date collected, visits, promise kept %, attendance, rank (if leaderboard on). | proposed | P3 | D |
 | FR-M-022 **[ADDED]** | Day route suggestion: order today's priority customers by nearest-neighbour route from current location. | proposed | P3 | U D |
 | FR-M-023 | Home screen widget / quick tile: none in v1 (dropped to keep scope). | dropped | — | — |
+| FR-M-024 **[ADDED]** | Map filters and list view (owner request 2026-11-16): multi-select filter chips on the map (due today, overdue, promised today, tagged, likely bad; a customer shows if it matches any selected), with a count on each chip; a Map/List toggle where the list shows the same filtered customers nearest first with distance from the staff member's last GPS fix, customers without a pin last. Fully offline (local data); only map tiles need the network. | active | P1 | U D |
 
 ## 3. Non-functional (app specifics)
 | ID | Requirement |

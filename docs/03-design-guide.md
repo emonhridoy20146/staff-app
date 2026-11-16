@@ -151,6 +151,8 @@ Camera screen (custom, camera package) with overlay guide; shutter 72 dp; after 
 ### 5.6 Map
 flutter_map with TileProvider config; pins = status glyph markers; clustering; my location button; filter chips row; tap pin → bottom sheet (peek 160 dp: name, outstanding, status, last note; expanded: last 3 notes, last visit, open promise, actions Collect/Visit/Navigate/Details). Offline: cached tiles of visited areas (and optional area packs, P4).
 
+**Controls overlay (0.5.0):** top row = Map/List `SegmentedButton` (icons + labels) and the sync chip; below it a horizontally scrolling row of multi-select `FilterChip`s with counts (OR match) plus a clear chip when any is on; then the count pill ("ম্যাপে N জন" / "N জন গ্রাহক") and the "N without location" chip. List mode reuses `CustomerTile` sorted nearest first (distance from the last fix; no fix → a note above the list), customers without a pin last.
+
 ### 5.7 Me
 Attendance card (today timeline: in, breaks, out; buttons বিরতি শুরু/শেষ, কাজ শেষ); Cash card (on hand, limit meter, deposit button, deposit history); Handovers; Sync centre (queued counts by type, last sync, Problems list with explanations and "manager notified" state, Sync now); My performance (month); Settings (language, digits, theme, high contrast, text size preview, PIN/biometric, privacy notice, battery optimisation guide, about/version, logout).
 

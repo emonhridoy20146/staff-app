@@ -1,5 +1,6 @@
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:material_ui/material_ui.dart';
@@ -22,6 +23,29 @@ class CustomerMapScreen extends ConsumerStatefulWidget {
   ConsumerState<CustomerMapScreen> createState() => _CustomerMapScreenState();
 }
 
+/// Filters offered on the map / list (multi-select; none = everyone).
+const mapFilterOptions = [CustomerFilter.dueToday, CustomerFilter.overdue, CustomerFilter.promisedToday, CustomerFilter.tagged, CustomerFilter.badSuggested];
+
+/// Selected map filters; a customer shows when it matches any of them.
+final mapFiltersProvider = StateProvider<Set<CustomerFilter>>((ref) => const {});
+
+/// Map or list view (FR-M-024, owner request 2026-11-16).
+final mapListModeProvider = StateProvider<bool>((ref) => false);
+
+/// Customers after the map filters. Works offline: everything is local.
+List<Customer> applyMapFilters(List<Customer> all, Set<CustomerFilter> filters, String today) =>
+    filters.isEmpty ? all : all.where((c) => filters.any((f) => matchesFilter(c, f, today: today))).toList();
+
+/// Nearest first; customers without a pin go last, then by name.
+List<Customer> byDistance(List<Customer> list) => [...list]..sort((a, b) {
+    final da = a.distanceM, db = b.distanceM;
+    if (da != null && db != null) return da.compareTo(db);
+    if (da != null) return -1;
+    if (db != null) return 1;
+    if (a.hasPin != b.hasPin) return a.hasPin ? -1 : 1;
+    return a.row.nameBn.compareTo(b.row.nameBn);
+  });
+
 class _CustomerMapScreenState extends ConsumerState<CustomerMapScreen> {
   final _map = MapController();
   String? _selected;
@@ -29,12 +53,14 @@ class _CustomerMapScreenState extends ConsumerState<CustomerMapScreen> {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
-    final f = ref.watch(fmtProvider);
     final cs = Theme.of(context).colorScheme;
     final today = ref.watch(todayProvider);
-    final all = ref.watch(allCustomersProvider).value ?? const <Customer>[];
+    final everyone = ref.watch(allCustomersProvider).value ?? const <Customer>[];
+    final filters = ref.watch(mapFiltersProvider);
+    final listMode = ref.watch(mapListModeProvider);
+    final all = applyMapFilters(everyone, filters, today);
     final pinned = all.where((c) => c.hasPin).toList();
-    final unpinned = all.where((c) => !c.hasPin).toList();
+    final unpinned = everyone.where((c) => !c.hasPin).toList();
     final access = ref.watch(accessProvider);
     final canPropose = access.can(Perm.customerLocationPropose);
     final fix = ref.watch(currentFixProvider).value;
@@ -54,6 +80,40 @@ class _CustomerMapScreenState extends ConsumerState<CustomerMapScreen> {
     // Draw the most urgent pins last so they sit on top.
     final order = {AppStatus.current: 0, AppStatus.paid: 0, AppStatus.dueToday: 2, AppStatus.overdue: 3, AppStatus.promised: 4, AppStatus.tagged: 1};
     final sorted = [...pinned]..sort((a, b) => (order[a.primaryStatus(today)] ?? 0).compareTo(order[b.primaryStatus(today)] ?? 0));
+
+    final controls = _Controls(
+      everyone: everyone,
+      shown: listMode ? all.length : pinned.length,
+      listMode: listMode,
+      noPin: unpinned.isNotEmpty && canPropose && !listMode ? _NoPinChip(count: unpinned.length, onTap: () => _showUnpinned(context, unpinned)) : null,
+    );
+
+    if (listMode) {
+      final list = byDistance(all);
+      return Scaffold(
+        backgroundColor: cs.surfaceContainerLowest,
+        body: SafeArea(
+          child: Column(children: [
+            Padding(padding: const EdgeInsets.fromLTRB(Space.screen, Space.screen, Space.screen, Space.s8), child: controls),
+            if (fix == null)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(Space.screen, 0, Space.screen, Space.s8),
+                child: Text(l.mapListNoFix, style: Theme.of(context).textTheme.bodySmall!.copyWith(color: cs.onSurfaceVariant)),
+              ),
+            Expanded(
+              child: list.isEmpty
+                  ? Center(child: Padding(padding: const EdgeInsets.all(Space.s24), child: Text(l.mapListEmpty, textAlign: TextAlign.center)))
+                  : ListView.separated(
+                      padding: const EdgeInsets.only(bottom: Space.s24),
+                      itemCount: list.length,
+                      separatorBuilder: (_, _) => const Divider(height: 1, indent: Space.screen, endIndent: Space.screen),
+                      itemBuilder: (_, i) => CustomerTile(customer: list[i], onTap: () => context.push('/customers/${list[i].id}')),
+                    ),
+            ),
+          ]),
+        ),
+      );
+    }
 
     return Scaffold(
       body: Stack(
@@ -89,33 +149,13 @@ class _CustomerMapScreenState extends ConsumerState<CustomerMapScreen> {
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.all(Space.screen),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Material(
-                        color: cs.surface,
-                        elevation: 2,
-                        borderRadius: const BorderRadius.all(Radius.circular(Radii.full)),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: Space.s16, vertical: Space.s8),
-                          child: Text(l.mapPinsCount(f.num(pinned.length)), style: Theme.of(context).textTheme.titleSmall),
-                        ),
-                      ),
-                      const Spacer(),
-                      SyncChip(onTap: () => context.push('/sync')),
-                    ],
-                  ),
-                  if (unpinned.isNotEmpty && canPropose) ...[const SizedBox(height: Space.s8), _NoPinChip(count: unpinned.length, onTap: () => _showUnpinned(context, unpinned))],
-                ],
-              ),
+              child: controls,
             ),
           ),
           if (pinned.isEmpty)
             Center(
               child: Card(
-                child: Padding(padding: const EdgeInsets.all(Space.s16), child: Text(l.mapNoPins)),
+                child: Padding(padding: const EdgeInsets.all(Space.s16), child: Text(filters.isEmpty ? l.mapNoPins : l.mapListEmpty)),
               ),
             ),
           Positioned(
@@ -137,6 +177,93 @@ class _CustomerMapScreenState extends ConsumerState<CustomerMapScreen> {
             ),
         ],
       ),
+    );
+  }
+}
+
+/// Top controls shared by map and list: view toggle, count, sync chip,
+/// multi-select filters (with counts), and the "without location" chip.
+class _Controls extends ConsumerWidget {
+  const _Controls({required this.everyone, required this.shown, required this.listMode, this.noPin});
+  final List<Customer> everyone;
+  final int shown;
+  final bool listMode;
+  final Widget? noPin;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context);
+    final f = ref.watch(fmtProvider);
+    final cs = Theme.of(context).colorScheme;
+    final today = ref.watch(todayProvider);
+    final filters = ref.watch(mapFiltersProvider);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(children: [
+          Material(
+            color: cs.surface,
+            elevation: 2,
+            borderRadius: const BorderRadius.all(Radius.circular(Radii.full)),
+            child: SegmentedButton<bool>(
+              showSelectedIcon: false,
+              style: SegmentedButton.styleFrom(minimumSize: const Size(48, 48), side: BorderSide.none),
+              segments: [
+                ButtonSegment(value: false, icon: const Icon(Icons.map_rounded), label: Text(l.mapViewMap)),
+                ButtonSegment(value: true, icon: const Icon(Icons.view_list_rounded), label: Text(l.mapViewList)),
+              ],
+              selected: {listMode},
+              onSelectionChanged: (s) => ref.read(mapListModeProvider.notifier).state = s.first,
+            ),
+          ),
+          const Spacer(),
+          SyncChip(onTap: () => context.push('/sync')),
+        ]),
+        const SizedBox(height: Space.s8),
+        SizedBox(
+          height: 48,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            clipBehavior: Clip.none,
+            children: [
+              for (final x in mapFilterOptions)
+                Padding(
+                  padding: const EdgeInsets.only(right: Space.s8),
+                  child: FilterChip(
+                    elevation: listMode ? 0 : 2,
+                    backgroundColor: cs.surface,
+                    selected: filters.contains(x),
+                    label: Text('${filterLabel(l, x)} ${f.num(everyone.where((c) => matchesFilter(c, x, today: today)).length)}'),
+                    onSelected: (on) {
+                      final next = {...filters};
+                      on ? next.add(x) : next.remove(x);
+                      ref.read(mapFiltersProvider.notifier).state = next;
+                    },
+                  ),
+                ),
+              if (filters.isNotEmpty)
+                ActionChip(
+                  elevation: listMode ? 0 : 2,
+                  backgroundColor: cs.surface,
+                  avatar: const Icon(Icons.close_rounded, size: 18),
+                  label: Text(l.mapFilterClear),
+                  onPressed: () => ref.read(mapFiltersProvider.notifier).state = const {},
+                ),
+            ],
+          ),
+        ),
+        const SizedBox(height: Space.s8),
+        Material(
+          color: cs.surface,
+          elevation: listMode ? 0 : 2,
+          borderRadius: const BorderRadius.all(Radius.circular(Radii.full)),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: Space.s16, vertical: Space.s8),
+            child: Text(listMode ? l.customersCount(f.num(shown)) : l.mapPinsCount(f.num(shown)), style: Theme.of(context).textTheme.titleSmall),
+          ),
+        ),
+        if (noPin != null) ...[const SizedBox(height: Space.s8), noPin!],
+      ],
     );
   }
 }

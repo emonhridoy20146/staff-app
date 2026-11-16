@@ -1528,4 +1528,19 @@ class AppLocalizationsBn extends AppLocalizations {
   @override
   String get attendanceSelfieHint =>
       'আপনার ছবি তুলতে সামনের ক্যামেরা খুলবে। শুধু ক্যামেরা।';
+
+  @override
+  String get mapViewMap => 'ম্যাপ';
+
+  @override
+  String get mapViewList => 'লিস্ট';
+
+  @override
+  String get mapFilterClear => 'মুছুন';
+
+  @override
+  String get mapListEmpty => 'এই ফিল্টারে কোনো কাস্টমার নেই';
+
+  @override
+  String get mapListNoFix => 'এখনো GPS পাওয়া যায়নি · পেলে দূরত্ব দেখাবে';
 }

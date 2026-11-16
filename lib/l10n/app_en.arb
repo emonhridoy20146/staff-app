@@ -953,5 +953,10 @@
     }
   },
   "attendanceSelfieNeeded": "Attendance needs a photo of you. Tap again and take the photo.",
-  "attendanceSelfieHint": "The front camera opens to take your photo. Camera only."
+  "attendanceSelfieHint": "The front camera opens to take your photo. Camera only.",
+  "mapViewMap": "Map",
+  "mapViewList": "List",
+  "mapFilterClear": "Clear",
+  "mapListEmpty": "No customers match these filters",
+  "mapListNoFix": "No GPS yet · distances appear when the phone finds you"
 }

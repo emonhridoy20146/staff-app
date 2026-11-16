@@ -1527,4 +1527,20 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get attendanceSelfieHint =>
       'The front camera opens to take your photo. Camera only.';
+
+  @override
+  String get mapViewMap => 'Map';
+
+  @override
+  String get mapViewList => 'List';
+
+  @override
+  String get mapFilterClear => 'Clear';
+
+  @override
+  String get mapListEmpty => 'No customers match these filters';
+
+  @override
+  String get mapListNoFix =>
+      'No GPS yet · distances appear when the phone finds you';
 }

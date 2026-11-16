@@ -1,5 +1,10 @@
 # Changelog — staff-app
 
+## [0.5.0] — 2026-11-16
+### Added
+- Map filters and list view (FR-M-024, owner request 2026-11-16). The map has multi-select filter chips (due today, overdue, promised today, tagged, likely bad), each with its count; a customer shows when it matches any selected filter, and a clear chip resets them. A Map/List toggle switches to a list of the same filtered customers, nearest first with distance from the last GPS fix; customers without a pin go last. Both work fully offline from the local database; only map tiles need the network. The choice of filters and view is kept while the app is open.
+- Tests: filter and distance-order flow test; screenshots `16-map-filtered`, `17-map-list`; `07-map` updated.
+
 ## [0.4.0] — 2026-11-16
 ### Added
 - Contract pinned to field-api 1.8.0.
