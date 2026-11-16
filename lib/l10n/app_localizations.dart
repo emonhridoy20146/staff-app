@@ -2695,6 +2695,102 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Record visit'**
   String get visitSuggestYes;
+
+  /// No description provided for @actionSetLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Set location'**
+  String get actionSetLocation;
+
+  /// No description provided for @actionCorrectLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Correct location'**
+  String get actionCorrectLocation;
+
+  /// No description provided for @pinIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Stand at the customer\'s door. Your phone\'s GPS position is sent as the new pin, and a manager approves it.'**
+  String get pinIntro;
+
+  /// No description provided for @pinAccuracyWeak.
+  ///
+  /// In en, this message translates to:
+  /// **'GPS is off by {meters} m. It must be {limit} m or better: step into the open and wait a moment.'**
+  String pinAccuracyWeak(String meters, String limit);
+
+  /// No description provided for @pinOutside.
+  ///
+  /// In en, this message translates to:
+  /// **'This position is outside Bangladesh.'**
+  String get pinOutside;
+
+  /// No description provided for @pinRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Check GPS again'**
+  String get pinRetry;
+
+  /// No description provided for @pinPhotoNeeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Take a photo of the house or shop'**
+  String get pinPhotoNeeded;
+
+  /// No description provided for @pinNoteHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Landmark, gate colour, floor…'**
+  String get pinNoteHint;
+
+  /// No description provided for @pinSubmit.
+  ///
+  /// In en, this message translates to:
+  /// **'Send for approval'**
+  String get pinSubmit;
+
+  /// No description provided for @pinSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Sent. The pin changes after a manager approves it.'**
+  String get pinSent;
+
+  /// No description provided for @pinPending.
+  ///
+  /// In en, this message translates to:
+  /// **'New location sent · waiting for manager approval'**
+  String get pinPending;
+
+  /// No description provided for @pinFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The server refused this location. Try again from the door with good GPS.'**
+  String get pinFailed;
+
+  /// No description provided for @pinDistanceFromOld.
+  ///
+  /// In en, this message translates to:
+  /// **'{distance} from the current pin'**
+  String pinDistanceFromOld(String distance);
+
+  /// No description provided for @mapNoPinCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} without location'**
+  String mapNoPinCount(String count);
+
+  /// No description provided for @mapNoPinTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Customers without location'**
+  String get mapNoPinTitle;
+
+  /// No description provided for @pinRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Location not approved: {reason}. Tap to send a new one.'**
+  String pinRejected(String reason);
 }
 
 class _AppLocalizationsDelegate

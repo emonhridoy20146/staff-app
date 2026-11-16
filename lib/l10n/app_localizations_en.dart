@@ -1461,4 +1461,62 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get visitSuggestYes => 'Record visit';
+
+  @override
+  String get actionSetLocation => 'Set location';
+
+  @override
+  String get actionCorrectLocation => 'Correct location';
+
+  @override
+  String get pinIntro =>
+      'Stand at the customer\'s door. Your phone\'s GPS position is sent as the new pin, and a manager approves it.';
+
+  @override
+  String pinAccuracyWeak(String meters, String limit) {
+    return 'GPS is off by $meters m. It must be $limit m or better: step into the open and wait a moment.';
+  }
+
+  @override
+  String get pinOutside => 'This position is outside Bangladesh.';
+
+  @override
+  String get pinRetry => 'Check GPS again';
+
+  @override
+  String get pinPhotoNeeded => 'Take a photo of the house or shop';
+
+  @override
+  String get pinNoteHint => 'Landmark, gate colour, floor…';
+
+  @override
+  String get pinSubmit => 'Send for approval';
+
+  @override
+  String get pinSent => 'Sent. The pin changes after a manager approves it.';
+
+  @override
+  String get pinPending => 'New location sent · waiting for manager approval';
+
+  @override
+  String get pinFailed =>
+      'The server refused this location. Try again from the door with good GPS.';
+
+  @override
+  String pinDistanceFromOld(String distance) {
+    return '$distance from the current pin';
+  }
+
+  @override
+  String mapNoPinCount(String count) {
+    return '$count without location';
+  }
+
+  @override
+  String get mapNoPinTitle => 'Customers without location';
+
+  @override
+  String pinRejected(String reason) {
+    return 'Location not approved: $reason. Tap to send a new one.';
+  }
 }

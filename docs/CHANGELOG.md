@@ -1,5 +1,15 @@
 # Changelog — staff-app
 
+## [0.3.0] — 2026-11-16
+### Added
+- Pin correction (FR-CUS-008): staff can set or correct a customer's map location. Open it from customer detail ("Set location" when there is no pin, "Correct location" under More) or from the map's "N without location" chip. The phone's GPS fix is checked as the server does (accuracy ≤ 30 m, no mock location, inside Bangladesh), a camera photo is required (kind `location_proof`), and a note is optional. Saved offline: the proposal waits on the phone until its photo is uploaded, then the `location_proposal` mutation is sent with `photoMediaId`. The pin itself changes only after a manager approves it and the customer syncs back. Customer detail shows "waiting for manager approval" until then.
+- Proposal status from the server (contract 1.7.0): `location_proposal` arrives on `/sync/pull` when created and when a manager decides. A rejection shows on customer detail with the manager's reason and a tap to send a new one; an approval clears the line (the new pin arrives as a customer change).
+- Database schema 3: `location_proposals.decision_reason`, with migration tests from schema 1 and 2.
+### Changed
+- Contract pinned to field-api `openapi.yaml` 1.7.0.
+### Not done
+- `GET /location-proposals/mine` (for a reinstalled phone) is not called yet; bootstrap does not snapshot proposals, so after a reinstall older proposals show only when the server next changes them.
+
 ## [0.2.0] — 2026-11-15
 ### Added
 - Phase 2 location tracking (FR-M-011, FR-LOC-*): runs only while on duty (work-in to work-out, breaks included) and at most 3 h after the shift end; visible foreground notification plus a Me-tab status card; adaptive sampling by speed (still / walking / bicycle / vehicle) from `location.sampling` and the server's `nextSampling`; phone-side filters (accuracy, future time, duplicates, over 120 km/h); queue capped at 20,000 points (oldest stationary points dropped first); uploads in batches of 500 every 2 min or at 100 points, rows deleted only after the server confirms; heartbeat every 15 min.

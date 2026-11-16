@@ -432,5 +432,21 @@
   "visitSuggestTitle": "{name}-এর কাছে আছেন?",
   "visitSuggestBody": "{minutes} মিনিট ধরে এখানে আছেন। ভিজিট রেকর্ড করবেন?",
   "visitSuggestNo": "এখন না",
-  "visitSuggestYes": "ভিজিট লিখুন"
+  "visitSuggestYes": "ভিজিট লিখুন",
+  "actionSetLocation": "লোকেশন দিন",
+  "actionCorrectLocation": "লোকেশন ঠিক করুন",
+  "pinIntro": "কাস্টমারের দরজায় দাঁড়ান। ফোনের GPS অবস্থানটাই নতুন পিন হিসেবে যাবে, ম্যানেজার অনুমোদন দেবেন।",
+  "pinAccuracyWeak": "GPS-এ {meters} মিটার গরমিল। {limit} মিটার বা কম লাগবে: খোলা জায়গায় দাঁড়িয়ে একটু অপেক্ষা করুন।",
+  "pinOutside": "এই অবস্থানটা বাংলাদেশের বাইরে।",
+  "pinRetry": "আবার GPS দেখুন",
+  "pinPhotoNeeded": "বাড়ি বা দোকানের একটা ছবি তুলুন",
+  "pinNoteHint": "চিহ্ন, গেটের রং, তলা…",
+  "pinSubmit": "অনুমোদনের জন্য পাঠান",
+  "pinSent": "পাঠানো হয়েছে। ম্যানেজার অনুমোদন দিলে পিন বদলাবে।",
+  "pinPending": "নতুন লোকেশন পাঠানো হয়েছে · ম্যানেজারের অনুমোদনের অপেক্ষায়",
+  "pinFailed": "সার্ভার এই লোকেশন নেয়নি। ভালো GPS নিয়ে দরজা থেকে আবার চেষ্টা করুন।",
+  "pinDistanceFromOld": "বর্তমান পিন থেকে {distance}",
+  "mapNoPinCount": "{count} জনের লোকেশন নেই",
+  "mapNoPinTitle": "লোকেশন নেই এমন কাস্টমার",
+  "pinRejected": "লোকেশন অনুমোদন হয়নি: {reason}। নতুন করে পাঠাতে চাপুন।"
 }

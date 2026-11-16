@@ -100,6 +100,12 @@ class FakeFieldApi implements HttpClientAdapter {
   void serverChange(String entity, String id, Json data, {String op = 'upsert'}) =>
       _log.add(_Change(entity, id, op, data));
 
+  /// Tests / demo: a manager decides a pin proposal (contract 1.7.0).
+  void decideProposal(String clientId, String status, {String? reason}) {
+    final last = _log.lastWhere((c) => c.entity == 'location_proposal' && c.data?['clientId'] == clientId);
+    serverChange('location_proposal', last.id, {...last.data!, 'status': status, 'decisionReason': reason, 'decidedAt': clock.nowUtc().toIso8601String()});
+  }
+
   void addPendingHandover() => serverChange('handover', 'ho-77', {
         'id': 'ho-77',
         'fromUserId': 'u-fs-020',
@@ -311,6 +317,22 @@ class FakeFieldApi implements HttpClientAdapter {
         r = {'mutationId': id, 'result': 'applied', 'entityId': '$entity-$id', 'status': entity == 'collection' ? 'received' : 'ok'};
         if (entity == 'collection' && payload['method'] == 'cash') _cashOnHand += payload['amountPoisha'] as int;
         if (entity == 'deposit') _cashOnHand -= payload['amountPoisha'] as int;
+        if (entity == 'location_proposal') {
+          final geo = (payload['geo'] as Json?) ?? const {};
+          serverChange('location_proposal', '$entity-$id', {
+            'id': '$entity-$id',
+            'clientId': payload['clientId'] ?? id,
+            'customerId': payload['customerId'],
+            'status': 'pending',
+            'lat': geo['lat'],
+            'lng': geo['lng'],
+            'accuracyM': geo['accuracyM'],
+            'note': payload['note'],
+            'decisionReason': null,
+            'createdAt': clock.nowUtc().toIso8601String(),
+            'decidedAt': null,
+          });
+        }
       }
       _applied[id] = r;
       results.add(r);

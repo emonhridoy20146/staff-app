@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Howlader Field Operations API
-  version: 1.5.0
+  version: 1.7.0
   description: |
     Contract owned by field-api. Consumers (admin-web, staff-app) generate types from this file.
     Conventions (auth, pagination, idempotency, errors) are described in docs/05-api-contract.md.
@@ -419,6 +419,15 @@ paths:
       requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/Shift' } } } }
       responses:
         '201': { description: Created }
+  /shifts/{id}:
+    patch:
+      tags: [system]
+      operationId: updateShift
+      description: 'Partial update of a shift (declared in 1.5.0; the route already existed)'
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/Shift' } } } }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Shift' } } } }
 
   /customers:
     get:
@@ -515,6 +524,14 @@ paths:
       parameters: [ { $ref: '#/components/parameters/BranchId' }, { name: status, in: query, schema: { type: string, enum: [pending, approved, rejected] } } ]
       responses:
         '200': { description: 'OK. Plain array, newest first, max 200 (declared in 1.4.0)', content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/LocationProposal' } } } } }
+  /location-proposals/mine:
+    get:
+      tags: [customers]
+      operationId: listOwnLocationProposals
+      description: 'Own pin proposals with their status, newest first, max 200 (1.7.0). Permission customer.location.propose.'
+      parameters: [ { name: status, in: query, schema: { type: string, enum: [pending, approved, rejected] } } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/OwnLocationProposal' } } } } }
   /location-proposals/{id}/decision:
     post:
       tags: [customers]
@@ -1117,7 +1134,7 @@ paths:
       operationId: listNotifications
       parameters: [ { $ref: '#/components/parameters/Limit' }, { $ref: '#/components/parameters/Cursor' }, { name: unread, in: query, schema: { type: boolean } } ]
       responses:
-        '200': { description: OK, content: { application/json: { schema: { type: object, properties: { items: { type: array, items: { type: object, additionalProperties: true } }, nextCursor: { type: [string, 'null'] }, unreadCount: { type: integer } } } } } }
+        '200': { description: OK, content: { application/json: { schema: { type: object, properties: { items: { type: array, items: { $ref: '#/components/schemas/Notification' } }, nextCursor: { type: [string, 'null'] }, unreadCount: { type: integer } } } } } }
   /notifications/{id}/read:
     post:
       tags: [notifications]
@@ -1146,7 +1163,7 @@ paths:
           application/json:
             schema: { type: object, required: [title, body], properties: { branchIds: { type: array, items: { type: string } }, roles: { type: array, items: { $ref: '#/components/schemas/Role' } }, title: { $ref: '#/components/schemas/I18nText' }, body: { $ref: '#/components/schemas/I18nText' }, requireAck: { type: boolean } } }
       responses:
-        '201': { description: Created }
+        '201': { description: Created, content: { application/json: { schema: { $ref: '#/components/schemas/Broadcast' } } } }
   /broadcasts/{id}/ack:
     post:
       tags: [notifications]
@@ -1205,19 +1222,26 @@ paths:
       tags: [reports]
       operationId: branchTrends
       parameters: [ { $ref: '#/components/parameters/BranchId' }, { name: from, in: query, required: true, schema: { type: string, format: date } }, { name: to, in: query, required: true, schema: { type: string, format: date } }, { name: granularity, in: query, schema: { type: string, enum: [day, week, month], default: day } } ]
+      description: 'At most 366 days, ending today or earlier. Weeks start on Saturday. (Response schema declared in 1.6.0.)'
       responses:
-        '200': { description: OK }
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/BranchTrends' } } } }
   /reports/reconciliation:
     get:
       tags: [reports]
       operationId: reconciliation
       parameters: [ { $ref: '#/components/parameters/BranchId' }, { name: date, in: query, required: true, schema: { type: string, format: date } } ]
+      description: 'FOS collections of one business date against the field payments the ERP reported (cached copy; see erpFetchedAt). (Response schema declared in 1.6.0.)'
       responses:
-        '200': { description: OK }
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/ReconciliationReport' } } } }
   /reports/exports:
     post:
       tags: [reports]
       operationId: createExport
+      description: |
+        Async export, built by the worker within about a minute, kept 7 days, visible only to the requester (1.6.0 documents params).
+        `params` per type: staff_performance → { period, date, branchId?, userId? } · collections → { from, to, branchId? } (≤ 92 days) ·
+        attendance → { from, to, branchId? } (≤ 62 days) · overdue_customers, cash_positions → { branchId? }.
+        `format: pdf` and `type: audit` are answered with 422 BUSINESS_RULE (`export_format_unavailable` / `export_type_unavailable`) until they are built.
       requestBody:
         required: true
         content:
@@ -1663,6 +1687,22 @@ components:
         - $ref: '#/components/schemas/Promise'
         - type: object
           properties: { customer: { type: object, properties: { id: { type: string }, name: { $ref: '#/components/schemas/I18nText' }, code: { type: string } } }, owner: { type: object, properties: { id: { type: string }, name: { type: string } } } }
+    OwnLocationProposal:
+      type: object
+      description: A pin proposal as seen by the staff member who made it (1.7.0)
+      required: [id, clientId, customerId, status, lat, lng]
+      properties:
+        id: { type: string }
+        clientId: { type: string, description: 'The clientId the app sent, to match its local record' }
+        customerId: { type: string }
+        status: { type: string, enum: [pending, approved, rejected] }
+        lat: { type: number }
+        lng: { type: number }
+        accuracyM: { type: number }
+        note: { type: [string, 'null'] }
+        decisionReason: { type: [string, 'null'], description: "The manager's reason; always present when rejected" }
+        createdAt: { type: string }
+        decidedAt: { type: [string, 'null'] }
     LocationProposal:
       type: object
       properties:
@@ -1683,9 +1723,13 @@ components:
     LeaveRequest:
       type: object
       properties: { id: { type: string }, userId: { type: string }, userName: { type: string }, type: { type: string, enum: [casual, sick, other] }, from: { type: string, format: date }, to: { type: string, format: date }, reason: { type: string }, status: { type: string, enum: [pending, approved, rejected] }, decidedBy: { type: string }, decidedAt: { type: string, format: date-time }, createdAt: { type: string, format: date-time } }
+    Notification:
+      type: object
+      description: 'Declared in 1.5.0. `data` holds ids for deep links only.'
+      properties: { id: { type: string }, type: { type: string, example: promise.due }, title: { $ref: '#/components/schemas/I18nText' }, body: { $ref: '#/components/schemas/I18nText' }, data: { type: object, additionalProperties: { type: string } }, read: { type: boolean }, readAt: { type: string, format: date-time }, createdAt: { type: string, format: date-time } }
     Broadcast:
       type: object
-      properties: { id: { type: string }, title: { $ref: '#/components/schemas/I18nText' }, body: { $ref: '#/components/schemas/I18nText' }, branchIds: { type: array, items: { type: string } }, roles: { type: array, items: { $ref: '#/components/schemas/Role' } }, requireAck: { type: boolean }, createdBy: { type: object, properties: { id: { type: string }, name: { type: string } } }, createdAt: { type: string, format: date-time }, recipientCount: { type: integer }, ackCount: { type: integer } }
+      properties: { id: { type: string }, title: { $ref: '#/components/schemas/I18nText' }, body: { $ref: '#/components/schemas/I18nText' }, branchIds: { type: array, items: { type: string } }, roles: { type: array, items: { $ref: '#/components/schemas/Role' } }, requireAck: { type: boolean }, createdBy: { type: object, properties: { id: { type: string }, name: { type: string } } }, createdAt: { type: string, format: date-time }, recipientCount: { type: integer }, ackCount: { type: integer }, acked: { type: boolean, description: 'Whether the caller acknowledged it' } }
     AttendanceDay:
       type: object
       properties:
@@ -1780,7 +1824,7 @@ components:
       type: object
       properties:
         seq: { type: integer }
-        entity: { type: string, enum: [customer, collection, visit, note, promise, tag, handover, assignment, area, deposit, attendance_day, notification, broadcast, setting, contact_attempt] }
+        entity: { type: string, enum: [customer, collection, visit, note, promise, tag, handover, assignment, area, deposit, attendance_day, notification, broadcast, setting, contact_attempt, location_proposal] }
         op: { type: string, enum: [upsert, delete] }
         id: { type: string }
         data:
@@ -1791,7 +1835,7 @@ components:
             customer → CustomerDetail · collection → Collection · visit → Visit · note → Note · promise → Promise ·
             tag → Tag (with customerId) · handover → Handover · assignment → Assignment · area → Area · deposit → Deposit ·
             attendance_day → AttendanceDay · notification → Notification · broadcast → Broadcast · setting → { key, value } ·
-            contact_attempt → ContactAttempt
+            contact_attempt → ContactAttempt · location_proposal → OwnLocationProposal (1.7.0; sent only to the staff member who proposed, on create and on the manager's decision)
         reason: { type: string }
     ContactAttemptCreate:
       type: object
@@ -1869,6 +1913,51 @@ components:
         breakMin: { type: integer }
         fieldMin: { type: integer }
         distanceKm: { type: number }
+    OverdueBucket:
+      type: object
+      properties: { count: { type: integer }, amountPoisha: { type: integer } }
+    BranchTrends:
+      type: object
+      description: 'Overdue figures are cached ERP values frozen nightly per branch (today is live); never an official balance.'
+      properties:
+        from: { type: string }
+        to: { type: string }
+        granularity: { type: string, enum: [day, week, month] }
+        collection:
+          type: array
+          items: { type: object, properties: { period: { type: string, description: 'YYYY-MM-DD (day, or the Saturday a week starts) or YYYY-MM' }, totalPoisha: { type: integer }, cashPoisha: { type: integer }, mobilePoisha: { type: integer }, count: { type: integer }, visits: { type: integer } } }
+        overdue:
+          type: array
+          description: 'One entry per day that has a snapshot (always daily, whatever the granularity)'
+          items:
+            type: object
+            properties:
+              date: { type: string }
+              buckets: { type: object, properties: { d1_30: { $ref: '#/components/schemas/OverdueBucket' }, d31_60: { $ref: '#/components/schemas/OverdueBucket' }, d61_90: { $ref: '#/components/schemas/OverdueBucket' }, d90p: { $ref: '#/components/schemas/OverdueBucket' } } }
+              totalOverdue: { $ref: '#/components/schemas/OverdueBucket' }
+              badSuggested: { type: integer }
+              tagged: { type: integer }
+    ReconciliationReport:
+      type: object
+      properties:
+        date: { type: string }
+        balanced: { type: boolean }
+        erpFetchedAt: { type: [string, 'null'], description: 'Oldest ERP copy used; null when the ERP reported no field payment for the day' }
+        totals: { type: object, properties: { fosPostedCount: { type: integer }, fosPostedPoisha: { type: integer }, fosWaitingCount: { type: integer }, fosWaitingPoisha: { type: integer }, erpCount: { type: integer }, erpPoisha: { type: integer }, matchedCount: { type: integer } } }
+        mismatches:
+          type: array
+          items:
+            type: object
+            properties:
+              kind: { type: string, enum: [not_posted, missing_in_erp, missing_in_fos, amount_differs, reversed_in_erp, voided_in_fos] }
+              collectionId: { type: [string, 'null'] }
+              receiptNo: { type: [string, 'null'] }
+              erpPaymentId: { type: [string, 'null'] }
+              fosAmountPoisha: { type: [integer, 'null'] }
+              erpAmountPoisha: { type: [integer, 'null'] }
+              status: { type: [string, 'null'] }
+              customer: { type: [object, 'null'], properties: { id: { type: string }, name: { type: string }, code: { type: string } } }
+              collector: { type: [object, 'null'], properties: { id: { type: string }, name: { type: string } } }
     AuditEntry:
       type: object
       properties: { id: { type: string }, at: { type: string }, actor: { type: object, properties: { id: { type: string }, name: { type: string }, role: { type: string } } }, action: { type: string, example: rbac.override.set }, entity: { type: string }, entityId: { type: string }, branchId: { type: string }, before: { type: object, additionalProperties: true }, after: { type: object, additionalProperties: true }, reason: { type: string }, ip: { type: string }, deviceId: { type: string }, requestId: { type: string } }
