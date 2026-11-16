@@ -450,5 +450,10 @@
   "mapNoPinTitle": "লোকেশন নেই এমন কাস্টমার",
   "pinRejected": "লোকেশন অনুমোদন হয়নি: {reason}। নতুন করে পাঠাতে চাপুন।",
   "attendanceSelfieNeeded": "হাজিরার জন্য আপনার ছবি লাগবে। আবার চাপুন আর ছবি তুলুন।",
-  "attendanceSelfieHint": "আপনার ছবি তুলতে সামনের ক্যামেরা খুলবে। শুধু ক্যামেরা।"
+  "attendanceSelfieHint": "আপনার ছবি তুলতে সামনের ক্যামেরা খুলবে। শুধু ক্যামেরা।",
+  "mapViewMap": "ম্যাপ",
+  "mapViewList": "লিস্ট",
+  "mapFilterClear": "মুছুন",
+  "mapListEmpty": "এই ফিল্টারে কোনো কাস্টমার নেই",
+  "mapListNoFix": "এখনো GPS পাওয়া যায়নি · পেলে দূরত্ব দেখাবে"
 }

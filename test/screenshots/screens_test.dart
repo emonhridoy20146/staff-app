@@ -15,6 +15,7 @@ import 'package:staff_app/features/collections/collections.dart';
 import 'package:staff_app/features/collections/src/application/record_collection.dart';
 import 'package:staff_app/features/collections/src/collection_providers.dart' show receiptAllocatorProvider;
 import 'package:staff_app/features/customers/customers.dart';
+import 'package:staff_app/features/map/src/map_screen.dart' show mapFiltersProvider, mapListModeProvider;
 
 import '../flows/helpers.dart';
 
@@ -122,5 +123,15 @@ void main() {
   testWidgets('12 today english', (t) async => _shot(t, await _ready(t, lang: 'en'), '12-today-en', go: '/today'));
   testWidgets('13 customer without pin', (t) async => _shot(t, await _ready(t), '13-customer-no-pin', go: '/customers/c-1010'));
   testWidgets('15 work-in with photo', (t) async => _shot(t, await _ready(t, signIn: true), '15-work-in', go: '/attendance/work-in'));
+  testWidgets('16 map filtered', (t) async {
+    final h = await _ready(t);
+    h.read(mapFiltersProvider.notifier).state = {CustomerFilter.overdue};
+    await _shot(t, h, '16-map-filtered', go: '/map');
+  });
+  testWidgets('17 map list view', (t) async {
+    final h = await _ready(t);
+    h.read(mapListModeProvider.notifier).state = true;
+    await _shot(t, h, '17-map-list', go: '/map');
+  });
   testWidgets('14 set location', (t) async => _shot(t, await _ready(t), '14-set-location', go: '/customers/c-1010/pin'));
 }

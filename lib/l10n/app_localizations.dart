@@ -2803,6 +2803,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The front camera opens to take your photo. Camera only.'**
   String get attendanceSelfieHint;
+
+  /// No description provided for @mapViewMap.
+  ///
+  /// In en, this message translates to:
+  /// **'Map'**
+  String get mapViewMap;
+
+  /// No description provided for @mapViewList.
+  ///
+  /// In en, this message translates to:
+  /// **'List'**
+  String get mapViewList;
+
+  /// No description provided for @mapFilterClear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get mapFilterClear;
+
+  /// No description provided for @mapListEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No customers match these filters'**
+  String get mapListEmpty;
+
+  /// No description provided for @mapListNoFix.
+  ///
+  /// In en, this message translates to:
+  /// **'No GPS yet · distances appear when the phone finds you'**
+  String get mapListNoFix;
 }
 
 class _AppLocalizationsDelegate
