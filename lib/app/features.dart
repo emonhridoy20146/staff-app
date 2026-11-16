@@ -4,6 +4,7 @@ import '../features/attendance/attendance.dart';
 import '../features/auth/auth.dart';
 import '../features/cash/cash.dart';
 import '../features/collections/collections.dart';
+import '../features/cowork/cowork.dart';
 import '../features/customers/customers.dart';
 import '../features/handovers/handovers.dart';
 import '../features/location/location.dart';
@@ -32,6 +33,7 @@ List<FeatureManifest> buildFeatureManifests(SyncHandlerRegistry Function() regis
       tagsManifest,
       attendanceManifest,
       handoversManifest,
+      coworkManifest,
       locationManifest,
       mapManifest,
       syncManifest,

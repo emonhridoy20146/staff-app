@@ -8015,6 +8015,37 @@ class $VisitsTable extends Visits with TableInfo<$VisitsTable, VisitRow> {
     requiredDuringInsert: false,
     defaultValue: const Constant('queued'),
   );
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
+    'user_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _coWorkSessionIdMeta = const VerificationMeta(
+    'coWorkSessionId',
+  );
+  @override
+  late final GeneratedColumn<String> coWorkSessionId = GeneratedColumn<String>(
+    'co_work_session_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _coWorkParticipantIdsJsonMeta =
+      const VerificationMeta('coWorkParticipantIdsJson');
+  @override
+  late final GeneratedColumn<String> coWorkParticipantIdsJson =
+      GeneratedColumn<String>(
+        'co_work_participant_ids_json',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
   @override
   List<GeneratedColumn> get $columns => [
     clientId,
@@ -8033,6 +8064,9 @@ class $VisitsTable extends Visits with TableInfo<$VisitsTable, VisitRow> {
     note,
     source,
     syncState,
+    userId,
+    coWorkSessionId,
+    coWorkParticipantIdsJson,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -8159,6 +8193,30 @@ class $VisitsTable extends Visits with TableInfo<$VisitsTable, VisitRow> {
         syncState.isAcceptableOrUnknown(data['sync_state']!, _syncStateMeta),
       );
     }
+    if (data.containsKey('user_id')) {
+      context.handle(
+        _userIdMeta,
+        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
+      );
+    }
+    if (data.containsKey('co_work_session_id')) {
+      context.handle(
+        _coWorkSessionIdMeta,
+        coWorkSessionId.isAcceptableOrUnknown(
+          data['co_work_session_id']!,
+          _coWorkSessionIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('co_work_participant_ids_json')) {
+      context.handle(
+        _coWorkParticipantIdsJsonMeta,
+        coWorkParticipantIdsJson.isAcceptableOrUnknown(
+          data['co_work_participant_ids_json']!,
+          _coWorkParticipantIdsJsonMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -8232,6 +8290,18 @@ class $VisitsTable extends Visits with TableInfo<$VisitsTable, VisitRow> {
         DriftSqlType.string,
         data['${effectivePrefix}sync_state'],
       )!,
+      userId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_id'],
+      ),
+      coWorkSessionId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}co_work_session_id'],
+      ),
+      coWorkParticipantIdsJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}co_work_participant_ids_json'],
+      ),
     );
   }
 
@@ -8258,6 +8328,18 @@ class VisitRow extends DataClass implements Insertable<VisitRow> {
   final String? note;
   final String source;
   final String syncState;
+
+  /// Recorder's user id from the server; null = recorded on this phone (v4).
+  final String? userId;
+
+  /// Co-work session the visit was made in (v4, contract 1.9.0). Set at save
+  /// time by the recorder; cleared when the server could not confirm it
+  /// (flag `cowork_invalid`).
+  final String? coWorkSessionId;
+
+  /// Partners (user ids, without the recorder): our estimate at save time,
+  /// replaced by the server's `coWork.participantIds` on pull (v4).
+  final String? coWorkParticipantIdsJson;
   const VisitRow({
     required this.clientId,
     this.serverId,
@@ -8275,6 +8357,9 @@ class VisitRow extends DataClass implements Insertable<VisitRow> {
     this.note,
     required this.source,
     required this.syncState,
+    this.userId,
+    this.coWorkSessionId,
+    this.coWorkParticipantIdsJson,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -8313,6 +8398,17 @@ class VisitRow extends DataClass implements Insertable<VisitRow> {
     }
     map['source'] = Variable<String>(source);
     map['sync_state'] = Variable<String>(syncState);
+    if (!nullToAbsent || userId != null) {
+      map['user_id'] = Variable<String>(userId);
+    }
+    if (!nullToAbsent || coWorkSessionId != null) {
+      map['co_work_session_id'] = Variable<String>(coWorkSessionId);
+    }
+    if (!nullToAbsent || coWorkParticipantIdsJson != null) {
+      map['co_work_participant_ids_json'] = Variable<String>(
+        coWorkParticipantIdsJson,
+      );
+    }
     return map;
   }
 
@@ -8344,6 +8440,15 @@ class VisitRow extends DataClass implements Insertable<VisitRow> {
       note: note == null && nullToAbsent ? const Value.absent() : Value(note),
       source: Value(source),
       syncState: Value(syncState),
+      userId: userId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(userId),
+      coWorkSessionId: coWorkSessionId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(coWorkSessionId),
+      coWorkParticipantIdsJson: coWorkParticipantIdsJson == null && nullToAbsent
+          ? const Value.absent()
+          : Value(coWorkParticipantIdsJson),
     );
   }
 
@@ -8371,6 +8476,11 @@ class VisitRow extends DataClass implements Insertable<VisitRow> {
       note: serializer.fromJson<String?>(json['note']),
       source: serializer.fromJson<String>(json['source']),
       syncState: serializer.fromJson<String>(json['syncState']),
+      userId: serializer.fromJson<String?>(json['userId']),
+      coWorkSessionId: serializer.fromJson<String?>(json['coWorkSessionId']),
+      coWorkParticipantIdsJson: serializer.fromJson<String?>(
+        json['coWorkParticipantIdsJson'],
+      ),
     );
   }
   @override
@@ -8395,6 +8505,11 @@ class VisitRow extends DataClass implements Insertable<VisitRow> {
       'note': serializer.toJson<String?>(note),
       'source': serializer.toJson<String>(source),
       'syncState': serializer.toJson<String>(syncState),
+      'userId': serializer.toJson<String?>(userId),
+      'coWorkSessionId': serializer.toJson<String?>(coWorkSessionId),
+      'coWorkParticipantIdsJson': serializer.toJson<String?>(
+        coWorkParticipantIdsJson,
+      ),
     };
   }
 
@@ -8415,6 +8530,9 @@ class VisitRow extends DataClass implements Insertable<VisitRow> {
     Value<String?> note = const Value.absent(),
     String? source,
     String? syncState,
+    Value<String?> userId = const Value.absent(),
+    Value<String?> coWorkSessionId = const Value.absent(),
+    Value<String?> coWorkParticipantIdsJson = const Value.absent(),
   }) => VisitRow(
     clientId: clientId ?? this.clientId,
     serverId: serverId.present ? serverId.value : this.serverId,
@@ -8435,6 +8553,13 @@ class VisitRow extends DataClass implements Insertable<VisitRow> {
     note: note.present ? note.value : this.note,
     source: source ?? this.source,
     syncState: syncState ?? this.syncState,
+    userId: userId.present ? userId.value : this.userId,
+    coWorkSessionId: coWorkSessionId.present
+        ? coWorkSessionId.value
+        : this.coWorkSessionId,
+    coWorkParticipantIdsJson: coWorkParticipantIdsJson.present
+        ? coWorkParticipantIdsJson.value
+        : this.coWorkParticipantIdsJson,
   );
   VisitRow copyWithCompanion(VisitsCompanion data) {
     return VisitRow(
@@ -8462,6 +8587,13 @@ class VisitRow extends DataClass implements Insertable<VisitRow> {
       note: data.note.present ? data.note.value : this.note,
       source: data.source.present ? data.source.value : this.source,
       syncState: data.syncState.present ? data.syncState.value : this.syncState,
+      userId: data.userId.present ? data.userId.value : this.userId,
+      coWorkSessionId: data.coWorkSessionId.present
+          ? data.coWorkSessionId.value
+          : this.coWorkSessionId,
+      coWorkParticipantIdsJson: data.coWorkParticipantIdsJson.present
+          ? data.coWorkParticipantIdsJson.value
+          : this.coWorkParticipantIdsJson,
     );
   }
 
@@ -8483,7 +8615,10 @@ class VisitRow extends DataClass implements Insertable<VisitRow> {
           ..write('photoMediaClientIdsJson: $photoMediaClientIdsJson, ')
           ..write('note: $note, ')
           ..write('source: $source, ')
-          ..write('syncState: $syncState')
+          ..write('syncState: $syncState, ')
+          ..write('userId: $userId, ')
+          ..write('coWorkSessionId: $coWorkSessionId, ')
+          ..write('coWorkParticipantIdsJson: $coWorkParticipantIdsJson')
           ..write(')'))
         .toString();
   }
@@ -8506,6 +8641,9 @@ class VisitRow extends DataClass implements Insertable<VisitRow> {
     note,
     source,
     syncState,
+    userId,
+    coWorkSessionId,
+    coWorkParticipantIdsJson,
   );
   @override
   bool operator ==(Object other) =>
@@ -8526,7 +8664,10 @@ class VisitRow extends DataClass implements Insertable<VisitRow> {
           other.photoMediaClientIdsJson == this.photoMediaClientIdsJson &&
           other.note == this.note &&
           other.source == this.source &&
-          other.syncState == this.syncState);
+          other.syncState == this.syncState &&
+          other.userId == this.userId &&
+          other.coWorkSessionId == this.coWorkSessionId &&
+          other.coWorkParticipantIdsJson == this.coWorkParticipantIdsJson);
 }
 
 class VisitsCompanion extends UpdateCompanion<VisitRow> {
@@ -8546,6 +8687,9 @@ class VisitsCompanion extends UpdateCompanion<VisitRow> {
   final Value<String?> note;
   final Value<String> source;
   final Value<String> syncState;
+  final Value<String?> userId;
+  final Value<String?> coWorkSessionId;
+  final Value<String?> coWorkParticipantIdsJson;
   final Value<int> rowid;
   const VisitsCompanion({
     this.clientId = const Value.absent(),
@@ -8564,6 +8708,9 @@ class VisitsCompanion extends UpdateCompanion<VisitRow> {
     this.note = const Value.absent(),
     this.source = const Value.absent(),
     this.syncState = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.coWorkSessionId = const Value.absent(),
+    this.coWorkParticipantIdsJson = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   VisitsCompanion.insert({
@@ -8583,6 +8730,9 @@ class VisitsCompanion extends UpdateCompanion<VisitRow> {
     this.note = const Value.absent(),
     this.source = const Value.absent(),
     this.syncState = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.coWorkSessionId = const Value.absent(),
+    this.coWorkParticipantIdsJson = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : clientId = Value(clientId),
        customerId = Value(customerId),
@@ -8605,6 +8755,9 @@ class VisitsCompanion extends UpdateCompanion<VisitRow> {
     Expression<String>? note,
     Expression<String>? source,
     Expression<String>? syncState,
+    Expression<String>? userId,
+    Expression<String>? coWorkSessionId,
+    Expression<String>? coWorkParticipantIdsJson,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -8625,6 +8778,10 @@ class VisitsCompanion extends UpdateCompanion<VisitRow> {
       if (note != null) 'note': note,
       if (source != null) 'source': source,
       if (syncState != null) 'sync_state': syncState,
+      if (userId != null) 'user_id': userId,
+      if (coWorkSessionId != null) 'co_work_session_id': coWorkSessionId,
+      if (coWorkParticipantIdsJson != null)
+        'co_work_participant_ids_json': coWorkParticipantIdsJson,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -8646,6 +8803,9 @@ class VisitsCompanion extends UpdateCompanion<VisitRow> {
     Value<String?>? note,
     Value<String>? source,
     Value<String>? syncState,
+    Value<String?>? userId,
+    Value<String?>? coWorkSessionId,
+    Value<String?>? coWorkParticipantIdsJson,
     Value<int>? rowid,
   }) {
     return VisitsCompanion(
@@ -8666,6 +8826,10 @@ class VisitsCompanion extends UpdateCompanion<VisitRow> {
       note: note ?? this.note,
       source: source ?? this.source,
       syncState: syncState ?? this.syncState,
+      userId: userId ?? this.userId,
+      coWorkSessionId: coWorkSessionId ?? this.coWorkSessionId,
+      coWorkParticipantIdsJson:
+          coWorkParticipantIdsJson ?? this.coWorkParticipantIdsJson,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -8723,6 +8887,17 @@ class VisitsCompanion extends UpdateCompanion<VisitRow> {
     if (syncState.present) {
       map['sync_state'] = Variable<String>(syncState.value);
     }
+    if (userId.present) {
+      map['user_id'] = Variable<String>(userId.value);
+    }
+    if (coWorkSessionId.present) {
+      map['co_work_session_id'] = Variable<String>(coWorkSessionId.value);
+    }
+    if (coWorkParticipantIdsJson.present) {
+      map['co_work_participant_ids_json'] = Variable<String>(
+        coWorkParticipantIdsJson.value,
+      );
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -8748,6 +8923,9 @@ class VisitsCompanion extends UpdateCompanion<VisitRow> {
           ..write('note: $note, ')
           ..write('source: $source, ')
           ..write('syncState: $syncState, ')
+          ..write('userId: $userId, ')
+          ..write('coWorkSessionId: $coWorkSessionId, ')
+          ..write('coWorkParticipantIdsJson: $coWorkParticipantIdsJson, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -15807,6 +15985,529 @@ class ContactAttemptsCompanion extends UpdateCompanion<ContactAttemptRow> {
   }
 }
 
+class $CoworkSessionsTable extends CoworkSessions
+    with TableInfo<$CoworkSessionsTable, CoworkSessionRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $CoworkSessionsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _businessDateMeta = const VerificationMeta(
+    'businessDate',
+  );
+  @override
+  late final GeneratedColumn<String> businessDate = GeneratedColumn<String>(
+    'business_date',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdByMeta = const VerificationMeta(
+    'createdBy',
+  );
+  @override
+  late final GeneratedColumn<String> createdBy = GeneratedColumn<String>(
+    'created_by',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _noteMeta = const VerificationMeta('note');
+  @override
+  late final GeneratedColumn<String> note = GeneratedColumn<String>(
+    'note',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _membersJsonMeta = const VerificationMeta(
+    'membersJson',
+  );
+  @override
+  late final GeneratedColumn<String> membersJson = GeneratedColumn<String>(
+    'members_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _endedAtMeta = const VerificationMeta(
+    'endedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> endedAt = GeneratedColumn<DateTime>(
+    'ended_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    businessDate,
+    status,
+    createdBy,
+    note,
+    membersJson,
+    createdAt,
+    endedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'cowork_sessions';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<CoworkSessionRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('business_date')) {
+      context.handle(
+        _businessDateMeta,
+        businessDate.isAcceptableOrUnknown(
+          data['business_date']!,
+          _businessDateMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_businessDateMeta);
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_statusMeta);
+    }
+    if (data.containsKey('created_by')) {
+      context.handle(
+        _createdByMeta,
+        createdBy.isAcceptableOrUnknown(data['created_by']!, _createdByMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdByMeta);
+    }
+    if (data.containsKey('note')) {
+      context.handle(
+        _noteMeta,
+        note.isAcceptableOrUnknown(data['note']!, _noteMeta),
+      );
+    }
+    if (data.containsKey('members_json')) {
+      context.handle(
+        _membersJsonMeta,
+        membersJson.isAcceptableOrUnknown(
+          data['members_json']!,
+          _membersJsonMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_membersJsonMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('ended_at')) {
+      context.handle(
+        _endedAtMeta,
+        endedAt.isAcceptableOrUnknown(data['ended_at']!, _endedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  CoworkSessionRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return CoworkSessionRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      businessDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}business_date'],
+      )!,
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status'],
+      )!,
+      createdBy: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}created_by'],
+      )!,
+      note: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}note'],
+      ),
+      membersJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}members_json'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      endedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}ended_at'],
+      ),
+    );
+  }
+
+  @override
+  $CoworkSessionsTable createAlias(String alias) {
+    return $CoworkSessionsTable(attachedDatabase, alias);
+  }
+}
+
+class CoworkSessionRow extends DataClass
+    implements Insertable<CoworkSessionRow> {
+  final String id;
+  final String businessDate;
+
+  /// open | ended
+  final String status;
+  final String createdBy;
+  final String? note;
+
+  /// CoworkMember[] as JSON (userId, name, status, invitedBy, invitedAt, respondedAt, leftAt).
+  final String membersJson;
+  final DateTime createdAt;
+  final DateTime? endedAt;
+  const CoworkSessionRow({
+    required this.id,
+    required this.businessDate,
+    required this.status,
+    required this.createdBy,
+    this.note,
+    required this.membersJson,
+    required this.createdAt,
+    this.endedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['business_date'] = Variable<String>(businessDate);
+    map['status'] = Variable<String>(status);
+    map['created_by'] = Variable<String>(createdBy);
+    if (!nullToAbsent || note != null) {
+      map['note'] = Variable<String>(note);
+    }
+    map['members_json'] = Variable<String>(membersJson);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    if (!nullToAbsent || endedAt != null) {
+      map['ended_at'] = Variable<DateTime>(endedAt);
+    }
+    return map;
+  }
+
+  CoworkSessionsCompanion toCompanion(bool nullToAbsent) {
+    return CoworkSessionsCompanion(
+      id: Value(id),
+      businessDate: Value(businessDate),
+      status: Value(status),
+      createdBy: Value(createdBy),
+      note: note == null && nullToAbsent ? const Value.absent() : Value(note),
+      membersJson: Value(membersJson),
+      createdAt: Value(createdAt),
+      endedAt: endedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(endedAt),
+    );
+  }
+
+  factory CoworkSessionRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return CoworkSessionRow(
+      id: serializer.fromJson<String>(json['id']),
+      businessDate: serializer.fromJson<String>(json['businessDate']),
+      status: serializer.fromJson<String>(json['status']),
+      createdBy: serializer.fromJson<String>(json['createdBy']),
+      note: serializer.fromJson<String?>(json['note']),
+      membersJson: serializer.fromJson<String>(json['membersJson']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      endedAt: serializer.fromJson<DateTime?>(json['endedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'businessDate': serializer.toJson<String>(businessDate),
+      'status': serializer.toJson<String>(status),
+      'createdBy': serializer.toJson<String>(createdBy),
+      'note': serializer.toJson<String?>(note),
+      'membersJson': serializer.toJson<String>(membersJson),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'endedAt': serializer.toJson<DateTime?>(endedAt),
+    };
+  }
+
+  CoworkSessionRow copyWith({
+    String? id,
+    String? businessDate,
+    String? status,
+    String? createdBy,
+    Value<String?> note = const Value.absent(),
+    String? membersJson,
+    DateTime? createdAt,
+    Value<DateTime?> endedAt = const Value.absent(),
+  }) => CoworkSessionRow(
+    id: id ?? this.id,
+    businessDate: businessDate ?? this.businessDate,
+    status: status ?? this.status,
+    createdBy: createdBy ?? this.createdBy,
+    note: note.present ? note.value : this.note,
+    membersJson: membersJson ?? this.membersJson,
+    createdAt: createdAt ?? this.createdAt,
+    endedAt: endedAt.present ? endedAt.value : this.endedAt,
+  );
+  CoworkSessionRow copyWithCompanion(CoworkSessionsCompanion data) {
+    return CoworkSessionRow(
+      id: data.id.present ? data.id.value : this.id,
+      businessDate: data.businessDate.present
+          ? data.businessDate.value
+          : this.businessDate,
+      status: data.status.present ? data.status.value : this.status,
+      createdBy: data.createdBy.present ? data.createdBy.value : this.createdBy,
+      note: data.note.present ? data.note.value : this.note,
+      membersJson: data.membersJson.present
+          ? data.membersJson.value
+          : this.membersJson,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      endedAt: data.endedAt.present ? data.endedAt.value : this.endedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CoworkSessionRow(')
+          ..write('id: $id, ')
+          ..write('businessDate: $businessDate, ')
+          ..write('status: $status, ')
+          ..write('createdBy: $createdBy, ')
+          ..write('note: $note, ')
+          ..write('membersJson: $membersJson, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('endedAt: $endedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    businessDate,
+    status,
+    createdBy,
+    note,
+    membersJson,
+    createdAt,
+    endedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is CoworkSessionRow &&
+          other.id == this.id &&
+          other.businessDate == this.businessDate &&
+          other.status == this.status &&
+          other.createdBy == this.createdBy &&
+          other.note == this.note &&
+          other.membersJson == this.membersJson &&
+          other.createdAt == this.createdAt &&
+          other.endedAt == this.endedAt);
+}
+
+class CoworkSessionsCompanion extends UpdateCompanion<CoworkSessionRow> {
+  final Value<String> id;
+  final Value<String> businessDate;
+  final Value<String> status;
+  final Value<String> createdBy;
+  final Value<String?> note;
+  final Value<String> membersJson;
+  final Value<DateTime> createdAt;
+  final Value<DateTime?> endedAt;
+  final Value<int> rowid;
+  const CoworkSessionsCompanion({
+    this.id = const Value.absent(),
+    this.businessDate = const Value.absent(),
+    this.status = const Value.absent(),
+    this.createdBy = const Value.absent(),
+    this.note = const Value.absent(),
+    this.membersJson = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.endedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  CoworkSessionsCompanion.insert({
+    required String id,
+    required String businessDate,
+    required String status,
+    required String createdBy,
+    this.note = const Value.absent(),
+    required String membersJson,
+    required DateTime createdAt,
+    this.endedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       businessDate = Value(businessDate),
+       status = Value(status),
+       createdBy = Value(createdBy),
+       membersJson = Value(membersJson),
+       createdAt = Value(createdAt);
+  static Insertable<CoworkSessionRow> custom({
+    Expression<String>? id,
+    Expression<String>? businessDate,
+    Expression<String>? status,
+    Expression<String>? createdBy,
+    Expression<String>? note,
+    Expression<String>? membersJson,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? endedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (businessDate != null) 'business_date': businessDate,
+      if (status != null) 'status': status,
+      if (createdBy != null) 'created_by': createdBy,
+      if (note != null) 'note': note,
+      if (membersJson != null) 'members_json': membersJson,
+      if (createdAt != null) 'created_at': createdAt,
+      if (endedAt != null) 'ended_at': endedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  CoworkSessionsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? businessDate,
+    Value<String>? status,
+    Value<String>? createdBy,
+    Value<String?>? note,
+    Value<String>? membersJson,
+    Value<DateTime>? createdAt,
+    Value<DateTime?>? endedAt,
+    Value<int>? rowid,
+  }) {
+    return CoworkSessionsCompanion(
+      id: id ?? this.id,
+      businessDate: businessDate ?? this.businessDate,
+      status: status ?? this.status,
+      createdBy: createdBy ?? this.createdBy,
+      note: note ?? this.note,
+      membersJson: membersJson ?? this.membersJson,
+      createdAt: createdAt ?? this.createdAt,
+      endedAt: endedAt ?? this.endedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (businessDate.present) {
+      map['business_date'] = Variable<String>(businessDate.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (createdBy.present) {
+      map['created_by'] = Variable<String>(createdBy.value);
+    }
+    if (note.present) {
+      map['note'] = Variable<String>(note.value);
+    }
+    if (membersJson.present) {
+      map['members_json'] = Variable<String>(membersJson.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (endedAt.present) {
+      map['ended_at'] = Variable<DateTime>(endedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CoworkSessionsCompanion(')
+          ..write('id: $id, ')
+          ..write('businessDate: $businessDate, ')
+          ..write('status: $status, ')
+          ..write('createdBy: $createdBy, ')
+          ..write('note: $note, ')
+          ..write('membersJson: $membersJson, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('endedAt: $endedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $NotificationsTable extends Notifications
     with TableInfo<$NotificationsTable, NotificationRow> {
   @override
@@ -16501,6 +17202,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $ContactAttemptsTable contactAttempts = $ContactAttemptsTable(
     this,
   );
+  late final $CoworkSessionsTable coworkSessions = $CoworkSessionsTable(this);
   late final $NotificationsTable notifications = $NotificationsTable(this);
   late final $KvSettingsTable kvSettings = $KvSettingsTable(this);
   @override
@@ -16531,6 +17233,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     syncMeta,
     locationQueue,
     contactAttempts,
+    coworkSessions,
     notifications,
     kvSettings,
   ];
@@ -20282,6 +20985,9 @@ typedef $$VisitsTableCreateCompanionBuilder = VisitsCompanion Function({
   Value<String?> note,
   Value<String> source,
   Value<String> syncState,
+  Value<String?> userId,
+  Value<String?> coWorkSessionId,
+  Value<String?> coWorkParticipantIdsJson,
   Value<int> rowid,
 });
 typedef $$VisitsTableUpdateCompanionBuilder = VisitsCompanion Function({
@@ -20301,6 +21007,9 @@ typedef $$VisitsTableUpdateCompanionBuilder = VisitsCompanion Function({
   Value<String?> note,
   Value<String> source,
   Value<String> syncState,
+  Value<String?> userId,
+  Value<String?> coWorkSessionId,
+  Value<String?> coWorkParticipantIdsJson,
   Value<int> rowid,
 });
 
@@ -20390,6 +21099,21 @@ class $$VisitsTableFilterComposer
 
   ColumnFilters<String> get syncState => $composableBuilder(
     column: $table.syncState,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get coWorkSessionId => $composableBuilder(
+    column: $table.coWorkSessionId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get coWorkParticipantIdsJson => $composableBuilder(
+    column: $table.coWorkParticipantIdsJson,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -20482,6 +21206,21 @@ class $$VisitsTableOrderingComposer
     column: $table.syncState,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get coWorkSessionId => $composableBuilder(
+    column: $table.coWorkSessionId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get coWorkParticipantIdsJson => $composableBuilder(
+    column: $table.coWorkParticipantIdsJson,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$VisitsTableAnnotationComposer
@@ -20548,6 +21287,19 @@ class $$VisitsTableAnnotationComposer
 
   GeneratedColumn<String> get syncState =>
       $composableBuilder(column: $table.syncState, builder: (column) => column);
+
+  GeneratedColumn<String> get userId =>
+      $composableBuilder(column: $table.userId, builder: (column) => column);
+
+  GeneratedColumn<String> get coWorkSessionId => $composableBuilder(
+    column: $table.coWorkSessionId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get coWorkParticipantIdsJson => $composableBuilder(
+    column: $table.coWorkParticipantIdsJson,
+    builder: (column) => column,
+  );
 }
 
 class $$VisitsTableTableManager
@@ -20594,6 +21346,9 @@ class $$VisitsTableTableManager
                 Value<String?> note = const Value.absent(),
                 Value<String> source = const Value.absent(),
                 Value<String> syncState = const Value.absent(),
+                Value<String?> userId = const Value.absent(),
+                Value<String?> coWorkSessionId = const Value.absent(),
+                Value<String?> coWorkParticipantIdsJson = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => VisitsCompanion(
                 clientId: clientId,
@@ -20612,6 +21367,9 @@ class $$VisitsTableTableManager
                 note: note,
                 source: source,
                 syncState: syncState,
+                userId: userId,
+                coWorkSessionId: coWorkSessionId,
+                coWorkParticipantIdsJson: coWorkParticipantIdsJson,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -20632,6 +21390,9 @@ class $$VisitsTableTableManager
                 Value<String?> note = const Value.absent(),
                 Value<String> source = const Value.absent(),
                 Value<String> syncState = const Value.absent(),
+                Value<String?> userId = const Value.absent(),
+                Value<String?> coWorkSessionId = const Value.absent(),
+                Value<String?> coWorkParticipantIdsJson = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => VisitsCompanion.insert(
                 clientId: clientId,
@@ -20650,6 +21411,9 @@ class $$VisitsTableTableManager
                 note: note,
                 source: source,
                 syncState: syncState,
+                userId: userId,
+                coWorkSessionId: coWorkSessionId,
+                coWorkParticipantIdsJson: coWorkParticipantIdsJson,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -24244,6 +25008,282 @@ typedef $$ContactAttemptsTableProcessedTableManager =
       ContactAttemptRow,
       PrefetchHooks Function()
     >;
+typedef $$CoworkSessionsTableCreateCompanionBuilder =
+    CoworkSessionsCompanion Function({
+      required String id,
+      required String businessDate,
+      required String status,
+      required String createdBy,
+      Value<String?> note,
+      required String membersJson,
+      required DateTime createdAt,
+      Value<DateTime?> endedAt,
+      Value<int> rowid,
+    });
+typedef $$CoworkSessionsTableUpdateCompanionBuilder =
+    CoworkSessionsCompanion Function({
+      Value<String> id,
+      Value<String> businessDate,
+      Value<String> status,
+      Value<String> createdBy,
+      Value<String?> note,
+      Value<String> membersJson,
+      Value<DateTime> createdAt,
+      Value<DateTime?> endedAt,
+      Value<int> rowid,
+    });
+
+class $$CoworkSessionsTableFilterComposer
+    extends Composer<_$AppDatabase, $CoworkSessionsTable> {
+  $$CoworkSessionsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get businessDate => $composableBuilder(
+    column: $table.businessDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get createdBy => $composableBuilder(
+    column: $table.createdBy,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get membersJson => $composableBuilder(
+    column: $table.membersJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get endedAt => $composableBuilder(
+    column: $table.endedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$CoworkSessionsTableOrderingComposer
+    extends Composer<_$AppDatabase, $CoworkSessionsTable> {
+  $$CoworkSessionsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get businessDate => $composableBuilder(
+    column: $table.businessDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get createdBy => $composableBuilder(
+    column: $table.createdBy,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get membersJson => $composableBuilder(
+    column: $table.membersJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get endedAt => $composableBuilder(
+    column: $table.endedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$CoworkSessionsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $CoworkSessionsTable> {
+  $$CoworkSessionsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get businessDate => $composableBuilder(
+    column: $table.businessDate,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<String> get createdBy =>
+      $composableBuilder(column: $table.createdBy, builder: (column) => column);
+
+  GeneratedColumn<String> get note =>
+      $composableBuilder(column: $table.note, builder: (column) => column);
+
+  GeneratedColumn<String> get membersJson => $composableBuilder(
+    column: $table.membersJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get endedAt =>
+      $composableBuilder(column: $table.endedAt, builder: (column) => column);
+}
+
+class $$CoworkSessionsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $CoworkSessionsTable,
+          CoworkSessionRow,
+          $$CoworkSessionsTableFilterComposer,
+          $$CoworkSessionsTableOrderingComposer,
+          $$CoworkSessionsTableAnnotationComposer,
+          $$CoworkSessionsTableCreateCompanionBuilder,
+          $$CoworkSessionsTableUpdateCompanionBuilder,
+          (
+            CoworkSessionRow,
+            BaseReferences<
+              _$AppDatabase,
+              $CoworkSessionsTable,
+              CoworkSessionRow
+            >,
+          ),
+          CoworkSessionRow,
+          PrefetchHooks Function()
+        > {
+  $$CoworkSessionsTableTableManager(
+    _$AppDatabase db,
+    $CoworkSessionsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$CoworkSessionsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$CoworkSessionsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$CoworkSessionsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> businessDate = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<String> createdBy = const Value.absent(),
+                Value<String?> note = const Value.absent(),
+                Value<String> membersJson = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime?> endedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => CoworkSessionsCompanion(
+                id: id,
+                businessDate: businessDate,
+                status: status,
+                createdBy: createdBy,
+                note: note,
+                membersJson: membersJson,
+                createdAt: createdAt,
+                endedAt: endedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String businessDate,
+                required String status,
+                required String createdBy,
+                Value<String?> note = const Value.absent(),
+                required String membersJson,
+                required DateTime createdAt,
+                Value<DateTime?> endedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => CoworkSessionsCompanion.insert(
+                id: id,
+                businessDate: businessDate,
+                status: status,
+                createdBy: createdBy,
+                note: note,
+                membersJson: membersJson,
+                createdAt: createdAt,
+                endedAt: endedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$CoworkSessionsTable, CoworkSessionRow>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $CoworkSessionsTable,
+                    CoworkSessionRow
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$CoworkSessionsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $CoworkSessionsTable,
+      CoworkSessionRow,
+      $$CoworkSessionsTableFilterComposer,
+      $$CoworkSessionsTableOrderingComposer,
+      $$CoworkSessionsTableAnnotationComposer,
+      $$CoworkSessionsTableCreateCompanionBuilder,
+      $$CoworkSessionsTableUpdateCompanionBuilder,
+      (
+        CoworkSessionRow,
+        BaseReferences<_$AppDatabase, $CoworkSessionsTable, CoworkSessionRow>,
+      ),
+      CoworkSessionRow,
+      PrefetchHooks Function()
+    >;
 typedef $$NotificationsTableCreateCompanionBuilder =
     NotificationsCompanion Function({
       required String serverId,
@@ -24685,6 +25725,8 @@ class $AppDatabaseManager {
       $$LocationQueueTableTableManager(_db, _db.locationQueue);
   $$ContactAttemptsTableTableManager get contactAttempts =>
       $$ContactAttemptsTableTableManager(_db, _db.contactAttempts);
+  $$CoworkSessionsTableTableManager get coworkSessions =>
+      $$CoworkSessionsTableTableManager(_db, _db.coworkSessions);
   $$NotificationsTableTableManager get notifications =>
       $$NotificationsTableTableManager(_db, _db.notifications);
   $$KvSettingsTableTableManager get kvSettings =>

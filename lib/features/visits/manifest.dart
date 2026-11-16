@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/feature/feature_manifest.dart';
 import '../../core/permissions/permission_service.dart';
 import '../../core/settings/ui_prefs.dart';
+import '../cowork/cowork.dart';
 import '../../l10n/app_localizations.dart';
 import 'src/visits.dart';
 
@@ -33,13 +34,22 @@ final visitsManifest = FeatureManifest(
         final l = AppLocalizations.of(context);
         return watchVisitsFor(ref, id).map((rows) {
           final f = ref.read(fmtProvider);
+          final names = ref.read(coworkNamesProvider);
+          final me = ref.read(myUserIdProvider);
           return [
             for (final v in rows)
               TimelineEntry(
                 at: v.checkInAt,
                 icon: outcomeIcon(v.outcome),
                 title: l.timelineVisit(outcomeLabel(l, v.outcome)),
-                subtitle: [f.dateTime(v.checkInAt), if (v.userName != null) v.userName!, if (v.distanceToPinM != null) f.distance(v.distanceToPinM!)].join(' · '),
+                subtitle: [
+                  f.dateTime(v.checkInAt),
+                  if (v.userName != null) v.userName!,
+                  if (v.userId != null && v.userId != me && names[v.userId] != null) l.timelineRecordedBy(names[v.userId]!),
+                  if (v.coWorkSessionId != null) ?coworkWithText(l, v, names, me),
+                  if (v.distanceToPinM != null) f.distance(v.distanceToPinM!),
+                ].join(' · '),
+                statusChip: v.coWorkSessionId != null ? const CoworkChip() : null,
               ),
           ];
         });

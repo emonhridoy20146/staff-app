@@ -115,6 +115,26 @@ class FieldApi {
 
   Future<void> heartbeat(Json body) => _call(() => _dio.post<dynamic>('/location/heartbeat', data: body), (_) {});
 
+  // ── co-work (1.9.0) — online-only (ADR-M08): partners must see answers at once.
+
+  Future<List<Json>> coworkColleagues() =>
+      _call(() => _dio.get<dynamic>('/cowork/colleagues'), (d) => (d as List).cast<Json>());
+
+  Future<List<Json>> myCoworkSessions() =>
+      _call(() => _dio.get<dynamic>('/cowork/sessions/mine'), (d) => (d as List).cast<Json>());
+
+  Future<Json> requestCowork({required String clientId, required List<String> toUserIds, String? note}) => _call(
+        () => _dio.post<dynamic>('/cowork/requests', data: {'clientId': clientId, 'toUserIds': toUserIds, 'note': ?note}),
+        (d) => d as Json,
+      );
+
+  Future<Json> respondCowork(String id, {required bool accept}) => _call(
+        () => _dio.post<dynamic>('/cowork/sessions/$id/respond', data: {'decision': accept ? 'accept' : 'reject'}),
+        (d) => d as Json,
+      );
+
+  Future<Json> leaveCowork(String id) => _call(() => _dio.post<dynamic>('/cowork/sessions/$id/leave'), (d) => d as Json);
+
   /// Online-only: on-demand balance refresh from ERP.
   Future<Json> refreshCustomer(String id) =>
       _call(() => _dio.post<dynamic>('/customers/$id/refresh'), (d) => d as Json);

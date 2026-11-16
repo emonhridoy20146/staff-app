@@ -19,6 +19,7 @@ import '../../../core/sync/sync_handlers.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/ui/common.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../cowork/cowork.dart';
 import '../../customers/customers.dart';
 
 const visitOutcomes = ['paid', 'partial_paid', 'promised', 'not_home', 'refused', 'shifted_address', 'customer_dead', 'product_returned_request', 'other'];
@@ -67,6 +68,9 @@ class VisitPullHandler implements PullHandler {
   Future<void> upsert(AppDatabase db, String id, Json d) async {
     final clientId = (d['clientId'] as String?) ?? id;
     final geo = (d['geo'] as Json?) ?? const {};
+    // 1.9.0: coWork is null for a single visit, and also when the server
+    // could not confirm the claim (flag cowork_invalid) — then it is single.
+    final coWork = d['coWork'] as Json?;
     await db.into(db.visits).insertOnConflictUpdate(VisitsCompanion.insert(
           clientId: clientId,
           serverId: Value(id),
@@ -77,6 +81,9 @@ class VisitPullHandler implements PullHandler {
           lng: Value((geo['lng'] as num?)?.toDouble()),
           distanceToPinM: Value((d['distanceToPinM'] as num?)?.toInt()),
           syncState: const Value('synced'),
+          userId: Value(d['userId'] as String?),
+          coWorkSessionId: Value(coWork?['sessionId'] as String?),
+          coWorkParticipantIdsJson: Value(coWork == null ? null : jsonEncode(coWork['participantIds'] ?? const [])),
         ));
   }
 
@@ -96,75 +103,110 @@ Future<void> linkVisitPhotos(OutboxWriter outbox, AppDatabase db, String visitCl
   );
 }
 
-Future<String> recordVisit(WidgetRef ref, {required Customer customer, required String outcome, required GeoFix? fix, Uint8List? photo, String? note}) async {
-  final db = ref.read(databaseProvider);
-  final clock = ref.read(clockProvider);
-  final id = const Uuid().v7();
-  final at = clock.nowUtc();
-  final dist = fix != null && customer.hasPin ? distanceMeters(fix.lat, fix.lng, customer.row.lat!, customer.row.lng!) : null;
-  await db.transaction(() async {
-    await db.into(db.visits).insert(VisitsCompanion.insert(
-          clientId: id,
-          customerId: customer.id,
-          checkInAt: at,
-          outcome: outcome,
-          lat: Value(fix?.lat),
-          lng: Value(fix?.lng),
-          accuracyM: Value(fix?.accuracyM),
-          mock: Value(fix?.mock ?? false),
-          distanceToPinM: Value(dist),
-          note: Value(note),
-        ));
-    await ref.read(outboxWriterProvider).enqueue(mutationId: id, entity: 'visit', payload: {
-      'clientId': id,
-      'customerId': customer.id,
-      'checkInAt': at.toIso8601String(),
-      'deviceTime': clock.deviceNowUtc().toIso8601String(),
-      'outcome': outcome,
-      ...geoFields(fix, ref.read(locationEngineProvider).lastFailureReason),
-      'source': 'manual',
-    });
-    await ref.read(customerRepositoryProvider).applyLocalVisit(customer.id, at);
-  });
-  if (photo != null) {
-    final user = await ref.read(secureStoreProvider).read('session_user');
-    final code = user == null ? '' : ((jsonDecode(user) as Map)['employeeCode'] ?? '').toString();
-    final f = ref.read(fmtProvider);
-    final wm = '${f.dateTime(at).replaceAll(RegExp('[^\\x00-\\x7F]'), '')} ${clock.businessDate()} $code ${fix == null ? '' : '${fix.lat.toStringAsFixed(5)},${fix.lng.toStringAsFixed(5)}'}';
-    final processed = await processPhoto(photo, watermark: wm.trim());
-    await ref.read(mediaServiceProvider).enqueue(photo: processed, kind: 'visit_photo', ownerEntity: 'visit', ownerClientId: id, fix: fix);
-  }
-  if (note != null && note.trim().isNotEmpty) {
-    // Note is its own entity, depending on the visit.
-    final nid = const Uuid().v7();
+/// Saves a visit offline. [cowork] = the session it was made in (joint
+/// visit, FR-CW-003); the server works out who took part.
+Future<String> recordVisit(WidgetRef ref, {required Customer customer, required String outcome, required GeoFix? fix, Uint8List? photo, String? note, CoworkSession? cowork}) =>
+    ref.read(visitServiceProvider).record(customer: customer, outcome: outcome, fix: fix, photo: photo, note: note, cowork: cowork);
+
+class VisitService {
+  VisitService(this._ref);
+  final Ref _ref;
+
+  Future<String> record({required Customer customer, required String outcome, required GeoFix? fix, Uint8List? photo, String? note, CoworkSession? cowork}) async {
+    final ref = _ref;
+    final db = ref.read(databaseProvider);
+    final clock = ref.read(clockProvider);
+    final id = const Uuid().v7();
+    final at = clock.nowUtc();
+    final dist = fix != null && customer.hasPin ? distanceMeters(fix.lat, fix.lng, customer.row.lat!, customer.row.lng!) : null;
     await db.transaction(() async {
-      await db.into(db.notes).insert(NotesCompanion.insert(clientId: nid, customerId: customer.id, body: note.trim(), createdAt: at));
-      await ref.read(outboxWriterProvider).enqueue(
-        mutationId: nid,
-        entity: 'note',
-        dependsOn: [id],
-        payload: {'clientId': nid, 'customerId': customer.id, 'text': note.trim(), 'category': 'general', 'visitClientId': id},
-      );
+      await db.into(db.visits).insert(VisitsCompanion.insert(
+            clientId: id,
+            customerId: customer.id,
+            checkInAt: at,
+            outcome: outcome,
+            lat: Value(fix?.lat),
+            lng: Value(fix?.lng),
+            accuracyM: Value(fix?.accuracyM),
+            mock: Value(fix?.mock ?? false),
+            distanceToPinM: Value(dist),
+            note: Value(note),
+            coWorkSessionId: Value(cowork?.id),
+            coWorkParticipantIdsJson: Value(cowork == null ? null : jsonEncode([for (final m in cowork.partnersOf(ref.read(myUserIdProvider) ?? '')) m.userId])),
+          ));
+      await ref.read(outboxWriterProvider).enqueue(mutationId: id, entity: 'visit', payload: {
+        'clientId': id,
+        'customerId': customer.id,
+        'checkInAt': at.toIso8601String(),
+        'deviceTime': clock.deviceNowUtc().toIso8601String(),
+        'outcome': outcome,
+        ...geoFields(fix, ref.read(locationEngineProvider).lastFailureReason),
+        'source': 'manual',
+        'coWorkSessionId': ?cowork?.id,
+      });
+      await ref.read(customerRepositoryProvider).applyLocalVisit(customer.id, at);
     });
+    if (photo != null) {
+      final user = await ref.read(secureStoreProvider).read('session_user');
+      final code = user == null ? '' : ((jsonDecode(user) as Map)['employeeCode'] ?? '').toString();
+      final f = ref.read(fmtProvider);
+      final wm = '${f.dateTime(at).replaceAll(RegExp('[^\\x00-\\x7F]'), '')} ${clock.businessDate()} $code ${fix == null ? '' : '${fix.lat.toStringAsFixed(5)},${fix.lng.toStringAsFixed(5)}'}';
+      final processed = await processPhoto(photo, watermark: wm.trim());
+      await ref.read(mediaServiceProvider).enqueue(photo: processed, kind: 'visit_photo', ownerEntity: 'visit', ownerClientId: id, fix: fix);
+    }
+    if (note != null && note.trim().isNotEmpty) {
+      // Note is its own entity, depending on the visit.
+      final nid = const Uuid().v7();
+      await db.transaction(() async {
+        await db.into(db.notes).insert(NotesCompanion.insert(clientId: nid, customerId: customer.id, body: note.trim(), createdAt: at));
+        await ref.read(outboxWriterProvider).enqueue(
+          mutationId: nid,
+          entity: 'note',
+          dependsOn: [id],
+          payload: {'clientId': nid, 'customerId': customer.id, 'text': note.trim(), 'category': 'general', 'visitClientId': id},
+        );
+      });
+    }
+    unawaited(ref.read(syncEngineProvider).kick(reason: 'visit'));
+    return id;
   }
-  unawaited(ref.read(syncEngineProvider).kick(reason: 'visit'));
-  return id;
 }
+
+final visitServiceProvider = Provider<VisitService>(VisitService.new);
 
 final visitsForCustomerProvider = StreamProvider.family<List<VisitRow>, String>((ref, id) {
   final db = ref.watch(databaseProvider);
   return (db.select(db.visits)..where((t) => t.customerId.equals(id))..orderBy([(t) => OrderingTerm.desc(t.checkInAt)])).watch();
 });
 
-final todayVisitCountProvider = StreamProvider<int>((ref) {
+/// My visits today, split single / co-work (FR-CW-005): visits I recorded,
+/// plus partners' joint visits I took part in. Others' visits on my
+/// customers do not count.
+typedef VisitSplit = ({int solo, int coWork});
+
+VisitSplit splitVisits(Iterable<VisitRow> rows, {required String? me}) {
+  var solo = 0, joint = 0;
+  for (final v in rows) {
+    final mine = v.userId == null || v.userId == me;
+    if (mine) {
+      v.coWorkSessionId != null ? joint++ : solo++;
+    } else if (v.coWorkSessionId != null && me != null && _ids(v.coWorkParticipantIdsJson).contains(me)) {
+      joint++;
+    }
+  }
+  return (solo: solo, coWork: joint);
+}
+
+List<String> _ids(String? json) => json == null ? const [] : (jsonDecode(json) as List).cast<String>();
+
+final todayVisitSplitProvider = StreamProvider<VisitSplit>((ref) {
   final db = ref.watch(databaseProvider);
+  final me = ref.watch(myUserIdProvider);
   final start = parseBusinessDateUtcStart(ref.watch(clockProvider).businessDate());
-  final c = db.visits.clientId.count();
-  final q = db.selectOnly(db.visits)
-    ..addColumns([c])
-    ..where(db.visits.checkInAt.isBiggerOrEqualValue(start) & db.visits.userName.isNull());
-  return q.map((r) => r.read(c) ?? 0).watchSingle();
+  return (db.select(db.visits)..where((t) => t.checkInAt.isBiggerOrEqualValue(start) & t.userName.isNull())).watch().map((rows) => splitVisits(rows, me: me));
 });
+
+final todayVisitCountProvider = Provider<AsyncValue<int>>((ref) => ref.watch(todayVisitSplitProvider).whenData((s) => s.solo + s.coWork));
 
 DateTime parseBusinessDateUtcStart(String ymd) {
   final p = ymd.split('-').map(int.parse).toList();
@@ -185,6 +227,7 @@ class _VisitScreenState extends ConsumerState<VisitScreen> {
   final _note = TextEditingController();
   late final Future<GeoFix?> _fix = ref.read(locationEngineProvider).currentFix();
   bool _busy = false;
+  bool _joint = true; // joint visit when I have an accepted partner today
 
   @override
   void dispose() {
@@ -229,6 +272,10 @@ class _VisitScreenState extends ConsumerState<VisitScreen> {
               return InfoBanner(icon: Icons.gps_fixed_rounded, text: l.collectGpsAccurate(f.num(g.accuracyM.round())), tone: BannerTone.success);
             },
           ),
+          if (ref.watch(coworkForVisitProvider) != null) ...[
+            const SizedBox(height: Space.s12),
+            CoworkVisitSwitch(value: _joint, onChanged: (v) => setState(() => _joint = v)),
+          ],
           const SizedBox(height: Space.s20),
           Text(l.visitOutcome, style: t.titleSmall),
           const SizedBox(height: Space.s8),
@@ -275,7 +322,8 @@ class _VisitScreenState extends ConsumerState<VisitScreen> {
                 : () async {
                     setState(() => _busy = true);
                     final fix = await _fix;
-                    await recordVisit(ref, customer: c, outcome: _outcome!, fix: fix, photo: _photo, note: _note.text);
+                    final cowork = _joint ? ref.read(coworkForVisitProvider) : null;
+                    await recordVisit(ref, customer: c, outcome: _outcome!, fix: fix, photo: _photo, note: _note.text, cowork: cowork);
                     if (!context.mounted) return;
                     showAppSnack(context, l.visitSaved);
                     if (_outcome == 'paid' || _outcome == 'partial_paid') {
@@ -297,4 +345,11 @@ class _VisitScreenState extends ConsumerState<VisitScreen> {
 Stream<List<VisitRow>> watchVisitsFor(WidgetRef ref, String customerId) {
   final db = ref.read(databaseProvider);
   return (db.select(db.visits)..where((t) => t.customerId.equals(customerId))..orderBy([(t) => OrderingTerm.desc(t.checkInAt)])).watch();
+}
+
+/// "with A, B" for a joint visit: partners other than me (the recorder is
+/// shown separately as "recorded by").
+String? coworkWithText(AppLocalizations l, VisitRow v, Map<String, String> names, String? me) {
+  final others = [for (final id in _ids(v.coWorkParticipantIdsJson)) if (id != me && id != v.userId) id].map((id) => names[id]).nonNulls.toSet().toList();
+  return others.isEmpty ? null : l.timelineCoworkWith(others.join(', '));
 }

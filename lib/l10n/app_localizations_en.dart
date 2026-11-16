@@ -1543,4 +1543,153 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get mapListNoFix =>
       'No GPS yet · distances appear when the phone finds you';
+
+  @override
+  String get coworkTitle => 'Co-work';
+
+  @override
+  String coworkInviteFrom(String name) {
+    return '$name wants to work with you today';
+  }
+
+  @override
+  String coworkWith(String names) {
+    return 'With: $names';
+  }
+
+  @override
+  String get coworkActiveTitle => 'Working together today';
+
+  @override
+  String coworkYou(String name) {
+    return '$name (you)';
+  }
+
+  @override
+  String get coworkWaiting => 'Waiting';
+
+  @override
+  String get coworkNoPartnerYet =>
+      'Visits count as co-work once someone accepts';
+
+  @override
+  String coworkVisitsToday(String n) {
+    return '$n co-work visits';
+  }
+
+  @override
+  String get coworkAdd => 'Ask more';
+
+  @override
+  String get coworkLeave => 'Leave group';
+
+  @override
+  String get coworkLeaveConfirm =>
+      'After you leave, your next visits count as single visits. Earlier co-work visits stay as they are.';
+
+  @override
+  String get coworkStartTitle => 'Work with a colleague';
+
+  @override
+  String get coworkStartBody => 'Visits made together count for everyone';
+
+  @override
+  String get coworkNeedsInternet => 'Sending and answering need internet';
+
+  @override
+  String get coworkInviteSection => 'Whom to ask?';
+
+  @override
+  String coworkSeatsLeft(String n) {
+    return 'You can ask $n more';
+  }
+
+  @override
+  String get coworkFull => 'The group is full';
+
+  @override
+  String get coworkOnDuty => 'On duty';
+
+  @override
+  String get coworkOffDuty => 'Not on duty';
+
+  @override
+  String get coworkInOtherGroup => 'In another group';
+
+  @override
+  String get coworkInThisGroup => 'In this group';
+
+  @override
+  String get coworkNoteHint => 'e.g. which area you will cover';
+
+  @override
+  String coworkSend(String n) {
+    return 'Send request ($n)';
+  }
+
+  @override
+  String get coworkSent => 'Request sent';
+
+  @override
+  String get coworkJoined => 'You joined the group';
+
+  @override
+  String get coworkDeclined => 'You declined';
+
+  @override
+  String get coworkLeft => 'You left the group';
+
+  @override
+  String get coworkOffline => 'No internet. Try again when connected.';
+
+  @override
+  String get coworkErrAlreadyIn =>
+      'You are already in another group today. Leave it first.';
+
+  @override
+  String get coworkErrEnded => 'This group has ended';
+
+  @override
+  String get coworkErrNotInvited => 'This invitation is no longer open';
+
+  @override
+  String get coworkErrTooMany => 'The group has reached its member limit';
+
+  @override
+  String get coworkErrInvitee => 'This colleague can\'t be asked';
+
+  @override
+  String get coworkNoColleagues => 'No colleagues in your branch to ask';
+
+  @override
+  String get coworkVisitToggle => 'Co-work visit';
+
+  @override
+  String coworkVisitWith(String names) {
+    return 'With $names · counts for everyone';
+  }
+
+  @override
+  String get coworkVisitSingle => 'Off: a single visit, yours only';
+
+  @override
+  String get coworkBadge => 'Co-work';
+
+  @override
+  String timelineCoworkWith(String names) {
+    return 'with $names';
+  }
+
+  @override
+  String timelineRecordedBy(String name) {
+    return 'recorded by $name';
+  }
+
+  @override
+  String todayVisitsJoint(String n) {
+    return '$n co-work';
+  }
+
+  @override
+  String get coworkAsked => 'Asked';
 }

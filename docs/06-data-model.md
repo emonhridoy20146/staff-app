@@ -18,13 +18,14 @@ Server model: `field-api/docs/06-data-model.md`. Local tables mirror the **user'
 | `cash_position` | single row: `server_on_hand_poisha`, `limit_poisha`, `as_of` | — | local unsynced adds computed in query |
 | `deposits` | `client_id PK`, `server_id`, `amount_poisha`, `destination`, `reference`, `slip_media_client_id`, `deposited_at`, `status`, `reject_reason`, `sync_state` | `(deposited_at DESC)` | |
 | `cash_closings` | `business_date PK`, totals, `confirmed_at`, `sync_state` | — | |
-| `visits` | `client_id PK`, `server_id`, `customer_id`, `check_in_at`, `check_out_at`, `outcome`, `lat`, `lng`, `accuracy_m`, `mock`, `distance_to_pin_m`, `photo_media_client_ids_json`, `source`, `sync_state` | `(customer_id, check_in_at DESC)` | own + last 5 per customer from others |
+| `visits` | `client_id PK`, `server_id`, `customer_id`, `user_id` (v4; recorder from the server, null = recorded on this phone), `check_in_at`, `check_out_at`, `outcome`, `lat`, `lng`, `accuracy_m`, `mock`, `distance_to_pin_m`, `photo_media_client_ids_json`, `source`, `sync_state`, `co_work_session_id` (v4), `co_work_participant_ids_json` (v4; partners without the recorder, server's list replaces ours) | `(customer_id, check_in_at DESC)` | own + last 5 per customer from others + partners' joint visits |
 | `notes` | `client_id PK`, `server_id`, `customer_id`, `author_id`, `author_name`, `category`, `text`, `voice_media_client_id`, `created_at`, `editable_until`, `sync_state` | `(customer_id, created_at DESC)` | last 20 per customer |
 | `promises` | `client_id PK`, `server_id`, `customer_id`, `erp_plan_id`, `promised_date`, `promised_amount_poisha`, `status`, `note`, `sync_state`, `reminder_scheduled` | `(promised_date, status)` | |
 | `tag_events` | `client_id PK`, `customer_id`, `previous_json`, `next_json`, `reason_code`, `reason`, `at`, `sync_state` | `(customer_id)` | |
 | `location_proposals` | `client_id PK`, `customer_id`, `lat`, `lng`, `accuracy_m`, `photo_media_client_id`, `note`, `status` (`pending|approved|rejected`), `sync_state` (`waiting_photo|queued|synced|failed`), `decision_reason` (v3) | | |
 | `attendance_events` | `client_id PK`, `type`, `at`, `device_time`, `lat`, `lng`, `accuracy_m`, `mock`, `selfie_media_client_id`, `sync_state` | `(at)` | |
 | `attendance_day` | `business_date PK`, `status`, `first_in`, `last_out`, `break_min`, `late_min`, `breaks_json` | | computed locally, replaced by server |
+| `cowork_sessions` (v4) | `id PK`, `business_date`, `status` (`open|ended`), `created_by`, `note`, `members_json` (userId, name, status `invited|accepted|rejected|left`, invitedBy, invitedAt, respondedAt, leftAt), `created_at`, `ended_at` | | server-owned (pull entity `cowork_session` + online calls) |
 | `handovers` | `server_id PK`, `from_user_name`, `to_user_id`, `summary_json`, `status`, `expires_at`, `role` (`incoming|outgoing`) | | |
 | `media_queue` | `client_id PK`, `kind`, `local_path`, `sha256`, `size_bytes`, `captured_at`, `owner_entity`, `owner_client_id`, `server_media_id`, `state` (`pending|uploading|uploaded|confirmed|failed`), `attempts`, `next_attempt_at` | `(state, next_attempt_at)` | files under app-private dir; purged 7 days after confirm |
 | `outbox` | `mutation_id PK`, `entity`, `op`, `payload_json`, `depends_on_json`, `created_at`, `state` (`held|pending|sending|done|failed`; `held` = waiting for its photo), `attempts`, `next_attempt_at`, `last_error` | `(state, created_at)` | never deleted while `pending/failed`; `done` purged after 7 days |
@@ -36,7 +37,7 @@ Server model: `field-api/docs/06-data-model.md`. Local tables mirror the **user'
 | `kv_settings` | `key PK`, `value_json` | | permissions snapshot, flags, settings, consents |
 
 ## 3. Migrations
-Current `schemaVersion` = **3**. v2 → v3 (0.3.0): add `location_proposals.decision_reason`. v1 → v2 (0.2.0): create `contact_attempts`, add index `idx_location_queue_t`. Tested in `test/core/migration_test.dart` (outbox rows survive). `bat`/`chg` in `location_queue` stay null until a battery plugin is added.
+Current `schemaVersion` = **4**. v3 → v4 (0.6.0): create `cowork_sessions`; add `visits.user_id`, `visits.co_work_session_id`, `visits.co_work_participant_ids_json`. v2 → v3 (0.3.0): add `location_proposals.decision_reason`. v1 → v2 (0.2.0): create `contact_attempts`, add index `idx_location_queue_t`. Tested in `test/core/migration_test.dart` (outbox rows survive). `bat`/`chg` in `location_queue` stay null until a battery plugin is added.
 
 drift `schemaVersion` integer; each feature contributes `MigrationStep`s registered in `core/db/migrations`; every version upgrade is tested from **every** previous released schema (`drift_dev schema dump` + `verifySchema` tests). Never drop a table containing `outbox`/`collections` rows without migrating data.
 

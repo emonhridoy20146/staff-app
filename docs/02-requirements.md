@@ -50,6 +50,7 @@ Master IDs, statuses and permission keys: `field-api/docs/02-requirements.md`. A
 | FR-M-022 **[ADDED]** | Day route suggestion: order today's priority customers by nearest-neighbour route from current location. | proposed | P3 | U D |
 | FR-M-023 | Home screen widget / quick tile: none in v1 (dropped to keep scope). | dropped | — | — |
 | FR-M-024 **[ADDED]** | Map filters and list view (owner request 2026-11-16): multi-select filter chips on the map (due today, overdue, promised today, tagged, likely bad; a customer shows if it matches any selected), with a count on each chip; a Map/List toggle where the list shows the same filtered customers nearest first with distance from the staff member's last GPS fix, customers without a pin last. Fully offline (local data); only map tiles need the network. | active | P1 | U D |
+| FR-M-025 **[ADDED]** | Co-work in the app (master FR-CW-001…005, owner request 2026-11-16): ask / accept / reject / leave online with clear errors; invitations and the group on Today and Me; joint-visit switch on the visit screen (offline, `coWorkSessionId`); partners' joint visits on pull and on the timeline; Today visit count split single / co-work. Money stays with the recorder. | active | P2 | U I D |
 
 ## 3. Non-functional (app specifics)
 | ID | Requirement |

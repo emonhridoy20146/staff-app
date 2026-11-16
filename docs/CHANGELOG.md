@@ -1,5 +1,19 @@
 # Changelog — staff-app
 
+## [0.6.0] — 2026-11-16
+### Added
+- Contract pinned to field-api 1.9.1 (co-work 1.9.0; bootstrap of today's working state 1.9.1, handled by the existing generic pull path).
+- Co-work (FR-CW-001…005, owner request 2026-11-16), module flag `module.cowork`, permission `cowork.use`:
+  - Ask colleagues of the same branch to work together today (`/cowork`): colleague list from `GET /cowork/colleagues` with "on duty", "not on duty", "in another group" and "in this group"; pick up to the free seats (`cowork.maxMembers` counts everyone, including me); optional note. Online only (ADR-M08 exception, like handovers): a partner must see the answer at once. One idempotency key per send, reused on retry.
+  - Invitations arrive on pull (entity `cowork_session`) and show on Today with Accept / Reject; errors say what happened (no internet, already in another group, group ended, limit reached).
+  - Today shows my group: members with a tick or "waiting", today's co-work visit count, Ask more, Leave (with a confirmation). When off duty and in no group, Today offers "Work with a colleague". Me tab entry with the invitation count.
+  - Visits: when I have at least one accepted partner and am on duty, the visit screen shows a "Co-work visit" switch (on by default) naming the partners. The visit then carries `coWorkSessionId`; this works offline because the session is stored on the phone. The server decides who took part (members accepted at check-in) and its `coWork.participantIds` replace our estimate on pull; a claim the server cannot confirm comes back as a single visit.
+  - Partners' joint visits arrive on pull and count for me. The customer timeline marks joint visits with a "Co-work" chip, "with …" names and "recorded by …" for a partner's record.
+  - Today's visit metric counts my visits plus joint visits I took part in, with a "N co-work" line; others' visits on my customers no longer count (bug fix). Target credit (`cowork.visitCredit`) and money are server-side: collections always belong to the recorder only.
+- Database schema 4: table `cowork_sessions`; `visits.user_id`, `visits.co_work_session_id`, `visits.co_work_participant_ids_json`. Migration tests from schema 1, 2 and 3.
+- `VisitService` (provider) behind `recordVisit`, so visit saving is testable without widgets.
+- Tests: co-work flow tests (invitation, offline answer refused, joint visit offline then sent, idempotent request, member limit, partner visit credit, leave ends a group of two, work-out leaves, already in a group); screenshots 18–21.
+
 ## [0.5.0] — 2026-11-16
 ### Added
 - Map filters and list view (FR-M-024, owner request 2026-11-16). The map has multi-select filter chips (due today, overdue, promised today, tagged, likely bad), each with its count; a customer shows when it matches any selected filter, and a clear chip resets them. A Map/List toggle switches to a list of the same filtered customers, nearest first with distance from the last GPS fix; customers without a pin go last. Both work fully offline from the local database; only map tiles need the network. The choice of filters and view is kept while the app is open.

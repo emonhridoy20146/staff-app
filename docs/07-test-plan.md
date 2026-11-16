@@ -50,6 +50,7 @@ Devices (minimum set): **Xiaomi Redmi (MIUI/HyperOS, 2–3 GB)**, **Samsung Gala
 - [ ] OEM killing: lock screen for 1 h on Xiaomi/Oppo/Vivo; heartbeat gaps visible in admin if killed
 - [ ] Mock GPS app → flagged
 - [ ] Attendance photo: front camera opens at work-in, break start, break end, work-out; cancelling records nothing; offline the duty status changes at once and the events reach admin in order with photos after reconnecting
+- [ ] Co-work with two phones on staging: A asks B; B sees the invitation after a pull and accepts; both see the group; A records a visit offline with the co-work switch on; after reconnecting B sees it on the customer timeline as "recorded by A", admin shows it as one joint visit with both; B's work-out removes B from A's group
 - [ ] Pin correction at a real door: accuracy reaches ≤ 30 m within 1 min outdoors; photo required; proposal arrives in admin after the photo uploads (also when saved offline)
 - [ ] Notification shows on work-in and disappears on work-out; Me tab card says "On · standard"
 - [ ] Admin sets `location.trackingProvider = paid` on this build → Me tab shows the fallback note, heartbeat reports it; tracking continues

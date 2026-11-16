@@ -14,6 +14,7 @@ import 'package:staff_app/features/auth/auth.dart';
 import 'package:staff_app/features/collections/collections.dart';
 import 'package:staff_app/features/collections/src/application/record_collection.dart';
 import 'package:staff_app/features/collections/src/collection_providers.dart' show receiptAllocatorProvider;
+import 'package:staff_app/features/cowork/src/cowork_data.dart' show coworkServiceProvider;
 import 'package:staff_app/features/customers/customers.dart';
 import 'package:staff_app/features/map/src/map_screen.dart' show mapFiltersProvider, mapListModeProvider;
 
@@ -45,7 +46,7 @@ Future<void> _settle(WidgetTester t, {int rounds = 12}) async {
   }
 }
 
-Future<Harness> _ready(WidgetTester t, {bool signIn = true, bool dark = false, String lang = 'bn'}) async {
+Future<Harness> _ready(WidgetTester t, {bool signIn = true, bool dark = false, String lang = 'bn', Future<void> Function(Harness h)? setup}) async {
   final h = Harness();
   await t.runAsync(() async {
     if (signIn) {
@@ -69,6 +70,9 @@ Future<Harness> _ready(WidgetTester t, {bool signIn = true, bool dark = false, S
       await h.read(sessionProvider.notifier).restore();
     }
     await h.read(uiPrefsProvider.notifier).update(UiPrefs(language: lang, themeMode: dark ? ThemeMode.dark : ThemeMode.light));
+    // Extra state, before the app is on screen (a sync started by the app
+    // only advances with pumps).
+    if (setup != null) await setup(h);
   });
   t.view.physicalSize = _size * 2;
   t.view.devicePixelRatio = 2;
@@ -96,6 +100,19 @@ Future<void> _shot(WidgetTester t, Harness h, String name, {String? go, Future<v
   // dropped with the test isolate.
   h.container.dispose();
   await t.pump(const Duration(milliseconds: 50));
+}
+
+/// Co-work demo state: I asked Sajib (accepted) and Mahmuda (not yet
+/// answered); two joint visits recorded by Sajib.
+Future<void> _coworkGroup(Harness h) async {
+  final svc = h.read(coworkServiceProvider);
+  await svc.request(clientId: svc.newRequestId(), toUserIds: ['u-fs-020', 'u-fs-022'], note: 'নথুল্লাবাদ এলাকা');
+  final db = h.read(databaseProvider);
+  final sid = (await db.select(db.coworkSessions).get()).single.id;
+  h.api.coworkMemberSets(sid, 'u-fs-020', 'accepted');
+  h.api.coworkPartnerVisit(sid, 'u-fs-020', 'c-1003');
+  h.api.coworkPartnerVisit(sid, 'u-fs-020', 'c-1005');
+  await h.read(syncEngineProvider).syncNow();
 }
 
 void main() {
@@ -132,6 +149,27 @@ void main() {
     final h = await _ready(t);
     h.read(mapListModeProvider.notifier).state = true;
     await _shot(t, h, '17-map-list', go: '/map');
+  });
+  testWidgets('18 today co-work group', (t) async {
+    final h = await _ready(t, setup: _coworkGroup);
+    await _shot(t, h, '18-today-cowork', go: '/today');
+  });
+  testWidgets('19 today co-work invitation', (t) async {
+    final h = await _ready(t, setup: (h) async {
+      h.api.coworkInviteFrom('u-fs-021', note: 'বিকেলে বাজার এলাকা একসাথে');
+      await h.read(syncEngineProvider).syncNow();
+    });
+    await _shot(t, h, '19-cowork-invite', go: '/today');
+  });
+  testWidgets('20 co-work screen', (t) async {
+    final h = await _ready(t, setup: _coworkGroup);
+    await _shot(t, h, '20-cowork-screen', go: '/cowork', then: () async {
+      await t.tap(find.text('তানভীর ইসলাম'));
+    });
+  });
+  testWidgets('21 joint visit', (t) async {
+    final h = await _ready(t, setup: _coworkGroup);
+    await _shot(t, h, '21-visit-cowork', go: '/visit/c-1002');
   });
   testWidgets('14 set location', (t) async => _shot(t, await _ready(t), '14-set-location', go: '/customers/c-1010/pin'));
 }

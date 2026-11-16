@@ -1543,4 +1543,153 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get mapListNoFix => 'এখনো GPS পাওয়া যায়নি · পেলে দূরত্ব দেখাবে';
+
+  @override
+  String get coworkTitle => 'কো-ওয়ার্ক';
+
+  @override
+  String coworkInviteFrom(String name) {
+    return '$name আজ আপনার সাথে একসাথে কাজ করতে চান';
+  }
+
+  @override
+  String coworkWith(String names) {
+    return 'সাথে: $names';
+  }
+
+  @override
+  String get coworkActiveTitle => 'আজ একসাথে কাজ';
+
+  @override
+  String coworkYou(String name) {
+    return '$name (আপনি)';
+  }
+
+  @override
+  String get coworkWaiting => 'উত্তরের অপেক্ষায়';
+
+  @override
+  String get coworkNoPartnerYet =>
+      'কেউ রাজি হলে তবেই ভিজিট কো-ওয়ার্ক হিসেবে গণ্য হবে';
+
+  @override
+  String coworkVisitsToday(String n) {
+    return 'কো-ওয়ার্ক ভিজিট $n';
+  }
+
+  @override
+  String get coworkAdd => 'আরও ডাকুন';
+
+  @override
+  String get coworkLeave => 'গ্রুপ ছাড়ুন';
+
+  @override
+  String get coworkLeaveConfirm =>
+      'গ্রুপ ছাড়লে এরপরের ভিজিট আপনার একক ভিজিট হিসেবে গণ্য হবে। আগের কো-ওয়ার্ক ভিজিট আগের মতোই থাকবে।';
+
+  @override
+  String get coworkStartTitle => 'সহকর্মীর সাথে কাজ করুন';
+
+  @override
+  String get coworkStartBody => 'একসাথে দেওয়া ভিজিট সবার হিসাবে যোগ হয়';
+
+  @override
+  String get coworkNeedsInternet => 'পাঠাতে ও উত্তর দিতে ইন্টারনেট লাগবে';
+
+  @override
+  String get coworkInviteSection => 'কাকে ডাকবেন?';
+
+  @override
+  String coworkSeatsLeft(String n) {
+    return 'আরও $n জনকে ডাকা যাবে';
+  }
+
+  @override
+  String get coworkFull => 'গ্রুপ পূর্ণ, আর কাউকে ডাকা যাবে না';
+
+  @override
+  String get coworkOnDuty => 'ডিউটিতে আছেন';
+
+  @override
+  String get coworkOffDuty => 'ডিউটিতে নেই';
+
+  @override
+  String get coworkInOtherGroup => 'অন্য গ্রুপে আছেন';
+
+  @override
+  String get coworkInThisGroup => 'এই গ্রুপে আছেন';
+
+  @override
+  String get coworkNoteHint => 'যেমন: কোন এলাকায় যাবেন';
+
+  @override
+  String coworkSend(String n) {
+    return 'অনুরোধ পাঠান ($n)';
+  }
+
+  @override
+  String get coworkSent => 'অনুরোধ পাঠানো হয়েছে';
+
+  @override
+  String get coworkJoined => 'গ্রুপে যোগ দিয়েছেন';
+
+  @override
+  String get coworkDeclined => 'অনুরোধ ফিরিয়ে দিয়েছেন';
+
+  @override
+  String get coworkLeft => 'গ্রুপ ছেড়েছেন';
+
+  @override
+  String get coworkOffline => 'ইন্টারনেট নেই। সংযোগ পেলে আবার চেষ্টা করুন।';
+
+  @override
+  String get coworkErrAlreadyIn =>
+      'আপনি আজ অন্য একটি গ্রুপে আছেন। আগে সেটি ছাড়ুন।';
+
+  @override
+  String get coworkErrEnded => 'এই গ্রুপ আর চালু নেই';
+
+  @override
+  String get coworkErrNotInvited => 'এই অনুরোধ আর চালু নেই';
+
+  @override
+  String get coworkErrTooMany => 'গ্রুপে সর্বোচ্চ সদস্য হয়ে গেছে';
+
+  @override
+  String get coworkErrInvitee => 'এই সহকর্মীকে ডাকা যাবে না';
+
+  @override
+  String get coworkNoColleagues => 'আপনার শাখায় ডাকার মতো কেউ নেই';
+
+  @override
+  String get coworkVisitToggle => 'কো-ওয়ার্ক ভিজিট';
+
+  @override
+  String coworkVisitWith(String names) {
+    return '$names-এর সাথে · সবার হিসাবে যোগ হবে';
+  }
+
+  @override
+  String get coworkVisitSingle => 'বন্ধ: শুধু আপনার একক ভিজিট';
+
+  @override
+  String get coworkBadge => 'কো-ওয়ার্ক';
+
+  @override
+  String timelineCoworkWith(String names) {
+    return 'সাথে $names';
+  }
+
+  @override
+  String timelineRecordedBy(String name) {
+    return 'লিখেছেন $name';
+  }
+
+  @override
+  String todayVisitsJoint(String n) {
+    return 'কো-ওয়ার্ক $n';
+  }
+
+  @override
+  String get coworkAsked => 'ডাকা হয়েছে';
 }

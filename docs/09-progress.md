@@ -20,6 +20,7 @@ Phases match `field-api/docs/09-progress.md`. Start each phase against the Prism
 |---|---|
 | Customers (list, search, filters, detail, timeline), Map with pins and sheet | ✅ (tile cache not yet) |
 | Map filters (multi-select) and Map/List toggle with distance | ✅ 0.5.0, flow test + screenshots |
+| Co-work: ask / accept / leave (online), Today and Me cards, joint-visit switch, partner visits, single/co-work split (contract 1.9.0) | ✅ 0.6.0, flow tests + screenshots; two-phone check pending |
 | Today screen with priorities and progress | ✅ |
 | Collect flow, receipt blocks, receipt share image | ✅ |
 | Cash: position, limit, deposits with slip, end-of-day closing | ◐ slip photo and closing not yet |

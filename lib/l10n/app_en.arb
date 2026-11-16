@@ -958,5 +958,117 @@
   "mapViewList": "List",
   "mapFilterClear": "Clear",
   "mapListEmpty": "No customers match these filters",
-  "mapListNoFix": "No GPS yet · distances appear when the phone finds you"
+  "mapListNoFix": "No GPS yet · distances appear when the phone finds you",
+  "coworkTitle": "Co-work",
+  "coworkInviteFrom": "{name} wants to work with you today",
+  "@coworkInviteFrom": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "coworkWith": "With: {names}",
+  "@coworkWith": {
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "coworkActiveTitle": "Working together today",
+  "coworkYou": "{name} (you)",
+  "@coworkYou": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "coworkWaiting": "Waiting",
+  "coworkNoPartnerYet": "Visits count as co-work once someone accepts",
+  "coworkVisitsToday": "{n} co-work visits",
+  "@coworkVisitsToday": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "coworkAdd": "Ask more",
+  "coworkLeave": "Leave group",
+  "coworkLeaveConfirm": "After you leave, your next visits count as single visits. Earlier co-work visits stay as they are.",
+  "coworkStartTitle": "Work with a colleague",
+  "coworkStartBody": "Visits made together count for everyone",
+  "coworkNeedsInternet": "Sending and answering need internet",
+  "coworkInviteSection": "Whom to ask?",
+  "coworkSeatsLeft": "You can ask {n} more",
+  "@coworkSeatsLeft": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "coworkFull": "The group is full",
+  "coworkOnDuty": "On duty",
+  "coworkOffDuty": "Not on duty",
+  "coworkInOtherGroup": "In another group",
+  "coworkInThisGroup": "In this group",
+  "coworkNoteHint": "e.g. which area you will cover",
+  "coworkSend": "Send request ({n})",
+  "@coworkSend": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "coworkSent": "Request sent",
+  "coworkJoined": "You joined the group",
+  "coworkDeclined": "You declined",
+  "coworkLeft": "You left the group",
+  "coworkOffline": "No internet. Try again when connected.",
+  "coworkErrAlreadyIn": "You are already in another group today. Leave it first.",
+  "coworkErrEnded": "This group has ended",
+  "coworkErrNotInvited": "This invitation is no longer open",
+  "coworkErrTooMany": "The group has reached its member limit",
+  "coworkErrInvitee": "This colleague can't be asked",
+  "coworkNoColleagues": "No colleagues in your branch to ask",
+  "coworkVisitToggle": "Co-work visit",
+  "coworkVisitWith": "With {names} · counts for everyone",
+  "@coworkVisitWith": {
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "coworkVisitSingle": "Off: a single visit, yours only",
+  "coworkBadge": "Co-work",
+  "timelineCoworkWith": "with {names}",
+  "@timelineCoworkWith": {
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "timelineRecordedBy": "recorded by {name}",
+  "@timelineRecordedBy": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "todayVisitsJoint": "{n} co-work",
+  "@todayVisitsJoint": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "coworkAsked": "Asked"
 }

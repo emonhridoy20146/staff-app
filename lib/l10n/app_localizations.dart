@@ -2833,6 +2833,258 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No GPS yet · distances appear when the phone finds you'**
   String get mapListNoFix;
+
+  /// No description provided for @coworkTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Co-work'**
+  String get coworkTitle;
+
+  /// No description provided for @coworkInviteFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} wants to work with you today'**
+  String coworkInviteFrom(String name);
+
+  /// No description provided for @coworkWith.
+  ///
+  /// In en, this message translates to:
+  /// **'With: {names}'**
+  String coworkWith(String names);
+
+  /// No description provided for @coworkActiveTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Working together today'**
+  String get coworkActiveTitle;
+
+  /// No description provided for @coworkYou.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} (you)'**
+  String coworkYou(String name);
+
+  /// No description provided for @coworkWaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting'**
+  String get coworkWaiting;
+
+  /// No description provided for @coworkNoPartnerYet.
+  ///
+  /// In en, this message translates to:
+  /// **'Visits count as co-work once someone accepts'**
+  String get coworkNoPartnerYet;
+
+  /// No description provided for @coworkVisitsToday.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} co-work visits'**
+  String coworkVisitsToday(String n);
+
+  /// No description provided for @coworkAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask more'**
+  String get coworkAdd;
+
+  /// No description provided for @coworkLeave.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave group'**
+  String get coworkLeave;
+
+  /// No description provided for @coworkLeaveConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'After you leave, your next visits count as single visits. Earlier co-work visits stay as they are.'**
+  String get coworkLeaveConfirm;
+
+  /// No description provided for @coworkStartTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Work with a colleague'**
+  String get coworkStartTitle;
+
+  /// No description provided for @coworkStartBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Visits made together count for everyone'**
+  String get coworkStartBody;
+
+  /// No description provided for @coworkNeedsInternet.
+  ///
+  /// In en, this message translates to:
+  /// **'Sending and answering need internet'**
+  String get coworkNeedsInternet;
+
+  /// No description provided for @coworkInviteSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Whom to ask?'**
+  String get coworkInviteSection;
+
+  /// No description provided for @coworkSeatsLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'You can ask {n} more'**
+  String coworkSeatsLeft(String n);
+
+  /// No description provided for @coworkFull.
+  ///
+  /// In en, this message translates to:
+  /// **'The group is full'**
+  String get coworkFull;
+
+  /// No description provided for @coworkOnDuty.
+  ///
+  /// In en, this message translates to:
+  /// **'On duty'**
+  String get coworkOnDuty;
+
+  /// No description provided for @coworkOffDuty.
+  ///
+  /// In en, this message translates to:
+  /// **'Not on duty'**
+  String get coworkOffDuty;
+
+  /// No description provided for @coworkInOtherGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'In another group'**
+  String get coworkInOtherGroup;
+
+  /// No description provided for @coworkInThisGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'In this group'**
+  String get coworkInThisGroup;
+
+  /// No description provided for @coworkNoteHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. which area you will cover'**
+  String get coworkNoteHint;
+
+  /// No description provided for @coworkSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Send request ({n})'**
+  String coworkSend(String n);
+
+  /// No description provided for @coworkSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Request sent'**
+  String get coworkSent;
+
+  /// No description provided for @coworkJoined.
+  ///
+  /// In en, this message translates to:
+  /// **'You joined the group'**
+  String get coworkJoined;
+
+  /// No description provided for @coworkDeclined.
+  ///
+  /// In en, this message translates to:
+  /// **'You declined'**
+  String get coworkDeclined;
+
+  /// No description provided for @coworkLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'You left the group'**
+  String get coworkLeft;
+
+  /// No description provided for @coworkOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'No internet. Try again when connected.'**
+  String get coworkOffline;
+
+  /// No description provided for @coworkErrAlreadyIn.
+  ///
+  /// In en, this message translates to:
+  /// **'You are already in another group today. Leave it first.'**
+  String get coworkErrAlreadyIn;
+
+  /// No description provided for @coworkErrEnded.
+  ///
+  /// In en, this message translates to:
+  /// **'This group has ended'**
+  String get coworkErrEnded;
+
+  /// No description provided for @coworkErrNotInvited.
+  ///
+  /// In en, this message translates to:
+  /// **'This invitation is no longer open'**
+  String get coworkErrNotInvited;
+
+  /// No description provided for @coworkErrTooMany.
+  ///
+  /// In en, this message translates to:
+  /// **'The group has reached its member limit'**
+  String get coworkErrTooMany;
+
+  /// No description provided for @coworkErrInvitee.
+  ///
+  /// In en, this message translates to:
+  /// **'This colleague can\'t be asked'**
+  String get coworkErrInvitee;
+
+  /// No description provided for @coworkNoColleagues.
+  ///
+  /// In en, this message translates to:
+  /// **'No colleagues in your branch to ask'**
+  String get coworkNoColleagues;
+
+  /// No description provided for @coworkVisitToggle.
+  ///
+  /// In en, this message translates to:
+  /// **'Co-work visit'**
+  String get coworkVisitToggle;
+
+  /// No description provided for @coworkVisitWith.
+  ///
+  /// In en, this message translates to:
+  /// **'With {names} · counts for everyone'**
+  String coworkVisitWith(String names);
+
+  /// No description provided for @coworkVisitSingle.
+  ///
+  /// In en, this message translates to:
+  /// **'Off: a single visit, yours only'**
+  String get coworkVisitSingle;
+
+  /// No description provided for @coworkBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Co-work'**
+  String get coworkBadge;
+
+  /// No description provided for @timelineCoworkWith.
+  ///
+  /// In en, this message translates to:
+  /// **'with {names}'**
+  String timelineCoworkWith(String names);
+
+  /// No description provided for @timelineRecordedBy.
+  ///
+  /// In en, this message translates to:
+  /// **'recorded by {name}'**
+  String timelineRecordedBy(String name);
+
+  /// No description provided for @todayVisitsJoint.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} co-work'**
+  String todayVisitsJoint(String n);
+
+  /// No description provided for @coworkAsked.
+  ///
+  /// In en, this message translates to:
+  /// **'Asked'**
+  String get coworkAsked;
 }
 
 class _AppLocalizationsDelegate

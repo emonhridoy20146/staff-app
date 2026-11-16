@@ -37,6 +37,19 @@ class FakeFieldApi implements HttpClientAdapter {
   bool selfieRequired = true; // attendance.selfieRequired (master switch)
   List<String> selfieEvents = const ['work_in', 'break_start', 'break_end', 'work_out']; // attendance.selfieEvents
   int pushCalls = 0;
+  int coworkMaxMembers = 5; // cowork.maxMembers, counts the requester
+
+  /// Branch colleagues for co-work (contract 1.9.0). `onDutyToday` is a
+  /// test hook; `inSession` is worked out from [_cowork].
+  final colleagues = <Json>[
+    {'id': 'u-fs-020', 'name': 'সজীব আহমেদ', 'employeeCode': 'FS020', 'onDutyToday': true},
+    {'id': 'u-fs-021', 'name': 'তানভীর ইসলাম', 'employeeCode': 'FS021', 'onDutyToday': true},
+    {'id': 'u-fs-022', 'name': 'মাহমুদা আক্তার', 'employeeCode': 'FS022', 'onDutyToday': true},
+    {'id': 'u-fs-023', 'name': 'রুবেল মিয়া', 'employeeCode': 'FS023', 'onDutyToday': false},
+  ];
+  final _cowork = <String, Json>{}; // session id → CoworkSession
+  final _coworkClientIds = <String, String>{}; // request clientId → session id
+  var _coworkSeq = 0;
 
   /// Next N pushed mutations get `rejected` + `retryable: true` (1.5.0).
   int transientRejects = 0;
@@ -73,14 +86,14 @@ class FakeFieldApi implements HttpClientAdapter {
     'branch.view', 'customer.view', 'customer.location.propose', 'tag.view', 'tag.set', //
     'collection.record', 'collection.view', 'cash.view', 'cash.deposit.record', 'assignment.view',
     'visit.record', 'visit.view', 'note.create', 'note.view', 'promise.create', 'promise.view',
-    'attendance.record', 'leave.request',
+    'attendance.record', 'leave.request', 'cowork.use',
   ];
 
   static const flags = {
     'module.customers': true, 'module.tags': true, 'module.collections': true, 'module.cash': true, //
     'module.visits': true, 'module.notes': true, 'module.promises': true, 'module.attendance': true,
     'module.handovers': true, 'module.location': true, 'module.notifications': true, 'module.sync': true,
-    'module.reports': false, 'module.microfinance': false,
+    'module.cowork': true, 'module.reports': false, 'module.microfinance': false,
   };
 
   Json get _settings => {
@@ -97,6 +110,8 @@ class FakeFieldApi implements HttpClientAdapter {
         'location.trackingProvider': trackingProvider,
         'attendance.selfieRequired': selfieRequired,
         'attendance.selfieEvents': selfieEvents,
+        'cowork.maxMembers': coworkMaxMembers,
+        'cowork.visitCredit': 1.0,
         'location.sampling': {'fastSec': 15, 'slowSec': 45, 'stillSec': 180, 'distanceFilterM': 25, 'maxAccuracyM': 50},
       };
 
@@ -108,6 +123,159 @@ class FakeFieldApi implements HttpClientAdapter {
   void decideProposal(String clientId, String status, {String? reason}) {
     final last = _log.lastWhere((c) => c.entity == 'location_proposal' && c.data?['clientId'] == clientId);
     serverChange('location_proposal', last.id, {...last.data!, 'status': status, 'decisionReason': reason, 'decidedAt': clock.nowUtc().toIso8601String()});
+  }
+
+  String _nameOf(String userId) => userId == user['id']
+      ? (user['name'] as Map)['bn'] as String
+      : (colleagues.firstWhere((c) => c['id'] == userId, orElse: () => {'name': userId})['name'] as String);
+
+  Json _member(String userId, String status, String invitedBy) => {
+        'userId': userId,
+        'name': _nameOf(userId),
+        'status': status,
+        'invitedBy': invitedBy,
+        'invitedAt': clock.nowUtc().toIso8601String(),
+        'respondedAt': status == 'invited' ? null : clock.nowUtc().toIso8601String(),
+        'leftAt': null,
+      };
+
+  List<Json> _members(Json s) => (s['members'] as List).cast<Json>();
+
+  /// Stores a session and sends it on pull to every invited/member user.
+  Json _saveCowork(Json s) {
+    final members = _members(s);
+    final accepted = members.where((m) => m['status'] == 'accepted').length;
+    final invited = members.where((m) => m['status'] == 'invited').length;
+    if (s['status'] == 'open' && accepted < 2 && invited == 0) {
+      s = {...s, 'status': 'ended', 'endedAt': clock.nowUtc().toIso8601String()};
+    }
+    _cowork[s['id'] as String] = s;
+    serverChange('cowork_session', s['id'] as String, s);
+    return s;
+  }
+
+  Json? _openSessionOf(String userId) => _cowork.values
+      .where((s) => s['status'] == 'open' && _members(s).any((m) => m['userId'] == userId && m['status'] == 'accepted'))
+      .firstOrNull;
+
+  Json _newSession(String createdBy, String? note) => {
+        'id': 'cw-${++_coworkSeq}',
+        'businessDate': clock.businessDate(),
+        'branchId': 'br-01',
+        'status': 'open',
+        'createdBy': createdBy,
+        'note': note,
+        'members': [_member(createdBy, 'accepted', createdBy)],
+        'createdAt': clock.nowUtc().toIso8601String(),
+        'endedAt': null,
+      };
+
+  /// Tests / demo: colleague [fromUserId] asks me to work together.
+  String coworkInviteFrom(String fromUserId, {String? note}) {
+    final s = _openSessionOf(fromUserId) ?? _newSession(fromUserId, note);
+    final members = [..._members(s).where((m) => m['userId'] != user['id']), _member(user['id']! as String, 'invited', fromUserId)];
+    return _saveCowork({...s, 'members': members})['id'] as String;
+  }
+
+  /// Tests / demo: a colleague answers or leaves.
+  void coworkMemberSets(String sessionId, String userId, String status) {
+    final s = _cowork[sessionId]!;
+    _saveCowork({
+      ...s,
+      'members': [
+        for (final m in _members(s))
+          if (m['userId'] == userId)
+            {...m, 'status': status, 'respondedAt': clock.nowUtc().toIso8601String(), if (status == 'left') 'leftAt': clock.nowUtc().toIso8601String()}
+          else
+            m,
+      ],
+    });
+  }
+
+  /// Tests / demo: a partner records a co-work visit I took part in.
+  void coworkPartnerVisit(String sessionId, String recorderId, String customerId) {
+    final id = 'v-cw-${++_coworkSeq}';
+    final others = [for (final m in _members(_cowork[sessionId]!)) if (m['status'] == 'accepted' && m['userId'] != recorderId) m['userId']];
+    serverChange('visit', id, {
+      'id': id,
+      'clientId': 'client-$id',
+      'userId': recorderId,
+      'customerId': customerId,
+      'checkInAt': clock.nowUtc().toIso8601String(),
+      'outcome': 'not_home',
+      'geo': null,
+      'flags': const <String>[],
+      'coWorkSessionId': sessionId,
+      'coWork': {'sessionId': sessionId, 'participantIds': others},
+    });
+  }
+
+  Object _coworkRoute(String method, String path, Object? body) {
+    final me = user['id']! as String;
+    if (method == 'GET' && path == '/cowork/colleagues') {
+      return [
+        for (final c in colleagues) {...c, 'inSession': _openSessionOf(c['id'] as String) != null},
+      ];
+    }
+    if (method == 'GET' && path == '/cowork/sessions/mine') {
+      return [
+        for (final s in _cowork.values.toList().reversed)
+          if (s['businessDate'] == clock.businessDate() && _members(s).any((m) => m['userId'] == me && m['status'] != 'rejected')) s,
+      ];
+    }
+    if (method == 'POST' && path == '/cowork/requests') {
+      final b = body! as Json;
+      final replay = _coworkClientIds[b['clientId']];
+      if (replay != null) return (200, _cowork[replay]!);
+      final to = (b['toUserIds'] as List).cast<String>();
+      if (to.any((id) => id == me || !colleagues.any((c) => c['id'] == id))) {
+        return (422, {..._problem(422, 'BUSINESS_RULE', 'Invalid invitee'), 'details': {'rule': 'COWORK_INVALID_INVITEE'}});
+      }
+      final s = _openSessionOf(me) ?? _newSession(me, b['note'] as String?);
+      final members = _members(s).map((m) => {...m}).toList();
+      for (final id in to) {
+        final m = members.where((x) => x['userId'] == id).firstOrNull;
+        if (m != null && (m['status'] == 'accepted' || m['status'] == 'invited')) continue;
+        members.removeWhere((x) => x['userId'] == id);
+        members.add(_member(id, 'invited', me));
+      }
+      if (members.where((m) => m['status'] == 'accepted' || m['status'] == 'invited').length > coworkMaxMembers) {
+        return (422, {..._problem(422, 'BUSINESS_RULE', 'Too many'), 'details': {'rule': 'COWORK_TOO_MANY', 'max': coworkMaxMembers}});
+      }
+      final saved = _saveCowork({...s, 'members': members});
+      _coworkClientIds[b['clientId'] as String] = saved['id'] as String;
+      return (201, saved);
+    }
+    final m = RegExp(r'^/cowork/sessions/([^/]+)/(respond|leave)$').firstMatch(path);
+    if (m != null && method == 'POST') {
+      final s = _cowork[m.group(1)];
+      if (s == null) return (404, _problem(404, 'NOT_FOUND', 'No session'));
+      final mine = _members(s).where((x) => x['userId'] == me).firstOrNull;
+      if (m.group(2) == 'leave') {
+        if (mine == null || mine['status'] == 'left' || mine['status'] == 'rejected') return (200, s);
+        coworkMemberSets(s['id'] as String, me, mine['status'] == 'invited' ? 'rejected' : 'left');
+        return (200, _cowork[s['id']]!);
+      }
+      final accept = (body! as Json)['decision'] == 'accept';
+      if (s['status'] != 'open') return (409, {..._problem(409, 'INVALID_STATE', 'Ended'), 'details': {'reason': 'SESSION_ENDED'}});
+      if (mine == null) return (409, {..._problem(409, 'INVALID_STATE', 'Not invited'), 'details': {'reason': 'NOT_INVITED'}});
+      if (mine['status'] == (accept ? 'accepted' : 'rejected')) return (200, s);
+      if (mine['status'] != 'invited') return (409, {..._problem(409, 'INVALID_STATE', 'Not invited'), 'details': {'reason': 'NOT_INVITED'}});
+      final other = _openSessionOf(me);
+      if (accept && other != null && other['id'] != s['id']) {
+        return (409, {..._problem(409, 'INVALID_STATE', 'Already in a session'), 'details': {'reason': 'ALREADY_IN_SESSION'}});
+      }
+      coworkMemberSets(s['id'] as String, me, accept ? 'accepted' : 'rejected');
+      return (200, _cowork[s['id']]!);
+    }
+    return (404, _problem(404, 'NOT_FOUND', 'No route'));
+  }
+
+  /// Work-out leaves the open session (FR-CW-002).
+  void _leaveCoworkOnWorkOut() {
+    final me = user['id']! as String;
+    final s = _openSessionOf(me);
+    if (s != null) coworkMemberSets(s['id'] as String, me, 'left');
   }
 
   void addPendingHandover() => serverChange('handover', 'ho-77', {
@@ -232,6 +400,11 @@ class FakeFieldApi implements HttpClientAdapter {
           });
           return _json(200, {'id': id, 'status': accepted ? 'accepted' : 'rejected'});
         }
+        if (path.startsWith('/cowork/')) {
+          final r = _coworkRoute(o.method, path, body);
+          if (r is (int, Json)) return _json(r.$1, r.$2);
+          return _json(200, r);
+        }
         final cr = RegExp(r'^/customers/([^/]+)/refresh$').firstMatch(path);
         if (cr != null) {
           final last = _log.lastWhere((c) => c.entity == 'customer' && c.id == cr.group(1));
@@ -321,6 +494,23 @@ class FakeFieldApi implements HttpClientAdapter {
         r = {'mutationId': id, 'result': 'applied', 'entityId': '$entity-$id', 'status': entity == 'collection' ? 'received' : 'ok'};
         if (entity == 'collection' && payload['method'] == 'cash') _cashOnHand += payload['amountPoisha'] as int;
         if (entity == 'deposit') _cashOnHand -= payload['amountPoisha'] as int;
+        if (entity == 'attendance_event' && payload['type'] == 'work_out') _leaveCoworkOnWorkOut();
+        if (entity == 'visit' && m['op'] == 'create' && payload['coWorkSessionId'] != null) {
+          // Server works out who took part (1.9.0): accepted members at check-in.
+          final me = user['id']! as String;
+          final sid = payload['coWorkSessionId'] as String;
+          final s = _cowork[sid];
+          final ok = s != null && _members(s).any((x) => x['userId'] == me && x['status'] == 'accepted');
+          serverChange('visit', '$entity-$id', {
+            ...payload,
+            'id': '$entity-$id',
+            'userId': me,
+            'flags': ok ? const <String>[] : const ['cowork_invalid'],
+            'coWork': ok
+                ? {'sessionId': sid, 'participantIds': [for (final x in _members(s)) if (x['status'] == 'accepted' && x['userId'] != me) x['userId']]}
+                : null,
+          });
+        }
         if (entity == 'location_proposal') {
           final geo = (payload['geo'] as Json?) ?? const {};
           serverChange('location_proposal', '$entity-$id', {
