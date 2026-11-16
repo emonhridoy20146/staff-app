@@ -24,7 +24,7 @@ Phases match `field-api/docs/09-progress.md`. Start each phase against the Prism
 | Cash: position, limit, deposits with slip, end-of-day closing | ◐ slip photo and closing not yet |
 | Visits with camera, media queue | ✅ |
 | Notes, promises, local reminders | ✅ |
-| Tags (with reason), pin correction proposals | ◐ tags done; pin proposals not yet |
+| Tags (with reason), pin correction proposals | ✅ tags; pin correction in 0.3.0 (flow test + screenshots) |
 | Attendance: work-in/out, breaks, summary | ✅ |
 | Handovers incoming/outgoing | ◐ incoming done; outgoing (P4 staff-initiated) not yet |
 | Notifications (FCM + centre), Sync centre & Problems | ◐ sync centre done; FCM not yet (needs Firebase project) |

@@ -1461,4 +1461,58 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get visitSuggestYes => 'ভিজিট লিখুন';
+
+  @override
+  String get actionSetLocation => 'লোকেশন দিন';
+
+  @override
+  String get actionCorrectLocation => 'লোকেশন ঠিক করুন';
+
+  @override
+  String get pinIntro =>
+      'কাস্টমারের দরজায় দাঁড়ান। ফোনের GPS অবস্থানটাই নতুন পিন হিসেবে যাবে, ম্যানেজার অনুমোদন দেবেন।';
+
+  @override
+  String pinAccuracyWeak(String meters, String limit) {
+    return 'GPS-এ $meters মিটার গরমিল। $limit মিটার বা কম লাগবে: খোলা জায়গায় দাঁড়িয়ে একটু অপেক্ষা করুন।';
+  }
+
+  @override
+  String get pinOutside => 'এই অবস্থানটা বাংলাদেশের বাইরে।';
+
+  @override
+  String get pinRetry => 'আবার GPS দেখুন';
+
+  @override
+  String get pinPhotoNeeded => 'বাড়ি বা দোকানের একটা ছবি তুলুন';
+
+  @override
+  String get pinNoteHint => 'চিহ্ন, গেটের রং, তলা…';
+
+  @override
+  String get pinSubmit => 'অনুমোদনের জন্য পাঠান';
+
+  @override
+  String get pinSent => 'পাঠানো হয়েছে। ম্যানেজার অনুমোদন দিলে পিন বদলাবে।';
+
+  @override
+  String get pinPending =>
+      'নতুন লোকেশন পাঠানো হয়েছে · ম্যানেজারের অনুমোদনের অপেক্ষায়';
+
+  @override
+  String get pinFailed =>
+      'সার্ভার এই লোকেশন নেয়নি। ভালো GPS নিয়ে দরজা থেকে আবার চেষ্টা করুন।';
+
+  @override
+  String pinDistanceFromOld(String distance) {
+    return 'বর্তমান পিন থেকে $distance';
+  }
+
+  @override
+  String mapNoPinCount(String count) {
+    return '$count জনের লোকেশন নেই';
+  }
+
+  @override
+  String get mapNoPinTitle => 'লোকেশন নেই এমন কাস্টমার';
 }

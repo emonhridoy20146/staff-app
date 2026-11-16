@@ -904,5 +904,44 @@
     }
   },
   "visitSuggestNo": "Not now",
-  "visitSuggestYes": "Record visit"
+  "visitSuggestYes": "Record visit",
+  "actionSetLocation": "Set location",
+  "actionCorrectLocation": "Correct location",
+  "pinIntro": "Stand at the customer's door. Your phone's GPS position is sent as the new pin, and a manager approves it.",
+  "pinAccuracyWeak": "GPS is off by {meters} m. It must be {limit} m or better: step into the open and wait a moment.",
+  "@pinAccuracyWeak": {
+    "placeholders": {
+      "meters": {
+        "type": "String"
+      },
+      "limit": {
+        "type": "String"
+      }
+    }
+  },
+  "pinOutside": "This position is outside Bangladesh.",
+  "pinRetry": "Check GPS again",
+  "pinPhotoNeeded": "Take a photo of the house or shop",
+  "pinNoteHint": "Landmark, gate colour, floor…",
+  "pinSubmit": "Send for approval",
+  "pinSent": "Sent. The pin changes after a manager approves it.",
+  "pinPending": "New location sent · waiting for manager approval",
+  "pinFailed": "The server refused this location. Try again from the door with good GPS.",
+  "pinDistanceFromOld": "{distance} from the current pin",
+  "@pinDistanceFromOld": {
+    "placeholders": {
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
+  "mapNoPinCount": "{count} without location",
+  "@mapNoPinCount": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "mapNoPinTitle": "Customers without location"
 }

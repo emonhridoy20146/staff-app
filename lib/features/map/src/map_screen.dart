@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../core/permissions/permission_service.dart';
 import '../../../core/providers.dart';
 import '../../../core/settings/ui_prefs.dart';
 import '../../../core/theme/status_colors.dart';
@@ -33,6 +34,9 @@ class _CustomerMapScreenState extends ConsumerState<CustomerMapScreen> {
     final today = ref.watch(todayProvider);
     final all = ref.watch(allCustomersProvider).value ?? const <Customer>[];
     final pinned = all.where((c) => c.hasPin).toList();
+    final unpinned = all.where((c) => !c.hasPin).toList();
+    final access = ref.watch(accessProvider);
+    final canPropose = access.can(Perm.customerLocationPropose);
     final fix = ref.watch(currentFixProvider).value;
     final tiles = ref.watch(tileConfigProvider);
     final tilesOn = ref.watch(mapTilesEnabledProvider);
@@ -52,73 +56,161 @@ class _CustomerMapScreenState extends ConsumerState<CustomerMapScreen> {
     final sorted = [...pinned]..sort((a, b) => (order[a.primaryStatus(today)] ?? 0).compareTo(order[b.primaryStatus(today)] ?? 0));
 
     return Scaffold(
-      body: Stack(children: [
-        FlutterMap(
-          mapController: _map,
-          options: MapOptions(
-            initialCenter: center,
-            initialZoom: 14,
-            maxZoom: tiles.maxZoom.toDouble(),
-            backgroundColor: cs.surfaceContainer,
-            onTap: (_, _) => setState(() => _selected = null),
-          ),
-          children: [
-            if (tilesOn) TileLayer(urlTemplate: tiles.urlTemplate, subdomains: tiles.subdomains, userAgentPackageName: 'bd.howlader.field.staff'),
-            MarkerLayer(markers: [
-              for (final c in sorted)
-                Marker(
-                  point: LatLng(c.row.lat!, c.row.lng!),
-                  width: 48,
-                  height: 48,
-                  alignment: Alignment.topCenter,
-                  child: _Pin(status: c.primaryStatus(today), selected: c.id == _selected, onTap: () => setState(() => _selected = c.id)),
+      body: Stack(
+        children: [
+          FlutterMap(
+            mapController: _map,
+            options: MapOptions(initialCenter: center, initialZoom: 14, maxZoom: tiles.maxZoom.toDouble(), backgroundColor: cs.surfaceContainer, onTap: (_, _) => setState(() => _selected = null)),
+            children: [
+              if (tilesOn) TileLayer(urlTemplate: tiles.urlTemplate, subdomains: tiles.subdomains, userAgentPackageName: 'bd.howlader.field.staff'),
+              MarkerLayer(
+                markers: [
+                  for (final c in sorted)
+                    Marker(
+                      point: LatLng(c.row.lat!, c.row.lng!),
+                      width: 48,
+                      height: 48,
+                      alignment: Alignment.topCenter,
+                      child: _Pin(status: c.primaryStatus(today), selected: c.id == _selected, onTap: () => setState(() => _selected = c.id)),
+                    ),
+                  if (fix != null) Marker(point: LatLng(fix.lat, fix.lng), width: 28, height: 28, child: const _MeDot()),
+                ],
+              ),
+              if (tilesOn)
+                Align(
+                  alignment: Alignment.bottomLeft,
+                  child: Padding(
+                    padding: const EdgeInsets.all(4),
+                    child: Text(tiles.attribution, style: Theme.of(context).textTheme.labelSmall!.copyWith(color: cs.onSurfaceVariant)),
+                  ),
                 ),
-              if (fix != null)
-                Marker(point: LatLng(fix.lat, fix.lng), width: 28, height: 28, child: const _MeDot()),
-            ]),
-            if (tilesOn)
-              Align(
-                alignment: Alignment.bottomLeft,
-                child: Padding(
-                  padding: const EdgeInsets.all(4),
-                  child: Text(tiles.attribution, style: Theme.of(context).textTheme.labelSmall!.copyWith(color: cs.onSurfaceVariant)),
+            ],
+          ),
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(Space.screen),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Material(
+                        color: cs.surface,
+                        elevation: 2,
+                        borderRadius: const BorderRadius.all(Radius.circular(Radii.full)),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: Space.s16, vertical: Space.s8),
+                          child: Text(l.mapPinsCount(f.num(pinned.length)), style: Theme.of(context).textTheme.titleSmall),
+                        ),
+                      ),
+                      const Spacer(),
+                      SyncChip(onTap: () => context.push('/sync')),
+                    ],
+                  ),
+                  if (unpinned.isNotEmpty && canPropose) ...[const SizedBox(height: Space.s8), _NoPinChip(count: unpinned.length, onTap: () => _showUnpinned(context, unpinned))],
+                ],
+              ),
+            ),
+          ),
+          if (pinned.isEmpty)
+            Center(
+              child: Card(
+                child: Padding(padding: const EdgeInsets.all(Space.s16), child: Text(l.mapNoPins)),
+              ),
+            ),
+          Positioned(
+            right: Space.screen,
+            bottom: (selected == null ? 0 : 196) + Space.screen,
+            child: FloatingActionButton.small(
+              heroTag: 'my-location',
+              tooltip: l.mapMyLocation,
+              onPressed: fix == null ? null : () => _map.move(LatLng(fix.lat, fix.lng), 15),
+              child: const Icon(Icons.my_location_rounded),
+            ),
+          ),
+          if (selected != null)
+            Positioned(
+              left: Space.screen,
+              right: Space.screen,
+              bottom: Space.screen,
+              child: _Preview(customer: selected),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+extension on _CustomerMapScreenState {
+  void _showUnpinned(BuildContext context, List<Customer> unpinned) {
+    final l = AppLocalizations.of(context);
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (sheet) => DraggableScrollableSheet(
+        expand: false,
+        initialChildSize: 0.6,
+        maxChildSize: 0.9,
+        builder: (_, scroll) => Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(Space.screen, 0, Space.screen, Space.s8),
+              child: Text(l.mapNoPinTitle, style: Theme.of(context).textTheme.titleMedium),
+            ),
+            Expanded(
+              child: ListView.builder(
+                controller: scroll,
+                itemCount: unpinned.length,
+                itemBuilder: (_, i) => CustomerTile(
+                  customer: unpinned[i],
+                  onTap: () {
+                    Navigator.of(sheet).pop();
+                    openPinCorrection(context, unpinned[i].id);
+                  },
                 ),
               ),
+            ),
           ],
         ),
-        SafeArea(
+      ),
+    );
+  }
+}
+
+/// "N without location" — opens the list to set their pins (FR-CUS-008).
+class _NoPinChip extends ConsumerWidget {
+  const _NoPinChip({required this.count, required this.onTap});
+  final int count;
+  final VoidCallback onTap;
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context);
+    final st = context.semanticColors.warning;
+    return Material(
+      color: st.bg,
+      elevation: 2,
+      borderRadius: const BorderRadius.all(Radius.circular(Radii.full)),
+      child: InkWell(
+        onTap: onTap,
+        customBorder: const StadiumBorder(),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 48),
           child: Padding(
-            padding: const EdgeInsets.all(Space.screen),
-            child: Row(children: [
-              Material(
-                color: cs.surface,
-                elevation: 2,
-                borderRadius: const BorderRadius.all(Radius.circular(Radii.full)),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: Space.s16, vertical: Space.s8),
-                  child: Text(l.mapPinsCount(f.num(pinned.length)), style: Theme.of(context).textTheme.titleSmall),
-                ),
-              ),
-              const Spacer(),
-              SyncChip(onTap: () => context.push('/sync')),
-            ]),
+            padding: const EdgeInsets.symmetric(horizontal: Space.s16),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.add_location_alt_rounded, size: 20, color: st.fg),
+                const SizedBox(width: Space.s8),
+                Text(l.mapNoPinCount(ref.watch(fmtProvider).num(count)), style: Theme.of(context).textTheme.titleSmall!.copyWith(color: st.fg)),
+                const SizedBox(width: Space.s4),
+                Icon(Icons.chevron_right_rounded, size: 20, color: st.fg),
+              ],
+            ),
           ),
         ),
-        if (pinned.isEmpty)
-          Center(child: Card(child: Padding(padding: const EdgeInsets.all(Space.s16), child: Text(l.mapNoPins)))),
-        Positioned(
-          right: Space.screen,
-          bottom: (selected == null ? 0 : 196) + Space.screen,
-          child: FloatingActionButton.small(
-            heroTag: 'my-location',
-            tooltip: l.mapMyLocation,
-            onPressed: fix == null ? null : () => _map.move(LatLng(fix.lat, fix.lng), 15),
-            child: const Icon(Icons.my_location_rounded),
-          ),
-        ),
-        if (selected != null)
-          Positioned(left: Space.screen, right: Space.screen, bottom: Space.screen, child: _Preview(customer: selected)),
-      ]),
+      ),
     );
   }
 }
@@ -164,7 +256,15 @@ class _MeDot extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(color: cs.primary.withValues(alpha: 0.2), shape: BoxShape.circle),
       alignment: Alignment.center,
-      child: Container(width: 14, height: 14, decoration: BoxDecoration(color: cs.primary, shape: BoxShape.circle, border: Border.all(color: Colors.white, width: 2))),
+      child: Container(
+        width: 14,
+        height: 14,
+        decoration: BoxDecoration(
+          color: cs.primary,
+          shape: BoxShape.circle,
+          border: Border.all(color: Colors.white, width: 2),
+        ),
+      ),
     );
   }
 }
@@ -180,30 +280,30 @@ class _Preview extends ConsumerWidget {
       color: Theme.of(context).colorScheme.surface,
       borderRadius: Radii.brXl,
       clipBehavior: Clip.antiAlias,
-      child: Column(mainAxisSize: MainAxisSize.min, children: [
-        CustomerTile(customer: customer, onTap: () => context.push('/customers/${customer.id}')),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(Space.s16, 0, Space.s16, Space.s16),
-          child: Row(children: [
-            Expanded(
-              child: OutlinedButton.icon(
-                onPressed: () => launchNavigate(customer.row.lat!, customer.row.lng!, customer.nameOf(Localizations.localeOf(context).languageCode)),
-                icon: const Icon(Icons.directions_rounded),
-                label: Text(l.actionNavigate),
-              ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          CustomerTile(customer: customer, onTap: () => context.push('/customers/${customer.id}')),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(Space.s16, 0, Space.s16, Space.s16),
+            child: Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () => launchNavigate(customer.row.lat!, customer.row.lng!, customer.nameOf(Localizations.localeOf(context).languageCode)),
+                    icon: const Icon(Icons.directions_rounded),
+                    label: Text(l.actionNavigate),
+                  ),
+                ),
+                const SizedBox(width: Space.s12),
+                Expanded(
+                  child: FilledButton.icon(onPressed: () => context.push('/collect/${customer.id}'), icon: const Icon(Icons.payments_rounded), label: Text(l.actionCollect)),
+                ),
+              ],
             ),
-            const SizedBox(width: Space.s12),
-            Expanded(
-              child: FilledButton.icon(
-                onPressed: () => context.push('/collect/${customer.id}'),
-                icon: const Icon(Icons.payments_rounded),
-                label: Text(l.actionCollect),
-              ),
-            ),
-          ]),
-        ),
-      ]),
+          ),
+        ],
+      ),
     );
   }
 }
-

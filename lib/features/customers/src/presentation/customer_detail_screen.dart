@@ -17,6 +17,7 @@ import '../../../../core/ui/money_text.dart';
 import '../../../../core/ui/status_badge.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../contact_attempts.dart';
+import '../pin_correction.dart';
 import '../customer_providers.dart';
 import '../data/customer_repository.dart';
 import '../domain/customer.dart';
@@ -209,6 +210,8 @@ class _Header extends ConsumerWidget {
     final today = ref.watch(todayProvider);
     final phones = customer.phones;
     final badges = customer.badges(today);
+    final access = ref.watch(accessProvider);
+    final canPropose = access.flag('module.customers') && access.can(Perm.customerLocationPropose);
     return Container(
       color: cs.surfaceContainer,
       padding: const EdgeInsets.fromLTRB(Space.screen, Space.s4, Space.screen, Space.s20),
@@ -251,13 +254,16 @@ class _Header extends ConsumerWidget {
               if (phones.isNotEmpty) const SizedBox(width: Space.s8),
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed: customer.hasPin ? () => launchNavigate(customer.row.lat!, customer.row.lng!, customer.row.nameBn) : null,
-                  icon: const Icon(Icons.directions_rounded),
-                  label: Text(customer.hasPin ? l.actionNavigate : l.filterNoPin),
+                  onPressed: customer.hasPin
+                      ? () => launchNavigate(customer.row.lat!, customer.row.lng!, customer.row.nameBn)
+                      : (canPropose ? () => openPinCorrection(context, customer.id) : null),
+                  icon: Icon(customer.hasPin ? Icons.directions_rounded : Icons.add_location_alt_rounded),
+                  label: Text(customer.hasPin ? l.actionNavigate : (canPropose ? l.actionSetLocation : l.filterNoPin)),
                 ),
               ),
             ],
           ),
+          PinProposalStatus(customerId: customer.id),
         ],
       ),
     );

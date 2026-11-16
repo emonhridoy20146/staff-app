@@ -120,4 +120,6 @@ void main() {
   });
   testWidgets('11 today dark', (t) async => _shot(t, await _ready(t, dark: true), '11-today-dark', go: '/today'));
   testWidgets('12 today english', (t) async => _shot(t, await _ready(t, lang: 'en'), '12-today-en', go: '/today'));
+  testWidgets('13 customer without pin', (t) async => _shot(t, await _ready(t), '13-customer-no-pin', go: '/customers/c-1010'));
+  testWidgets('14 set location', (t) async => _shot(t, await _ready(t), '14-set-location', go: '/customers/c-1010/pin'));
 }

@@ -10,3 +10,4 @@ export 'src/domain/customer.dart' show Customer, TodayPriorities, CustomerFilter
 export 'src/presentation/customer_detail_screen.dart' show CustomerDetailScreen, launchNavigate, launchCall;
 export 'src/presentation/customer_list_screen.dart' show CustomerListScreen;
 export 'src/presentation/customer_tile.dart' show CustomerTile;
+export 'src/pin_correction.dart' show openPinCorrection, submitLocationProposal, PinCorrectionScreen;
