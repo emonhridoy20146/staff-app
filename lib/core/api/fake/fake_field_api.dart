@@ -34,6 +34,7 @@ class FakeFieldApi implements HttpClientAdapter {
   bool expireCursor = false;
   bool upgradeRequired = false;
   String trackingProvider = 'free'; // admin setting location.trackingProvider
+  List<String> selfieEvents = const ['work_in', 'break_start', 'break_end', 'work_out']; // attendance.selfieEvents
   int pushCalls = 0;
 
   /// Next N pushed mutations get `rejected` + `retryable: true` (1.5.0).
@@ -93,6 +94,7 @@ class FakeFieldApi implements HttpClientAdapter {
         'dailyVisitTarget': 20,
         'hotline': '০১৭০০-০০০০০০',
         'location.trackingProvider': trackingProvider,
+        'attendance.selfieEvents': selfieEvents,
         'location.sampling': {'fastSec': 15, 'slowSec': 45, 'stillSec': 180, 'distanceFilterM': 25, 'maxAccuracyM': 50},
       };
 

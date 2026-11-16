@@ -1,5 +1,14 @@
 # Changelog — staff-app
 
+## [0.4.0] — 2026-11-16
+### Added
+- Attendance photo (FR-ATT-001, owner request 2026-11-16): work-in, break start, break end and work-out open the front camera, and nothing is recorded without the photo (camera only, no gallery). The server setting `attendance.selfieEvents` (list of event types) chooses which events need it; default is all four. The photo is watermarked (time, event, staff code, GPS) and uploaded as media kind `selfie`.
+- Outbox state `held`: a mutation saved on the phone but not sent until its photo is confirmed, then released with `selfieMediaId`. Duty status changes on the phone right away. Each attendance event depends on the previous one of the day, so the server always receives them in order. Held items count as unsynced (sign-out guard, sync centre).
+### Changed
+- OD-12 amended by the owner: the selfie is no longer optional at work-in only. See `08-decisions.md`.
+### Needs field-api
+- Setting `attendance.selfieEvents` (default all four), and `selfieMediaId` accepted on every event type (requested).
+
 ## [0.3.0] — 2026-11-16
 ### Added
 - Pin correction (FR-CUS-008): staff can set or correct a customer's map location. Open it from customer detail ("Set location" when there is no pin, "Correct location" under More) or from the map's "N without location" chip. The phone's GPS fix is checked as the server does (accuracy ≤ 30 m, no mock location, inside Bangladesh), a camera photo is required (kind `location_proof`), and a note is optional. Saved offline: the proposal waits on the phone until its photo is uploaded, then the `location_proposal` mutation is sent with `photoMediaId`. The pin itself changes only after a manager approves it and the customer syncs back. Customer detail shows "waiting for manager approval" until then.

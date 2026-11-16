@@ -1520,4 +1520,12 @@ class AppLocalizationsBn extends AppLocalizations {
   String pinRejected(String reason) {
     return 'লোকেশন অনুমোদন হয়নি: $reason। নতুন করে পাঠাতে চাপুন।';
   }
+
+  @override
+  String get attendanceSelfieNeeded =>
+      'হাজিরার জন্য আপনার ছবি লাগবে। আবার চাপুন আর ছবি তুলুন।';
+
+  @override
+  String get attendanceSelfieHint =>
+      'আপনার ছবি তুলতে সামনের ক্যামেরা খুলবে। শুধু ক্যামেরা।';
 }

@@ -49,7 +49,7 @@ Future<Harness> _ready(WidgetTester t, {bool signIn = true, bool dark = false, S
   await t.runAsync(() async {
     if (signIn) {
       await h.signIn();
-      await h.read(attendanceServiceProvider).record(AttendanceEventType.workIn, fix: await h.read(locationEngineProvider).currentFix());
+      await h.read(attendanceServiceProvider).record(AttendanceEventType.workIn, fix: await h.read(locationEngineProvider).currentFix(), selfie: testJpeg());
       // Some realistic activity for today.
       final rc = h.read(recordCollectionProvider);
       await h.read(receiptAllocatorProvider).topUp(h.read(fieldApiProvider), deviceId: h.read(deviceIdentityProvider).deviceId, businessDate: h.clock.businessDate());
@@ -121,5 +121,6 @@ void main() {
   testWidgets('11 today dark', (t) async => _shot(t, await _ready(t, dark: true), '11-today-dark', go: '/today'));
   testWidgets('12 today english', (t) async => _shot(t, await _ready(t, lang: 'en'), '12-today-en', go: '/today'));
   testWidgets('13 customer without pin', (t) async => _shot(t, await _ready(t), '13-customer-no-pin', go: '/customers/c-1010'));
+  testWidgets('15 work-in with photo', (t) async => _shot(t, await _ready(t, signIn: true), '15-work-in', go: '/attendance/work-in'));
   testWidgets('14 set location', (t) async => _shot(t, await _ready(t), '14-set-location', go: '/customers/c-1010/pin'));
 }

@@ -1519,4 +1519,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String pinRejected(String reason) {
     return 'Location not approved: $reason. Tap to send a new one.';
   }
+
+  @override
+  String get attendanceSelfieNeeded =>
+      'Attendance needs a photo of you. Tap again and take the photo.';
+
+  @override
+  String get attendanceSelfieHint =>
+      'The front camera opens to take your photo. Camera only.';
 }

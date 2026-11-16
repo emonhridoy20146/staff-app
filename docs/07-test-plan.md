@@ -49,6 +49,7 @@ Devices (minimum set): **Xiaomi Redmi (MIUI/HyperOS, 2–3 GB)**, **Samsung Gala
 - [ ] 9 h duty test (bike + walk) battery ≤ 12 %; persistent notification visible; no points after work-out; tracking resumes after reboot while on duty
 - [ ] OEM killing: lock screen for 1 h on Xiaomi/Oppo/Vivo; heartbeat gaps visible in admin if killed
 - [ ] Mock GPS app → flagged
+- [ ] Attendance photo: front camera opens at work-in, break start, break end, work-out; cancelling records nothing; offline the duty status changes at once and the events reach admin in order with photos after reconnecting
 - [ ] Pin correction at a real door: accuracy reaches ≤ 30 m within 1 min outdoors; photo required; proposal arrives in admin after the photo uploads (also when saved offline)
 - [ ] Notification shows on work-in and disappears on work-out; Me tab card says "On · standard"
 - [ ] Admin sets `location.trackingProvider = paid` on this build → Me tab shows the fallback note, heartbeat reports it; tracking continues

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,6 +8,9 @@ import 'package:uuid/uuid.dart';
 import '../../../core/api/api_models.dart';
 import '../../../core/db/app_database.dart';
 import '../../../core/location/location_engine.dart';
+import '../../../core/media/media.dart';
+import '../../../core/settings/ui_prefs.dart';
+import '../../../core/sync/outbox.dart';
 import '../../../core/providers.dart';
 import '../../../core/sync/sync_handlers.dart';
 import '../../../core/time/clock.dart';
@@ -65,8 +69,31 @@ class AttendanceService {
 
   DateTime dhakaMidnightUtc() => parseBusinessDate(_clock.businessDate()).subtract(dhakaOffset);
 
-  /// Records an event offline-first (FR-ATT-001/002).
-  Future<void> record(AttendanceEventType type, {GeoFix? fix}) async {
+  /// Events that need a front-camera photo. Server setting
+  /// `attendance.selfieEvents` (list of wire types); default all four,
+  /// as the owner asked on 2026-11-16 (amends OD-12).
+  Set<AttendanceEventType> selfieEvents() {
+    final v = _ref.read(serverSettingsProvider)['attendance.selfieEvents'];
+    if (v is! List) return AttendanceEventType.values.toSet();
+    return {for (final w in v.whereType<String>()) ?_tryWire(w)};
+  }
+
+  static AttendanceEventType? _tryWire(String w) {
+    try {
+      return AttendanceEventTypeX.fromWire(w);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  bool needsSelfie(AttendanceEventType type) => selfieEvents().contains(type);
+
+  /// Records an event offline-first (FR-ATT-001/002). With a [selfie] the
+  /// mutation is held until the photo is uploaded, then sent with
+  /// `selfieMediaId` (see [releaseWithSelfie]). Each event depends on the
+  /// previous one of the day, so they always reach the server in order.
+  Future<void> record(AttendanceEventType type, {GeoFix? fix, Uint8List? selfie}) async {
+    if (selfie == null && needsSelfie(type)) throw SelfieRequired();
     final date = _clock.businessDate();
     final events = await (_db.select(_db.attendanceEvents)
           ..where((t) => t.businessDate.equals(date))
@@ -77,6 +104,7 @@ class AttendanceService {
     final id = const Uuid().v7();
     final at = _clock.nowUtc();
     final device = _clock.deviceNowUtc();
+    final previous = events.isEmpty ? null : events.last.clientId;
     await _db.transaction(() async {
       await _db.into(_db.attendanceEvents).insert(AttendanceEventsCompanion.insert(
             clientId: id,
@@ -89,19 +117,42 @@ class AttendanceService {
             accuracyM: Value(fix?.accuracyM),
             mock: Value(fix?.mock ?? false),
           ));
-      await _ref.read(outboxWriterProvider).enqueue(mutationId: id, entity: 'attendance_event', payload: {
-        'clientId': id,
-        'type': type.wire,
-        'at': at.toIso8601String(),
-        'deviceTime': device.toIso8601String(),
-        ...geoFields(fix, _ref.read(locationEngineProvider).lastFailureReason),
-      });
+      await _ref.read(outboxWriterProvider).enqueue(
+        mutationId: id,
+        entity: 'attendance_event',
+        held: selfie != null,
+        dependsOn: [?previous],
+        payload: {
+          'clientId': id,
+          'type': type.wire,
+          'at': at.toIso8601String(),
+          'deviceTime': device.toIso8601String(),
+          ...geoFields(fix, _ref.read(locationEngineProvider).lastFailureReason),
+        },
+      );
     });
+    if (selfie != null) {
+      final user = await _ref.read(secureStoreProvider).read('session_user');
+      final code = user == null ? '' : ((jsonDecode(user) as Map)['employeeCode'] ?? '').toString();
+      final f = _ref.read(fmtProvider);
+      final wm = '${f.dateTime(at).replaceAll(RegExp('[^\\x00-\\x7F]'), '')} ${type.wire} $code${fix == null ? '' : ' ${fix.lat.toStringAsFixed(5)},${fix.lng.toStringAsFixed(5)}'}';
+      final processed = await processPhoto(selfie, watermark: wm.trim());
+      final media = _ref.read(mediaServiceProvider);
+      final mediaId = await media.enqueue(photo: processed, kind: 'selfie', ownerEntity: 'attendance_event', ownerClientId: id, fix: fix);
+      await (_db.update(_db.attendanceEvents)..where((t) => t.clientId.equals(id))).write(AttendanceEventsCompanion(selfieMediaClientId: Value(mediaId)));
+      unawaited(media.uploadPending().catchError((Object _) {}));
+    }
     unawaited(_ref.read(syncEngineProvider).kick(reason: 'attendance'));
   }
 }
 
 final attendanceServiceProvider = Provider<AttendanceService>(AttendanceService.new);
+
+class SelfieRequired implements Exception {}
+
+/// Media hook: the selfie is on the server → send the held event.
+Future<void> releaseWithSelfie(OutboxWriter outbox, AppDatabase db, String eventClientId, List<String> mediaIds) =>
+    outbox.release(eventClientId, {if (mediaIds.isNotEmpty) 'selfieMediaId': mediaIds.first});
 
 final todayAttendanceProvider = StreamProvider<AttendanceDay>((ref) {
   final s = ref.watch(attendanceServiceProvider);
