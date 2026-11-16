@@ -943,5 +943,13 @@
       }
     }
   },
-  "mapNoPinTitle": "Customers without location"
+  "mapNoPinTitle": "Customers without location",
+  "pinRejected": "Location not approved: {reason}. Tap to send a new one.",
+  "@pinRejected": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  }
 }

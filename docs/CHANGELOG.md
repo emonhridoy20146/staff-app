@@ -3,8 +3,12 @@
 ## [0.3.0] — 2026-11-16
 ### Added
 - Pin correction (FR-CUS-008): staff can set or correct a customer's map location. Open it from customer detail ("Set location" when there is no pin, "Correct location" under More) or from the map's "N without location" chip. The phone's GPS fix is checked as the server does (accuracy ≤ 30 m, no mock location, inside Bangladesh), a camera photo is required (kind `location_proof`), and a note is optional. Saved offline: the proposal waits on the phone until its photo is uploaded, then the `location_proposal` mutation is sent with `photoMediaId`. The pin itself changes only after a manager approves it and the customer syncs back. Customer detail shows "waiting for manager approval" until then.
-### Contract gap (reported, contract not changed)
-- No sync pull entity or staff endpoint for the status of one's own location proposals, so the app cannot show a manager's rejection; it treats a proposal as approved when the customer's pin arrives at the proposed spot (within 5 m).
+- Proposal status from the server (contract 1.7.0): `location_proposal` arrives on `/sync/pull` when created and when a manager decides. A rejection shows on customer detail with the manager's reason and a tap to send a new one; an approval clears the line (the new pin arrives as a customer change).
+- Database schema 3: `location_proposals.decision_reason`, with migration tests from schema 1 and 2.
+### Changed
+- Contract pinned to field-api `openapi.yaml` 1.7.0.
+### Not done
+- `GET /location-proposals/mine` (for a reinstalled phone) is not called yet; bootstrap does not snapshot proposals, so after a reinstall older proposals show only when the server next changes them.
 
 ## [0.2.0] — 2026-11-15
 ### Added

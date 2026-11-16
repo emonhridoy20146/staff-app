@@ -45,7 +45,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -77,6 +77,10 @@ class AppDatabase extends _$AppDatabase {
           if (from < 2) {
             await m.createTable(contactAttempts);
             await customStatement('CREATE INDEX IF NOT EXISTS idx_location_queue_t ON location_queue (t)');
+          }
+          // v3 (0.3.0): manager's reason on pin proposals.
+          if (from < 3) {
+            await m.addColumn(locationProposals, locationProposals.decisionReason);
           }
         },
         beforeOpen: (details) async {

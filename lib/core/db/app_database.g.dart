@@ -3750,6 +3750,17 @@ class $LocationProposalsTable extends LocationProposals
     requiredDuringInsert: false,
     defaultValue: const Constant('queued'),
   );
+  static const VerificationMeta _decisionReasonMeta = const VerificationMeta(
+    'decisionReason',
+  );
+  @override
+  late final GeneratedColumn<String> decisionReason = GeneratedColumn<String>(
+    'decision_reason',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     clientId,
@@ -3761,6 +3772,7 @@ class $LocationProposalsTable extends LocationProposals
     note,
     status,
     syncState,
+    decisionReason,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -3841,6 +3853,15 @@ class $LocationProposalsTable extends LocationProposals
         syncState.isAcceptableOrUnknown(data['sync_state']!, _syncStateMeta),
       );
     }
+    if (data.containsKey('decision_reason')) {
+      context.handle(
+        _decisionReasonMeta,
+        decisionReason.isAcceptableOrUnknown(
+          data['decision_reason']!,
+          _decisionReasonMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -3886,6 +3907,10 @@ class $LocationProposalsTable extends LocationProposals
         DriftSqlType.string,
         data['${effectivePrefix}sync_state'],
       )!,
+      decisionReason: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}decision_reason'],
+      ),
     );
   }
 
@@ -3906,6 +3931,9 @@ class LocationProposalRow extends DataClass
   final String? note;
   final String status;
   final String syncState;
+
+  /// Manager's reason when rejected (v3, contract 1.7.0).
+  final String? decisionReason;
   const LocationProposalRow({
     required this.clientId,
     required this.customerId,
@@ -3916,6 +3944,7 @@ class LocationProposalRow extends DataClass
     this.note,
     required this.status,
     required this.syncState,
+    this.decisionReason,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -3933,6 +3962,9 @@ class LocationProposalRow extends DataClass
     }
     map['status'] = Variable<String>(status);
     map['sync_state'] = Variable<String>(syncState);
+    if (!nullToAbsent || decisionReason != null) {
+      map['decision_reason'] = Variable<String>(decisionReason);
+    }
     return map;
   }
 
@@ -3949,6 +3981,9 @@ class LocationProposalRow extends DataClass
       note: note == null && nullToAbsent ? const Value.absent() : Value(note),
       status: Value(status),
       syncState: Value(syncState),
+      decisionReason: decisionReason == null && nullToAbsent
+          ? const Value.absent()
+          : Value(decisionReason),
     );
   }
 
@@ -3969,6 +4004,7 @@ class LocationProposalRow extends DataClass
       note: serializer.fromJson<String?>(json['note']),
       status: serializer.fromJson<String>(json['status']),
       syncState: serializer.fromJson<String>(json['syncState']),
+      decisionReason: serializer.fromJson<String?>(json['decisionReason']),
     );
   }
   @override
@@ -3984,6 +4020,7 @@ class LocationProposalRow extends DataClass
       'note': serializer.toJson<String?>(note),
       'status': serializer.toJson<String>(status),
       'syncState': serializer.toJson<String>(syncState),
+      'decisionReason': serializer.toJson<String?>(decisionReason),
     };
   }
 
@@ -3997,6 +4034,7 @@ class LocationProposalRow extends DataClass
     Value<String?> note = const Value.absent(),
     String? status,
     String? syncState,
+    Value<String?> decisionReason = const Value.absent(),
   }) => LocationProposalRow(
     clientId: clientId ?? this.clientId,
     customerId: customerId ?? this.customerId,
@@ -4009,6 +4047,9 @@ class LocationProposalRow extends DataClass
     note: note.present ? note.value : this.note,
     status: status ?? this.status,
     syncState: syncState ?? this.syncState,
+    decisionReason: decisionReason.present
+        ? decisionReason.value
+        : this.decisionReason,
   );
   LocationProposalRow copyWithCompanion(LocationProposalsCompanion data) {
     return LocationProposalRow(
@@ -4025,6 +4066,9 @@ class LocationProposalRow extends DataClass
       note: data.note.present ? data.note.value : this.note,
       status: data.status.present ? data.status.value : this.status,
       syncState: data.syncState.present ? data.syncState.value : this.syncState,
+      decisionReason: data.decisionReason.present
+          ? data.decisionReason.value
+          : this.decisionReason,
     );
   }
 
@@ -4039,7 +4083,8 @@ class LocationProposalRow extends DataClass
           ..write('photoMediaClientId: $photoMediaClientId, ')
           ..write('note: $note, ')
           ..write('status: $status, ')
-          ..write('syncState: $syncState')
+          ..write('syncState: $syncState, ')
+          ..write('decisionReason: $decisionReason')
           ..write(')'))
         .toString();
   }
@@ -4055,6 +4100,7 @@ class LocationProposalRow extends DataClass
     note,
     status,
     syncState,
+    decisionReason,
   );
   @override
   bool operator ==(Object other) =>
@@ -4068,7 +4114,8 @@ class LocationProposalRow extends DataClass
           other.photoMediaClientId == this.photoMediaClientId &&
           other.note == this.note &&
           other.status == this.status &&
-          other.syncState == this.syncState);
+          other.syncState == this.syncState &&
+          other.decisionReason == this.decisionReason);
 }
 
 class LocationProposalsCompanion extends UpdateCompanion<LocationProposalRow> {
@@ -4081,6 +4128,7 @@ class LocationProposalsCompanion extends UpdateCompanion<LocationProposalRow> {
   final Value<String?> note;
   final Value<String> status;
   final Value<String> syncState;
+  final Value<String?> decisionReason;
   final Value<int> rowid;
   const LocationProposalsCompanion({
     this.clientId = const Value.absent(),
@@ -4092,6 +4140,7 @@ class LocationProposalsCompanion extends UpdateCompanion<LocationProposalRow> {
     this.note = const Value.absent(),
     this.status = const Value.absent(),
     this.syncState = const Value.absent(),
+    this.decisionReason = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   LocationProposalsCompanion.insert({
@@ -4104,6 +4153,7 @@ class LocationProposalsCompanion extends UpdateCompanion<LocationProposalRow> {
     this.note = const Value.absent(),
     this.status = const Value.absent(),
     this.syncState = const Value.absent(),
+    this.decisionReason = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : clientId = Value(clientId),
        customerId = Value(customerId),
@@ -4120,6 +4170,7 @@ class LocationProposalsCompanion extends UpdateCompanion<LocationProposalRow> {
     Expression<String>? note,
     Expression<String>? status,
     Expression<String>? syncState,
+    Expression<String>? decisionReason,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -4133,6 +4184,7 @@ class LocationProposalsCompanion extends UpdateCompanion<LocationProposalRow> {
       if (note != null) 'note': note,
       if (status != null) 'status': status,
       if (syncState != null) 'sync_state': syncState,
+      if (decisionReason != null) 'decision_reason': decisionReason,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -4147,6 +4199,7 @@ class LocationProposalsCompanion extends UpdateCompanion<LocationProposalRow> {
     Value<String?>? note,
     Value<String>? status,
     Value<String>? syncState,
+    Value<String?>? decisionReason,
     Value<int>? rowid,
   }) {
     return LocationProposalsCompanion(
@@ -4159,6 +4212,7 @@ class LocationProposalsCompanion extends UpdateCompanion<LocationProposalRow> {
       note: note ?? this.note,
       status: status ?? this.status,
       syncState: syncState ?? this.syncState,
+      decisionReason: decisionReason ?? this.decisionReason,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -4193,6 +4247,9 @@ class LocationProposalsCompanion extends UpdateCompanion<LocationProposalRow> {
     if (syncState.present) {
       map['sync_state'] = Variable<String>(syncState.value);
     }
+    if (decisionReason.present) {
+      map['decision_reason'] = Variable<String>(decisionReason.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -4211,6 +4268,7 @@ class LocationProposalsCompanion extends UpdateCompanion<LocationProposalRow> {
           ..write('note: $note, ')
           ..write('status: $status, ')
           ..write('syncState: $syncState, ')
+          ..write('decisionReason: $decisionReason, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -18178,6 +18236,7 @@ typedef $$LocationProposalsTableCreateCompanionBuilder =
       Value<String?> note,
       Value<String> status,
       Value<String> syncState,
+      Value<String?> decisionReason,
       Value<int> rowid,
     });
 typedef $$LocationProposalsTableUpdateCompanionBuilder =
@@ -18191,6 +18250,7 @@ typedef $$LocationProposalsTableUpdateCompanionBuilder =
       Value<String?> note,
       Value<String> status,
       Value<String> syncState,
+      Value<String?> decisionReason,
       Value<int> rowid,
     });
 
@@ -18245,6 +18305,11 @@ class $$LocationProposalsTableFilterComposer
 
   ColumnFilters<String> get syncState => $composableBuilder(
     column: $table.syncState,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get decisionReason => $composableBuilder(
+    column: $table.decisionReason,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -18302,6 +18367,11 @@ class $$LocationProposalsTableOrderingComposer
     column: $table.syncState,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get decisionReason => $composableBuilder(
+    column: $table.decisionReason,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$LocationProposalsTableAnnotationComposer
@@ -18343,6 +18413,11 @@ class $$LocationProposalsTableAnnotationComposer
 
   GeneratedColumn<String> get syncState =>
       $composableBuilder(column: $table.syncState, builder: (column) => column);
+
+  GeneratedColumn<String> get decisionReason => $composableBuilder(
+    column: $table.decisionReason,
+    builder: (column) => column,
+  );
 }
 
 class $$LocationProposalsTableTableManager
@@ -18394,6 +18469,7 @@ class $$LocationProposalsTableTableManager
                 Value<String?> note = const Value.absent(),
                 Value<String> status = const Value.absent(),
                 Value<String> syncState = const Value.absent(),
+                Value<String?> decisionReason = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => LocationProposalsCompanion(
                 clientId: clientId,
@@ -18405,6 +18481,7 @@ class $$LocationProposalsTableTableManager
                 note: note,
                 status: status,
                 syncState: syncState,
+                decisionReason: decisionReason,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -18418,6 +18495,7 @@ class $$LocationProposalsTableTableManager
                 Value<String?> note = const Value.absent(),
                 Value<String> status = const Value.absent(),
                 Value<String> syncState = const Value.absent(),
+                Value<String?> decisionReason = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => LocationProposalsCompanion.insert(
                 clientId: clientId,
@@ -18429,6 +18507,7 @@ class $$LocationProposalsTableTableManager
                 note: note,
                 status: status,
                 syncState: syncState,
+                decisionReason: decisionReason,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

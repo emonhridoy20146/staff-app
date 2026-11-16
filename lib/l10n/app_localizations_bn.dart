@@ -1515,4 +1515,9 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get mapNoPinTitle => 'লোকেশন নেই এমন কাস্টমার';
+
+  @override
+  String pinRejected(String reason) {
+    return 'লোকেশন অনুমোদন হয়নি: $reason। নতুন করে পাঠাতে চাপুন।';
+  }
 }

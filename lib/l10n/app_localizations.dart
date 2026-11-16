@@ -2785,6 +2785,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Customers without location'**
   String get mapNoPinTitle;
+
+  /// No description provided for @pinRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Location not approved: {reason}. Tap to send a new one.'**
+  String pinRejected(String reason);
 }
 
 class _AppLocalizationsDelegate

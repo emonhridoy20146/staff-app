@@ -22,7 +22,7 @@ FeatureManifest customersManifest(SyncHandlerRegistry Function() registry) => Fe
         GoRoute(path: '/customers/:id/pin', builder: (_, s) => PinCorrectionScreen(customerId: s.pathParameters['id']!)),
         GoRoute(path: '/customers/:id', builder: (_, s) => CustomerDetailScreen(customerId: s.pathParameters['id']!, initialAction: s.uri.queryParameters['action'])),
       ],
-      pullHandlers: [CustomerPullHandler(registry), ContactAttemptPullHandler()],
+      pullHandlers: [CustomerPullHandler(registry), ContactAttemptPullHandler(), LocationProposalPullHandler()],
       pushHandlers: [ContactAttemptPushHandler(), LocationProposalPushHandler()],
       customerActions: [
         CustomerActionDef(

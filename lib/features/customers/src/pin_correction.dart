@@ -113,21 +113,51 @@ class LocationProposalPushHandler implements PushResultHandler {
       );
 }
 
-/// The newest proposal for a customer that is still open on the phone:
-/// not yet approved (the customer pin is not at the proposed spot yet).
+/// Pull (contract 1.7.0): the server sends `location_proposal` to the
+/// proposer when it is created and again when a manager decides. The
+/// approved pin itself arrives separately as a customer change.
+class LocationProposalPullHandler implements PullHandler {
+  @override
+  String get entity => 'location_proposal';
+  @override
+  Future<void> upsert(AppDatabase db, String id, Json d) async {
+    final clientId = (d['clientId'] as String?) ?? id;
+    final status = (d['status'] as String?) ?? 'pending';
+    final reason = d['decisionReason'] as String?;
+    final updated = await (db.update(db.locationProposals)..where((t) => t.clientId.equals(clientId))).write(
+      LocationProposalsCompanion(status: Value(status), decisionReason: Value(reason), syncState: const Value('synced')),
+    );
+    if (updated == 0 && d['customerId'] != null && d['lat'] != null && d['lng'] != null) {
+      // Not on this phone (reinstall): keep the server's copy.
+      await db.into(db.locationProposals).insertOnConflictUpdate(LocationProposalsCompanion.insert(
+            clientId: clientId,
+            customerId: d['customerId'] as String,
+            lat: (d['lat'] as num).toDouble(),
+            lng: (d['lng'] as num).toDouble(),
+            accuracyM: ((d['accuracyM'] as num?) ?? 0).toDouble(),
+            note: Value(d['note'] as String?),
+            status: Value(status),
+            decisionReason: Value(reason),
+            syncState: const Value('synced'),
+          ));
+    }
+  }
+
+  @override
+  Future<void> delete(AppDatabase db, String id, {String? reason}) async {}
+}
+
+/// The newest proposal for a customer when it still needs a line on the
+/// detail screen: waiting (pending) or turned down (rejected, with reason).
+/// Approved ones disappear: the new pin is the answer.
 final openProposalProvider = StreamProvider.family<LocationProposalRow?, String>((ref, customerId) {
   final db = ref.watch(databaseProvider);
-  final customer = ref.watch(customerProvider(customerId)).value;
   return (db.select(db.locationProposals)
-        ..where((t) => t.customerId.equals(customerId) & t.status.equals('pending'))
+        ..where((t) => t.customerId.equals(customerId))
         ..orderBy([(t) => OrderingTerm.desc(t.clientId)]) // UUIDv7 = time order
         ..limit(1))
       .watchSingleOrNull()
-      .map((p) {
-    if (p == null || customer == null || !customer.hasPin) return p;
-    final approved = distanceMeters(p.lat, p.lng, customer.row.lat!, customer.row.lng!) < 5;
-    return approved ? null : p;
-  });
+      .map((p) => p == null || p.status == 'approved' ? null : p);
 });
 
 /// Opens the pin screen.
@@ -277,12 +307,15 @@ class PinProposalStatus extends ConsumerWidget {
     final p = ref.watch(openProposalProvider(customerId)).value;
     if (p == null) return const SizedBox.shrink();
     final l = AppLocalizations.of(context);
+    final rejected = p.status == 'rejected';
+    final failed = p.syncState == 'failed';
     return Padding(
       padding: const EdgeInsets.only(top: Space.s12),
       child: InfoBanner(
-        icon: p.syncState == 'failed' ? Icons.error_outline_rounded : Icons.hourglass_top_rounded,
-        tone: p.syncState == 'failed' ? BannerTone.danger : BannerTone.info,
-        text: p.syncState == 'failed' ? l.pinFailed : l.pinPending,
+        icon: rejected || failed ? Icons.error_outline_rounded : Icons.hourglass_top_rounded,
+        tone: rejected ? BannerTone.warning : (failed ? BannerTone.danger : BannerTone.info),
+        text: rejected ? l.pinRejected(p.decisionReason ?? '') : (failed ? l.pinFailed : l.pinPending),
+        onTap: rejected ? () => openPinCorrection(context, customerId) : null,
       ),
     );
   }

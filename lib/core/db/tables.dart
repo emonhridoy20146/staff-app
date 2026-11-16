@@ -110,6 +110,9 @@ class LocationProposals extends Table {
   TextColumn get status => text().withDefault(const Constant('pending'))();
   TextColumn get syncState => text().withDefault(const Constant('queued'))();
 
+  /// Manager's reason when rejected (v3, contract 1.7.0).
+  TextColumn get decisionReason => text().nullable()();
+
   @override
   Set<Column> get primaryKey => {clientId};
 }

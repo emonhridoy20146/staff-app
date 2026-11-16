@@ -46,5 +46,12 @@ void main() {
     expect((sent['geo'] as Map)['accuracyM'], 9);
     expect(sent['photoMediaId'], isNotNull);
     expect(sent['note'], 'Blue gate');
+
+    // Manager rejects it on the web → the proposer learns why (1.7.0).
+    h.api.decideProposal(id, 'rejected', reason: 'Wrong house');
+    await h.read(syncEngineProvider).syncNow();
+    p = await (db.select(db.locationProposals)..where((t) => t.clientId.equals(id))).getSingle();
+    expect(p.status, 'rejected');
+    expect(p.decisionReason, 'Wrong house');
   });
 }

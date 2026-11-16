@@ -1514,4 +1514,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get mapNoPinTitle => 'Customers without location';
+
+  @override
+  String pinRejected(String reason) {
+    return 'Location not approved: $reason. Tap to send a new one.';
+  }
 }
