@@ -16,6 +16,7 @@ import '../../../../core/ui/dashed_border.dart';
 import '../../../../core/ui/money_text.dart';
 import '../../../../core/ui/status_badge.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../contact_attempts.dart';
 import '../customer_providers.dart';
 import '../data/customer_repository.dart';
 import '../domain/customer.dart';
@@ -242,7 +243,7 @@ class _Header extends ConsumerWidget {
               if (phones.isNotEmpty)
                 Expanded(
                   child: OutlinedButton.icon(
-                    onPressed: () => launchCall(phones.first),
+                    onPressed: () => callAndLog(context, ref, customerId: customer.id, phones: phones),
                     icon: const Icon(Icons.call_rounded),
                     label: Text(f.num(phones.first)),
                   ),

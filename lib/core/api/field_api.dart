@@ -106,6 +106,15 @@ class FieldApi {
   Future<void> rejectHandover(String id, String reason) =>
       _call(() => _dio.post<dynamic>('/handovers/$id/reject', data: {'reason': reason}), (_) {});
 
+  /// Location batch upload (phase 2). Returns accepted count and the
+  /// server's next sampling config (may be null).
+  Future<({int accepted, Json? nextSampling})> ingestPoints({required String deviceId, required List<Json> points}) => _call(
+        () => _dio.post<dynamic>('/location/points', data: {'deviceId': deviceId, 'points': points}),
+        (d) => (accepted: ((d as Json)['accepted'] as num?)?.toInt() ?? 0, nextSampling: d['nextSampling'] as Json?),
+      );
+
+  Future<void> heartbeat(Json body) => _call(() => _dio.post<dynamic>('/location/heartbeat', data: body), (_) {});
+
   /// Online-only: on-demand balance refresh from ERP.
   Future<Json> refreshCustomer(String id) =>
       _call(() => _dio.post<dynamic>('/customers/$id/refresh'), (d) => d as Json);

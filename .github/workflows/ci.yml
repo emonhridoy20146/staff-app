@@ -30,7 +30,7 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: '21' # AGP lint uses Java 21 APIs (List.removeLast)
       - uses: subosito/flutter-action@v2
         with:
           channel: stable

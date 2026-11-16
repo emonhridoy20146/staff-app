@@ -34,6 +34,19 @@ Phases match `field-api/docs/09-progress.md`. Start each phase against the Prism
 ## Phase 2 — Location
 LocationEngine spike (ADR-009) → duty-aware tracking, adaptive sampling, filters, queue, heartbeat, mock detection, OEM battery guide, visit suggestion. **Acceptance:** M-E11; battery ≤ 12 %/9 h; OEM checklist passed.
 
+| Item | Status |
+|---|---|
+| Provider abstraction; free provider (geolocator foreground service); paid slot; admin setting switch with fallback (ADR-M11) | ✅ unit + flow tests (fake provider) |
+| Duty-aware start/stop, shift end + 3 h limit, module flag | ✅ flow tests |
+| Adaptive sampling, filters, 20,000 cap, batch upload, heartbeat | ✅ unit + flow tests |
+| Mock flag sent with each point | ◐ sent; server decides |
+| Visit suggestion (5 min / 60 m) | ✅ flow test; Today card |
+| Tracking status card (Me) | ✅ screenshot |
+| Call logging (`contact_attempt`) | ✅ flow test |
+| OEM battery guide screen | ☐ |
+| Battery level in heartbeat | ☐ blocked (`battery_plus` dependency conflict) |
+| Real-device checks (battery, OEM killing, reboot) | ☐ needs phones |
+
 ## Phase 3 — Reports in app
 My performance, targets progress, day route suggestion.
 

@@ -92,7 +92,7 @@
   "primerTitle": "Allow these on your phone",
   "primerBody": "The app needs a few permissions to work in the field.",
   "primerLocation": "Location",
-  "primerLocationBody": "To attach your position to collections and visits. Choose \"Allow all the time\" so duty tracking works with the screen off.",
+  "primerLocationBody": "To attach your position to collections and visits, and to share it while you are on duty. \"While using the app\" is enough: a visible notification keeps tracking on with the screen off.",
   "primerCamera": "Camera",
   "primerCameraBody": "For visit and deposit-slip photos. The gallery is never used.",
   "primerNotifications": "Notifications",
@@ -839,5 +839,70 @@
       }
     }
   },
-  "actionMore": "More"
+  "actionMore": "More",
+  "callHowWasIt": "How did the call go?",
+  "callConnected": "Talked",
+  "callNoAnswer": "No answer",
+  "callBusy": "Busy",
+  "callSwitchedOff": "Phone off",
+  "callWrongNumber": "Wrong number",
+  "callUnknown": "Called",
+  "callSaved": "Call saved",
+  "timelineCall": "Call · {outcome}",
+  "@timelineCall": {
+    "placeholders": {
+      "outcome": {
+        "type": "String"
+      }
+    }
+  },
+  "trackingNotificationTitle": "On duty · location shared",
+  "trackingNotificationText": "Stops when you end work.",
+  "trackingTitle": "Location tracking",
+  "trackingOn": "On · {provider}",
+  "@trackingOn": {
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "trackingOff": "Off (only while on duty)",
+  "trackingProviderFree": "standard",
+  "trackingProviderPaid": "premium",
+  "trackingFallback": "Premium tracking is not in this app version; using standard.",
+  "trackingLastPoint": "Last point {time}",
+  "@trackingLastPoint": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "trackingPending": "{count} points waiting",
+  "@trackingPending": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "visitSuggestTitle": "Near {name}?",
+  "@visitSuggestTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "visitSuggestBody": "You have been here {minutes} min. Record a visit?",
+  "@visitSuggestBody": {
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      }
+    }
+  },
+  "visitSuggestNo": "Not now",
+  "visitSuggestYes": "Record visit"
 }

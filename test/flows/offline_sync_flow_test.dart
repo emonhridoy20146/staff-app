@@ -163,6 +163,21 @@ void main() {
     final db = h.read(databaseProvider);
     expect((await db.select(db.handovers).get()).single.status, 'pending_acceptance');
   });
+
+  test('a retryable rejection keeps the collection queued and the same id goes through later', () async {
+    await h.signIn();
+    h.api.transientRejects = 1;
+    final r = await h.read(recordCollectionProvider).call(cash('c-1003', 20000));
+    await h.read(syncEngineProvider).syncNow();
+    final db = h.read(databaseProvider);
+    var ob = await (db.select(db.outbox)..where((t) => t.mutationId.equals(r.clientId))).getSingle();
+    expect(ob.state, 'pending');
+    expect(h.api.appliedPayloads.containsKey(r.clientId), isFalse);
+    await h.read(syncEngineProvider).syncNow();
+    ob = await (db.select(db.outbox)..where((t) => t.mutationId.equals(r.clientId))).getSingle();
+    expect(ob.state, 'done');
+    expect(h.api.appliedPayloads.containsKey(r.clientId), isTrue);
+  });
 }
 
 class _NoContext extends Fake implements BuildContext {}

@@ -86,7 +86,7 @@ class RecordCollection {
   final Uuid _uuid;
 
   /// [fix] is obtained by the caller beforehand (review step shows it).
-  Future<CollectionResult> call(CollectionInput input, {GeoFix? fix}) async {
+  Future<CollectionResult> call(CollectionInput input, {GeoFix? fix, String? noFixReason}) async {
     final v = validateCollection(amountPoisha: input.amountPoisha, method: input.method, txnRef: input.txnRef);
     if (v != CollectionValidation.ok) throw InvalidCollection(v);
 
@@ -144,9 +144,7 @@ class RecordCollection {
           'physicalReceiptNo': ?input.physicalReceiptNo,
           'recordedAt': recordedAt.toIso8601String(),
           'deviceTime': deviceTime.toIso8601String(),
-          // Contract requires geo; without a fix we send 0,0 with a huge
-          // accuracy so the server flags it (reported as contract gap G-03).
-          'geo': fix?.toJson() ?? {'lat': 0, 'lng': 0, 'accuracyM': 99999, 'mock': false},
+          ...geoFields(fix, noFixReason),
           'visitClientId': ?input.visitClientId,
           'note': ?input.note,
         },

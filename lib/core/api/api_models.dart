@@ -203,12 +203,12 @@ class SyncMutation {
   /// Contract enum `SyncMutation.entity`. Pushing anything else is a bug.
   static const entities = {
     'visit', 'collection', 'note', 'promise', 'promise_cancel', 'deposit', //
-    'attendance_event', 'tag', 'location_proposal', 'visit_checkout', 'handover_decision', 'cash_closing',
+    'attendance_event', 'tag', 'location_proposal', 'visit_checkout', 'handover_decision', 'cash_closing', 'contact_attempt',
   };
 }
 
 class SyncPushResult {
-  const SyncPushResult({required this.mutationId, required this.result, this.entityId, this.status, this.conflictCode, this.conflictMessage, this.error});
+  const SyncPushResult({required this.mutationId, required this.result, this.entityId, this.status, this.conflictCode, this.conflictMessage, this.error, this.retryable = false});
   factory SyncPushResult.fromJson(Json j) {
     final c = j['conflict'] as Json?;
     return SyncPushResult(
@@ -219,6 +219,7 @@ class SyncPushResult {
       conflictCode: c?['code'] as String?,
       conflictMessage: c == null ? null : I18nText.fromJson(c['message']),
       error: j['error'] == null ? null : Problem.fromJson(j['error'] as Json),
+      retryable: j['retryable'] == true,
     );
   }
   final String mutationId;
@@ -230,6 +231,9 @@ class SyncPushResult {
   final String? conflictCode;
   final I18nText? conflictMessage;
   final Problem? error;
+
+  /// Only on `rejected`: a transient server failure; keep it queued (1.5.0).
+  final bool retryable;
 }
 
 class SyncPushResponse {

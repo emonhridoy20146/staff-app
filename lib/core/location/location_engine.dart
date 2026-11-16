@@ -34,22 +34,45 @@ abstract class LocationEngine {
 
   /// Last known fix without waiting (for distance sorting).
   Future<GeoFix?> lastKnown();
+
+  /// Why the last [currentFix] returned null (`GeoUnavailableReason` in the
+  /// contract 1.2.0): permission_denied | location_off | timeout | no_fix.
+  String? get lastFailureReason;
 }
+
+/// `geo` + `geoUnavailableReason` fields for a mutation payload (1.2.0):
+/// geo is null when there is no fix, with the reason alongside.
+Map<String, dynamic> geoFields(GeoFix? fix, String? reason) =>
+    fix != null ? {'geo': fix.toJson()} : {'geo': null, 'geoUnavailableReason': reason ?? 'no_fix'};
 
 class GeolocatorLocationEngine implements LocationEngine {
   @override
+  String? lastFailureReason;
+
+  @override
   Future<GeoFix?> currentFix({Duration timeout = const Duration(seconds: 20)}) async {
+    lastFailureReason = null;
     try {
+      if (!await Geolocator.isLocationServiceEnabled()) {
+        lastFailureReason = 'location_off';
+        return null;
+      }
       var perm = await Geolocator.checkPermission();
       if (perm == LocationPermission.denied) perm = await Geolocator.requestPermission();
-      if (perm == LocationPermission.denied || perm == LocationPermission.deniedForever) return null;
+      if (perm == LocationPermission.denied || perm == LocationPermission.deniedForever) {
+        lastFailureReason = 'permission_denied';
+        return null;
+      }
       final p = await Geolocator.getCurrentPosition(
         locationSettings: LocationSettings(accuracy: LocationAccuracy.high, timeLimit: timeout),
       );
       return _fromPosition(p);
     } on TimeoutException {
-      return lastKnown();
+      final last = await lastKnown();
+      if (last == null) lastFailureReason = 'timeout';
+      return last;
     } catch (_) {
+      lastFailureReason = 'no_fix';
       return null;
     }
   }
@@ -70,13 +93,19 @@ class GeolocatorLocationEngine implements LocationEngine {
 
 /// Fixed position engine for demo and tests (Nathullabad, Barishal).
 class FakeLocationEngine implements LocationEngine {
-  FakeLocationEngine({this.fix});
+  FakeLocationEngine({this.fix, this.noFix = false});
   GeoFix? fix;
+
+  /// Tests: simulate "no GPS" (returns null with reason `no_fix`).
+  bool noFix;
+
+  @override
+  String? get lastFailureReason => noFix ? 'no_fix' : null;
 
   static GeoFix demoFix() => GeoFix(lat: 22.7105, lng: 90.3495, accuracyM: 12, fixAt: DateTime.now().toUtc());
 
   @override
-  Future<GeoFix?> currentFix({Duration timeout = const Duration(seconds: 20)}) async => fix ?? demoFix();
+  Future<GeoFix?> currentFix({Duration timeout = const Duration(seconds: 20)}) async => noFix ? null : (fix ?? demoFix());
 
   @override
   Future<GeoFix?> lastKnown() async => fix ?? demoFix();

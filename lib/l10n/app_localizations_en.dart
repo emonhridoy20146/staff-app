@@ -240,7 +240,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get primerLocationBody =>
-      'To attach your position to collections and visits. Choose \"Allow all the time\" so duty tracking works with the screen off.';
+      'To attach your position to collections and visits, and to share it while you are on duty. \"While using the app\" is enough: a visible notification keeps tracking on with the screen off.';
 
   @override
   String get primerCamera => 'Camera';
@@ -1379,4 +1379,86 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get actionMore => 'More';
+
+  @override
+  String get callHowWasIt => 'How did the call go?';
+
+  @override
+  String get callConnected => 'Talked';
+
+  @override
+  String get callNoAnswer => 'No answer';
+
+  @override
+  String get callBusy => 'Busy';
+
+  @override
+  String get callSwitchedOff => 'Phone off';
+
+  @override
+  String get callWrongNumber => 'Wrong number';
+
+  @override
+  String get callUnknown => 'Called';
+
+  @override
+  String get callSaved => 'Call saved';
+
+  @override
+  String timelineCall(String outcome) {
+    return 'Call · $outcome';
+  }
+
+  @override
+  String get trackingNotificationTitle => 'On duty · location shared';
+
+  @override
+  String get trackingNotificationText => 'Stops when you end work.';
+
+  @override
+  String get trackingTitle => 'Location tracking';
+
+  @override
+  String trackingOn(String provider) {
+    return 'On · $provider';
+  }
+
+  @override
+  String get trackingOff => 'Off (only while on duty)';
+
+  @override
+  String get trackingProviderFree => 'standard';
+
+  @override
+  String get trackingProviderPaid => 'premium';
+
+  @override
+  String get trackingFallback =>
+      'Premium tracking is not in this app version; using standard.';
+
+  @override
+  String trackingLastPoint(String time) {
+    return 'Last point $time';
+  }
+
+  @override
+  String trackingPending(String count) {
+    return '$count points waiting';
+  }
+
+  @override
+  String visitSuggestTitle(String name) {
+    return 'Near $name?';
+  }
+
+  @override
+  String visitSuggestBody(String minutes) {
+    return 'You have been here $minutes min. Record a visit?';
+  }
+
+  @override
+  String get visitSuggestNo => 'Not now';
+
+  @override
+  String get visitSuggestYes => 'Record visit';
 }

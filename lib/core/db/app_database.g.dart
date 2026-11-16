@@ -15180,6 +15180,575 @@ class LocationQueueCompanion extends UpdateCompanion<LocationPointRow> {
   }
 }
 
+class $ContactAttemptsTable extends ContactAttempts
+    with TableInfo<$ContactAttemptsTable, ContactAttemptRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ContactAttemptsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _clientIdMeta = const VerificationMeta(
+    'clientId',
+  );
+  @override
+  late final GeneratedColumn<String> clientId = GeneratedColumn<String>(
+    'client_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _serverIdMeta = const VerificationMeta(
+    'serverId',
+  );
+  @override
+  late final GeneratedColumn<String> serverId = GeneratedColumn<String>(
+    'server_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _customerIdMeta = const VerificationMeta(
+    'customerId',
+  );
+  @override
+  late final GeneratedColumn<String> customerId = GeneratedColumn<String>(
+    'customer_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _channelMeta = const VerificationMeta(
+    'channel',
+  );
+  @override
+  late final GeneratedColumn<String> channel = GeneratedColumn<String>(
+    'channel',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _phoneIndexMeta = const VerificationMeta(
+    'phoneIndex',
+  );
+  @override
+  late final GeneratedColumn<int> phoneIndex = GeneratedColumn<int>(
+    'phone_index',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _atMeta = const VerificationMeta('at');
+  @override
+  late final GeneratedColumn<DateTime> at = GeneratedColumn<DateTime>(
+    'at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _outcomeMeta = const VerificationMeta(
+    'outcome',
+  );
+  @override
+  late final GeneratedColumn<String> outcome = GeneratedColumn<String>(
+    'outcome',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _noteMeta = const VerificationMeta('note');
+  @override
+  late final GeneratedColumn<String> note = GeneratedColumn<String>(
+    'note',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _syncStateMeta = const VerificationMeta(
+    'syncState',
+  );
+  @override
+  late final GeneratedColumn<String> syncState = GeneratedColumn<String>(
+    'sync_state',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('queued'),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    clientId,
+    serverId,
+    customerId,
+    channel,
+    phoneIndex,
+    at,
+    outcome,
+    note,
+    syncState,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'contact_attempts';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ContactAttemptRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('client_id')) {
+      context.handle(
+        _clientIdMeta,
+        clientId.isAcceptableOrUnknown(data['client_id']!, _clientIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_clientIdMeta);
+    }
+    if (data.containsKey('server_id')) {
+      context.handle(
+        _serverIdMeta,
+        serverId.isAcceptableOrUnknown(data['server_id']!, _serverIdMeta),
+      );
+    }
+    if (data.containsKey('customer_id')) {
+      context.handle(
+        _customerIdMeta,
+        customerId.isAcceptableOrUnknown(data['customer_id']!, _customerIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_customerIdMeta);
+    }
+    if (data.containsKey('channel')) {
+      context.handle(
+        _channelMeta,
+        channel.isAcceptableOrUnknown(data['channel']!, _channelMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_channelMeta);
+    }
+    if (data.containsKey('phone_index')) {
+      context.handle(
+        _phoneIndexMeta,
+        phoneIndex.isAcceptableOrUnknown(data['phone_index']!, _phoneIndexMeta),
+      );
+    }
+    if (data.containsKey('at')) {
+      context.handle(_atMeta, at.isAcceptableOrUnknown(data['at']!, _atMeta));
+    } else if (isInserting) {
+      context.missing(_atMeta);
+    }
+    if (data.containsKey('outcome')) {
+      context.handle(
+        _outcomeMeta,
+        outcome.isAcceptableOrUnknown(data['outcome']!, _outcomeMeta),
+      );
+    }
+    if (data.containsKey('note')) {
+      context.handle(
+        _noteMeta,
+        note.isAcceptableOrUnknown(data['note']!, _noteMeta),
+      );
+    }
+    if (data.containsKey('sync_state')) {
+      context.handle(
+        _syncStateMeta,
+        syncState.isAcceptableOrUnknown(data['sync_state']!, _syncStateMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {clientId};
+  @override
+  ContactAttemptRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ContactAttemptRow(
+      clientId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}client_id'],
+      )!,
+      serverId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}server_id'],
+      ),
+      customerId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}customer_id'],
+      )!,
+      channel: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}channel'],
+      )!,
+      phoneIndex: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}phone_index'],
+      ),
+      at: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}at'],
+      )!,
+      outcome: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}outcome'],
+      ),
+      note: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}note'],
+      ),
+      syncState: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sync_state'],
+      )!,
+    );
+  }
+
+  @override
+  $ContactAttemptsTable createAlias(String alias) {
+    return $ContactAttemptsTable(attachedDatabase, alias);
+  }
+}
+
+class ContactAttemptRow extends DataClass
+    implements Insertable<ContactAttemptRow> {
+  final String clientId;
+  final String? serverId;
+  final String customerId;
+
+  /// call | sms | whatsapp
+  final String channel;
+
+  /// Index into the customer's phones — never the number itself.
+  final int? phoneIndex;
+  final DateTime at;
+
+  /// connected | no_answer | busy | switched_off | wrong_number | sent
+  final String? outcome;
+  final String? note;
+  final String syncState;
+  const ContactAttemptRow({
+    required this.clientId,
+    this.serverId,
+    required this.customerId,
+    required this.channel,
+    this.phoneIndex,
+    required this.at,
+    this.outcome,
+    this.note,
+    required this.syncState,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['client_id'] = Variable<String>(clientId);
+    if (!nullToAbsent || serverId != null) {
+      map['server_id'] = Variable<String>(serverId);
+    }
+    map['customer_id'] = Variable<String>(customerId);
+    map['channel'] = Variable<String>(channel);
+    if (!nullToAbsent || phoneIndex != null) {
+      map['phone_index'] = Variable<int>(phoneIndex);
+    }
+    map['at'] = Variable<DateTime>(at);
+    if (!nullToAbsent || outcome != null) {
+      map['outcome'] = Variable<String>(outcome);
+    }
+    if (!nullToAbsent || note != null) {
+      map['note'] = Variable<String>(note);
+    }
+    map['sync_state'] = Variable<String>(syncState);
+    return map;
+  }
+
+  ContactAttemptsCompanion toCompanion(bool nullToAbsent) {
+    return ContactAttemptsCompanion(
+      clientId: Value(clientId),
+      serverId: serverId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(serverId),
+      customerId: Value(customerId),
+      channel: Value(channel),
+      phoneIndex: phoneIndex == null && nullToAbsent
+          ? const Value.absent()
+          : Value(phoneIndex),
+      at: Value(at),
+      outcome: outcome == null && nullToAbsent
+          ? const Value.absent()
+          : Value(outcome),
+      note: note == null && nullToAbsent ? const Value.absent() : Value(note),
+      syncState: Value(syncState),
+    );
+  }
+
+  factory ContactAttemptRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ContactAttemptRow(
+      clientId: serializer.fromJson<String>(json['clientId']),
+      serverId: serializer.fromJson<String?>(json['serverId']),
+      customerId: serializer.fromJson<String>(json['customerId']),
+      channel: serializer.fromJson<String>(json['channel']),
+      phoneIndex: serializer.fromJson<int?>(json['phoneIndex']),
+      at: serializer.fromJson<DateTime>(json['at']),
+      outcome: serializer.fromJson<String?>(json['outcome']),
+      note: serializer.fromJson<String?>(json['note']),
+      syncState: serializer.fromJson<String>(json['syncState']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'clientId': serializer.toJson<String>(clientId),
+      'serverId': serializer.toJson<String?>(serverId),
+      'customerId': serializer.toJson<String>(customerId),
+      'channel': serializer.toJson<String>(channel),
+      'phoneIndex': serializer.toJson<int?>(phoneIndex),
+      'at': serializer.toJson<DateTime>(at),
+      'outcome': serializer.toJson<String?>(outcome),
+      'note': serializer.toJson<String?>(note),
+      'syncState': serializer.toJson<String>(syncState),
+    };
+  }
+
+  ContactAttemptRow copyWith({
+    String? clientId,
+    Value<String?> serverId = const Value.absent(),
+    String? customerId,
+    String? channel,
+    Value<int?> phoneIndex = const Value.absent(),
+    DateTime? at,
+    Value<String?> outcome = const Value.absent(),
+    Value<String?> note = const Value.absent(),
+    String? syncState,
+  }) => ContactAttemptRow(
+    clientId: clientId ?? this.clientId,
+    serverId: serverId.present ? serverId.value : this.serverId,
+    customerId: customerId ?? this.customerId,
+    channel: channel ?? this.channel,
+    phoneIndex: phoneIndex.present ? phoneIndex.value : this.phoneIndex,
+    at: at ?? this.at,
+    outcome: outcome.present ? outcome.value : this.outcome,
+    note: note.present ? note.value : this.note,
+    syncState: syncState ?? this.syncState,
+  );
+  ContactAttemptRow copyWithCompanion(ContactAttemptsCompanion data) {
+    return ContactAttemptRow(
+      clientId: data.clientId.present ? data.clientId.value : this.clientId,
+      serverId: data.serverId.present ? data.serverId.value : this.serverId,
+      customerId: data.customerId.present
+          ? data.customerId.value
+          : this.customerId,
+      channel: data.channel.present ? data.channel.value : this.channel,
+      phoneIndex: data.phoneIndex.present
+          ? data.phoneIndex.value
+          : this.phoneIndex,
+      at: data.at.present ? data.at.value : this.at,
+      outcome: data.outcome.present ? data.outcome.value : this.outcome,
+      note: data.note.present ? data.note.value : this.note,
+      syncState: data.syncState.present ? data.syncState.value : this.syncState,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ContactAttemptRow(')
+          ..write('clientId: $clientId, ')
+          ..write('serverId: $serverId, ')
+          ..write('customerId: $customerId, ')
+          ..write('channel: $channel, ')
+          ..write('phoneIndex: $phoneIndex, ')
+          ..write('at: $at, ')
+          ..write('outcome: $outcome, ')
+          ..write('note: $note, ')
+          ..write('syncState: $syncState')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    clientId,
+    serverId,
+    customerId,
+    channel,
+    phoneIndex,
+    at,
+    outcome,
+    note,
+    syncState,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ContactAttemptRow &&
+          other.clientId == this.clientId &&
+          other.serverId == this.serverId &&
+          other.customerId == this.customerId &&
+          other.channel == this.channel &&
+          other.phoneIndex == this.phoneIndex &&
+          other.at == this.at &&
+          other.outcome == this.outcome &&
+          other.note == this.note &&
+          other.syncState == this.syncState);
+}
+
+class ContactAttemptsCompanion extends UpdateCompanion<ContactAttemptRow> {
+  final Value<String> clientId;
+  final Value<String?> serverId;
+  final Value<String> customerId;
+  final Value<String> channel;
+  final Value<int?> phoneIndex;
+  final Value<DateTime> at;
+  final Value<String?> outcome;
+  final Value<String?> note;
+  final Value<String> syncState;
+  final Value<int> rowid;
+  const ContactAttemptsCompanion({
+    this.clientId = const Value.absent(),
+    this.serverId = const Value.absent(),
+    this.customerId = const Value.absent(),
+    this.channel = const Value.absent(),
+    this.phoneIndex = const Value.absent(),
+    this.at = const Value.absent(),
+    this.outcome = const Value.absent(),
+    this.note = const Value.absent(),
+    this.syncState = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ContactAttemptsCompanion.insert({
+    required String clientId,
+    this.serverId = const Value.absent(),
+    required String customerId,
+    required String channel,
+    this.phoneIndex = const Value.absent(),
+    required DateTime at,
+    this.outcome = const Value.absent(),
+    this.note = const Value.absent(),
+    this.syncState = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : clientId = Value(clientId),
+       customerId = Value(customerId),
+       channel = Value(channel),
+       at = Value(at);
+  static Insertable<ContactAttemptRow> custom({
+    Expression<String>? clientId,
+    Expression<String>? serverId,
+    Expression<String>? customerId,
+    Expression<String>? channel,
+    Expression<int>? phoneIndex,
+    Expression<DateTime>? at,
+    Expression<String>? outcome,
+    Expression<String>? note,
+    Expression<String>? syncState,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (clientId != null) 'client_id': clientId,
+      if (serverId != null) 'server_id': serverId,
+      if (customerId != null) 'customer_id': customerId,
+      if (channel != null) 'channel': channel,
+      if (phoneIndex != null) 'phone_index': phoneIndex,
+      if (at != null) 'at': at,
+      if (outcome != null) 'outcome': outcome,
+      if (note != null) 'note': note,
+      if (syncState != null) 'sync_state': syncState,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ContactAttemptsCompanion copyWith({
+    Value<String>? clientId,
+    Value<String?>? serverId,
+    Value<String>? customerId,
+    Value<String>? channel,
+    Value<int?>? phoneIndex,
+    Value<DateTime>? at,
+    Value<String?>? outcome,
+    Value<String?>? note,
+    Value<String>? syncState,
+    Value<int>? rowid,
+  }) {
+    return ContactAttemptsCompanion(
+      clientId: clientId ?? this.clientId,
+      serverId: serverId ?? this.serverId,
+      customerId: customerId ?? this.customerId,
+      channel: channel ?? this.channel,
+      phoneIndex: phoneIndex ?? this.phoneIndex,
+      at: at ?? this.at,
+      outcome: outcome ?? this.outcome,
+      note: note ?? this.note,
+      syncState: syncState ?? this.syncState,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (clientId.present) {
+      map['client_id'] = Variable<String>(clientId.value);
+    }
+    if (serverId.present) {
+      map['server_id'] = Variable<String>(serverId.value);
+    }
+    if (customerId.present) {
+      map['customer_id'] = Variable<String>(customerId.value);
+    }
+    if (channel.present) {
+      map['channel'] = Variable<String>(channel.value);
+    }
+    if (phoneIndex.present) {
+      map['phone_index'] = Variable<int>(phoneIndex.value);
+    }
+    if (at.present) {
+      map['at'] = Variable<DateTime>(at.value);
+    }
+    if (outcome.present) {
+      map['outcome'] = Variable<String>(outcome.value);
+    }
+    if (note.present) {
+      map['note'] = Variable<String>(note.value);
+    }
+    if (syncState.present) {
+      map['sync_state'] = Variable<String>(syncState.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ContactAttemptsCompanion(')
+          ..write('clientId: $clientId, ')
+          ..write('serverId: $serverId, ')
+          ..write('customerId: $customerId, ')
+          ..write('channel: $channel, ')
+          ..write('phoneIndex: $phoneIndex, ')
+          ..write('at: $at, ')
+          ..write('outcome: $outcome, ')
+          ..write('note: $note, ')
+          ..write('syncState: $syncState, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $NotificationsTable extends Notifications
     with TableInfo<$NotificationsTable, NotificationRow> {
   @override
@@ -15871,6 +16440,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $IdMapTable idMap = $IdMapTable(this);
   late final $SyncMetaTable syncMeta = $SyncMetaTable(this);
   late final $LocationQueueTable locationQueue = $LocationQueueTable(this);
+  late final $ContactAttemptsTable contactAttempts = $ContactAttemptsTable(
+    this,
+  );
   late final $NotificationsTable notifications = $NotificationsTable(this);
   late final $KvSettingsTable kvSettings = $KvSettingsTable(this);
   @override
@@ -15900,6 +16472,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     idMap,
     syncMeta,
     locationQueue,
+    contactAttempts,
     notifications,
     kvSettings,
   ];
@@ -23297,6 +23870,301 @@ typedef $$LocationQueueTableProcessedTableManager =
       LocationPointRow,
       PrefetchHooks Function()
     >;
+typedef $$ContactAttemptsTableCreateCompanionBuilder =
+    ContactAttemptsCompanion Function({
+      required String clientId,
+      Value<String?> serverId,
+      required String customerId,
+      required String channel,
+      Value<int?> phoneIndex,
+      required DateTime at,
+      Value<String?> outcome,
+      Value<String?> note,
+      Value<String> syncState,
+      Value<int> rowid,
+    });
+typedef $$ContactAttemptsTableUpdateCompanionBuilder =
+    ContactAttemptsCompanion Function({
+      Value<String> clientId,
+      Value<String?> serverId,
+      Value<String> customerId,
+      Value<String> channel,
+      Value<int?> phoneIndex,
+      Value<DateTime> at,
+      Value<String?> outcome,
+      Value<String?> note,
+      Value<String> syncState,
+      Value<int> rowid,
+    });
+
+class $$ContactAttemptsTableFilterComposer
+    extends Composer<_$AppDatabase, $ContactAttemptsTable> {
+  $$ContactAttemptsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get clientId => $composableBuilder(
+    column: $table.clientId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get serverId => $composableBuilder(
+    column: $table.serverId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get customerId => $composableBuilder(
+    column: $table.customerId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get channel => $composableBuilder(
+    column: $table.channel,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get phoneIndex => $composableBuilder(
+    column: $table.phoneIndex,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get at => $composableBuilder(
+    column: $table.at,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get outcome => $composableBuilder(
+    column: $table.outcome,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get syncState => $composableBuilder(
+    column: $table.syncState,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$ContactAttemptsTableOrderingComposer
+    extends Composer<_$AppDatabase, $ContactAttemptsTable> {
+  $$ContactAttemptsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get clientId => $composableBuilder(
+    column: $table.clientId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get serverId => $composableBuilder(
+    column: $table.serverId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get customerId => $composableBuilder(
+    column: $table.customerId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get channel => $composableBuilder(
+    column: $table.channel,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get phoneIndex => $composableBuilder(
+    column: $table.phoneIndex,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get at => $composableBuilder(
+    column: $table.at,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get outcome => $composableBuilder(
+    column: $table.outcome,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncState => $composableBuilder(
+    column: $table.syncState,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$ContactAttemptsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ContactAttemptsTable> {
+  $$ContactAttemptsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get clientId =>
+      $composableBuilder(column: $table.clientId, builder: (column) => column);
+
+  GeneratedColumn<String> get serverId =>
+      $composableBuilder(column: $table.serverId, builder: (column) => column);
+
+  GeneratedColumn<String> get customerId => $composableBuilder(
+    column: $table.customerId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get channel =>
+      $composableBuilder(column: $table.channel, builder: (column) => column);
+
+  GeneratedColumn<int> get phoneIndex => $composableBuilder(
+    column: $table.phoneIndex,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get at =>
+      $composableBuilder(column: $table.at, builder: (column) => column);
+
+  GeneratedColumn<String> get outcome =>
+      $composableBuilder(column: $table.outcome, builder: (column) => column);
+
+  GeneratedColumn<String> get note =>
+      $composableBuilder(column: $table.note, builder: (column) => column);
+
+  GeneratedColumn<String> get syncState =>
+      $composableBuilder(column: $table.syncState, builder: (column) => column);
+}
+
+class $$ContactAttemptsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ContactAttemptsTable,
+          ContactAttemptRow,
+          $$ContactAttemptsTableFilterComposer,
+          $$ContactAttemptsTableOrderingComposer,
+          $$ContactAttemptsTableAnnotationComposer,
+          $$ContactAttemptsTableCreateCompanionBuilder,
+          $$ContactAttemptsTableUpdateCompanionBuilder,
+          (
+            ContactAttemptRow,
+            BaseReferences<
+              _$AppDatabase,
+              $ContactAttemptsTable,
+              ContactAttemptRow
+            >,
+          ),
+          ContactAttemptRow,
+          PrefetchHooks Function()
+        > {
+  $$ContactAttemptsTableTableManager(
+    _$AppDatabase db,
+    $ContactAttemptsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ContactAttemptsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ContactAttemptsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ContactAttemptsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> clientId = const Value.absent(),
+                Value<String?> serverId = const Value.absent(),
+                Value<String> customerId = const Value.absent(),
+                Value<String> channel = const Value.absent(),
+                Value<int?> phoneIndex = const Value.absent(),
+                Value<DateTime> at = const Value.absent(),
+                Value<String?> outcome = const Value.absent(),
+                Value<String?> note = const Value.absent(),
+                Value<String> syncState = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ContactAttemptsCompanion(
+                clientId: clientId,
+                serverId: serverId,
+                customerId: customerId,
+                channel: channel,
+                phoneIndex: phoneIndex,
+                at: at,
+                outcome: outcome,
+                note: note,
+                syncState: syncState,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String clientId,
+                Value<String?> serverId = const Value.absent(),
+                required String customerId,
+                required String channel,
+                Value<int?> phoneIndex = const Value.absent(),
+                required DateTime at,
+                Value<String?> outcome = const Value.absent(),
+                Value<String?> note = const Value.absent(),
+                Value<String> syncState = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ContactAttemptsCompanion.insert(
+                clientId: clientId,
+                serverId: serverId,
+                customerId: customerId,
+                channel: channel,
+                phoneIndex: phoneIndex,
+                at: at,
+                outcome: outcome,
+                note: note,
+                syncState: syncState,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$ContactAttemptsTable, ContactAttemptRow>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $ContactAttemptsTable,
+                    ContactAttemptRow
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$ContactAttemptsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ContactAttemptsTable,
+      ContactAttemptRow,
+      $$ContactAttemptsTableFilterComposer,
+      $$ContactAttemptsTableOrderingComposer,
+      $$ContactAttemptsTableAnnotationComposer,
+      $$ContactAttemptsTableCreateCompanionBuilder,
+      $$ContactAttemptsTableUpdateCompanionBuilder,
+      (
+        ContactAttemptRow,
+        BaseReferences<_$AppDatabase, $ContactAttemptsTable, ContactAttemptRow>,
+      ),
+      ContactAttemptRow,
+      PrefetchHooks Function()
+    >;
 typedef $$NotificationsTableCreateCompanionBuilder =
     NotificationsCompanion Function({
       required String serverId,
@@ -23736,6 +24604,8 @@ class $AppDatabaseManager {
       $$SyncMetaTableTableManager(_db, _db.syncMeta);
   $$LocationQueueTableTableManager get locationQueue =>
       $$LocationQueueTableTableManager(_db, _db.locationQueue);
+  $$ContactAttemptsTableTableManager get contactAttempts =>
+      $$ContactAttemptsTableTableManager(_db, _db.contactAttempts);
   $$NotificationsTableTableManager get notifications =>
       $$NotificationsTableTableManager(_db, _db.notifications);
   $$KvSettingsTableTableManager get kvSettings =>

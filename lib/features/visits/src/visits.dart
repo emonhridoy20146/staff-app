@@ -121,7 +121,7 @@ Future<String> recordVisit(WidgetRef ref, {required Customer customer, required 
       'checkInAt': at.toIso8601String(),
       'deviceTime': clock.deviceNowUtc().toIso8601String(),
       'outcome': outcome,
-      'geo': fix?.toJson() ?? {'lat': 0, 'lng': 0, 'accuracyM': 99999, 'mock': false},
+      ...geoFields(fix, ref.read(locationEngineProvider).lastFailureReason),
       'source': 'manual',
     });
     await ref.read(customerRepositoryProvider).applyLocalVisit(customer.id, at);

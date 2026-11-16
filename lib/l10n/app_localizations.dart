@@ -527,7 +527,7 @@ abstract class AppLocalizations {
   /// No description provided for @primerLocationBody.
   ///
   /// In en, this message translates to:
-  /// **'To attach your position to collections and visits. Choose \"Allow all the time\" so duty tracking works with the screen off.'**
+  /// **'To attach your position to collections and visits, and to share it while you are on duty. \"While using the app\" is enough: a visible notification keeps tracking on with the screen off.'**
   String get primerLocationBody;
 
   /// No description provided for @primerCamera.
@@ -2557,6 +2557,144 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'More'**
   String get actionMore;
+
+  /// No description provided for @callHowWasIt.
+  ///
+  /// In en, this message translates to:
+  /// **'How did the call go?'**
+  String get callHowWasIt;
+
+  /// No description provided for @callConnected.
+  ///
+  /// In en, this message translates to:
+  /// **'Talked'**
+  String get callConnected;
+
+  /// No description provided for @callNoAnswer.
+  ///
+  /// In en, this message translates to:
+  /// **'No answer'**
+  String get callNoAnswer;
+
+  /// No description provided for @callBusy.
+  ///
+  /// In en, this message translates to:
+  /// **'Busy'**
+  String get callBusy;
+
+  /// No description provided for @callSwitchedOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone off'**
+  String get callSwitchedOff;
+
+  /// No description provided for @callWrongNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Wrong number'**
+  String get callWrongNumber;
+
+  /// No description provided for @callUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Called'**
+  String get callUnknown;
+
+  /// No description provided for @callSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Call saved'**
+  String get callSaved;
+
+  /// No description provided for @timelineCall.
+  ///
+  /// In en, this message translates to:
+  /// **'Call · {outcome}'**
+  String timelineCall(String outcome);
+
+  /// No description provided for @trackingNotificationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'On duty · location shared'**
+  String get trackingNotificationTitle;
+
+  /// No description provided for @trackingNotificationText.
+  ///
+  /// In en, this message translates to:
+  /// **'Stops when you end work.'**
+  String get trackingNotificationText;
+
+  /// No description provided for @trackingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Location tracking'**
+  String get trackingTitle;
+
+  /// No description provided for @trackingOn.
+  ///
+  /// In en, this message translates to:
+  /// **'On · {provider}'**
+  String trackingOn(String provider);
+
+  /// No description provided for @trackingOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Off (only while on duty)'**
+  String get trackingOff;
+
+  /// No description provided for @trackingProviderFree.
+  ///
+  /// In en, this message translates to:
+  /// **'standard'**
+  String get trackingProviderFree;
+
+  /// No description provided for @trackingProviderPaid.
+  ///
+  /// In en, this message translates to:
+  /// **'premium'**
+  String get trackingProviderPaid;
+
+  /// No description provided for @trackingFallback.
+  ///
+  /// In en, this message translates to:
+  /// **'Premium tracking is not in this app version; using standard.'**
+  String get trackingFallback;
+
+  /// No description provided for @trackingLastPoint.
+  ///
+  /// In en, this message translates to:
+  /// **'Last point {time}'**
+  String trackingLastPoint(String time);
+
+  /// No description provided for @trackingPending.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} points waiting'**
+  String trackingPending(String count);
+
+  /// No description provided for @visitSuggestTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Near {name}?'**
+  String visitSuggestTitle(String name);
+
+  /// No description provided for @visitSuggestBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You have been here {minutes} min. Record a visit?'**
+  String visitSuggestBody(String minutes);
+
+  /// No description provided for @visitSuggestNo.
+  ///
+  /// In en, this message translates to:
+  /// **'Not now'**
+  String get visitSuggestNo;
+
+  /// No description provided for @visitSuggestYes.
+  ///
+  /// In en, this message translates to:
+  /// **'Record visit'**
+  String get visitSuggestYes;
 }
 
 class _AppLocalizationsDelegate

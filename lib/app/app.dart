@@ -11,6 +11,7 @@ import '../core/sync/sync_engine.dart';
 import '../core/theme/app_theme.dart';
 import '../features/auth/auth.dart';
 import '../features/collections/collections.dart';
+import '../features/location/location.dart';
 import '../l10n/app_localizations.dart';
 import 'router.dart';
 import 'shell.dart';
@@ -84,6 +85,7 @@ class _FieldAppState extends ConsumerState<FieldApp> with WidgetsBindingObserver
     final prefs = ref.watch(uiPrefsProvider);
     final router = ref.watch(routerProvider);
     ref.watch(collectionsBackgroundProvider);
+    ref.watch(locationBackgroundProvider);
     return MaterialApp.router(
       onGenerateTitle: (c) => AppLocalizations.of(c).appName,
       debugShowCheckedModeBanner: false,

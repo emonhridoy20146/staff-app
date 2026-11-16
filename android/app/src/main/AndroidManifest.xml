@@ -2,10 +2,14 @@
     <!-- Network (field-api, map tiles, presigned uploads). -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <!-- One-shot GPS fixes for collections, visits, attendance (on duty only).
-         Background location is NOT requested until the Phase 2 plugin decision (OD-M06). -->
+    <!-- GPS for collections, visits, attendance and duty tracking (on duty only).
+         Duty tracking runs as a visible foreground service started while the app is
+         open, so ACCESS_BACKGROUND_LOCATION is deliberately NOT requested (ADR-M12). -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
     <!-- Camera only; there is no gallery / storage permission on purpose. -->
     <uses-permission android:name="android.permission.CAMERA" />
     <!-- Promise reminders at 09:00 (local notifications). -->

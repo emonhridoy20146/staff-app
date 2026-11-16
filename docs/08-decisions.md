@@ -39,7 +39,9 @@ System-wide ADRs and open decisions: `field-api/docs/08-decisions.md` (notably A
 - **ADR-M04 interim:** until field-api publishes a stable generated Dart client, models are hand-written in `lib/core/api/api_models.dart` (only the fields the app reads) and every call goes through `FieldApi`. Replace with the generated package when available; do not mix.
 - **ADR-M09 Dhaka time as fixed UTC+6:** Bangladesh has no DST; `core/time/clock.dart` uses a fixed offset instead of the tz database for business dates (the tz database is used only for scheduling local notifications).
 - **ADR-M10 Demo mode:** `APP_ENV=demo` (the default build) runs entirely in memory against `FakeFieldApi` (a dio adapter implementing the contract routes the app uses) with 36 Barishal sample customers. Prod builds refuse demo mode at start-up. Used for UI review before field-api is deployed and for tests.
-- **Location plugin:** not chosen yet (OD-M06, user decision). Phase 2 is blocked on it; nothing in Phase 0/1 depends on a paid plugin. `GeolocatorLocationEngine` provides one-shot fixes for collections, visits and attendance.
+- **Location plugin:** decided 2026-11-15 (OD-M06): free now, paid possible later via admin setting. See ADR-M11.
+- **ADR-M11 Switchable tracking provider · accepted (2026-11-15):** tracking goes through `TrackingProvider` (`lib/core/location/tracking/`). `FreeTrackingProvider` (geolocator with an Android foreground service) ships now; `PaidTrackingProvider` is a stub reporting `isAvailable = false`. The server setting `location.trackingProvider` (`free` | `paid`) is read at runtime and the tracker switches without an app update **if the installed APK contains the paid SDK**. A paid SDK cannot be downloaded at runtime: enabling it needs (1) buying the licence for app id `bd.howlader.staff_app`, (2) adding the plugin and implementing `PaidTrackingProvider`, (3) the licence key as a CI secret (`LOCATION_LICENSE_KEY`, never in the repo), (4) shipping that APK. After that the admin setting switches freely. Until then `paid` falls back to free, shown on the Me tab and in the heartbeat.
+- **ADR-M12 No background location permission · accepted (2026-11-15):** tracking is a visible foreground service started while the app is open (work-in), so `ACCESS_BACKGROUND_LOCATION` is not requested ("While using the app" is enough). Trade-off: after a phone reboot tracking restarts only when the staff opens the app.
 
 ## Open decisions (app)
 | ID | Question | Default |
@@ -49,4 +51,4 @@ System-wide ADRs and open decisions: `field-api/docs/08-decisions.md` (notably A
 | OD-M03 | Crash reporting | Firebase Crashlytics (already using Firebase for FCM), PII scrubbed |
 | OD-M04 | Certificate pinning | Off at launch (rotation risk); revisit after 3 months |
 | OD-M05 | Allow managers to use the app | Yes, same app, role-based UI |
-| OD-M06 | Background location plugin (free geolocator + own foreground service vs. paid licence) | Undecided — owner to choose before Phase 2 |
+| OD-M06 | Background location plugin (free geolocator + own foreground service vs. paid licence) | **Decided:** free now; paid switchable from admin settings once a build includes it (ADR-M11) |

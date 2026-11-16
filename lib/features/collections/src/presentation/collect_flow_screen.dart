@@ -78,6 +78,7 @@ class _CollectFlowScreenState extends ConsumerState<CollectFlowScreen> {
           outstandingPoisha: c.outstanding,
         ),
         fix: fix,
+        noFixReason: fix == null ? ref.read(locationEngineProvider).lastFailureReason : null,
       );
       unawaited(HapticFeedback.heavyImpact());
       if (mounted) context.pushReplacement('/collect/success/${r.clientId}');

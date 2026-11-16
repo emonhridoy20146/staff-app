@@ -1,0 +1,1874 @@
+openapi: 3.1.0
+info:
+  title: Howlader Field Operations API
+  version: 1.5.0
+  description: |
+    Contract owned by field-api. Consumers (admin-web, staff-app) generate types from this file.
+    Conventions (auth, pagination, idempotency, errors) are described in docs/05-api-contract.md.
+    Money is integer poisha. Times are UTC ISO-8601; business dates are YYYY-MM-DD in Asia/Dhaka.
+servers:
+  - url: https://api.example.com/api/v1
+    description: Production (domain TBD)
+  - url: http://localhost:4000/api/v1
+    description: Local
+security:
+  - bearerAuth: []
+tags:
+  - name: auth
+  - name: users
+  - name: rbac
+  - name: system
+  - name: customers
+  - name: tags
+  - name: collections
+  - name: cash
+  - name: assignments
+  - name: handovers
+  - name: visits
+  - name: notes
+  - name: promises
+  - name: media
+  - name: attendance
+  - name: location
+  - name: sync
+  - name: notifications
+  - name: inbox
+  - name: reports
+  - name: audit
+
+paths:
+  /auth/login:
+    post:
+      tags: [auth]
+      security: []
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LoginRequest' }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/LoginResponse' } } } }
+        '401': { $ref: '#/components/responses/Problem' }
+        '403': { $ref: '#/components/responses/Problem' }
+        '423': { $ref: '#/components/responses/Problem' }
+        '426': { $ref: '#/components/responses/Problem' }
+  /auth/refresh:
+    post:
+      tags: [auth]
+      security: []
+      operationId: refresh
+      description: App sends refreshToken in body; admin-web relies on the fos_rt HttpOnly cookie.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refreshToken: { type: string }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/LoginResponse' } } } }
+        '401': { $ref: '#/components/responses/Problem' }
+  /auth/logout:
+    post:
+      tags: [auth]
+      operationId: logout
+      responses:
+        '204': { description: Logged out }
+  /auth/password/change:
+    post:
+      tags: [auth]
+      operationId: changePassword
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [currentPassword, newPassword]
+              properties:
+                currentPassword: { type: string }
+                newPassword: { type: string, minLength: 8 }
+      responses:
+        '204': { description: Changed }
+        '400': { $ref: '#/components/responses/Problem' }
+        '401': { $ref: '#/components/responses/Problem' }
+  /auth/me:
+    get:
+      tags: [auth]
+      operationId: me
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user: { $ref: '#/components/schemas/User' }
+                  permissions: { type: array, items: { type: string } }
+                  flags: { type: object, additionalProperties: { type: boolean } }
+  /auth/sessions:
+    get:
+      tags: [auth]
+      operationId: listSessions
+      parameters:
+        - { name: userId, in: query, schema: { type: string }, description: 'Requires device.manage when not self' }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/Session' } } } } }
+  /auth/sessions/{id}:
+    delete:
+      tags: [auth]
+      operationId: revokeSession
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      responses:
+        '204': { description: Revoked }
+
+  /meta/app-config:
+    get:
+      tags: [system]
+      security: []
+      operationId: appConfig
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  minAppVersion: { type: string, example: 1.0.0 }
+                  latestAppVersion: { type: string }
+                  storeUrl: { type: string }
+                  killSwitch: { type: boolean }
+                  tileProvider: { $ref: '#/components/schemas/TileProvider' }
+                  privacyNoticeVersion: { type: string, example: 2026-11-v1 }
+                  serverTime: { type: string, format: date-time }
+  /system/health:
+    get:
+      tags: [system]
+      security: []
+      operationId: health
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: object, properties: { status: { type: string, enum: [ok, degraded] }, version: { type: string }, mongo: { type: string }, erp: { type: string } } } } } }
+  /system/erp-status:
+    get:
+      tags: [system]
+      operationId: erpStatus
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/ErpStatus' } } } }
+  /system/sync-health:
+    get:
+      tags: [system]
+      operationId: syncHealth
+      parameters: [ { $ref: '#/components/parameters/BranchId' } ]
+      responses:
+        '200': { description: Per-device sync state, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/DeviceSyncState' } } } } }
+
+  /users:
+    get:
+      tags: [users]
+      operationId: listUsers
+      parameters:
+        - $ref: '#/components/parameters/BranchId'
+        - { name: role, in: query, schema: { $ref: '#/components/schemas/Role' } }
+        - { name: active, in: query, schema: { type: boolean } }
+        - { name: q, in: query, schema: { type: string } }
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Cursor'
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/UserPage' } } } }
+    post:
+      tags: [users]
+      operationId: createUser
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/UserCreate' } } } }
+      responses:
+        '201': { description: Created, content: { application/json: { schema: { type: object, properties: { user: { $ref: '#/components/schemas/User' }, temporaryPassword: { type: string } } } } } }
+        '400': { $ref: '#/components/responses/Problem' }
+  /users/{id}:
+    parameters: [ { $ref: '#/components/parameters/Id' } ]
+    get:
+      tags: [users]
+      operationId: getUser
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/User' } } } }
+        '404': { $ref: '#/components/responses/Problem' }
+    patch:
+      tags: [users]
+      operationId: updateUser
+      parameters: [ { $ref: '#/components/parameters/IfMatch' } ]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/UserUpdate' } } } }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/User' } } } }
+        '412': { $ref: '#/components/responses/Problem' }
+  /users/{id}/reset-password:
+    post:
+      tags: [users]
+      operationId: resetPassword
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: object, properties: { temporaryPassword: { type: string } } } } } }
+  /users/{id}/deactivate:
+    post:
+      tags: [users]
+      operationId: deactivateUser
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      requestBody: { content: { application/json: { schema: { $ref: '#/components/schemas/Reason' } } } }
+      responses:
+        '200': { description: OK }
+        '422': { $ref: '#/components/responses/Problem' }
+  /users/{id}/activate:
+    post:
+      tags: [users]
+      operationId: activateUser
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      responses:
+        '200': { description: OK }
+  /devices:
+    get:
+      tags: [users]
+      operationId: listDevices
+      parameters: [ { $ref: '#/components/parameters/BranchId' }, { name: userId, in: query, schema: { type: string } } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/Device' } } } } }
+  /devices/{id}/unbind:
+    post:
+      tags: [users]
+      operationId: unbindDevice
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      requestBody: { content: { application/json: { schema: { $ref: '#/components/schemas/Reason' } } } }
+      responses:
+        '200': { description: OK }
+  /devices/{id}/approve:
+    post:
+      tags: [users]
+      operationId: approveDevice
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      responses:
+        '200': { description: OK }
+  /devices/push-token:
+    post:
+      tags: [notifications]
+      operationId: registerPushToken
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [deviceId, fcmToken], properties: { deviceId: { type: string }, fcmToken: { type: string } } }
+      responses:
+        '204': { description: Registered }
+
+  /rbac/permissions:
+    get:
+      tags: [rbac]
+      operationId: permissionCatalog
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/PermissionDef' } } } } }
+  /rbac/users/{userId}/effective:
+    get:
+      tags: [rbac]
+      operationId: effectivePermissions
+      parameters: [ { name: userId, in: path, required: true, schema: { type: string } } ]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    key: { type: string }
+                    allowed: { type: boolean }
+                    source: { type: string, enum: [role, branch, user, super_admin, reserved] }
+  /rbac/overrides/branch/{branchId}:
+    get:
+      tags: [rbac]
+      operationId: getBranchOverrides
+      description: Current exceptions of a branch for all roles. Added in 1.3.0.
+      parameters: [ { name: branchId, in: path, required: true, schema: { type: string } } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: object, properties: { branchId: { type: string }, items: { type: array, items: { $ref: '#/components/schemas/OverrideEntry' } } } } } } }
+    put:
+      tags: [rbac]
+      operationId: setBranchOverrides
+      parameters: [ { name: branchId, in: path, required: true, schema: { type: string } } ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [role, changes, reason]
+              properties:
+                role: { $ref: '#/components/schemas/Role' }
+                changes: { type: array, items: { $ref: '#/components/schemas/OverrideChange' } }
+                reason: { type: string, minLength: 5 }
+      responses:
+        '200': { description: OK }
+  /rbac/overrides/user/{userId}:
+    get:
+      tags: [rbac]
+      operationId: getUserOverrides
+      description: Added in 1.3.0.
+      parameters: [ { name: userId, in: path, required: true, schema: { type: string } } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: object, properties: { userId: { type: string }, items: { type: array, items: { $ref: '#/components/schemas/OverrideEntry' } } } } } } }
+    put:
+      tags: [rbac]
+      operationId: setUserOverrides
+      parameters: [ { name: userId, in: path, required: true, schema: { type: string } } ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [changes, reason]
+              properties:
+                changes: { type: array, items: { $ref: '#/components/schemas/OverrideChange' } }
+                reason: { type: string, minLength: 5 }
+      responses:
+        '200': { description: OK }
+
+  /branches:
+    get:
+      tags: [system]
+      operationId: listBranches
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/Branch' } } } } }
+  /settings:
+    get:
+      tags: [system]
+      operationId: getSettings
+      parameters: [ { $ref: '#/components/parameters/BranchId' } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: object, additionalProperties: true } } } }
+    patch:
+      tags: [system]
+      operationId: updateSettings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [changes, reason]
+              properties:
+                branchId: { type: string }
+                changes: { type: object, additionalProperties: true }
+                reason: { type: string }
+      responses:
+        '200': { description: OK }
+  /feature-flags/effective:
+    get:
+      tags: [flags]
+      operationId: effectiveFlagsForBranch
+      description: Effective flag values for one branch (override, else default). Lets a super admin see a branch-level OFF. Added in 1.3.0.
+      parameters: [ { name: branchId, in: query, required: true, schema: { type: string } } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: object, properties: { branchId: { type: string }, flags: { type: object, additionalProperties: { type: boolean } } } } } } }
+  /feature-flags:
+    get:
+      tags: [system]
+      operationId: listFlags
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/FeatureFlag' } } } } }
+  /feature-flags/{key}:
+    put:
+      tags: [system]
+      operationId: setFlag
+      parameters: [ { name: key, in: path, required: true, schema: { type: string, example: module.collections } } ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties:
+                defaultEnabled: { type: boolean }
+                branchOverrides: { type: array, items: { type: object, properties: { branchId: { type: string }, enabled: { type: boolean } } } }
+                reason: { type: string }
+      responses:
+        '200': { description: OK }
+        '422': { $ref: '#/components/responses/Problem' }
+  /calendar/holidays:
+    get:
+      tags: [system]
+      operationId: listHolidays
+      parameters: [ { name: year, in: query, schema: { type: integer } } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/Holiday' } } } } }
+    post:
+      tags: [system]
+      operationId: createHoliday
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/Holiday' } } } }
+      responses:
+        '201': { description: Created }
+  /shifts:
+    get:
+      tags: [system]
+      operationId: listShifts
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/Shift' } } } } }
+    post:
+      tags: [system]
+      operationId: createShift
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/Shift' } } } }
+      responses:
+        '201': { description: Created }
+
+  /customers:
+    get:
+      tags: [customers]
+      operationId: listCustomers
+      parameters:
+        - { name: filter, in: query, style: form, explode: false, schema: { type: array, items: { type: string, enum: [overdue, due_today, promised_today, bad_suggested, tagged_bad, no_location, unassigned, paid_up] } } }
+        - { name: assignedTo, in: query, schema: { type: string, description: "'me' or a userId" } }
+        - $ref: '#/components/parameters/BranchId'
+        - { name: areaId, in: query, schema: { type: string } }
+        - { name: q, in: query, schema: { type: string } }
+        - { name: near, in: query, schema: { type: string, example: '22.7101,90.3705' } }
+        - { name: radiusM, in: query, schema: { type: integer, default: 5000 } }
+        - { name: sort, in: query, schema: { type: string, enum: [distance, -daysOverdue, name, -totalOutstanding, nextDueDate] } }
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Cursor'
+        - { name: includeTotal, in: query, schema: { type: boolean, default: false }, description: 'Return `total` (capped at 10,000). Added in 1.1.0' }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/CustomerPage' } } } }
+  /customers/map:
+    get:
+      tags: [customers]
+      operationId: customerMap
+      parameters:
+        - { name: bbox, in: query, required: true, schema: { type: string, example: '90.30,22.65,90.42,22.75' }, description: 'minLng,minLat,maxLng,maxLat' }
+        - { name: zoom, in: query, schema: { type: integer } }
+        - { name: filter, in: query, schema: { type: string } }
+        - $ref: '#/components/parameters/BranchId'
+      responses:
+        '200':
+          description: Pins (max 2000) or clusters when zoom < 13
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  pins: { type: array, items: { $ref: '#/components/schemas/MapPin' } }
+                  clusters: { type: array, items: { type: object, properties: { lat: { type: number }, lng: { type: number }, count: { type: integer }, worstStatus: { $ref: '#/components/schemas/CustomerStatus' } } } }
+  /customers/{id}:
+    get:
+      tags: [customers]
+      operationId: getCustomer
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/CustomerDetail' } } } }
+        '404': { $ref: '#/components/responses/Problem' }
+  /customers/{id}/timeline:
+    get:
+      tags: [customers]
+      operationId: customerTimeline
+      parameters: [ { $ref: '#/components/parameters/Id' }, { $ref: '#/components/parameters/Limit' }, { $ref: '#/components/parameters/Cursor' } ]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/TimelineItem' } }
+                  nextCursor: { type: [string, 'null'] }
+  /customers/{id}/refresh:
+    post:
+      tags: [customers]
+      operationId: refreshCustomer
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      responses:
+        '200': { description: Fresh data, content: { application/json: { schema: { $ref: '#/components/schemas/CustomerDetail' } } } }
+        '429': { $ref: '#/components/responses/Problem' }
+        '503': { $ref: '#/components/responses/Problem' }
+  /customers/{id}/location-proposals:
+    post:
+      tags: [customers]
+      operationId: proposeLocation
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [clientId, geo]
+              properties:
+                clientId: { type: string, format: uuid }
+                geo: { $ref: '#/components/schemas/GeoFix' }
+                photoMediaId: { type: string }
+                note: { type: string }
+      responses:
+        '201': { description: Created }
+  /location-proposals:
+    get:
+      tags: [customers]
+      operationId: listLocationProposals
+      parameters: [ { $ref: '#/components/parameters/BranchId' }, { name: status, in: query, schema: { type: string, enum: [pending, approved, rejected] } } ]
+      responses:
+        '200': { description: 'OK. Plain array, newest first, max 200 (declared in 1.4.0)', content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/LocationProposal' } } } } }
+  /location-proposals/{id}/decision:
+    post:
+      tags: [customers]
+      operationId: decideLocationProposal
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/Decision' } } } }
+      responses:
+        '200': { description: OK }
+
+  /customers/{id}/tag:
+    put:
+      tags: [tags]
+      operationId: setTag
+      parameters: [ { $ref: '#/components/parameters/Id' }, { $ref: '#/components/parameters/IfMatch' } ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [state, reasonCode, reason]
+              properties:
+                state: { type: string, enum: [tagged, none] }
+                severity: { type: string, enum: [watch, bad, legal] }
+                reasonCode: { type: string, enum: [plan_ended_unpaid, repeated_broken_promise, absconded, refused_to_pay, fraud_suspected, cleared, mistake, other] }
+                reason: { type: string, minLength: 10 }
+                geo: { $ref: '#/components/schemas/GeoFix' }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: object, properties: { tag: { $ref: '#/components/schemas/Tag' }, eventId: { type: string } } } } } }
+        '422': { $ref: '#/components/responses/Problem' }
+  /customers/{id}/tag-history:
+    get:
+      tags: [tags]
+      operationId: tagHistory
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/TagEvent' } } } } }
+  /tags/review-queue:
+    get:
+      tags: [tags]
+      operationId: tagReviewQueue
+      parameters: [ { $ref: '#/components/parameters/BranchId' } ]
+      responses:
+        '200': { description: Pending staff tags and balance-cleared reviews, content: { application/json: { schema: { type: object, properties: { items: { type: array, items: { $ref: '#/components/schemas/TagReviewItem' } } } } } } }
+  /tags/review-queue/{eventId}/decision:
+    post:
+      tags: [tags]
+      operationId: decideTagReview
+      parameters: [ { name: eventId, in: path, required: true, schema: { type: string } } ]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/Decision' } } } }
+      responses:
+        '200': { description: OK }
+
+  /collections:
+    get:
+      tags: [collections]
+      operationId: listCollections
+      parameters:
+        - $ref: '#/components/parameters/BranchId'
+        - { name: collectorId, in: query, schema: { type: string } }
+        - { name: customerId, in: query, schema: { type: string } }
+        - { name: from, in: query, schema: { type: string, format: date } }
+        - { name: to, in: query, schema: { type: string, format: date } }
+        - { name: method, in: query, schema: { $ref: '#/components/schemas/PaymentMethod' } }
+        - { name: status, in: query, schema: { $ref: '#/components/schemas/CollectionStatus' } }
+        - { name: flag, in: query, schema: { type: string } }
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Cursor'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/Collection' } }
+                  nextCursor: { type: [string, 'null'] }
+                  totals: { type: object, additionalProperties: { type: integer }, description: poisha by method }
+    post:
+      tags: [collections]
+      operationId: createCollection
+      parameters: [ { $ref: '#/components/parameters/IdempotencyKey' } ]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/CollectionCreate' } } } }
+      responses:
+        '201': { description: Created, content: { application/json: { schema: { $ref: '#/components/schemas/Collection' } } } }
+        '200': { description: Idempotent replay, content: { application/json: { schema: { $ref: '#/components/schemas/Collection' } } } }
+        '409': { $ref: '#/components/responses/Problem' }
+  /collections/conflicts:
+    get:
+      tags: [collections]
+      operationId: listConflicts
+      parameters: [ { $ref: '#/components/parameters/BranchId' }, { $ref: '#/components/parameters/Limit' }, { $ref: '#/components/parameters/Cursor' } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: object, properties: { items: { type: array, items: { $ref: '#/components/schemas/Collection' } }, nextCursor: { type: [string, 'null'] } } } } } }
+  /collections/{id}:
+    get:
+      tags: [collections]
+      operationId: getCollection
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Collection' } } } }
+  /collections/{id}/void:
+    post:
+      tags: [collections]
+      operationId: voidCollection
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/Reason' } } } }
+      responses:
+        '200': { description: OK }
+        '409': { $ref: '#/components/responses/Problem' }
+  /collections/{id}/resolve:
+    post:
+      tags: [collections]
+      operationId: resolveCollection
+      parameters: [ { $ref: '#/components/parameters/Id' }, { $ref: '#/components/parameters/IdempotencyKey' } ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [action, reason]
+              properties:
+                action: { type: string, enum: [post_to_plan, post_as_advance, retry_post, refund, void] }
+                erpPlanId: { type: string }
+                proofMediaId: { type: string }
+                reason: { type: string, minLength: 5 }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Collection' } } } }
+  /receipts/blocks:
+    post:
+      tags: [collections]
+      operationId: allocateReceiptBlock
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [deviceId, businessDate], properties: { deviceId: { type: string }, businessDate: { type: string, format: date }, size: { type: integer, default: 200 } } }
+      responses:
+        '201': { description: Block, content: { application/json: { schema: { type: object, properties: { prefix: { type: string, example: BRL01-FS014 }, businessDate: { type: string }, from: { type: integer }, to: { type: integer } } } } } }
+
+  /cash/me:
+    get:
+      tags: [cash]
+      operationId: myCash
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/CashPosition' } } } }
+  /cash/positions:
+    get:
+      tags: [cash]
+      operationId: cashPositions
+      parameters: [ { $ref: '#/components/parameters/BranchId' } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/CashPosition' } } } } }
+  /cash/deposits:
+    get:
+      tags: [cash]
+      operationId: listDeposits
+      parameters: [ { $ref: '#/components/parameters/BranchId' }, { name: status, in: query, schema: { type: string, enum: [pending, verified, rejected] } }, { $ref: '#/components/parameters/Limit' }, { $ref: '#/components/parameters/Cursor' } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: object, properties: { items: { type: array, items: { $ref: '#/components/schemas/Deposit' } }, nextCursor: { type: [string, 'null'] } } } } } }
+    post:
+      tags: [cash]
+      operationId: createDeposit
+      parameters: [ { $ref: '#/components/parameters/IdempotencyKey' } ]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/DepositCreate' } } } }
+      responses:
+        '201': { description: Created, content: { application/json: { schema: { $ref: '#/components/schemas/Deposit' } } } }
+  /cash/deposits/{id}/verify:
+    post:
+      tags: [cash]
+      operationId: verifyDeposit
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      responses:
+        '200': { description: OK }
+  /cash/deposits/{id}/reject:
+    post:
+      tags: [cash]
+      operationId: rejectDeposit
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/Reason' } } } }
+      responses:
+        '200': { description: OK }
+  /cash/closings:
+    post:
+      tags: [cash]
+      operationId: createClosing
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [businessDate], properties: { businessDate: { type: string, format: date }, note: { type: string } } }
+      responses:
+        '201': { description: Created }
+
+  /areas:
+    get:
+      tags: [assignments]
+      operationId: listAreas
+      parameters: [ { $ref: '#/components/parameters/BranchId' } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/Area' } } } } }
+    post:
+      tags: [assignments]
+      operationId: createArea
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/Area' } } } }
+      responses:
+        '201': { description: Created }
+  /areas/{id}:
+    patch:
+      tags: [assignments]
+      operationId: updateArea
+      parameters: [ { $ref: '#/components/parameters/Id' }, { $ref: '#/components/parameters/IfMatch' } ]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/Area' } } } }
+      responses:
+        '200': { description: OK }
+  /assignments:
+    get:
+      tags: [assignments]
+      operationId: listAssignments
+      parameters: [ { $ref: '#/components/parameters/BranchId' }, { name: userId, in: query, schema: { type: string } }, { name: active, in: query, schema: { type: boolean, default: true } } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/Assignment' } } } } }
+    post:
+      tags: [assignments]
+      operationId: createAssignment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [userId, type], properties: { userId: { type: string }, type: { type: string, enum: [area, customer] }, areaId: { type: string }, customerId: { type: string }, reason: { type: string } } }
+      responses:
+        '201': { description: Created }
+  /assignments/bulk:
+    post:
+      tags: [assignments]
+      operationId: bulkAssign
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [userId, customerIds], properties: { userId: { type: string }, customerIds: { type: array, maxItems: 1000, items: { type: string } }, reason: { type: string } } }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: object, properties: { assigned: { type: integer }, skipped: { type: integer } } } } } }
+  /assignments/{id}:
+    delete:
+      tags: [assignments]
+      operationId: endAssignment
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      responses:
+        '204': { description: Ended (effectiveTo=now) }
+
+  /handovers:
+    get:
+      tags: [handovers]
+      operationId: listHandovers
+      parameters: [ { $ref: '#/components/parameters/BranchId' }, { name: status, in: query, schema: { $ref: '#/components/schemas/HandoverStatus' } }, { name: mine, in: query, schema: { type: boolean } } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/Handover' } } } } }
+    post:
+      tags: [handovers]
+      operationId: createHandover
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/HandoverCreate' } } } }
+      responses:
+        '201': { description: Created, content: { application/json: { schema: { $ref: '#/components/schemas/Handover' } } } }
+  /handovers/{id}:
+    get:
+      tags: [handovers]
+      operationId: getHandover
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Handover' } } } }
+  /handovers/{id}/accept:
+    post:
+      tags: [handovers]
+      operationId: acceptHandover
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      responses:
+        '200': { description: OK }
+        '409': { $ref: '#/components/responses/Problem' }
+  /handovers/{id}/reject:
+    post:
+      tags: [handovers]
+      operationId: rejectHandover
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/Reason' } } } }
+      responses:
+        '200': { description: OK }
+  /handovers/{id}/cancel:
+    post:
+      tags: [handovers]
+      operationId: cancelHandover
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      responses:
+        '200': { description: OK }
+
+  /visits:
+    get:
+      tags: [visits]
+      operationId: listVisits
+      parameters: [ { $ref: '#/components/parameters/BranchId' }, { name: userId, in: query, schema: { type: string } }, { name: customerId, in: query, schema: { type: string } }, { name: date, in: query, schema: { type: string, format: date }, description: 'One Dhaka business day; wins over from/to' }, { name: from, in: query, schema: { type: string, format: date }, description: 'Inclusive Dhaka day (1.4.0)' }, { name: to, in: query, schema: { type: string, format: date }, description: 'Inclusive Dhaka day (1.4.0)' }, { name: outcome, in: query, schema: { type: string }, description: 'Visit outcome (1.4.0)' }, { $ref: '#/components/parameters/Limit' }, { $ref: '#/components/parameters/Cursor' } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: object, properties: { items: { type: array, items: { $ref: '#/components/schemas/VisitListItem' } }, nextCursor: { type: [string, 'null'] } } } } } }
+    post:
+      tags: [visits]
+      operationId: createVisit
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/VisitCreate' } } } }
+      responses:
+        '201': { description: Created, content: { application/json: { schema: { $ref: '#/components/schemas/Visit' } } } }
+  /visits/{id}/checkout:
+    patch:
+      tags: [visits]
+      operationId: checkoutVisit
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [checkOutAt], properties: { checkOutAt: { type: string, format: date-time }, outcome: { $ref: '#/components/schemas/VisitOutcome' } } }
+      responses:
+        '200': { description: OK }
+
+  /media/upload-url:
+    post:
+      tags: [media]
+      operationId: createUploadUrl
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [kind, contentType, sizeBytes, sha256]
+              properties:
+                kind: { type: string, enum: [visit_photo, deposit_slip, selfie, location_proof, refund_proof, voice_note] }
+                contentType: { type: string, enum: [image/jpeg, image/webp, audio/aac, audio/mp4] }
+                sizeBytes: { type: integer, maximum: 1048576 }
+                sha256: { type: string }
+                capturedAt: { type: string, format: date-time }
+                geo: { $ref: '#/components/schemas/GeoFix' }
+      responses:
+        '201':
+          description: Presigned PUT
+          content:
+            application/json:
+              schema: { type: object, properties: { mediaId: { type: string }, uploadUrl: { type: string }, headers: { type: object, additionalProperties: { type: string } }, expiresAt: { type: string, format: date-time }, alreadyExists: { type: boolean } } }
+  /media/{id}/confirm:
+    post:
+      tags: [media]
+      operationId: confirmMedia
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      responses:
+        '200': { description: Confirmed }
+  /media/{id}/url:
+    get:
+      tags: [media]
+      operationId: mediaUrl
+      parameters: [ { $ref: '#/components/parameters/Id' }, { name: variant, in: query, schema: { type: string, enum: [original, thumb] } } ]
+      responses:
+        '200': { description: Signed GET URL (5 min), content: { application/json: { schema: { type: object, properties: { url: { type: string }, expiresAt: { type: string } } } } } }
+
+  /customers/{id}/notes:
+    get:
+      tags: [notes]
+      operationId: listNotes
+      parameters: [ { $ref: '#/components/parameters/Id' }, { $ref: '#/components/parameters/Limit' }, { $ref: '#/components/parameters/Cursor' } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: object, properties: { items: { type: array, items: { $ref: '#/components/schemas/Note' } }, nextCursor: { type: [string, 'null'] } } } } } }
+    post:
+      tags: [notes]
+      operationId: createNote
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [clientId, text], properties: { clientId: { type: string, format: uuid }, text: { type: string, maxLength: 2000 }, category: { type: string, enum: [general, payment, complaint, address, family] }, voiceMediaId: { type: string }, visitClientId: { type: string } } }
+      responses:
+        '201': { description: Created, content: { application/json: { schema: { $ref: '#/components/schemas/Note' } } } }
+
+  /notes/{id}:
+    patch:
+      tags: [notes]
+      operationId: editNote
+      description: Author only, within 15 minutes of creation (FR-NOTE-001). Added in 1.3.0.
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      requestBody: { required: true, content: { application/json: { schema: { type: object, required: [text], properties: { text: { type: string, maxLength: 2000 } } } } } }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Note' } } } }
+        '409': { $ref: '#/components/responses/Problem' }
+  /customers/{id}/contact-attempts:
+    get:
+      tags: [notes]
+      operationId: listContactAttempts
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/ContactAttempt' } } } } }
+    post:
+      tags: [notes]
+      operationId: logContactAttempt
+      description: Added in 1.2.0 (FR-M-014). Idempotent by clientId.
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/ContactAttemptCreate' } } } }
+      responses:
+        '201': { description: Created, content: { application/json: { schema: { $ref: '#/components/schemas/ContactAttempt' } } } }
+        '200': { description: Replay, content: { application/json: { schema: { $ref: '#/components/schemas/ContactAttempt' } } } }
+  /promises:
+    get:
+      tags: [promises]
+      operationId: listPromises
+      parameters: [ { $ref: '#/components/parameters/BranchId' }, { name: ownerId, in: query, schema: { type: string } }, { name: customerId, in: query, schema: { type: string }, description: 'Documented in 1.4.0' }, { name: date, in: query, schema: { type: string, format: date }, description: 'Promised date; wins over from/to' }, { name: from, in: query, schema: { type: string, format: date }, description: 'Promised date from, inclusive (1.4.0)' }, { name: to, in: query, schema: { type: string, format: date }, description: 'Promised date to, inclusive (1.4.0)' }, { name: status, in: query, schema: { $ref: '#/components/schemas/PromiseStatus' } }, { $ref: '#/components/parameters/Limit' }, { $ref: '#/components/parameters/Cursor' } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: object, properties: { items: { type: array, items: { $ref: '#/components/schemas/PromiseListItem' } }, nextCursor: { type: [string, 'null'] } } } } } }
+    post:
+      tags: [promises]
+      operationId: createPromise
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/PromiseCreate' } } } }
+      responses:
+        '201': { description: Created, content: { application/json: { schema: { $ref: '#/components/schemas/Promise' } } } }
+        '422': { $ref: '#/components/responses/Problem' }
+  /promises/{id}/cancel:
+    post:
+      tags: [promises]
+      operationId: cancelPromise
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/Reason' } } } }
+      responses:
+        '200': { description: OK }
+
+  /attendance/events:
+    post:
+      tags: [attendance]
+      operationId: attendanceEvent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [clientId, type, at, geo]
+              properties:
+                clientId: { type: string, format: uuid }
+                type: { type: string, enum: [work_in, break_start, break_end, work_out] }
+                at: { type: string, format: date-time }
+                deviceTime: { type: string, format: date-time }
+                geo: { oneOf: [ { $ref: '#/components/schemas/GeoFix' }, { type: 'null' } ], description: 'null when no GPS fix could be taken (1.2.0); send geoUnavailableReason' }
+                geoUnavailableReason: { $ref: '#/components/schemas/GeoUnavailableReason' }
+                selfieMediaId: { type: string }
+      responses:
+        '201': { description: Created, content: { application/json: { schema: { $ref: '#/components/schemas/AttendanceDay' } } } }
+        '409': { $ref: '#/components/responses/Problem' }
+  /attendance/me/today:
+    get:
+      tags: [attendance]
+      operationId: myAttendanceToday
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/AttendanceDay' } } } }
+  /attendance/days:
+    get:
+      tags: [attendance]
+      operationId: listAttendanceDays
+      parameters: [ { $ref: '#/components/parameters/BranchId' }, { name: userId, in: query, schema: { type: string } }, { name: from, in: query, required: true, schema: { type: string, format: date } }, { name: to, in: query, required: true, schema: { type: string, format: date } } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/AttendanceDay' } } } } }
+  /attendance/summary:
+    get:
+      tags: [attendance]
+      operationId: attendanceSummary
+      parameters: [ { $ref: '#/components/parameters/BranchId' }, { name: month, in: query, required: true, schema: { type: string, example: 2026-11 } } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: object, properties: { month: { type: string }, items: { type: array, items: { $ref: '#/components/schemas/AttendanceSummaryRow' } } } } } } }
+  /attendance/corrections:
+    post:
+      tags: [attendance]
+      operationId: attendanceCorrection
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [userId, businessDate, type, at, reason], properties: { userId: { type: string }, businessDate: { type: string, format: date }, type: { type: string, enum: [work_in, break_start, break_end, work_out] }, at: { type: string, format: date-time }, replacesEventId: { type: string }, reason: { type: string } } }
+      responses:
+        '201': { description: Created }
+  /leave-requests:
+    get:
+      tags: [attendance]
+      operationId: listLeave
+      parameters: [ { $ref: '#/components/parameters/BranchId' }, { name: status, in: query, schema: { type: string, enum: [pending, approved, rejected] } } ]
+      responses:
+        '200': { description: 'OK. Staff see their own; attendance.manage sees its branches. Newest first, max 300, no cursor (1.4.0)', content: { application/json: { schema: { type: object, properties: { items: { type: array, items: { $ref: '#/components/schemas/LeaveRequest' } } } } } } }
+    post:
+      tags: [attendance]
+      operationId: requestLeave
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [type, from, to], properties: { type: { type: string, enum: [casual, sick, other] }, from: { type: string, format: date }, to: { type: string, format: date }, reason: { type: string } } }
+      responses:
+        '201': { description: Created }
+  /leave-requests/{id}/decision:
+    post:
+      tags: [attendance]
+      operationId: decideLeave
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/Decision' } } } }
+      responses:
+        '200': { description: OK }
+
+  /location/points:
+    post:
+      tags: [location]
+      operationId: ingestPoints
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [deviceId, points]
+              properties:
+                deviceId: { type: string }
+                points: { type: array, maxItems: 500, items: { $ref: '#/components/schemas/LocationPoint' } }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { type: object, properties: { accepted: { type: integer }, rejected: { type: array, items: { type: object, properties: { index: { type: integer }, reason: { type: string, enum: [LOW_ACCURACY, IMPOSSIBLE_SPEED, FUTURE_TIME, DUPLICATE, OFF_DUTY] } } } }, nextSampling: { $ref: '#/components/schemas/SamplingConfig' } } }
+  /location/heartbeat:
+    post:
+      tags: [location]
+      operationId: heartbeat
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, properties: { battery: { type: number }, charging: { type: boolean }, gpsEnabled: { type: boolean }, permission: { type: string, enum: [always, while_in_use, denied] }, bgRestricted: { type: boolean }, appVersion: { type: string }, pendingPoints: { type: integer }, pendingMutations: { type: integer }, trackingProvider: { type: string, enum: [free, paid], description: 'Plugin actually running on the device (1.5.0)' }, trackingProviderFallback: { type: boolean, description: 'true when the setting asked for paid but the app fell back to free (1.5.0)' } } }
+      responses:
+        '204': { description: OK }
+  /location/latest:
+    get:
+      tags: [location]
+      operationId: latestLocations
+      parameters: [ { $ref: '#/components/parameters/BranchId' } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/LatestLocation' } } } } }
+  /location/history:
+    get:
+      tags: [location]
+      operationId: locationHistory
+      parameters: [ { name: userId, in: query, required: true, schema: { type: string } }, { name: date, in: query, required: true, schema: { type: string, format: date } }, { name: simplify, in: query, schema: { type: number, default: 10 } } ]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  polyline: { type: string, description: 'Google encoded polyline (precision 5)' }
+                  segments: { type: array, items: { type: object, properties: { from: { type: string }, to: { type: string }, kind: { type: string, enum: [moving, gap] } } } }
+                  stops: { type: array, items: { $ref: '#/components/schemas/Stop' } }
+                  events: { type: array, items: { $ref: '#/components/schemas/TimelineItem' } }
+                  summary: { $ref: '#/components/schemas/LocationDailySummary' }
+  /location/stops:
+    get:
+      tags: [location]
+      operationId: locationStops
+      parameters: [ { name: userId, in: query, required: true, schema: { type: string } }, { name: date, in: query, required: true, schema: { type: string, format: date } } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/Stop' } } } } }
+
+  /sync/bootstrap:
+    get:
+      tags: [sync]
+      operationId: syncBootstrap
+      parameters: [ { $ref: '#/components/parameters/Cursor' }, { name: limit, in: query, schema: { type: integer, default: 100, minimum: 1, maximum: 200 } } ]
+      responses:
+        '200': { description: 'Paged snapshot of the whole scope; the final page has nextCursor null and returns pullCursor (schema declared in 1.5.0)', content: { application/json: { schema: { $ref: '#/components/schemas/SyncBootstrapResponse' } } } }
+  /sync/pull:
+    get:
+      tags: [sync]
+      operationId: syncPull
+      parameters: [ { name: cursor, in: query, required: true, schema: { type: string } }, { name: limit, in: query, schema: { type: integer, default: 500, maximum: 500 } } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/SyncPullResponse' } } } }
+        '410': { $ref: '#/components/responses/Problem' }
+  /sync/push:
+    post:
+      tags: [sync]
+      operationId: syncPush
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/SyncPushRequest' } } } }
+      responses:
+        '200': { description: Per-item results, content: { application/json: { schema: { $ref: '#/components/schemas/SyncPushResponse' } } } }
+
+  /notifications:
+    get:
+      tags: [notifications]
+      operationId: listNotifications
+      parameters: [ { $ref: '#/components/parameters/Limit' }, { $ref: '#/components/parameters/Cursor' }, { name: unread, in: query, schema: { type: boolean } } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: object, properties: { items: { type: array, items: { type: object, additionalProperties: true } }, nextCursor: { type: [string, 'null'] }, unreadCount: { type: integer } } } } } }
+  /notifications/{id}/read:
+    post:
+      tags: [notifications]
+      operationId: readNotification
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      responses:
+        '204': { description: OK }
+  /notifications/read-all:
+    post:
+      tags: [notifications]
+      operationId: readAllNotifications
+      responses:
+        '204': { description: OK }
+  /broadcasts:
+    get:
+      tags: [notifications]
+      operationId: listBroadcasts
+      responses:
+        '200': { description: 'OK (declared in 1.4.0; server implementation pending)', content: { application/json: { schema: { type: object, properties: { items: { type: array, items: { $ref: '#/components/schemas/Broadcast' } }, nextCursor: { type: [string, 'null'] } } } } } }
+    post:
+      tags: [notifications]
+      operationId: createBroadcast
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [title, body], properties: { branchIds: { type: array, items: { type: string } }, roles: { type: array, items: { $ref: '#/components/schemas/Role' } }, title: { $ref: '#/components/schemas/I18nText' }, body: { $ref: '#/components/schemas/I18nText' }, requireAck: { type: boolean } } }
+      responses:
+        '201': { description: Created }
+  /broadcasts/{id}/ack:
+    post:
+      tags: [notifications]
+      operationId: ackBroadcast
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      responses:
+        '204': { description: OK }
+
+  /inbox:
+    get:
+      tags: [inbox]
+      operationId: listInbox
+      parameters: [ { $ref: '#/components/parameters/BranchId' }, { name: status, in: query, schema: { type: string, enum: [open, snoozed, resolved], default: open } }, { name: type, in: query, schema: { type: string } }, { $ref: '#/components/parameters/Limit' }, { $ref: '#/components/parameters/Cursor' } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: object, properties: { items: { type: array, items: { $ref: '#/components/schemas/InboxItem' } }, counts: { type: object, additionalProperties: { type: integer } }, nextCursor: { type: [string, 'null'] } } } } } }
+  /inbox/{id}/resolve:
+    post:
+      tags: [inbox]
+      operationId: resolveInbox
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      requestBody: { content: { application/json: { schema: { $ref: '#/components/schemas/Reason' } } } }
+      responses:
+        '200': { description: OK }
+  /inbox/{id}/snooze:
+    post:
+      tags: [inbox]
+      operationId: snoozeInbox
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      requestBody: { required: true, content: { application/json: { schema: { type: object, required: [until], properties: { until: { type: string, format: date-time } } } } } }
+      responses:
+        '200': { description: OK }
+
+  /dashboard/overview:
+    get:
+      tags: [reports]
+      operationId: dashboardOverview
+      parameters: [ { $ref: '#/components/parameters/BranchId' }, { name: date, in: query, schema: { type: string, format: date } } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/DashboardOverview' } } } }
+  /search:
+    get:
+      tags: [customers]
+      operationId: globalSearch
+      parameters: [ { name: q, in: query, required: true, schema: { type: string, minLength: 2 } }, { name: types, in: query, schema: { type: string, example: 'customer,user,receipt' } } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: array, items: { type: object, properties: { type: { type: string }, id: { type: string }, title: { type: string }, subtitle: { type: string } } } } } } }
+  /reports/staff-performance:
+    get:
+      tags: [reports]
+      operationId: staffPerformance
+      parameters: [ { $ref: '#/components/parameters/BranchId' }, { name: period, in: query, required: true, schema: { type: string, enum: [daily, monthly] } }, { name: date, in: query, required: true, schema: { type: string, description: 'YYYY-MM-DD or YYYY-MM' } }, { name: userId, in: query, schema: { type: string } } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/StaffPerformanceRow' } } } } }
+  /reports/branch-trends:
+    get:
+      tags: [reports]
+      operationId: branchTrends
+      parameters: [ { $ref: '#/components/parameters/BranchId' }, { name: from, in: query, required: true, schema: { type: string, format: date } }, { name: to, in: query, required: true, schema: { type: string, format: date } }, { name: granularity, in: query, schema: { type: string, enum: [day, week, month], default: day } } ]
+      responses:
+        '200': { description: OK }
+  /reports/reconciliation:
+    get:
+      tags: [reports]
+      operationId: reconciliation
+      parameters: [ { $ref: '#/components/parameters/BranchId' }, { name: date, in: query, required: true, schema: { type: string, format: date } } ]
+      responses:
+        '200': { description: OK }
+  /reports/exports:
+    post:
+      tags: [reports]
+      operationId: createExport
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [type, format], properties: { type: { type: string, enum: [staff_performance, collections, attendance, overdue_customers, cash_positions, audit] }, format: { type: string, enum: [csv, xlsx, pdf] }, params: { type: object, additionalProperties: true }, locale: { type: string, enum: [bn, en] } } }
+      responses:
+        '202': { description: Accepted, content: { application/json: { schema: { type: object, properties: { id: { type: string }, status: { type: string } } } } } }
+  /reports/exports/{id}:
+    get:
+      tags: [reports]
+      operationId: getExport
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: object, properties: { id: { type: string }, status: { type: string, enum: [queued, running, ready, failed] }, downloadUrl: { type: string } } } } } }
+  /audit:
+    get:
+      tags: [audit]
+      operationId: listAudit
+      parameters: [ { $ref: '#/components/parameters/BranchId' }, { name: actorId, in: query, schema: { type: string } }, { name: action, in: query, schema: { type: string } }, { name: entity, in: query, schema: { type: string } }, { name: entityId, in: query, schema: { type: string } }, { name: from, in: query, schema: { type: string, format: date-time } }, { name: to, in: query, schema: { type: string, format: date-time } }, { $ref: '#/components/parameters/Limit' }, { $ref: '#/components/parameters/Cursor' } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: object, properties: { items: { type: array, items: { $ref: '#/components/schemas/AuditEntry' } }, nextCursor: { type: [string, 'null'] } } } } } }
+
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+  parameters:
+    Id: { name: id, in: path, required: true, schema: { type: string } }
+    BranchId: { name: branchId, in: query, schema: { type: string } }
+    Limit: { name: limit, in: query, schema: { type: integer, default: 25, minimum: 1, maximum: 100 } }
+    Cursor: { name: cursor, in: query, schema: { type: string } }
+    IdempotencyKey: { name: Idempotency-Key, in: header, required: true, schema: { type: string, format: uuid } }
+    IfMatch: { name: If-Match, in: header, schema: { type: string } }
+  responses:
+    Problem:
+      description: Error (RFC 9457)
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+  schemas:
+    Problem:
+      type: object
+      required: [status, code, title]
+      properties:
+        type: { type: string }
+        title: { type: string }
+        status: { type: integer }
+        code: { type: string, example: VALIDATION_FAILED }
+        detail: { type: string }
+        requestId: { type: string }
+        details: { type: object, additionalProperties: true }
+    I18nText:
+      type: object
+      properties: { bn: { type: string }, en: { type: string } }
+    Reason:
+      type: object
+      required: [reason]
+      properties: { reason: { type: string, minLength: 5 } }
+    Decision:
+      type: object
+      required: [decision]
+      properties:
+        decision: { type: string, enum: [approve, reject] }
+        reason: { type: string }
+    Role: { type: string, enum: [super_admin, branch_manager, field_staff, viewer] }
+    GeoFix:
+      type: object
+      required: [lat, lng, accuracyM]
+      properties:
+        lat: { type: number, minimum: -90, maximum: 90 }
+        lng: { type: number, minimum: -180, maximum: 180 }
+        accuracyM: { type: number }
+        mock: { type: boolean, default: false }
+        fixAt: { type: string, format: date-time }
+    GeoUnavailableReason: { type: string, enum: [permission_denied, location_off, timeout, no_fix], description: 'Why geo is null (1.2.0)' }
+    TileProvider:
+      type: object
+      properties:
+        id: { type: string, example: provider-a }
+        urlTemplate: { type: string, example: 'https://tiles.example.com/{z}/{x}/{y}.png?key={key}' }
+        attribution: { type: string, example: '© OpenStreetMap contributors' }
+        maxZoom: { type: integer, example: 19 }
+        subdomains: { type: array, items: { type: string } }
+        apiKeyRef: { type: string, description: 'Public, domain/app-restricted key, if provider needs one' }
+    LoginRequest:
+      type: object
+      required: [password, client]
+      properties:
+        phone: { type: string, example: '01712345678' }
+        username: { type: string }
+        password: { type: string }
+        client: { type: string, enum: [app, web] }
+    LoginResponse:
+      type: object
+      properties:
+        accessToken: { type: string }
+        accessTokenExpiresAt: { type: string, format: date-time }
+        refreshToken: { type: string, description: 'App only; web uses cookie' }
+        refreshTokenExpiresAt: { type: string, format: date-time }
+        user: { $ref: '#/components/schemas/User' }
+        permissions: { type: array, items: { type: string } }
+        flags: { type: object, additionalProperties: { type: boolean } }
+        serverTime: { type: string, format: date-time }
+    User:
+      type: object
+      properties:
+        id: { type: string }
+        name: { $ref: '#/components/schemas/I18nText' }
+        phone: { type: string }
+        username: { type: string }
+        role: { $ref: '#/components/schemas/Role' }
+        branchIds: { type: array, items: { type: string } }
+        employeeCode: { type: string }
+        erpEmployeeId: { type: [string, 'null'] }
+        shiftId: { type: [string, 'null'] }
+        cashLimitPoisha: { type: [integer, 'null'] }
+        active: { type: boolean }
+        mustChangePassword: { type: boolean }
+        locale: { type: string, enum: [bn, en] }
+        lastLoginAt: { type: [string, 'null'], format: date-time }
+        version: { type: integer }
+    UserCreate:
+      type: object
+      required: [name, phone, role, branchIds, employeeCode]
+      properties:
+        name: { $ref: '#/components/schemas/I18nText' }
+        phone: { type: string }
+        username: { type: string }
+        role: { $ref: '#/components/schemas/Role' }
+        branchIds: { type: array, items: { type: string }, minItems: 1 }
+        employeeCode: { type: string }
+        erpEmployeeId: { type: string }
+        shiftId: { type: string }
+        cashLimitPoisha: { type: integer }
+    UserUpdate:
+      type: object
+      properties:
+        name: { $ref: '#/components/schemas/I18nText' }
+        phone: { type: string }
+        role: { $ref: '#/components/schemas/Role' }
+        branchIds: { type: array, items: { type: string } }
+        shiftId: { type: string }
+        cashLimitPoisha: { type: integer }
+        reason: { type: string }
+    UserPage:
+      type: object
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/User' } }
+        nextCursor: { type: [string, 'null'] }
+    Session:
+      type: object
+      properties: { id: { type: string }, client: { type: string }, deviceId: { type: string }, userAgent: { type: string }, ip: { type: string }, createdAt: { type: string }, lastUsedAt: { type: string }, current: { type: boolean } }
+    Device:
+      type: object
+      properties: { id: { type: string }, deviceId: { type: string }, userId: { type: string }, model: { type: string }, androidVersion: { type: string }, appVersion: { type: string }, boundAt: { type: string }, lastSeenAt: { type: string }, rooted: { type: boolean }, emulator: { type: boolean }, status: { type: string, enum: [active, pending_approval, unbound] } }
+    PermissionDef:
+      type: object
+      properties:
+        key: { type: string, example: collection.record }
+        module: { type: string }
+        description: { $ref: '#/components/schemas/I18nText' }
+        defaults: { type: object, additionalProperties: { type: boolean } }
+        reserved: { type: boolean }
+    OverrideEntry:
+      type: object
+      description: Added in 1.3.0
+      properties: { role: { $ref: '#/components/schemas/Role' }, key: { type: string }, effect: { type: string, enum: [allow, deny] }, reason: { type: string }, setBy: { type: string }, setAt: { type: [string, 'null'], format: date-time } }
+    OverrideChange:
+      type: object
+      required: [key, effect]
+      properties:
+        key: { type: string }
+        effect: { type: string, enum: [allow, deny, inherit] }
+    Branch:
+      type: object
+      properties: { id: { type: string }, erpBranchId: { type: string }, code: { type: string }, name: { $ref: '#/components/schemas/I18nText' }, district: { type: string }, address: { type: string }, lat: { type: [number, 'null'] }, lng: { type: [number, 'null'] }, active: { type: boolean } }
+    FeatureFlag:
+      type: object
+      properties: { key: { type: string }, defaultEnabled: { type: boolean }, branchOverrides: { type: array, items: { type: object, properties: { branchId: { type: string }, enabled: { type: boolean } } } }, description: { type: string }, owner: { type: string }, reviewBy: { type: string }, lockedReason: { type: string } }
+    Holiday:
+      type: object
+      properties: { date: { type: string, format: date }, name: { $ref: '#/components/schemas/I18nText' }, branchIds: { type: array, items: { type: string } }, type: { type: string, enum: [national, branch] } }
+    Shift:
+      type: object
+      properties: { id: { type: string }, name: { type: string }, start: { type: string, example: '09:00' }, end: { type: string, example: '18:00' }, weeklyOff: { type: array, items: { type: integer } }, lateGraceMin: { type: integer }, maxBreakMin: { type: integer } }
+    ErpStatus:
+      type: object
+      properties: { mode: { type: string, enum: [live, record_only, mock] }, lastSuccessAt: { type: string }, lagSec: { type: integer }, consecutiveFailures: { type: integer }, circuit: { type: string, enum: [closed, open, half_open] }, outboxPending: { type: integer }, outboxFailed: { type: integer } }
+    DeviceSyncState:
+      type: object
+      properties: { userId: { type: string }, userName: { type: string }, deviceId: { type: string }, lastPullAt: { type: string }, lastPushAt: { type: string }, pendingReported: { type: integer }, lastError: { type: string }, appVersion: { type: string } }
+    CustomerStatus: { type: string, enum: [overdue, due_today, promised_today, paid_up, current, bad_suggested, tagged_bad] }
+    CustomerLocation:
+      type: object
+      properties: { lat: { type: [number, 'null'] }, lng: { type: [number, 'null'] }, status: { type: string, enum: [ok, missing, invalid, suspect_swapped, overridden] }, source: { type: string, enum: [erp, overlay] } }
+    Tag:
+      type: object
+      properties: { state: { type: string, enum: [none, pending, tagged] }, severity: { type: string, enum: [watch, bad, legal] }, reasonCode: { type: string }, reason: { type: string }, setBy: { type: string }, setAt: { type: string, format: date-time } }
+    TagEvent:
+      type: object
+      properties:
+        id: { type: string }
+        kind: { type: string, enum: [change, request, review_requested, decision], description: 'Added in contract 1.1.0' }
+        previous: { $ref: '#/components/schemas/Tag' }
+        next: { $ref: '#/components/schemas/Tag' }
+        reasonCode: { type: string }
+        reason: { type: string }
+        actor: { type: object, properties: { id: { type: string }, name: { type: string }, role: { type: string } } }
+        source: { type: string, enum: [web, app, system] }
+        deviceLocation: { type: object, properties: { lat: { type: number }, lng: { type: number }, accuracyM: { type: number } }, description: 'Added in 1.1.0' }
+        approvalOf: { type: string, description: 'For kind=decision: the eventId of the reviewed item. Added in 1.1.0' }
+        at: { type: string, format: date-time }
+    TagReviewItem:
+      type: object
+      description: Added in contract 1.1.0
+      properties:
+        eventId: { type: string }
+        kind: { type: string, enum: [approval, balance_cleared] }
+        customer: { type: object, properties: { id: { type: string }, code: { type: string }, name: { $ref: '#/components/schemas/I18nText' }, totalOutstandingPoisha: { type: integer }, tag: { $ref: '#/components/schemas/Tag' } } }
+        requested: { $ref: '#/components/schemas/Tag' }
+        requestedBy: { type: object, properties: { id: { type: string }, name: { type: string } } }
+        createdAt: { type: string, format: date-time }
+    CustomerListItem:
+      type: object
+      properties:
+        id: { type: string }
+        erpCustomerId: { type: string }
+        code: { type: string }
+        name: { $ref: '#/components/schemas/I18nText' }
+        phone: { type: string }
+        address: { type: string }
+        location: { $ref: '#/components/schemas/CustomerLocation' }
+        distanceM: { type: [integer, 'null'] }
+        totalOutstandingPoisha: { type: integer }
+        nextDueDate: { type: [string, 'null'], format: date }
+        daysOverdue: { type: integer }
+        badges: { type: array, items: { $ref: '#/components/schemas/CustomerStatus' } }
+        tag: { $ref: '#/components/schemas/Tag' }
+        openPromise: { oneOf: [ { $ref: '#/components/schemas/Promise' }, { type: 'null' } ] }
+        lastVisitAt: { type: [string, 'null'], format: date-time }
+        pendingFieldPoisha: { type: integer, description: 'Field collections not yet posted to ERP' }
+        installmentPoisha: { type: [integer, 'null'], description: 'Amount of the next unpaid schedule line across active plans (ERP cache). Added in 1.2.0' }
+        overduePoisha: { type: integer, description: 'Sum of overdue unpaid schedule amounts (ERP cache). Added in 1.2.0' }
+        areaName: { oneOf: [ { $ref: '#/components/schemas/I18nText' }, { type: 'null' } ], description: 'FOS area the customer falls in. Added in 1.2.0' }
+        assignee: { type: object, properties: { id: { type: string }, name: { type: string } } }
+        erpFetchedAt: { type: string, format: date-time }
+    CustomerPage:
+      type: object
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/CustomerListItem' } }
+        nextCursor: { type: [string, 'null'] }
+        total: { type: integer }
+    Plan:
+      type: object
+      properties:
+        erpPlanId: { type: string }
+        product: { type: string }
+        startDate: { type: string, format: date }
+        finalDueDate: { type: string, format: date }
+        installmentCount: { type: integer }
+        totalPayablePoisha: { type: integer }
+        downPaymentPoisha: { type: integer }
+        paidPoisha: { type: integer }
+        outstandingPoisha: { type: integer }
+        status: { type: string, enum: [active, completed, closed, defaulted, cancelled] }
+        badSuggested: { type: boolean }
+        schedule: { type: array, items: { type: object, properties: { seq: { type: integer }, dueDate: { type: string, format: date }, amountPoisha: { type: integer }, paidPoisha: { type: integer }, status: { type: string, enum: [paid, partial, due, overdue, upcoming] }, estimated: { type: boolean } } } }
+    Payment:
+      type: object
+      properties: { erpPaymentId: { type: string }, date: { type: string, format: date }, amountPoisha: { type: integer }, method: { type: string }, source: { type: string, enum: [office, field] }, receiptNo: { type: string }, reversed: { type: boolean } }
+    CustomerDetail:
+      allOf:
+        - $ref: '#/components/schemas/CustomerListItem'
+        - type: object
+          properties:
+            phones: { type: array, items: { type: string } }
+            guarantor: { type: object, properties: { name: { type: string }, phone: { type: string } } }
+            plans: { type: array, items: { $ref: '#/components/schemas/Plan' } }
+            payments: { type: array, items: { $ref: '#/components/schemas/Payment' } }
+            pendingCollections: { type: array, items: { $ref: '#/components/schemas/Collection' } }
+            badSuggestion: { type: [object, 'null'], properties: { erpPlanId: { type: string }, finalDueDate: { type: string }, outstandingPoisha: { type: integer }, text: { $ref: '#/components/schemas/I18nText' } } }
+            recentNotes: { type: array, items: { $ref: '#/components/schemas/Note' } }
+            lastVisit: { oneOf: [ { $ref: '#/components/schemas/Visit' }, { type: 'null' } ] }
+            version: { type: integer }
+    MapPin:
+      type: object
+      properties: { id: { type: string }, lat: { type: number }, lng: { type: number }, status: { $ref: '#/components/schemas/CustomerStatus' }, name: { type: string }, outstandingPoisha: { type: integer }, tagged: { type: boolean } }
+    TimelineItem:
+      type: object
+      properties:
+        kind: { type: string, enum: [erp_payment, collection, visit, note, promise, tag, handover, assignment, location_correction, attendance, stop] }
+        at: { type: string, format: date-time }
+        actor: { type: object, properties: { id: { type: string }, name: { type: string } } }
+        summary: { $ref: '#/components/schemas/I18nText' }
+        refId: { type: string }
+        data: { type: object, additionalProperties: true }
+    PaymentMethod: { type: string, enum: [cash, bkash, nagad, rocket, bank_transfer, other_mobile] }
+    CollectionStatus: { type: string, enum: [received, posting, posted, conflict, posting_failed, resolved_posted, resolved_refund, resolved_voided, voided] }
+    CollectionCreate:
+      type: object
+      required: [clientId, customerId, amountPoisha, method, receiptNo, recordedAt, geo]
+      properties:
+        clientId: { type: string, format: uuid }
+        customerId: { type: string }
+        erpPlanId: { type: string }
+        amountPoisha: { type: integer, minimum: 1 }
+        method: { $ref: '#/components/schemas/PaymentMethod' }
+        transactionRef: { type: string }
+        payerName: { type: string }
+        receiptNo: { type: string, example: BRL01-FS014-261115-0007 }
+        physicalReceiptNo: { type: string }
+        recordedAt: { type: string, format: date-time }
+        deviceTime: { type: string, format: date-time }
+        geo: { oneOf: [ { $ref: '#/components/schemas/GeoFix' }, { type: 'null' } ], description: 'null when no GPS fix could be taken (1.2.0); send geoUnavailableReason' }
+        geoUnavailableReason: { $ref: '#/components/schemas/GeoUnavailableReason' }
+        visitClientId: { type: string }
+        photoMediaId: { type: string }
+        note: { type: string, maxLength: 500 }
+    Collection:
+      type: object
+      properties:
+        id: { type: string }
+        clientId: { type: string }
+        customer: { type: object, properties: { id: { type: string }, name: { $ref: '#/components/schemas/I18nText' }, code: { type: string } } }
+        erpPlanId: { type: string }
+        collector: { type: object, properties: { id: { type: string }, name: { type: string } } }
+        amountPoisha: { type: integer }
+        method: { $ref: '#/components/schemas/PaymentMethod' }
+        transactionRef: { type: [string, 'null'] }
+        receiptNo: { type: string }
+        erpReceiptNo: { type: [string, 'null'] }
+        recordedAt: { type: string, format: date-time }
+        receivedAt: { type: string, format: date-time }
+        status: { $ref: '#/components/schemas/CollectionStatus' }
+        conflict: { type: [object, 'null'], properties: { code: { type: string }, message: { $ref: '#/components/schemas/I18nText' }, raisedAt: { type: string } } }
+        resolution: { type: [object, 'null'], properties: { action: { type: string }, by: { type: string }, at: { type: string }, reason: { type: string } } }
+        flags: { type: array, items: { type: string, enum: [far_from_pin, mock_location, clock_skew, late_sync, duplicate_txn_ref, not_in_scope_at_record_time, no_location] } }
+        distanceToPinM: { type: [integer, 'null'] }
+        cashOnHand: { $ref: '#/components/schemas/CashPosition' }
+    CashPosition:
+      type: object
+      properties:
+        userId: { type: string }
+        userName: { type: string }
+        onHandPoisha: { type: integer }
+        limitPoisha: { type: integer }
+        state: { type: string, enum: [ok, warning, exceeded] }
+        oldestUndepositedAt: { type: [string, 'null'], format: date-time }
+        pendingDepositsPoisha: { type: integer }
+        todayCashPoisha: { type: integer }
+        todayMobilePoisha: { type: integer }
+    DepositCreate:
+      type: object
+      required: [clientId, amountPoisha, destination, depositedAt]
+      properties:
+        clientId: { type: string, format: uuid }
+        amountPoisha: { type: integer, minimum: 1 }
+        destination: { type: string, enum: [branch_cashier, bank, manager] }
+        reference: { type: string }
+        slipMediaId: { type: string }
+        depositedAt: { type: string, format: date-time }
+        geo: { $ref: '#/components/schemas/GeoFix' }
+    Deposit:
+      allOf:
+        - $ref: '#/components/schemas/DepositCreate'
+        - type: object
+          properties: { id: { type: string }, userId: { type: string }, userName: { type: string, description: 'Depositor display name (1.3.0)' }, status: { type: string, enum: [pending, verified, rejected] }, verifiedBy: { type: string }, verifiedAt: { type: string }, rejectReason: { type: string } }
+    Area:
+      type: object
+      properties: { id: { type: string }, branchId: { type: string }, name: { $ref: '#/components/schemas/I18nText' }, code: { type: string }, kind: { type: string, enum: [polygon, codes] }, polygon: { type: object, description: GeoJSON Polygon }, erpAreaCodes: { type: array, items: { type: string } }, color: { type: string }, customerCount: { type: integer }, assignees: { type: array, items: { type: string } }, active: { type: boolean }, version: { type: integer } }
+    Assignment:
+      type: object
+      properties: { id: { type: string }, userId: { type: string }, type: { type: string, enum: [area, customer] }, areaId: { type: string }, customerId: { type: string }, effectiveFrom: { type: string }, effectiveTo: { type: [string, 'null'] }, source: { type: string } }
+    HandoverStatus: { type: string, enum: [pending_acceptance, accepted, rejected, cancelled, expired, reverted] }
+    HandoverCreate:
+      type: object
+      required: [fromUserId, toUserId, reason]
+      properties:
+        fromUserId: { type: string }
+        toUserId: { type: string }
+        areaIds: { type: array, items: { type: string } }
+        customerIds: { type: array, items: { type: string } }
+        reason: { type: string }
+        effectiveDate: { type: string, format: date }
+        endDate: { type: string, format: date, description: 'Temporary cover; auto-revert' }
+    Handover:
+      allOf:
+        - $ref: '#/components/schemas/HandoverCreate'
+        - type: object
+          properties:
+            id: { type: string }
+            status: { $ref: '#/components/schemas/HandoverStatus' }
+            createdBy: { type: string }
+            createdAt: { type: string }
+            expiresAt: { type: string }
+            summary: { type: object, properties: { customers: { type: integer }, outstandingPoisha: { type: integer }, overdue: { type: integer }, openPromises: { type: integer }, openConflicts: { type: integer } } }
+    VisitOutcome: { type: string, enum: [paid, partial_paid, promised, not_home, refused, shifted_address, customer_dead, product_returned_request, other] }
+    VisitCreate:
+      type: object
+      required: [clientId, customerId, checkInAt, geo, outcome]
+      properties:
+        clientId: { type: string, format: uuid }
+        customerId: { type: string }
+        checkInAt: { type: string, format: date-time }
+        deviceTime: { type: string, format: date-time }
+        outcome: { $ref: '#/components/schemas/VisitOutcome' }
+        geo: { oneOf: [ { $ref: '#/components/schemas/GeoFix' }, { type: 'null' } ], description: 'null when no GPS fix could be taken (1.2.0); send geoUnavailableReason' }
+        geoUnavailableReason: { $ref: '#/components/schemas/GeoUnavailableReason' }
+        photoMediaIds: { type: array, items: { type: string } }
+        source: { type: string, enum: [manual, suggested] }
+    Visit:
+      allOf:
+        - $ref: '#/components/schemas/VisitCreate'
+        - type: object
+          properties: { id: { type: string }, userId: { type: string }, checkOutAt: { type: [string, 'null'] }, distanceToPinM: { type: [integer, 'null'] }, flags: { type: array, items: { type: string } } }
+    Note:
+      type: object
+      properties: { id: { type: string }, clientId: { type: string }, customerId: { type: string }, author: { type: object, properties: { id: { type: string }, name: { type: string } } }, category: { type: string }, text: { type: string }, voiceMediaId: { type: [string, 'null'] }, createdAt: { type: string, format: date-time }, editableUntil: { type: string, format: date-time } }
+    PromiseStatus: { type: string, enum: [open, kept, partially_kept, broken, superseded, cancelled] }
+    PromiseCreate:
+      type: object
+      required: [clientId, customerId, promisedDate, promisedAmountPoisha]
+      properties:
+        clientId: { type: string, format: uuid }
+        customerId: { type: string }
+        erpPlanId: { type: string }
+        promisedDate: { type: string, format: date }
+        promisedAmountPoisha: { type: integer, minimum: 1 }
+        note: { type: string }
+    Promise:
+      allOf:
+        - $ref: '#/components/schemas/PromiseCreate'
+        - type: object
+          properties: { id: { type: string }, ownerId: { type: string }, status: { $ref: '#/components/schemas/PromiseStatus' }, paidTowardsPoisha: { type: integer }, createdAt: { type: string } }
+    VisitListItem:
+      description: 'Visit plus display refs, returned by GET /visits (1.4.0)'
+      allOf:
+        - $ref: '#/components/schemas/Visit'
+        - type: object
+          properties: { customer: { type: object, properties: { id: { type: string }, name: { $ref: '#/components/schemas/I18nText' }, code: { type: string } } }, user: { type: object, properties: { id: { type: string }, name: { type: string } } } }
+    PromiseListItem:
+      description: 'Promise plus display refs, returned by GET /promises (1.4.0)'
+      allOf:
+        - $ref: '#/components/schemas/Promise'
+        - type: object
+          properties: { customer: { type: object, properties: { id: { type: string }, name: { $ref: '#/components/schemas/I18nText' }, code: { type: string } } }, owner: { type: object, properties: { id: { type: string }, name: { type: string } } } }
+    LocationProposal:
+      type: object
+      properties:
+        id: { type: string }
+        customer: { type: object, properties: { id: { type: string }, name: { $ref: '#/components/schemas/I18nText' }, code: { type: string }, current: { type: [object, 'null'], description: 'Current pin, if any' } } }
+        lat: { type: number }
+        lng: { type: number }
+        accuracyM: { type: number }
+        photoMediaId: { type: [string, 'null'] }
+        note: { type: [string, 'null'] }
+        proposedBy: { type: string }
+        proposer: { type: object, properties: { id: { type: string }, name: { type: string } } }
+        status: { type: string, enum: [pending, approved, rejected] }
+        createdAt: { type: string, format: date-time }
+    AttendanceSummaryRow:
+      type: object
+      properties: { userId: { type: string }, userName: { type: string }, present: { type: integer }, late: { type: integer }, absent: { type: integer }, leave: { type: integer }, holiday: { type: integer }, weeklyOff: { type: integer }, lateMin: { type: integer }, breakMin: { type: integer }, dutyMin: { type: integer }, overBreakDays: { type: integer } }
+    LeaveRequest:
+      type: object
+      properties: { id: { type: string }, userId: { type: string }, userName: { type: string }, type: { type: string, enum: [casual, sick, other] }, from: { type: string, format: date }, to: { type: string, format: date }, reason: { type: string }, status: { type: string, enum: [pending, approved, rejected] }, decidedBy: { type: string }, decidedAt: { type: string, format: date-time }, createdAt: { type: string, format: date-time } }
+    Broadcast:
+      type: object
+      properties: { id: { type: string }, title: { $ref: '#/components/schemas/I18nText' }, body: { $ref: '#/components/schemas/I18nText' }, branchIds: { type: array, items: { type: string } }, roles: { type: array, items: { $ref: '#/components/schemas/Role' } }, requireAck: { type: boolean }, createdBy: { type: object, properties: { id: { type: string }, name: { type: string } } }, createdAt: { type: string, format: date-time }, recipientCount: { type: integer }, ackCount: { type: integer } }
+    AttendanceDay:
+      type: object
+      properties:
+        userId: { type: string }
+        businessDate: { type: string, format: date }
+        status: { type: string, enum: [not_started, on_duty, on_break, off_duty, present, late, absent, leave, holiday, weekly_off] }
+        firstIn: { type: [string, 'null'] }
+        lastOut: { type: [string, 'null'] }
+        lateMin: { type: integer }
+        breakMin: { type: integer }
+        dutyMin: { type: integer }
+        breaks: { type: array, items: { type: object, properties: { start: { type: string }, end: { type: [string, 'null'] } } } }
+        autoClosed: { type: boolean }
+        corrected: { type: boolean }
+        flags: { type: array, items: { type: string } }
+    LocationPoint:
+      type: object
+      required: [t, lat, lng, acc]
+      properties:
+        t: { type: string, format: date-time }
+        lat: { type: number }
+        lng: { type: number }
+        acc: { type: number, description: accuracy metres }
+        spd: { type: number, description: m/s }
+        hdg: { type: number }
+        alt: { type: number }
+        act: { type: string, enum: [still, walking, on_bicycle, in_vehicle, unknown] }
+        bat: { type: number }
+        chg: { type: boolean }
+        mock: { type: boolean }
+    SamplingConfig:
+      type: object
+      properties: { fastSec: { type: integer, default: 15 }, slowSec: { type: integer, default: 45 }, stillSec: { type: integer, default: 180 }, distanceFilterM: { type: integer, default: 25 }, maxAccuracyM: { type: integer, default: 50 } }
+    LatestLocation:
+      type: object
+      properties: { userId: { type: string }, name: { type: string }, lat: { type: number }, lng: { type: number }, accuracyM: { type: number }, recordedAt: { type: string }, freshness: { type: string, enum: [fresh, stale, lost] }, battery: { type: number }, onBreak: { type: boolean }, mock: { type: boolean }, activity: { type: string }, todayVisits: { type: integer }, todayCollectedPoisha: { type: integer }, trackingProvider: { type: string, enum: [free, paid], description: 'From the last heartbeat (1.5.0)' }, trackingProviderFallback: { type: boolean } }
+    Stop:
+      type: object
+      properties: { start: { type: string }, end: { type: string }, dwellMin: { type: integer }, lat: { type: number }, lng: { type: number }, customerId: { type: [string, 'null'] }, customerName: { type: [string, 'null'] }, distanceToPinM: { type: [integer, 'null'] }, visitId: { type: [string, 'null'] } }
+    LocationDailySummary:
+      type: object
+      properties: { distanceKm: { type: number }, movingMin: { type: integer }, stoppedMin: { type: integer }, stopsCount: { type: integer }, customerStops: { type: integer }, gapsMin: { type: integer }, mockPoints: { type: integer } }
+    SyncMutation:
+      type: object
+      required: [mutationId, entity, op, payload]
+      properties:
+        mutationId: { type: string, format: uuid }
+        entity: { type: string, enum: [visit, collection, note, promise, promise_cancel, deposit, attendance_event, tag, location_proposal, visit_checkout, handover_decision, cash_closing, contact_attempt] }
+        op: { type: string, enum: [create, update] }
+        payload:
+          type: object
+          additionalProperties: true
+          description: |
+            Same body as the matching REST call (1.2.0 documents the mapping):
+            collection → CollectionCreate (+ idempotencyKey) · visit → VisitCreate · note → POST /customers/{id}/notes body (+ customerId) ·
+            promise → POST /promises body · deposit → DepositCreate · attendance_event → POST /attendance/events body ·
+            tag → PUT /customers/{id}/tag body (+ customerId) · location_proposal → POST /customers/{id}/location-proposals body (+ customerId) ·
+            contact_attempt → ContactAttemptCreate
+            Declared in 1.5.0: collection and deposit may carry `idempotencyKey` (uuid); without it the mutationId is the key ·
+            visit_checkout → { visitId | visitClientId, checkOutAt, outcome? } · promise_cancel → { promiseId, reason } ·
+            cash_closing → { businessDate, note? } · handover_decision → { handoverId, decision: accept|reject, reason? (required to reject) } ·
+            tag payload may carry `ifMatch` (customer version).
+            Every mutation is idempotent by mutationId; the same id with a different payload is rejected with IDEMPOTENCY_MISMATCH.
+        createdAt: { type: string, format: date-time }
+    SyncPushRequest:
+      type: object
+      required: [deviceId, mutations]
+      properties:
+        deviceId: { type: string }
+        lastPullCursor: { type: string }
+        pendingCount: { type: integer, minimum: 0, description: 'Mutations still queued on the device after this batch; shown in sync health (1.5.0)' }
+        mutations: { type: array, maxItems: 100, items: { $ref: '#/components/schemas/SyncMutation' } }
+    SyncPushResponse:
+      type: object
+      properties:
+        serverTime: { type: string, format: date-time }
+        results:
+          type: array
+          items:
+            type: object
+            properties:
+              mutationId: { type: string }
+              result: { type: string, enum: [applied, replayed, conflict, rejected] }
+              entityId: { type: string }
+              status: { type: string }
+              conflict: { type: object, properties: { code: { type: string }, message: { $ref: '#/components/schemas/I18nText' } } }
+              error: { $ref: '#/components/schemas/Problem' }
+              retryable: { type: boolean, description: 'Only on rejected: true means a transient server failure, keep the item queued (1.5.0)' }
+              receiptNo: { type: string }
+              eventId: { type: string }
+    SyncChange:
+      type: object
+      properties:
+        seq: { type: integer }
+        entity: { type: string, enum: [customer, collection, visit, note, promise, tag, handover, assignment, area, deposit, attendance_day, notification, broadcast, setting, contact_attempt] }
+        op: { type: string, enum: [upsert, delete] }
+        id: { type: string }
+        data:
+          type: object
+          additionalProperties: true
+          description: |
+            Present for op=upsert. Shape per entity (1.2.0 documents the mapping; values unchanged):
+            customer → CustomerDetail · collection → Collection · visit → Visit · note → Note · promise → Promise ·
+            tag → Tag (with customerId) · handover → Handover · assignment → Assignment · area → Area · deposit → Deposit ·
+            attendance_day → AttendanceDay · notification → Notification · broadcast → Broadcast · setting → { key, value } ·
+            contact_attempt → ContactAttempt
+        reason: { type: string }
+    ContactAttemptCreate:
+      type: object
+      description: FR-M-014 call/SMS attempt logged by the app (1.2.0)
+      required: [clientId, customerId, channel, at]
+      properties:
+        clientId: { type: string, format: uuid }
+        customerId: { type: string }
+        channel: { type: string, enum: [call, sms, whatsapp] }
+        phoneIndex: { type: integer, minimum: 0, description: 'Index into customer phones (never the number itself)' }
+        at: { type: string, format: date-time }
+        durationSec: { type: [integer, 'null'] }
+        outcome: { type: string, enum: [connected, no_answer, busy, switched_off, wrong_number, sent] }
+        note: { type: string, maxLength: 300 }
+    ContactAttempt:
+      allOf:
+        - $ref: '#/components/schemas/ContactAttemptCreate'
+        - type: object
+          properties: { id: { type: string }, userId: { type: string }, receivedAt: { type: string, format: date-time } }
+    SyncBootstrapResponse:
+      type: object
+      properties:
+        items: { type: array, items: { type: object, properties: { entity: { type: string }, op: { type: string, enum: [upsert] }, id: { type: string }, data: { type: object, additionalProperties: true, description: 'Same shape as SyncChange.data for the entity' } } } }
+        nextCursor: { type: [string, 'null'] }
+        pullCursor: { type: string, description: 'Only on the final page: use it for the first GET /sync/pull' }
+        permissions: { type: object, properties: { version: { type: integer }, keys: { type: array, items: { type: string } } } }
+        flags: { type: object, additionalProperties: { type: boolean } }
+        settings: { type: object, additionalProperties: true }
+        cash: { $ref: '#/components/schemas/CashPosition' }
+        serverTime: { type: string, format: date-time }
+    SyncPullResponse:
+      type: object
+      properties:
+        changes: { type: array, items: { $ref: '#/components/schemas/SyncChange' } }
+        nextCursor: { type: string }
+        hasMore: { type: boolean }
+        permissions: { type: object, properties: { version: { type: integer }, keys: { type: array, items: { type: string } } } }
+        flags: { type: object, additionalProperties: { type: boolean } }
+        settings: { type: object, additionalProperties: true }
+        cash: { $ref: '#/components/schemas/CashPosition' }
+        serverTime: { type: string, format: date-time }
+    InboxItem:
+      type: object
+      properties: { id: { type: string }, type: { type: string, example: collection.conflict }, severity: { type: string, enum: [low, medium, high, critical] }, branchId: { type: string }, entity: { type: string }, entityId: { type: string }, summary: { $ref: '#/components/schemas/I18nText' }, status: { type: string, enum: [open, snoozed, resolved] }, createdAt: { type: string }, link: { type: string, example: '/collections/6750…' } }
+    DashboardOverview:
+      type: object
+      properties:
+        date: { type: string, format: date }
+        collected: { type: object, properties: { totalPoisha: { type: integer }, cashPoisha: { type: integer }, mobilePoisha: { type: integer }, count: { type: integer }, targetPoisha: { type: integer } } }
+        visits: { type: object, properties: { count: { type: integer }, uniqueCustomers: { type: integer } } }
+        promises: { type: object, properties: { dueToday: { type: integer }, keptToday: { type: integer }, brokenYesterday: { type: integer } } }
+        attendance: { type: object, properties: { present: { type: integer }, late: { type: integer }, absent: { type: integer }, onDutyNow: { type: integer } } }
+        cash: { type: object, properties: { onHandPoisha: { type: integer }, overLimitStaff: { type: integer }, pendingDeposits: { type: integer } } }
+        exceptions: { type: object, additionalProperties: { type: integer } }
+        overdue: { type: object, properties: { customers: { type: integer }, amountPoisha: { type: integer }, badSuggested: { type: integer }, tagged: { type: integer } } }
+        erp: { $ref: '#/components/schemas/ErpStatus' }
+        trend7d: { type: array, items: { type: object, properties: { date: { type: string }, collectedPoisha: { type: integer }, visits: { type: integer } } } }
+    StaffPerformanceRow:
+      type: object
+      properties:
+        userId: { type: string }
+        name: { type: string }
+        period: { type: string }
+        visits: { type: integer }
+        uniqueCustomers: { type: integer }
+        collectionsCount: { type: integer }
+        collectedPoisha: { type: object, additionalProperties: { type: integer } }
+        targetPoisha: { type: integer }
+        promisesDue: { type: integer }
+        promisesKept: { type: integer }
+        promiseFulfilmentRate: { type: number }
+        presentDays: { type: integer }
+        lateDays: { type: integer }
+        lateMin: { type: integer }
+        breakMin: { type: integer }
+        fieldMin: { type: integer }
+        distanceKm: { type: number }
+    AuditEntry:
+      type: object
+      properties: { id: { type: string }, at: { type: string }, actor: { type: object, properties: { id: { type: string }, name: { type: string }, role: { type: string } } }, action: { type: string, example: rbac.override.set }, entity: { type: string }, entityId: { type: string }, branchId: { type: string }, before: { type: object, additionalProperties: true }, after: { type: object, additionalProperties: true }, reason: { type: string }, ip: { type: string }, deviceId: { type: string }, requestId: { type: string } }

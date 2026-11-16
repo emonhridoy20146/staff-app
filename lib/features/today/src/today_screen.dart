@@ -1,3 +1,4 @@
+import 'package:flutter/rendering.dart' show RenderShiftedBox, BoxParentData;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
@@ -139,11 +140,30 @@ class TodayScreen extends ConsumerWidget {
   }
 }
 
-class _Gap extends StatelessWidget {
-  const _Gap({required this.child});
-  final Widget child;
+/// Top gap before an extension card that collapses when the card renders
+/// nothing (e.g. no visit suggestion), so hidden cards leave no hole.
+class _Gap extends SingleChildRenderObjectWidget {
+  const _Gap({required Widget super.child});
   @override
-  Widget build(BuildContext context) => Padding(padding: const EdgeInsets.only(top: Space.cardGap), child: child);
+  RenderObject createRenderObject(BuildContext context) => _RenderGap(Space.cardGap);
+}
+
+class _RenderGap extends RenderShiftedBox {
+  _RenderGap(this.gap) : super(null);
+  final double gap;
+
+  @override
+  void performLayout() {
+    final c = child;
+    if (c == null) {
+      size = constraints.smallest;
+      return;
+    }
+    c.layout(constraints.deflate(EdgeInsets.only(top: gap)), parentUsesSize: true);
+    final shown = c.size.height > 0;
+    (c.parentData! as BoxParentData).offset = Offset(0, shown ? gap : 0);
+    size = constraints.constrain(Size(c.size.width, shown ? c.size.height + gap : 0));
+  }
 }
 
 class _CountedHeader extends ConsumerWidget {
