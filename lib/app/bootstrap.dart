@@ -14,6 +14,7 @@ import '../core/media/media.dart';
 import '../core/providers.dart';
 import '../core/sync/sync_handlers.dart';
 import '../core/time/clock.dart';
+import '../features/attendance/attendance.dart';
 import '../features/customers/customers.dart';
 import '../features/location/location.dart';
 import '../features/visits/visits.dart';
@@ -46,6 +47,7 @@ Future<ProviderContainer> bootstrap(Env env, {List<Override> extra = const []}) 
     mediaOwnerHooksProvider.overrideWithValue({
       'visit': (db, owner, ids) => linkVisitPhotos(container.read(outboxWriterProvider), db, owner, ids),
       'location_proposal': (db, owner, ids) => submitLocationProposal(container.read(outboxWriterProvider), db, owner, ids),
+      'attendance_event': (db, owner, ids) => releaseWithSelfie(container.read(outboxWriterProvider), db, owner, ids),
     }),
     if (env.isDemo) ...[
       fakeApiProvider.overrideWithValue(FakeFieldApi(clock: clock)),
@@ -98,6 +100,7 @@ ProviderContainer buildTestContainer({required Clock clock, FakeFieldApi? api, L
     mediaOwnerHooksProvider.overrideWithValue({
       'visit': (db, owner, ids) => linkVisitPhotos(c.read(outboxWriterProvider), db, owner, ids),
       'location_proposal': (db, owner, ids) => submitLocationProposal(c.read(outboxWriterProvider), db, owner, ids),
+      'attendance_event': (db, owner, ids) => releaseWithSelfie(c.read(outboxWriterProvider), db, owner, ids),
     }),
     fakeApiProvider.overrideWithValue(api ?? FakeFieldApi(clock: clock, latency: Duration.zero)),
     locationEngineProvider.overrideWithValue(FakeLocationEngine()),

@@ -23,6 +23,7 @@ class OutboxWriter {
     required Json payload,
     String op = 'create',
     List<String> dependsOn = const [],
+    bool held = false,
   }) async {
     assert(SyncMutation.entities.contains(entity), 'Unknown mutation entity "$entity" — add it to the contract first');
     await _db.into(_db.outbox).insert(
@@ -33,10 +34,23 @@ class OutboxWriter {
             payloadJson: jsonEncode(payload),
             dependsOnJson: Value(jsonEncode(dependsOn)),
             createdAt: _clock.nowUtc(),
+            // `held`: saved but not sent until something it needs is ready
+            // (e.g. its photo is uploaded); see [release]. Counts as unsynced.
+            state: held ? const Value('held') : const Value.absent(),
           ),
           // Same id twice = same mutation: keep the original (idempotent save).
           mode: InsertMode.insertOrIgnore,
         );
+  }
+
+  /// Moves a held mutation to pending, merging [extra] into its payload.
+  Future<void> release(String mutationId, Json extra) async {
+    final row = await (_db.select(_db.outbox)..where((t) => t.mutationId.equals(mutationId) & t.state.equals('held'))).getSingleOrNull();
+    if (row == null) return;
+    final payload = {...(jsonDecode(row.payloadJson) as Json), ...extra};
+    await (_db.update(_db.outbox)..where((t) => t.mutationId.equals(mutationId))).write(
+      OutboxCompanion(state: const Value('pending'), payloadJson: Value(jsonEncode(payload))),
+    );
   }
 }
 
@@ -49,7 +63,7 @@ class OutboxReader {
     final c = _db.outbox.mutationId.count();
     final q = _db.selectOnly(_db.outbox)
       ..addColumns([c])
-      ..where(_db.outbox.state.isIn(['pending', 'sending']));
+      ..where(_db.outbox.state.isIn(['held', 'pending', 'sending']));
     return q.map((r) => r.read(c) ?? 0).watchSingle();
   }
 
@@ -66,7 +80,7 @@ class OutboxReader {
     final c = _db.outbox.mutationId.count();
     final q = _db.selectOnly(_db.outbox)
       ..addColumns([_db.outbox.entity, c])
-      ..where(_db.outbox.state.isIn(['pending', 'sending', 'failed']))
+      ..where(_db.outbox.state.isIn(['held', 'pending', 'sending', 'failed']))
       ..groupBy([_db.outbox.entity]);
     return q.watch().map((rows) => {for (final r in rows) r.read(_db.outbox.entity)!: r.read(c) ?? 0});
   }
@@ -75,7 +89,7 @@ class OutboxReader {
     final m = _db.outbox.createdAt.min();
     final q = _db.selectOnly(_db.outbox)
       ..addColumns([m])
-      ..where(_db.outbox.state.isIn(['pending', 'sending', 'failed']));
+      ..where(_db.outbox.state.isIn(['held', 'pending', 'sending', 'failed']));
     return q.map((r) => r.read(m)).watchSingle();
   }
 
@@ -86,7 +100,7 @@ class OutboxReader {
     final c = _db.outbox.mutationId.count();
     final q = _db.selectOnly(_db.outbox)
       ..addColumns([c])
-      ..where(_db.outbox.state.isIn(['pending', 'sending', 'failed']));
+      ..where(_db.outbox.state.isIn(['held', 'pending', 'sending', 'failed']));
     final m = _db.mediaQueue.clientId.count();
     final mq = _db.selectOnly(_db.mediaQueue)
       ..addColumns([m])

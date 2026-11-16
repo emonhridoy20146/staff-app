@@ -34,7 +34,7 @@ void main() {
       RawLocation(t: h.clock.nowUtc().add(Duration(seconds: sec)), lat: lat, lng: lng, acc: 8);
 
   Future<void> workIn() async {
-    await h.read(attendanceServiceProvider).record(AttendanceEventType.workIn);
+    await h.read(attendanceServiceProvider).record(AttendanceEventType.workIn, selfie: testJpeg());
     await tracker().reconcile(onDuty: true);
   }
 

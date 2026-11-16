@@ -951,5 +951,7 @@
         "type": "String"
       }
     }
-  }
+  },
+  "attendanceSelfieNeeded": "Attendance needs a photo of you. Tap again and take the photo.",
+  "attendanceSelfieHint": "The front camera opens to take your photo. Camera only."
 }

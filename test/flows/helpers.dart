@@ -1,4 +1,7 @@
+import 'dart:typed_data';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image/image.dart' as img;
 import 'package:flutter_riverpod/misc.dart' show Override, ProviderListenable;
 import 'package:staff_app/app/bootstrap.dart';
 import 'package:staff_app/core/providers.dart';
@@ -9,6 +12,9 @@ import 'package:staff_app/features/auth/auth.dart';
 import 'package:staff_app/features/auth/src/session_controller.dart' show pinHasherProvider;
 import 'package:staff_app/core/auth/pin.dart';
 import 'package:staff_app/features/onboarding/onboarding.dart';
+
+/// A small camera-like JPEG for selfie / photo tests.
+Uint8List testJpeg() => Uint8List.fromList(img.encodeJpg(img.Image(width: 64, height: 48)));
 
 /// 10:00 Dhaka on 15 Nov 2026.
 DateTime get testNow => DateTime.utc(2026, 11, 15, 4);

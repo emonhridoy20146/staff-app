@@ -27,7 +27,7 @@ Server model: `field-api/docs/06-data-model.md`. Local tables mirror the **user'
 | `attendance_day` | `business_date PK`, `status`, `first_in`, `last_out`, `break_min`, `late_min`, `breaks_json` | | computed locally, replaced by server |
 | `handovers` | `server_id PK`, `from_user_name`, `to_user_id`, `summary_json`, `status`, `expires_at`, `role` (`incoming|outgoing`) | | |
 | `media_queue` | `client_id PK`, `kind`, `local_path`, `sha256`, `size_bytes`, `captured_at`, `owner_entity`, `owner_client_id`, `server_media_id`, `state` (`pending|uploading|uploaded|confirmed|failed`), `attempts`, `next_attempt_at` | `(state, next_attempt_at)` | files under app-private dir; purged 7 days after confirm |
-| `outbox` | `mutation_id PK`, `entity`, `op`, `payload_json`, `depends_on_json`, `created_at`, `state` (`pending|sending|done|failed`), `attempts`, `next_attempt_at`, `last_error` | `(state, created_at)` | never deleted while `pending/failed`; `done` purged after 7 days |
+| `outbox` | `mutation_id PK`, `entity`, `op`, `payload_json`, `depends_on_json`, `created_at`, `state` (`held|pending|sending|done|failed`; `held` = waiting for its photo), `attempts`, `next_attempt_at`, `last_error` | `(state, created_at)` | never deleted while `pending/failed`; `done` purged after 7 days |
 | `id_map` | `client_id PK`, `entity`, `server_id` | | |
 | `sync_state` | single row: `pull_cursor`, `last_pull_at`, `last_push_at`, `server_offset_ms`, `bootstrap_done` | | |
 | `location_queue` | `id INTEGER PK AUTOINCREMENT`, `t`, `lat`, `lng`, `acc`, `spd`, `hdg`, `alt`, `act`, `bat`, `chg`, `mock` | `(t)` | cap 20,000 |

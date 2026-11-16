@@ -2791,6 +2791,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Location not approved: {reason}. Tap to send a new one.'**
   String pinRejected(String reason);
+
+  /// No description provided for @attendanceSelfieNeeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Attendance needs a photo of you. Tap again and take the photo.'**
+  String get attendanceSelfieNeeded;
+
+  /// No description provided for @attendanceSelfieHint.
+  ///
+  /// In en, this message translates to:
+  /// **'The front camera opens to take your photo. Camera only.'**
+  String get attendanceSelfieHint;
 }
 
 class _AppLocalizationsDelegate

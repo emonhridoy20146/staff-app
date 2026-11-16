@@ -26,6 +26,7 @@ Phases match `field-api/docs/09-progress.md`. Start each phase against the Prism
 | Notes, promises, local reminders | ✅ |
 | Tags (with reason), pin correction proposals | ✅ tags; pin correction in 0.3.0 (flow test + screenshots) |
 | Attendance: work-in/out, breaks, summary | ✅ |
+| Attendance photo at every event (setting `attendance.selfieEvents`) | ✅ 0.4.0, flow tests + screenshot; device camera check pending |
 | Handovers incoming/outgoing | ◐ incoming done; outgoing (P4 staff-initiated) not yet |
 | Notifications (FCM + centre), Sync centre & Problems | ◐ sync centre done; FCM not yet (needs Firebase project) |
 | Onboarding: consent, permissions primer | ✅ |

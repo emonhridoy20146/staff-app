@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../core/media/media.dart';
 import '../../../core/providers.dart';
 import '../../../core/settings/ui_prefs.dart';
 import '../../../core/theme/status_colors.dart';
@@ -23,13 +24,29 @@ DutyState dutyStateOf(AttendanceDay d) => switch (d.status) {
   _ => DutyState.off,
 };
 
-Future<void> recordAttendance(BuildContext context, WidgetRef ref, AttendanceEventType type) async {
+/// Records an attendance event; opens the front camera first when the
+/// event needs a photo (`attendance.selfieEvents`). Camera only, never the
+/// gallery. Returns false when nothing was recorded.
+Future<bool> recordAttendance(BuildContext context, WidgetRef ref, AttendanceEventType type) async {
   unawaited(HapticFeedback.mediumImpact());
-  final fix = await ref.read(locationEngineProvider).currentFix(timeout: const Duration(seconds: 10));
+  final service = ref.read(attendanceServiceProvider);
+  final l = AppLocalizations.of(context);
+  final fixFuture = ref.read(locationEngineProvider).currentFix(timeout: const Duration(seconds: 10));
+  Uint8List? selfie;
+  if (service.needsSelfie(type)) {
+    selfie = await ref.read(photoCapturerProvider).capture(context, front: true);
+    if (selfie == null) {
+      if (context.mounted) showAppSnack(context, l.attendanceSelfieNeeded, icon: Icons.photo_camera_front_rounded);
+      return false;
+    }
+  }
+  final fix = await fixFuture;
   try {
-    await ref.read(attendanceServiceProvider).record(type, fix: fix);
+    await service.record(type, fix: fix, selfie: selfie);
+    return true;
   } on InvalidAttendanceTransition {
-    if (context.mounted) showAppSnack(context, AppLocalizations.of(context).errorGeneric, icon: Icons.error_rounded);
+    if (context.mounted) showAppSnack(context, l.errorGeneric, icon: Icons.error_rounded);
+    return false;
   }
 }
 
@@ -308,6 +325,10 @@ class _WorkInScreenState extends ConsumerState<WorkInScreen> {
               ),
               const SizedBox(height: Space.s24),
               InfoBanner(icon: Icons.location_on_rounded, text: l.workInBody),
+              if (ref.read(attendanceServiceProvider).needsSelfie(AttendanceEventType.workIn)) ...[
+                const SizedBox(height: Space.s12),
+                InfoBanner(icon: Icons.photo_camera_front_rounded, text: l.attendanceSelfieHint),
+              ],
               const Spacer(),
               SizedBox(
                 height: 64,
@@ -316,8 +337,13 @@ class _WorkInScreenState extends ConsumerState<WorkInScreen> {
                       ? null
                       : () async {
                           setState(() => _busy = true);
-                          await recordAttendance(context, ref, AttendanceEventType.workIn);
-                          if (context.mounted) context.pop();
+                          final ok = await recordAttendance(context, ref, AttendanceEventType.workIn);
+                          if (!context.mounted) return;
+                          if (ok) {
+                            context.pop();
+                          } else {
+                            setState(() => _busy = false);
+                          }
                         },
                   icon: const Icon(Icons.play_arrow_rounded, size: 28),
                   label: Text(l.dutyStartWork, style: t.titleMedium!.copyWith(color: cs.onPrimary)),
@@ -399,8 +425,13 @@ class _WorkOutScreenState extends ConsumerState<WorkOutScreen> {
                   ? null
                   : () async {
                       setState(() => _busy = true);
-                      await recordAttendance(context, ref, AttendanceEventType.workOut);
-                      if (context.mounted) context.pop();
+                      final ok = await recordAttendance(context, ref, AttendanceEventType.workOut);
+                      if (!context.mounted) return;
+                      if (ok) {
+                        context.pop();
+                      } else {
+                        setState(() => _busy = false);
+                      }
                     },
               icon: const Icon(Icons.stop_circle_rounded, size: 28),
               label: Text(l.dutyEndWork),
