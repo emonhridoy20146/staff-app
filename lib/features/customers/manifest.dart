@@ -44,7 +44,12 @@ FeatureManifest customersManifest(SyncHandlerRegistry Function() registry) => Fe
               final f = ref.read(fmtProvider);
               return [
                 for (final a in rows)
-                  TimelineEntry(at: a.at, icon: callOutcomeIcon(a.outcome), title: l.timelineCall(callOutcomeLabel(l, a.outcome ?? '')), subtitle: f.dateTime(a.at)),
+                  TimelineEntry(
+                    at: a.at,
+                    icon: callOutcomeIcon(a.outcome),
+                    title: a.target == 'guarantor' ? l.timelineGuarantorCall(callOutcomeLabel(l, a.outcome ?? '')) : l.timelineCall(callOutcomeLabel(l, a.outcome ?? '')),
+                    subtitle: f.dateTime(a.at),
+                  ),
               ];
             });
           },

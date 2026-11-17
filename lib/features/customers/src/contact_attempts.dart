@@ -45,6 +45,7 @@ class ContactAttemptPullHandler implements PullHandler {
         customerId: d['customerId'] as String,
         channel: (d['channel'] as String?) ?? 'call',
         phoneIndex: Value((d['phoneIndex'] as num?)?.toInt()),
+        target: Value((d['target'] as String?) ?? 'customer'),
         at: DateTime.parse(d['at'] as String).toUtc(),
         outcome: Value(d['outcome'] as String?),
         note: Value(d['note'] as String?),
@@ -66,17 +67,23 @@ class ContactAttemptPushHandler implements PushResultHandler {
       );
 }
 
+/// Who was called (contract 1.12.0).
+enum ContactTarget { customer, guarantor }
+
 /// Records a call attempt offline-first (FR-M-014). Only the phone's index
-/// is stored and sent — never the number.
-Future<void> recordContactAttempt(Ref ref, {required String customerId, required int phoneIndex, required DateTime at, String? outcome}) async {
+/// is stored and sent — never the number. A call to the guarantor
+/// (FR-M-029) has no index: the guarantor has one phone.
+Future<void> recordContactAttempt(Ref ref, {required String customerId, int? phoneIndex, required DateTime at, String? outcome, ContactTarget target = ContactTarget.customer}) async {
   final db = ref.read(databaseProvider);
   final id = const Uuid().v7();
+  final guarantor = target == ContactTarget.guarantor;
   await db.transaction(() async {
     await db.into(db.contactAttempts).insert(ContactAttemptsCompanion.insert(
           clientId: id,
           customerId: customerId,
           channel: 'call',
-          phoneIndex: Value(phoneIndex),
+          phoneIndex: Value(guarantor ? null : phoneIndex),
+          target: Value(target.name),
           at: at,
           outcome: Value(outcome),
         ));
@@ -84,7 +91,7 @@ Future<void> recordContactAttempt(Ref ref, {required String customerId, required
       'clientId': id,
       'customerId': customerId,
       'channel': 'call',
-      'phoneIndex': phoneIndex,
+      if (guarantor) 'target': 'guarantor' else 'phoneIndex': phoneIndex ?? 0,
       'at': at.toIso8601String(),
       'outcome': ?outcome,
     });
@@ -97,8 +104,8 @@ final contactAttemptServiceProvider = Provider<ContactAttemptService>(ContactAtt
 class ContactAttemptService {
   ContactAttemptService(this._ref);
   final Ref _ref;
-  Future<void> record({required String customerId, required int phoneIndex, required DateTime at, String? outcome}) =>
-      recordContactAttempt(_ref, customerId: customerId, phoneIndex: phoneIndex, at: at, outcome: outcome);
+  Future<void> record({required String customerId, int? phoneIndex, required DateTime at, String? outcome, ContactTarget target = ContactTarget.customer}) =>
+      recordContactAttempt(_ref, customerId: customerId, phoneIndex: phoneIndex, at: at, outcome: outcome, target: target);
 }
 
 Stream<List<ContactAttemptRow>> watchContactAttempts(AppDatabase db, String customerId) =>
@@ -116,6 +123,21 @@ Future<void> callAndLog(BuildContext context, WidgetRef ref, {required String cu
     builder: (_) => const _OutcomeSheet(),
   );
   await ref.read(contactAttemptServiceProvider).record(customerId: customerId, phoneIndex: index, at: at, outcome: outcome);
+  if (context.mounted && outcome != null) showAppSnack(context, AppLocalizations.of(context).callSaved);
+}
+
+/// One tap calls the guarantor (FR-M-029); logged like a customer call with
+/// `target: guarantor`, never with the number.
+Future<void> callGuarantorAndLog(BuildContext context, WidgetRef ref, {required String customerId, required String phone}) async {
+  final at = ref.read(clockProvider).nowUtc();
+  await launchCall(phone);
+  if (!context.mounted) return;
+  final outcome = await showModalBottomSheet<String>(
+    context: context,
+    useSafeArea: true,
+    builder: (_) => const _OutcomeSheet(),
+  );
+  await ref.read(contactAttemptServiceProvider).record(customerId: customerId, at: at, outcome: outcome, target: ContactTarget.guarantor);
   if (context.mounted && outcome != null) showAppSnack(context, AppLocalizations.of(context).callSaved);
 }
 

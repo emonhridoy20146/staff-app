@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Howlader Field Operations API
-  version: 1.11.0
+  version: 1.12.0
   description: |
     Contract owned by field-api. Consumers (admin-web, staff-app) generate types from this file.
     Conventions (auth, pagination, idempotency, errors) are described in docs/05-api-contract.md.
@@ -399,15 +399,27 @@ paths:
     get:
       tags: [system]
       operationId: listHolidays
-      parameters: [ { name: year, in: query, schema: { type: integer } } ]
+      description: 'Any signed-in user. Sorted by date. `branchId` (1.12.0) keeps national holidays and that branch''s own.'
+      parameters: [ { name: year, in: query, schema: { type: integer, minimum: 2000, maximum: 2100 } }, { name: branchId, in: query, schema: { type: string } } ]
       responses:
         '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/Holiday' } } } } }
     post:
       tags: [system]
       operationId: createHoliday
-      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/Holiday' } } } }
+      description: 'settings.manage. A `branch` holiday names its branches, a `national` one has none (400 otherwise). The same date for an overlapping set of branches answers 409 INVALID_STATE `HOLIDAY_EXISTS` (1.12.0). Audited.'
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/HolidayCreate' } } } }
       responses:
-        '201': { description: Created }
+        '201': { description: Created, content: { application/json: { schema: { $ref: '#/components/schemas/Holiday' } } } }
+        '409': { $ref: '#/components/responses/Problem' }
+  /calendar/holidays/{id}:
+    delete:
+      tags: [system]
+      operationId: deleteHoliday
+      description: 'settings.manage (1.12.0). Removes a holiday entered by mistake; audited as `holiday.deleted`. Attendance days already finalised are not re-derived.'
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      responses:
+        '204': { description: Deleted }
+        '404': { $ref: '#/components/responses/Problem' }
   /shifts:
     get:
       tags: [system]
@@ -1161,6 +1173,13 @@ paths:
       operationId: myAttendanceToday
       responses:
         '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/AttendanceDay' } } } }
+  /attendance/me/shift:
+    get:
+      tags: [attendance]
+      operationId: myShift
+      description: 'attendance.record (1.12.0). The caller''s shift: their own if assigned, else the branch default (`id: default`). Weekly off days are 0 = Sunday … 6 = Saturday.'
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Shift' } } } }
   /attendance/days:
     get:
       tags: [attendance]
@@ -1190,7 +1209,12 @@ paths:
     get:
       tags: [attendance]
       operationId: listLeave
-      parameters: [ { $ref: '#/components/parameters/BranchId' }, { name: status, in: query, schema: { type: string, enum: [pending, approved, rejected] } } ]
+      parameters:
+        - $ref: '#/components/parameters/BranchId'
+        - { name: status, in: query, schema: { type: string, enum: [pending, approved, rejected, cancelled] } }
+        - { name: userId, in: query, description: 'attendance.manage only (1.12.0); ignored for staff', schema: { type: string } }
+        - { name: from, in: query, description: 'Requests overlapping from..to (1.12.0)', schema: { type: string, format: date } }
+        - { name: to, in: query, schema: { type: string, format: date } }
       responses:
         '200': { description: 'OK. Staff see their own; attendance.manage sees its branches. Newest first, max 300, no cursor (1.4.0)', content: { application/json: { schema: { type: object, properties: { items: { type: array, items: { $ref: '#/components/schemas/LeaveRequest' } } } } } } }
     post:
@@ -1200,17 +1224,30 @@ paths:
         required: true
         content:
           application/json:
-            schema: { type: object, required: [type, from, to], properties: { type: { type: string, enum: [casual, sick, other] }, from: { type: string, format: date }, to: { type: string, format: date }, reason: { type: string } } }
+            schema: { type: object, required: [type, from, to], properties: { type: { type: string, enum: [casual, sick, other] }, from: { type: string, format: date }, to: { type: string, format: date }, reason: { type: string, maxLength: 500 } } }
       responses:
-        '201': { description: Created }
+        '201': { description: Created, content: { application/json: { schema: { $ref: '#/components/schemas/LeaveRequest' } } } }
+        '409': { description: 'INVALID_STATE `LEAVE_OVERLAPS` (a pending or approved request covers one of the days)', content: { application/problem+json: { schema: { $ref: '#/components/schemas/Problem' } } } }
+        '422': { description: 'BUSINESS_RULE `LEAVE_TOO_LONG` (more than 31 days)', content: { application/problem+json: { schema: { $ref: '#/components/schemas/Problem' } } } }
   /leave-requests/{id}/decision:
     post:
       tags: [attendance]
       operationId: decideLeave
+      description: 'attendance.manage, in branch scope. Rejecting needs a reason (≥ 5 characters, 422 `REASON_REQUIRED`); nobody decides their own (422 `CANNOT_DECIDE_OWN_LEAVE`); a decided request answers 409 `ALREADY_DECIDED`.'
       parameters: [ { $ref: '#/components/parameters/Id' } ]
       requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/Decision' } } } }
       responses:
-        '200': { description: OK }
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/LeaveRequest' } } } }
+  /leave-requests/{id}/cancel:
+    post:
+      tags: [attendance]
+      operationId: cancelLeave
+      description: 'leave.request (1.12.0). The requester withdraws their own pending request (e.g. to fix the dates). Repeating it answers the cancelled request; a decided one answers 409 `ALREADY_DECIDED`; someone else''s 404.'
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/LeaveRequest' } } } }
+        '404': { $ref: '#/components/responses/Problem' }
+        '409': { $ref: '#/components/responses/Problem' }
 
   /location/points:
     post:
@@ -1323,8 +1360,10 @@ paths:
     get:
       tags: [notifications]
       operationId: listBroadcasts
+      description: 'Holders of notification.broadcast see what they sent or what went to their branches; everyone else sees broadcasts addressed to them. Newest first.'
+      parameters: [ { $ref: '#/components/parameters/Limit' }, { $ref: '#/components/parameters/Cursor' } ]
       responses:
-        '200': { description: 'OK (declared in 1.4.0; server implementation pending)', content: { application/json: { schema: { type: object, properties: { items: { type: array, items: { $ref: '#/components/schemas/Broadcast' } }, nextCursor: { type: [string, 'null'] } } } } } }
+        '200': { description: OK, content: { application/json: { schema: { type: object, properties: { items: { type: array, items: { $ref: '#/components/schemas/Broadcast' } }, nextCursor: { type: [string, 'null'] } } } } } }
     post:
       tags: [notifications]
       operationId: createBroadcast
@@ -1335,13 +1374,24 @@ paths:
             schema: { type: object, required: [title, body], properties: { branchIds: { type: array, items: { type: string } }, roles: { type: array, items: { $ref: '#/components/schemas/Role' } }, title: { $ref: '#/components/schemas/I18nText' }, body: { $ref: '#/components/schemas/I18nText' }, requireAck: { type: boolean } } }
       responses:
         '201': { description: Created, content: { application/json: { schema: { $ref: '#/components/schemas/Broadcast' } } } }
+  /broadcasts/{id}/recipients:
+    get:
+      tags: [notifications]
+      operationId: listBroadcastRecipients
+      description: 'notification.broadcast (1.12.0), same scope as the sender''s list (else 404). Everyone it went to and whether they read it; not read first.'
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/BroadcastRecipients' } } } }
+        '404': { $ref: '#/components/responses/Problem' }
   /broadcasts/{id}/ack:
     post:
       tags: [notifications]
       operationId: ackBroadcast
+      description: 'A recipient read it ("পড়েছি"). Idempotent; the first time counts. Offline phones use the sync mutation `broadcast_ack` (1.12.0).'
       parameters: [ { $ref: '#/components/parameters/Id' } ]
       responses:
         '204': { description: OK }
+        '404': { $ref: '#/components/responses/Problem' }
 
   /inbox:
     get:
@@ -1635,9 +1685,14 @@ components:
     FeatureFlag:
       type: object
       properties: { key: { type: string }, defaultEnabled: { type: boolean }, branchOverrides: { type: array, items: { type: object, properties: { branchId: { type: string }, enabled: { type: boolean } } } }, description: { type: string }, owner: { type: string }, reviewBy: { type: string }, lockedReason: { type: string } }
+    HolidayCreate:
+      type: object
+      required: [date, name]
+      properties: { date: { type: string, format: date }, name: { $ref: '#/components/schemas/I18nText' }, branchIds: { type: array, items: { type: string } }, type: { type: string, enum: [national, branch], default: national } }
     Holiday:
       type: object
-      properties: { date: { type: string, format: date }, name: { $ref: '#/components/schemas/I18nText' }, branchIds: { type: array, items: { type: string } }, type: { type: string, enum: [national, branch] } }
+      description: '`id` since 1.12.0.'
+      properties: { id: { type: string }, date: { type: string, format: date }, name: { $ref: '#/components/schemas/I18nText' }, branchIds: { type: array, items: { type: string } }, type: { type: string, enum: [national, branch] } }
     Shift:
       type: object
       properties: { id: { type: string }, name: { type: string }, start: { type: string, example: '09:00' }, end: { type: string, example: '18:00' }, weeklyOff: { type: array, items: { type: integer } }, lateGraceMin: { type: integer }, maxBreakMin: { type: integer } }
@@ -1994,14 +2049,27 @@ components:
       properties: { userId: { type: string }, userName: { type: string }, present: { type: integer }, late: { type: integer }, absent: { type: integer }, leave: { type: integer }, holiday: { type: integer }, weeklyOff: { type: integer }, lateMin: { type: integer }, breakMin: { type: integer }, dutyMin: { type: integer }, overBreakDays: { type: integer } }
     LeaveRequest:
       type: object
-      properties: { id: { type: string }, userId: { type: string }, userName: { type: string }, type: { type: string, enum: [casual, sick, other] }, from: { type: string, format: date }, to: { type: string, format: date }, reason: { type: string }, status: { type: string, enum: [pending, approved, rejected] }, decidedBy: { type: string }, decidedAt: { type: string, format: date-time }, createdAt: { type: string, format: date-time } }
+      description: '1.12.0 adds `branchId`, `days`, `decisionReason`, `cancelledAt` and status `cancelled`.'
+      properties: { id: { type: string }, userId: { type: string }, userName: { type: string }, branchId: { type: [string, 'null'] }, type: { type: string, enum: [casual, sick, other] }, from: { type: string, format: date }, to: { type: string, format: date }, days: { type: integer, description: 'Calendar days from..to, both included' }, reason: { type: string }, status: { type: string, enum: [pending, approved, rejected, cancelled] }, decidedBy: { type: string }, decidedAt: { type: string, format: date-time }, decisionReason: { type: string }, cancelledAt: { type: string, format: date-time }, createdAt: { type: string, format: date-time } }
     Notification:
       type: object
       description: 'Declared in 1.5.0. `data` holds ids for deep links only.'
       properties: { id: { type: string }, type: { type: string, example: promise.due }, title: { $ref: '#/components/schemas/I18nText' }, body: { $ref: '#/components/schemas/I18nText' }, data: { type: object, additionalProperties: { type: string } }, read: { type: boolean }, readAt: { type: string, format: date-time }, createdAt: { type: string, format: date-time } }
     Broadcast:
       type: object
-      properties: { id: { type: string }, title: { $ref: '#/components/schemas/I18nText' }, body: { $ref: '#/components/schemas/I18nText' }, branchIds: { type: array, items: { type: string } }, roles: { type: array, items: { $ref: '#/components/schemas/Role' } }, requireAck: { type: boolean }, createdBy: { type: object, properties: { id: { type: string }, name: { type: string } } }, createdAt: { type: string, format: date-time }, recipientCount: { type: integer }, ackCount: { type: integer }, acked: { type: boolean, description: 'Whether the caller acknowledged it' } }
+      properties: { id: { type: string }, title: { $ref: '#/components/schemas/I18nText' }, body: { $ref: '#/components/schemas/I18nText' }, branchIds: { type: array, items: { type: string } }, roles: { type: array, items: { $ref: '#/components/schemas/Role' } }, requireAck: { type: boolean }, createdBy: { type: object, properties: { id: { type: string }, name: { type: string } } }, createdAt: { type: string, format: date-time }, recipientCount: { type: integer }, ackCount: { type: integer }, acked: { type: boolean, description: 'Whether the caller acknowledged it' }, ackedAt: { type: string, format: date-time, description: 'When the caller acknowledged it (1.12.0)' } }
+    BroadcastRecipients:
+      type: object
+      description: 1.12.0
+      properties:
+        broadcastId: { type: string }
+        recipientCount: { type: integer }
+        ackCount: { type: integer }
+        items:
+          type: array
+          items:
+            type: object
+            properties: { userId: { type: string }, name: { $ref: '#/components/schemas/I18nText' }, employeeCode: { type: string }, branchId: { type: [string, 'null'] }, role: { $ref: '#/components/schemas/Role' }, acked: { type: boolean }, ackedAt: { type: string, format: date-time } }
     AttendanceDay:
       type: object
       properties:
@@ -2062,7 +2130,7 @@ components:
       required: [mutationId, entity, op, payload]
       properties:
         mutationId: { type: string, format: uuid }
-        entity: { type: string, enum: [visit, collection, note, promise, promise_cancel, deposit, attendance_event, tag, location_proposal, visit_checkout, handover_decision, cash_closing, contact_attempt] }
+        entity: { type: string, enum: [visit, collection, note, promise, promise_cancel, deposit, attendance_event, tag, location_proposal, visit_checkout, handover_decision, cash_closing, contact_attempt, broadcast_ack] }
         op: { type: string, enum: [create, update] }
         payload:
           type: object
@@ -2077,6 +2145,7 @@ components:
             visit_checkout → { visitId | visitClientId, checkOutAt, outcome? } · promise_cancel → { promiseId, reason } ·
             cash_closing → { businessDate, note? } · handover_decision → { handoverId, decision: accept|reject, reason? (required to reject) } ·
             tag payload may carry `ifMatch` (customer version).
+            1.12.0: broadcast_ack → { broadcastId, at? } (when the staff tapped "read"; kept between sending and now).
             Every mutation is idempotent by mutationId; the same id with a different payload is rejected with IDEMPOTENCY_MISMATCH.
         createdAt: { type: string, format: date-time }
     SyncPushRequest:
@@ -2131,6 +2200,7 @@ components:
         clientId: { type: string, format: uuid }
         customerId: { type: string }
         channel: { type: string, enum: [call, sms, whatsapp] }
+        target: { type: string, enum: [customer, guarantor], default: customer, description: 'Who was contacted (1.12.0); for the guarantor phoneIndex is not used' }
         phoneIndex: { type: integer, minimum: 0, description: 'Index into customer phones (never the number itself)' }
         at: { type: string, format: date-time }
         durationSec: { type: [integer, 'null'] }

@@ -29,6 +29,10 @@ class Customer {
   List<String> get phones => (jsonDecode(row.phonesJson) as List).cast<String>();
   bool get tagged => row.tagState == 'tagged';
 
+  /// The guarantor from the ERP (name and phone), or null when the ERP has
+  /// neither. Kept on the phone with the customer, so it shows offline.
+  Guarantor? get guarantor => Guarantor.parse(row.guarantorJson);
+
   bool promisedOn(String today) => row.openPromiseDate == today;
 
   Customer withDistance(int? d) => Customer(row, distanceM: d);
@@ -52,6 +56,25 @@ class Customer {
     if (row.daysOverdue > 0) return AppStatus.overdue;
     if (outstanding <= 0) return AppStatus.paid;
     return AppStatus.current;
+  }
+}
+
+/// Guarantor of a customer's plan (ERP data, read only).
+class Guarantor {
+  const Guarantor({required this.name, required this.phone});
+  final String name;
+  final String phone;
+
+  bool get canCall => phone.replaceAll(RegExp(r'[^0-9+]'), '').length >= 6;
+
+  static Guarantor? parse(String? json) {
+    if (json == null || json.isEmpty) return null;
+    final m = jsonDecode(json);
+    if (m is! Map) return null;
+    final name = ((m['name'] as String?) ?? '').trim();
+    final phone = ((m['phone'] as String?) ?? '').trim();
+    if (name.isEmpty && phone.isEmpty) return null;
+    return Guarantor(name: name, phone: phone);
   }
 }
 

@@ -4,7 +4,7 @@ import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:staff_app/core/db/app_database.dart';
 
-/// Every released schema upgrades to the current one (v5, 0.8.0) and
+/// Every released schema upgrades to the current one (v6, 0.9.0) and
 /// existing rows survive.
 void main() {
   test('migrates a 0.1.0 database to the current schema without losing outbox rows', () async {
@@ -14,6 +14,7 @@ void main() {
     // Build a v1-shaped file: current schema minus what v2 added.
     final v1 = AppDatabase(NativeDatabase(file));
     await v1.customStatement('SELECT 1');
+    await v1.customStatement('DROP TABLE broadcasts');
     await v1.customStatement('ALTER TABLE location_proposals DROP COLUMN method');
     await v1.customStatement('ALTER TABLE location_proposals DROP COLUMN device_geo_json');
     await v1.customStatement('DROP TABLE contact_attempts');
@@ -31,7 +32,7 @@ void main() {
     await v1.close();
 
     final v2 = AppDatabase(NativeDatabase(file));
-    expect(v2.schemaVersion, 5);
+    expect(v2.schemaVersion, 6);
     expect(await v2.select(v2.coworkSessions).get(), isEmpty);
     final props = await v2.select(v2.locationProposals).get();
     expect(props.single.decisionReason, isNull);
@@ -50,6 +51,8 @@ void main() {
     final file = File('${dir.path}/app.db');
     final v2 = AppDatabase(NativeDatabase(file));
     await v2.customStatement('SELECT 1');
+    await v2.customStatement('DROP TABLE broadcasts');
+    await v2.customStatement('ALTER TABLE contact_attempts DROP COLUMN target');
     await v2.customStatement('ALTER TABLE location_proposals DROP COLUMN method');
     await v2.customStatement('ALTER TABLE location_proposals DROP COLUMN device_geo_json');
     await v2.customStatement('ALTER TABLE location_proposals DROP COLUMN decision_reason');
@@ -75,6 +78,8 @@ void main() {
     final file = File('${dir.path}/app.db');
     final v3 = AppDatabase(NativeDatabase(file));
     await v3.customStatement('SELECT 1');
+    await v3.customStatement('DROP TABLE broadcasts');
+    await v3.customStatement('ALTER TABLE contact_attempts DROP COLUMN target');
     await v3.customStatement('ALTER TABLE location_proposals DROP COLUMN method');
     await v3.customStatement('ALTER TABLE location_proposals DROP COLUMN device_geo_json');
     await v3.customStatement('DROP TABLE cowork_sessions');
@@ -104,6 +109,8 @@ void main() {
     final file = File('${dir.path}/app.db');
     final v4 = AppDatabase(NativeDatabase(file));
     await v4.customStatement('SELECT 1');
+    await v4.customStatement('DROP TABLE broadcasts');
+    await v4.customStatement('ALTER TABLE contact_attempts DROP COLUMN target');
     await v4.customStatement('ALTER TABLE location_proposals DROP COLUMN method');
     await v4.customStatement('ALTER TABLE location_proposals DROP COLUMN device_geo_json');
     await v4.customStatement(
@@ -121,6 +128,31 @@ void main() {
     expect(p.accuracyM, 9);
     expect((await v5.select(v5.outbox).get()).single.mutationId, 'p-4');
     await v5.close();
+    await dir.delete(recursive: true);
+  });
+
+  test('migrates a 0.8.0 (schema 5) database: notices table and call target, old calls were to the customer', () async {
+    final dir = await Directory.systemTemp.createTemp('mig5');
+    final file = File('${dir.path}/app.db');
+    final v5 = AppDatabase(NativeDatabase(file));
+    await v5.customStatement('SELECT 1');
+    await v5.customStatement('DROP TABLE broadcasts');
+    await v5.customStatement('ALTER TABLE contact_attempts DROP COLUMN target');
+    await v5.customStatement(
+        "INSERT INTO contact_attempts (client_id, customer_id, channel, at, phone_index, sync_state) VALUES ('ca-5', 'c-5', 'call', 0, 1, 'queued')");
+    await v5.customStatement(
+        "INSERT INTO outbox (mutation_id, entity, op, payload_json, created_at) VALUES ('ca-5', 'contact_attempt', 'create', '{}', 0)");
+    await v5.customStatement('PRAGMA user_version = 5');
+    await v5.close();
+
+    final v6 = AppDatabase(NativeDatabase(file));
+    final a = (await v6.select(v6.contactAttempts).get()).single;
+    expect(a.clientId, 'ca-5');
+    expect(a.target, 'customer');
+    expect(a.phoneIndex, 1);
+    expect(await v6.select(v6.broadcasts).get(), isEmpty);
+    expect((await v6.select(v6.outbox).get()).single.mutationId, 'ca-5');
+    await v6.close();
     await dir.delete(recursive: true);
   });
 }

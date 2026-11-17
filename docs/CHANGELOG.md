@@ -1,5 +1,16 @@
 # Changelog — staff-app
 
+## [0.9.0] — 2026-11-17
+### Added
+- Contract pinned to field-api 1.12.0 (leave cancel and filters, holiday ids, my shift, broadcast `ackedAt` and recipients, `broadcast_ack` mutation, contact attempt `target`; field-api PR #9, merge 8a57b85).
+- Notices from the office (FR-M-027, master FR-NOT-005, owner request 2026-11-17), flag `module.notifications`: notices arrive with every pull (entity `broadcast`) and are kept on the phone. `/notices` lists them newest first with a read state chip (colour + icon + label: must read, unread, read); `/notices/:id` shows the whole notice in the user's language and a "পড়েছি" (I have read it) button. The tap is saved at once and sent as the `broadcast_ack` mutation with the tap time, so it works offline; until the server confirms it the screen says "read, will be sent". A pull that has not seen the tap yet keeps it. Today shows a banner while a must-read notice is not read; the Me tab shows the unread count.
+- Leave, holidays and my shift (FR-M-028, master FR-ATT-008 / FR-SET-002 / FR-SET-003), on the attendance flag: Me → "Leave" lists my requests with status (pending, approved, rejected with the manager's reason, withdrawn) and lets me withdraw a pending one; "Ask for leave" (casual, sick, other; from, to, reason) checks the dates before sending (end before start, more than 31 days, overlap with a pending or approved request) and shows the server's answers (overlap, too long, already decided). "Work calendar" shows this year's holidays for my branch (national or branch only) and my shift (hours, weekly off, late grace). Asking and withdrawing need the network (ADR-M08 exception, see decisions); the last answers are kept and shown offline with their time.
+- Guarantor (FR-M-029): the customer page shows the guarantor's name and phone from the ERP data on the phone, with a one-tap call. After the call the same outcome sheet as customer calls appears and the attempt is logged offline as a `contact_attempt` with `target: guarantor` (no phone index; the number is never stored or sent). The customer timeline says "Called the guarantor".
+- Database schema 6: table `broadcasts`; `contact_attempts.target` (default `customer`, so older calls stay customer calls). Migration tests from schema 1, 2, 3, 4 and 5.
+- Demo API: two notices (one must-read), an approved leave, the 1.12.0 leave rules (overlap, 31 days, cancel only while pending), branch and national holidays, my shift, and the `broadcast_ack` mutation.
+### Changed
+- Tests: notices, leave and guarantor flow tests (offline read sent later with the tap time, Today banner until read, new notice on the next sync, ask / overlap / withdraw / decided, offline cache with time, form rules, holidays and shift cached, guarantor parsing, guarantor call payload without the number).
+
 ## [0.8.0] — 2026-11-17
 ### Added
 - Contract pinned to field-api 1.11.0 (map pins, `customers.staffPinApproval`; field-api PR #8, merge d5a0123).

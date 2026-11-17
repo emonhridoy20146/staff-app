@@ -24,6 +24,7 @@ class FakeFieldApi implements HttpClientAdapter {
     for (final c in seed.customers()) {
       _log.add(_Change('customer', c['id'] as String, 'upsert', c));
     }
+    _seedNoticesAndLeave();
   }
 
   final Clock clock;
@@ -124,6 +125,103 @@ class FakeFieldApi implements HttpClientAdapter {
         'cowork.visitCredit': 1.0,
         'location.sampling': {'fastSec': 15, 'slowSec': 45, 'stillSec': 180, 'distanceFilterM': 25, 'maxAccuracyM': 50},
       };
+
+  // ── notices, leave, holidays, my shift (contract 1.12.0) ────────────────
+
+  /// broadcast id → acked by me at (tests read it).
+  final noticeAcks = <String, String>{};
+  final _notices = <String, Json>{};
+  final _leave = <Json>[];
+  var _leaveSeq = 0;
+
+  /// The office's holiday calendar (national + branch `br-01` / `br-02`).
+  final holidays = <Json>[
+    {'id': 'h-1', 'date': '2026-12-16', 'name': {'bn': 'বিজয় দিবস', 'en': 'Victory Day'}, 'branchIds': <String>[], 'type': 'national'},
+    {'id': 'h-2', 'date': '2026-12-25', 'name': {'bn': 'বড়দিন', 'en': 'Christmas Day'}, 'branchIds': <String>[], 'type': 'national'},
+    {'id': 'h-3', 'date': '2026-11-26', 'name': {'bn': 'শাখার বার্ষিক সভা', 'en': 'Branch annual meeting'}, 'branchIds': ['br-01'], 'type': 'branch'},
+    {'id': 'h-4', 'date': '2026-11-28', 'name': {'bn': 'অন্য শাখার ছুটি', 'en': 'Another branch holiday'}, 'branchIds': ['br-02'], 'type': 'branch'},
+    {'id': 'h-5', 'date': '2026-03-26', 'name': {'bn': 'স্বাধীনতা দিবস', 'en': 'Independence Day'}, 'branchIds': <String>[], 'type': 'national'},
+    {'id': 'h-6', 'date': '2027-02-21', 'name': {'bn': 'শহীদ দিবস', 'en': 'Language Martyrs Day'}, 'branchIds': <String>[], 'type': 'national'},
+  ];
+
+  Json myShift = const {'id': 'sh-day', 'name': 'দিনের শিফট', 'start': '09:00', 'end': '18:00', 'weeklyOff': [5], 'lateGraceMin': 15, 'maxBreakMin': 60};
+
+  String _ymdPlus(int days) {
+    final d = parseBusinessDate(clock.businessDate()).add(Duration(days: days));
+    return '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+  }
+
+  void _seedNoticesAndLeave() {
+    final now = clock.nowUtc();
+    addNotice(
+      'bc-1',
+      title: {'bn': 'নতুন নিয়ম: রসিদ ছাড়া টাকা নয়', 'en': 'New rule: no money without a receipt'},
+      body: {
+        'bn': 'আজ থেকে কোনো কিস্তির টাকা নিলে সাথে সাথে অ্যাপে রসিদ দিন। রসিদ ছাড়া টাকা নিলে তা গ্রহণযোগ্য হবে না। প্রশ্ন থাকলে শাখা ম্যানেজারকে ফোন করুন।',
+        'en': 'From today, record a receipt in the app as soon as you take any installment. Money taken without a receipt will not be accepted. Call your branch manager with questions.',
+      },
+      requireAck: true,
+      at: now.subtract(const Duration(hours: 1)),
+    );
+    addNotice(
+      'bc-2',
+      title: {'bn': 'বৃহস্পতিবার শাখা মিটিং', 'en': 'Branch meeting on Thursday'},
+      body: {'bn': 'বৃহস্পতিবার বিকাল ৫টায় শাখা অফিসে মাসিক মিটিং হবে।', 'en': 'The monthly meeting is at the branch office on Thursday at 5 pm.'},
+      at: now.subtract(const Duration(days: 1, hours: 3)),
+    );
+    _leave.add({
+      'id': 'lv-${++_leaveSeq}', 'userId': user['id'], 'branchId': 'br-01', 'type': 'casual', 'from': _ymdPlus(12), 'to': _ymdPlus(13), 'days': 2,
+      'reason': 'ভাইয়ের বিয়ে', 'status': 'approved', 'decidedBy': 'u-bm-001', 'decidedAt': now.subtract(const Duration(days: 2)).toIso8601String(),
+      'createdAt': now.subtract(const Duration(days: 4)).toIso8601String(),
+    });
+  }
+
+  /// Tests / demo: the office sends a notice.
+  void addNotice(String id, {required Json title, required Json body, bool requireAck = false, DateTime? at}) {
+    final b = {
+      'id': id, 'title': title, 'body': body, 'branchIds': ['br-01'], 'roles': ['field_staff'], 'requireAck': requireAck,
+      'createdBy': {'id': 'u-bm-001', 'name': 'মোস্তফা কামাল'}, 'createdAt': (at ?? clock.nowUtc()).toIso8601String(),
+      'recipientCount': 12, 'ackCount': 0, 'acked': false,
+    };
+    _notices[id] = b;
+    serverChange('broadcast', id, b);
+  }
+
+  /// Tests / demo: the manager decides a leave request.
+  void decideLeave(String id, {required bool approve, String? reason}) {
+    final i = _leave.indexWhere((l) => l['id'] == id);
+    _leave[i] = {..._leave[i], 'status': approve ? 'approved' : 'rejected', 'decidedBy': 'u-bm-001', 'decidedAt': clock.nowUtc().toIso8601String(), 'decisionReason': ?reason};
+  }
+
+  Object _leaveRoute(String method, String path, Object? body) {
+    if (method == 'GET') return {'items': _leave.reversed.toList()};
+    if (method == 'POST' && path == '/leave-requests') {
+      final b = body! as Json;
+      final from = b['from'] as String, to = b['to'] as String;
+      if (to.compareTo(from) < 0) return (400, _problem(400, 'VALIDATION_FAILED', 'to before from'));
+      final days = daysBetween(from, to) + 1;
+      if (days > 31) return (422, {..._problem(422, 'BUSINESS_RULE', 'Too long'), 'details': {'rule': 'LEAVE_TOO_LONG', 'maxDays': 31}});
+      final clash = _leave.any((l) => (l['status'] == 'pending' || l['status'] == 'approved') && (l['from'] as String).compareTo(to) <= 0 && (l['to'] as String).compareTo(from) >= 0);
+      if (clash) return (409, {..._problem(409, 'INVALID_STATE', 'Overlaps'), 'details': {'reason': 'LEAVE_OVERLAPS'}});
+      final r = <String, dynamic>{
+        'id': 'lv-${++_leaveSeq}', 'userId': user['id'], 'branchId': 'br-01', 'type': b['type'], 'from': from, 'to': to, 'days': days,
+        'reason': b['reason'] ?? '', 'status': 'pending', 'createdAt': clock.nowUtc().toIso8601String(),
+      };
+      _leave.add(r);
+      return (201, r);
+    }
+    final m = RegExp(r'^/leave-requests/([^/]+)/cancel$').firstMatch(path);
+    if (m != null && method == 'POST') {
+      final i = _leave.indexWhere((l) => l['id'] == m.group(1));
+      if (i < 0) return (404, _problem(404, 'NOT_FOUND', 'No such request'));
+      final l = _leave[i];
+      if (l['status'] == 'cancelled') return l;
+      if (l['status'] != 'pending') return (409, {..._problem(409, 'INVALID_STATE', 'Decided'), 'details': {'reason': 'ALREADY_DECIDED'}});
+      _leave[i] = {...l, 'status': 'cancelled', 'cancelledAt': clock.nowUtc().toIso8601String()};
+      return _leave[i];
+    }
+    return (404, _problem(404, 'NOT_FOUND', 'No route'));
+  }
 
   /// Simulates an office-side change (e.g. a new handover) for demos/tests.
   void serverChange(String entity, String id, Json data, {String op = 'upsert'}) =>
@@ -429,6 +527,20 @@ class FakeFieldApi implements HttpClientAdapter {
           if (r is (int, Json)) return _json(r.$1, r.$2);
           return _json(200, r);
         }
+        if (path.startsWith('/leave-requests')) {
+          final r = _leaveRoute(o.method, path, body);
+          if (r is (int, Json)) return _json(r.$1, r.$2);
+          return _json(200, r);
+        }
+        if (o.method == 'GET' && path == '/calendar/holidays') {
+          final year = '${o.queryParameters['year']}';
+          final branch = o.queryParameters['branchId'] as String?;
+          return _json(200, [
+            for (final h in holidays)
+              if ((h['date'] as String).startsWith('$year-') && (branch == null || (h['branchIds'] as List).isEmpty || (h['branchIds'] as List).contains(branch))) h,
+          ]..sort((a, b) => (a['date'] as String).compareTo(b['date'] as String)));
+        }
+        if (o.method == 'GET' && path == '/attendance/me/shift') return _json(200, myShift);
         if (path.startsWith('/cowork/')) {
           final r = _coworkRoute(o.method, path, body);
           if (r is (int, Json)) return _json(r.$1, r.$2);
@@ -612,6 +724,8 @@ class FakeFieldApi implements HttpClientAdapter {
             'message': {'bn': 'এই কিস্তি অফিসে আগেই জমা হয়েছে', 'en': 'This installment was already paid at the office'},
           },
         };
+      } else if (entity == 'broadcast_ack' && !_notices.containsKey(payload['broadcastId'])) {
+        r = {'mutationId': id, 'result': 'rejected', 'error': _problem(404, 'NOT_FOUND', 'No such broadcast')};
       } else if (entity == 'collection' && (payload['amountPoisha'] as int? ?? 0) <= 0) {
         r = {
           'mutationId': id,
@@ -624,6 +738,14 @@ class FakeFieldApi implements HttpClientAdapter {
         if (entity == 'collection') _collectedToday += payload['amountPoisha'] as int;
         if (entity == 'deposit') _cashOnHand -= payload['amountPoisha'] as int;
         if (entity == 'attendance_event' && payload['type'] == 'work_out') _leaveCoworkOnWorkOut();
+        if (entity == 'broadcast_ack') {
+          final bid = payload['broadcastId'] as String;
+          final at = noticeAcks[bid] ??= (payload['at'] as String?) ?? clock.nowUtc().toIso8601String();
+          final b = {..._notices[bid]!, 'acked': true, 'ackedAt': at};
+          _notices[bid] = b;
+          serverChange('broadcast', bid, b);
+          r = {...r, 'entityId': bid};
+        }
         if (entity == 'visit' && m['op'] == 'create' && payload['coWorkSessionId'] != null) {
           // Server works out who took part (1.9.0): accepted members at check-in.
           final me = user['id']! as String;

@@ -38,6 +38,7 @@ part 'app_database.g.dart';
     LocationQueue,
     ContactAttempts,
     CoworkSessions,
+    Broadcasts,
     Notifications,
     KvSettings,
   ],
@@ -46,7 +47,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -94,6 +95,12 @@ class AppDatabase extends _$AppDatabase {
           if (from < 5) {
             await m.addColumn(locationProposals, locationProposals.method);
             await m.addColumn(locationProposals, locationProposals.deviceGeoJson);
+          }
+          // v6 (0.9.0, contract 1.12.0): notices from the office; who a call was to.
+          if (from < 6) {
+            await m.createTable(broadcasts);
+            // A v1 file got contact_attempts from the v2 step above, already with the column.
+            if (from >= 2) await m.addColumn(contactAttempts, contactAttempts.target);
           }
         },
         beforeOpen: (details) async {

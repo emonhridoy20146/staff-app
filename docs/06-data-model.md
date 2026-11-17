@@ -32,12 +32,13 @@ Server model: `field-api/docs/06-data-model.md`. Local tables mirror the **user'
 | `id_map` | `client_id PK`, `entity`, `server_id` | | |
 | `sync_state` | single row: `pull_cursor`, `last_pull_at`, `last_push_at`, `server_offset_ms`, `bootstrap_done` | | |
 | `location_queue` | `id INTEGER PK AUTOINCREMENT`, `t`, `lat`, `lng`, `acc`, `spd`, `hdg`, `alt`, `act`, `bat`, `chg`, `mock` | `(t)` | cap 20,000 |
-| `contact_attempts` (v2) | `client_id PK`, `server_id`, `customer_id`, `channel` (`call`), `phone_index`, `at`, `outcome`, `sync_state` | | phone number never stored |
+| `contact_attempts` (v2) | `client_id PK`, `server_id`, `customer_id`, `channel` (`call`), `phone_index` (null for a guarantor call), `target` (v6, `customer|guarantor`, default `customer`), `at`, `outcome`, `sync_state` | | phone number never stored |
+| `broadcasts` (v6) | `server_id PK`, `title_bn`, `title_en`, `body_bn`, `body_en`, `require_ack`, `sender_name`, `created_at`, `acked_at` (my tap time, then the server's), `ack_state` (`none|queued|synced|failed`), `ack_mutation_id` | | server-owned (pull entity `broadcast`); a row with a queued tap is never deleted |
 | `notifications` | `server_id PK`, `type`, `title`, `body`, `data_json`, `read_at`, `created_at` | `(created_at DESC)` | 30 days |
 | `kv_settings` | `key PK`, `value_json` | | permissions snapshot, flags, settings, consents |
 
 ## 3. Migrations
-Current `schemaVersion` = **5**. v4 → v5 (0.8.0): add `location_proposals.method` (default `gps`, so queued old proposals keep their body) and `location_proposals.device_geo_json`. v3 → v4 (0.6.0): create `cowork_sessions`; add `visits.user_id`, `visits.co_work_session_id`, `visits.co_work_participant_ids_json`. v2 → v3 (0.3.0): add `location_proposals.decision_reason`. v1 → v2 (0.2.0): create `contact_attempts`, add index `idx_location_queue_t`. Tested in `test/core/migration_test.dart` (outbox rows survive). `bat`/`chg` in `location_queue` stay null until a battery plugin is added.
+Current `schemaVersion` = **6**. v5 → v6 (0.9.0): create `broadcasts`; add `contact_attempts.target` (default `customer`; a v1 file gets the column when the v2 step creates the table). v4 → v5 (0.8.0): add `location_proposals.method` (default `gps`, so queued old proposals keep their body) and `location_proposals.device_geo_json`. v3 → v4 (0.6.0): create `cowork_sessions`; add `visits.user_id`, `visits.co_work_session_id`, `visits.co_work_participant_ids_json`. v2 → v3 (0.3.0): add `location_proposals.decision_reason`. v1 → v2 (0.2.0): create `contact_attempts`, add index `idx_location_queue_t`. Tested in `test/core/migration_test.dart` (outbox rows survive). `bat`/`chg` in `location_queue` stay null until a battery plugin is added.
 
 drift `schemaVersion` integer; each feature contributes `MigrationStep`s registered in `core/db/migrations`; every version upgrade is tested from **every** previous released schema (`drift_dev schema dump` + `verifySchema` tests). Never drop a table containing `outbox`/`collections` rows without migrating data.
 

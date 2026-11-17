@@ -147,6 +147,30 @@ class FieldApi {
         (d) => d as Json,
       );
 
+  // ── leave, holidays, my shift (1.12.0) — online (ADR-M08 exception):
+  // the server checks overlaps and tells the manager; answers are cached.
+
+  /// My leave requests, newest first.
+  Future<List<Json>> myLeaveRequests() =>
+      _call(() => _dio.get<dynamic>('/leave-requests'), (d) => ((d as Json)['items'] as List).cast<Json>());
+
+  Future<Json> requestLeave({required String type, required String from, required String to, String? reason}) => _call(
+        () => _dio.post<dynamic>('/leave-requests', data: {'type': type, 'from': from, 'to': to, 'reason': ?reason}),
+        (d) => d as Json,
+      );
+
+  /// Withdraw my own request while nobody has decided it.
+  Future<Json> cancelLeave(String id) => _call(() => _dio.post<dynamic>('/leave-requests/$id/cancel'), (d) => d as Json);
+
+  /// National holidays and my branch's own.
+  Future<List<Json>> holidays({required int year, String? branchId}) => _call(
+        () => _dio.get<dynamic>('/calendar/holidays', queryParameters: {'year': year, 'branchId': ?branchId}),
+        (d) => (d as List).cast<Json>(),
+      );
+
+  /// My shift, or the branch default (`id: default`).
+  Future<Json> myShift() => _call(() => _dio.get<dynamic>('/attendance/me/shift'), (d) => d as Json);
+
   /// Online-only: on-demand balance refresh from ERP.
   Future<Json> refreshCustomer(String id) =>
       _call(() => _dio.post<dynamic>('/customers/$id/refresh'), (d) => d as Json);

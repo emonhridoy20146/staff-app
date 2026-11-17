@@ -98,6 +98,7 @@ class _DetailState extends ConsumerState<_Detail> {
             padding: const EdgeInsets.fromLTRB(Space.screen, Space.s16, Space.screen, Space.s8),
             sliver: SliverList.list(children: [
               _BalanceCard(customer: customer),
+              if (customer.guarantor != null) ...[const SizedBox(height: Space.cardGap), _GuarantorCard(customer: customer)],
               if (customer.tagged || customer.row.badSuggested) ...[const SizedBox(height: Space.cardGap), _TagCard(customer: customer)],
               if (customer.row.openPromiseDate != null) ...[const SizedBox(height: Space.cardGap), _PromiseCard(customer: customer)],
               const SizedBox(height: Space.cardGap),
@@ -265,6 +266,57 @@ class _Header extends ConsumerWidget {
           ),
           PinProposalStatus(customerId: customer.id),
         ],
+      ),
+    );
+  }
+}
+
+/// Guarantor's name and phone with a one-tap call (FR-M-029). The call is
+/// logged with `target: guarantor` and shows on the timeline.
+class _GuarantorCard extends ConsumerWidget {
+  const _GuarantorCard({required this.customer});
+  final Customer customer;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context);
+    final t = Theme.of(context).textTheme;
+    final cs = Theme.of(context).colorScheme;
+    final f = ref.watch(fmtProvider);
+    final g = customer.guarantor!;
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(Space.s16),
+        child: Row(
+          children: [
+            CircleAvatar(
+              radius: 22,
+              backgroundColor: cs.secondaryContainer,
+              foregroundColor: cs.onSecondaryContainer,
+              child: const Icon(Icons.verified_user_rounded),
+            ),
+            const SizedBox(width: Space.s12),
+            Expanded(
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(l.detailGuarantor, style: t.bodyMedium!.copyWith(color: cs.onSurfaceVariant)),
+                Text(g.name.isEmpty ? l.guarantorNoName : g.name, style: t.titleMedium),
+                if (g.phone.isNotEmpty) Text(f.num(g.phone), style: t.bodyLarge!.copyWith(color: cs.onSurfaceVariant)),
+              ]),
+            ),
+            if (g.canCall)
+              Tooltip(
+                message: l.guarantorCall,
+                child: FilledButton.tonalIcon(
+                  style: FilledButton.styleFrom(minimumSize: const Size(Sizes.minTarget, Sizes.minTarget)),
+                  onPressed: () => callGuarantorAndLog(context, ref, customerId: customer.id, phone: g.phone),
+                  icon: const Icon(Icons.call_rounded),
+                  label: Text(l.guarantorCallShort),
+                ),
+              )
+            else
+              Text(l.guarantorNoPhone, style: t.bodySmall!.copyWith(color: cs.onSurfaceVariant)),
+          ],
+        ),
       ),
     );
   }

@@ -3409,6 +3409,474 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Collected counts money taken in the field (posted and pending in ERP). Co-work visits add to everyone\'s credit.'**
   String get leaderFootnote;
+
+  /// No description provided for @noticesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Notices'**
+  String get noticesTitle;
+
+  /// No description provided for @noticeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Notice'**
+  String get noticeTitle;
+
+  /// No description provided for @noticesEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No notices'**
+  String get noticesEmpty;
+
+  /// No description provided for @noticesEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Notices from the office show here'**
+  String get noticesEmptyBody;
+
+  /// No description provided for @noticeRead.
+  ///
+  /// In en, this message translates to:
+  /// **'Read'**
+  String get noticeRead;
+
+  /// No description provided for @noticeMustRead.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm reading'**
+  String get noticeMustRead;
+
+  /// No description provided for @noticeUnread.
+  ///
+  /// In en, this message translates to:
+  /// **'New'**
+  String get noticeUnread;
+
+  /// No description provided for @noticeFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'From {name}'**
+  String noticeFrom(String name);
+
+  /// No description provided for @noticeMarkRead.
+  ///
+  /// In en, this message translates to:
+  /// **'I have read it'**
+  String get noticeMarkRead;
+
+  /// No description provided for @noticeThanks.
+  ///
+  /// In en, this message translates to:
+  /// **'Thanks, the office will see it'**
+  String get noticeThanks;
+
+  /// No description provided for @noticeReadAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Read at {time}'**
+  String noticeReadAt(String time);
+
+  /// No description provided for @noticeReadQueued.
+  ///
+  /// In en, this message translates to:
+  /// **'Read at {time} · reaches the office when online'**
+  String noticeReadQueued(String time);
+
+  /// No description provided for @noticeReadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not be sent to the office. See the sync centre.'**
+  String get noticeReadFailed;
+
+  /// No description provided for @todayNoticeOne.
+  ///
+  /// In en, this message translates to:
+  /// **'New notice: {title}'**
+  String todayNoticeOne(String title);
+
+  /// No description provided for @todayNoticeMany.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} notices to read and confirm'**
+  String todayNoticeMany(String n);
+
+  /// No description provided for @noticesUnreadCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} new'**
+  String noticesUnreadCount(String n);
+
+  /// No description provided for @noticesAllRead.
+  ///
+  /// In en, this message translates to:
+  /// **'All read'**
+  String get noticesAllRead;
+
+  /// No description provided for @leaveTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave'**
+  String get leaveTitle;
+
+  /// No description provided for @leaveMeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask for leave and see the answer'**
+  String get leaveMeSubtitle;
+
+  /// No description provided for @leaveNew.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask for leave'**
+  String get leaveNew;
+
+  /// No description provided for @leaveTypeCasual.
+  ///
+  /// In en, this message translates to:
+  /// **'Casual'**
+  String get leaveTypeCasual;
+
+  /// No description provided for @leaveTypeSick.
+  ///
+  /// In en, this message translates to:
+  /// **'Sick'**
+  String get leaveTypeSick;
+
+  /// No description provided for @leaveTypeOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get leaveTypeOther;
+
+  /// No description provided for @leavePending.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get leavePending;
+
+  /// No description provided for @leaveApproved.
+  ///
+  /// In en, this message translates to:
+  /// **'Approved'**
+  String get leaveApproved;
+
+  /// No description provided for @leaveRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Not approved'**
+  String get leaveRejected;
+
+  /// No description provided for @leaveCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdrawn'**
+  String get leaveCancelled;
+
+  /// No description provided for @leaveCancelDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Request withdrawn'**
+  String get leaveCancelDone;
+
+  /// No description provided for @leaveDays.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} days'**
+  String leaveDays(String n);
+
+  /// No description provided for @leaveTotalDays.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} days in total'**
+  String leaveTotalDays(String n);
+
+  /// No description provided for @leaveAskedAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Asked {time}'**
+  String leaveAskedAt(String time);
+
+  /// No description provided for @leaveManagerSaid.
+  ///
+  /// In en, this message translates to:
+  /// **'Manager: {reason}'**
+  String leaveManagerSaid(String reason);
+
+  /// No description provided for @leaveCancelAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdraw'**
+  String get leaveCancelAction;
+
+  /// No description provided for @leaveCancelTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdraw this request?'**
+  String get leaveCancelTitle;
+
+  /// No description provided for @leaveCancelBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The request for {from} – {to} will be withdrawn. You can ask again if needed.'**
+  String leaveCancelBody(String from, String to);
+
+  /// No description provided for @leaveCancelConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Yes, withdraw'**
+  String get leaveCancelConfirm;
+
+  /// No description provided for @leaveEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No leave requests'**
+  String get leaveEmpty;
+
+  /// No description provided for @leaveEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the button below to ask'**
+  String get leaveEmptyBody;
+
+  /// No description provided for @leaveCachedAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline · showing what the phone had at {time}'**
+  String leaveCachedAt(String time);
+
+  /// No description provided for @leaveNeedsInternet.
+  ///
+  /// In en, this message translates to:
+  /// **'Needs internet. Try again when connected.'**
+  String get leaveNeedsInternet;
+
+  /// No description provided for @leaveType.
+  ///
+  /// In en, this message translates to:
+  /// **'Type of leave'**
+  String get leaveType;
+
+  /// No description provided for @leaveFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'From'**
+  String get leaveFrom;
+
+  /// No description provided for @leaveTo.
+  ///
+  /// In en, this message translates to:
+  /// **'To'**
+  String get leaveTo;
+
+  /// No description provided for @leaveReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Reason (optional)'**
+  String get leaveReason;
+
+  /// No description provided for @leaveReasonHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. sister\'s wedding'**
+  String get leaveReasonHint;
+
+  /// No description provided for @leaveOnlineNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Sending needs internet. The manager\'s answer shows here.'**
+  String get leaveOnlineNote;
+
+  /// No description provided for @leaveSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Send request'**
+  String get leaveSend;
+
+  /// No description provided for @leaveSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Request sent'**
+  String get leaveSent;
+
+  /// No description provided for @leaveErrToBeforeFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'The end date cannot be before the start'**
+  String get leaveErrToBeforeFrom;
+
+  /// No description provided for @leaveErrTooLong.
+  ///
+  /// In en, this message translates to:
+  /// **'At most 31 days in one request'**
+  String get leaveErrTooLong;
+
+  /// No description provided for @leaveErrOverlaps.
+  ///
+  /// In en, this message translates to:
+  /// **'You already have a request for some of these days'**
+  String get leaveErrOverlaps;
+
+  /// No description provided for @leaveErrDecided.
+  ///
+  /// In en, this message translates to:
+  /// **'The manager has already decided'**
+  String get leaveErrDecided;
+
+  /// No description provided for @calendarTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Holidays and shift'**
+  String get calendarTitle;
+
+  /// No description provided for @calendarMeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Holidays, weekly off and duty hours'**
+  String get calendarMeSubtitle;
+
+  /// No description provided for @calendarMyShift.
+  ///
+  /// In en, this message translates to:
+  /// **'My shift'**
+  String get calendarMyShift;
+
+  /// No description provided for @calendarDefaultShift.
+  ///
+  /// In en, this message translates to:
+  /// **'Branch default shift'**
+  String get calendarDefaultShift;
+
+  /// No description provided for @calendarShiftHours.
+  ///
+  /// In en, this message translates to:
+  /// **'{start} – {end}'**
+  String calendarShiftHours(String start, String end);
+
+  /// No description provided for @calendarWeeklyOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly off: {days}'**
+  String calendarWeeklyOff(String days);
+
+  /// No description provided for @calendarNoWeeklyOff.
+  ///
+  /// In en, this message translates to:
+  /// **'No weekly off'**
+  String get calendarNoWeeklyOff;
+
+  /// No description provided for @calendarLateGrace.
+  ///
+  /// In en, this message translates to:
+  /// **'Late after {grace} min · break {brk} min'**
+  String calendarLateGrace(String grace, String brk);
+
+  /// No description provided for @calendarMyLeave.
+  ///
+  /// In en, this message translates to:
+  /// **'My approved leave'**
+  String get calendarMyLeave;
+
+  /// No description provided for @calendarHolidays.
+  ///
+  /// In en, this message translates to:
+  /// **'Holidays'**
+  String get calendarHolidays;
+
+  /// No description provided for @calendarNoHolidays.
+  ///
+  /// In en, this message translates to:
+  /// **'No holidays entered for this year'**
+  String get calendarNoHolidays;
+
+  /// No description provided for @calendarNoHolidaysBody.
+  ///
+  /// In en, this message translates to:
+  /// **'They show here once the office adds them'**
+  String get calendarNoHolidaysBody;
+
+  /// No description provided for @calendarNational.
+  ///
+  /// In en, this message translates to:
+  /// **'National'**
+  String get calendarNational;
+
+  /// No description provided for @calendarBranch.
+  ///
+  /// In en, this message translates to:
+  /// **'Branch'**
+  String get calendarBranch;
+
+  /// No description provided for @weekdaySun.
+  ///
+  /// In en, this message translates to:
+  /// **'Sunday'**
+  String get weekdaySun;
+
+  /// No description provided for @weekdayMon.
+  ///
+  /// In en, this message translates to:
+  /// **'Monday'**
+  String get weekdayMon;
+
+  /// No description provided for @weekdayTue.
+  ///
+  /// In en, this message translates to:
+  /// **'Tuesday'**
+  String get weekdayTue;
+
+  /// No description provided for @weekdayWed.
+  ///
+  /// In en, this message translates to:
+  /// **'Wednesday'**
+  String get weekdayWed;
+
+  /// No description provided for @weekdayThu.
+  ///
+  /// In en, this message translates to:
+  /// **'Thursday'**
+  String get weekdayThu;
+
+  /// No description provided for @weekdayFri.
+  ///
+  /// In en, this message translates to:
+  /// **'Friday'**
+  String get weekdayFri;
+
+  /// No description provided for @weekdaySat.
+  ///
+  /// In en, this message translates to:
+  /// **'Saturday'**
+  String get weekdaySat;
+
+  /// No description provided for @timelineGuarantorCall.
+  ///
+  /// In en, this message translates to:
+  /// **'Guarantor call · {outcome}'**
+  String timelineGuarantorCall(String outcome);
+
+  /// No description provided for @guarantorNoName.
+  ///
+  /// In en, this message translates to:
+  /// **'No name'**
+  String get guarantorNoName;
+
+  /// No description provided for @guarantorCall.
+  ///
+  /// In en, this message translates to:
+  /// **'Call the guarantor'**
+  String get guarantorCall;
+
+  /// No description provided for @guarantorCallShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Call'**
+  String get guarantorCallShort;
+
+  /// No description provided for @guarantorNoPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'No phone number'**
+  String get guarantorNoPhone;
 }
 
 class _AppLocalizationsDelegate
