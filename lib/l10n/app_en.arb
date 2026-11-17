@@ -1070,5 +1070,100 @@
       }
     }
   },
-  "coworkAsked": "Asked"
+  "coworkAsked": "Asked",
+  "todayTargetMet": "Target met",
+  "todayTargetPersonal": "My target",
+  "todayOffDay": "Day off, no target today",
+  "todayVisitTarget": "Visit target",
+  "todayVisitTargetOf": "{done} / {target}",
+  "@todayVisitTargetOf": {
+    "placeholders": {
+      "done": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "perfTitle": "My performance",
+  "perfMeSubtitle": "This month's collections, visits, target",
+  "perfPrevMonth": "Previous month",
+  "perfNextMonth": "Next month",
+  "perfCachedAt": "No internet. Showing figures from {time}.",
+  "@perfCachedAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "perfCollected": "Collected this month",
+  "perfTargetToDate": "Target to date {toDate} · whole month {month}",
+  "@perfTargetToDate": {
+    "placeholders": {
+      "toDate": {
+        "type": "String"
+      },
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "perfPosted": "Posted in ERP",
+  "perfPendingErp": "Pending in ERP",
+  "perfVisitCredit": "Visit credit (against target to date)",
+  "perfSoloVisits": "Single visits",
+  "perfCoWorkVisits": "Co-work visits",
+  "perfPromisesKept": "Promises kept",
+  "perfOf": "{a}/{b}",
+  "@perfOf": {
+    "placeholders": {
+      "a": {
+        "type": "String"
+      },
+      "b": {
+        "type": "String"
+      }
+    }
+  },
+  "perfPresentDays": "Days present",
+  "perfLateDays": "Late days",
+  "perfRank": "Your place in the branch: {rank} of {of}",
+  "@perfRank": {
+    "placeholders": {
+      "rank": {
+        "type": "String"
+      },
+      "of": {
+        "type": "String"
+      }
+    }
+  },
+  "perfRankBy": "By collections · see leaderboard",
+  "perfDaily": "Collections by day",
+  "perfLegendCollected": "Collected",
+  "perfLegendMet": "Target met",
+  "perfLegendTarget": "Target",
+  "perfDailySemantics": "Daily collections chart for this month, total {total}",
+  "@perfDailySemantics": {
+    "placeholders": {
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "reportOffline": "Needs internet. Try again when connected.",
+  "leaderboardTitle": "Leaderboard",
+  "leaderboardHidden": "The leaderboard is off",
+  "leaderboardHiddenBody": "It shows here when the office turns it on",
+  "leaderToday": "Today",
+  "leaderMonth": "This month",
+  "leaderMetricCollected": "Collected",
+  "leaderMetricVisits": "Visit credit",
+  "leaderMetricPromises": "Promises kept",
+  "leaderMetricTarget": "Target achieved",
+  "leaderNotRanked": "Not ranked (too few days present)",
+  "leaderNotRankedMe": "You have too few days present in this period to be ranked",
+  "leaderFootnote": "Collected counts money taken in the field (posted and pending in ERP). Co-work visits add to everyone's credit."
 }

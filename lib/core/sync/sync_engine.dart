@@ -12,11 +12,12 @@ import 'sync_handlers.dart';
 
 /// Snapshot of what the server sends alongside pull pages.
 class ServerSnapshot {
-  const ServerSnapshot({this.permissions, this.flags, this.settings, this.cash});
+  const ServerSnapshot({this.permissions, this.flags, this.settings, this.cash, this.target});
   final List<String>? permissions;
   final Map<String, bool>? flags;
   final Json? settings;
   final CashPositionDto? cash;
+  final MyTarget? target;
 }
 
 enum SyncPhase { idle, bootstrapping, pushing, pulling }
@@ -358,8 +359,8 @@ class SyncEngine {
         ),
       );
     });
-    if (page.permissions != null || page.flags != null || page.settings != null || page.cash != null) {
-      _onSnapshot(ServerSnapshot(permissions: page.permissions, flags: page.flags, settings: page.settings, cash: page.cash));
+    if (page.permissions != null || page.flags != null || page.settings != null || page.cash != null || page.target != null) {
+      _onSnapshot(ServerSnapshot(permissions: page.permissions, flags: page.flags, settings: page.settings, cash: page.cash, target: page.target));
     }
   }
 

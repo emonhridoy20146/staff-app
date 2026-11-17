@@ -1692,4 +1692,142 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get coworkAsked => 'Asked';
+
+  @override
+  String get todayTargetMet => 'Target met';
+
+  @override
+  String get todayTargetPersonal => 'My target';
+
+  @override
+  String get todayOffDay => 'Day off, no target today';
+
+  @override
+  String get todayVisitTarget => 'Visit target';
+
+  @override
+  String todayVisitTargetOf(String done, String target) {
+    return '$done / $target';
+  }
+
+  @override
+  String get perfTitle => 'My performance';
+
+  @override
+  String get perfMeSubtitle => 'This month\'s collections, visits, target';
+
+  @override
+  String get perfPrevMonth => 'Previous month';
+
+  @override
+  String get perfNextMonth => 'Next month';
+
+  @override
+  String perfCachedAt(String time) {
+    return 'No internet. Showing figures from $time.';
+  }
+
+  @override
+  String get perfCollected => 'Collected this month';
+
+  @override
+  String perfTargetToDate(String toDate, String month) {
+    return 'Target to date $toDate · whole month $month';
+  }
+
+  @override
+  String get perfPosted => 'Posted in ERP';
+
+  @override
+  String get perfPendingErp => 'Pending in ERP';
+
+  @override
+  String get perfVisitCredit => 'Visit credit (against target to date)';
+
+  @override
+  String get perfSoloVisits => 'Single visits';
+
+  @override
+  String get perfCoWorkVisits => 'Co-work visits';
+
+  @override
+  String get perfPromisesKept => 'Promises kept';
+
+  @override
+  String perfOf(String a, String b) {
+    return '$a/$b';
+  }
+
+  @override
+  String get perfPresentDays => 'Days present';
+
+  @override
+  String get perfLateDays => 'Late days';
+
+  @override
+  String perfRank(String rank, String of) {
+    return 'Your place in the branch: $rank of $of';
+  }
+
+  @override
+  String get perfRankBy => 'By collections · see leaderboard';
+
+  @override
+  String get perfDaily => 'Collections by day';
+
+  @override
+  String get perfLegendCollected => 'Collected';
+
+  @override
+  String get perfLegendMet => 'Target met';
+
+  @override
+  String get perfLegendTarget => 'Target';
+
+  @override
+  String perfDailySemantics(String total) {
+    return 'Daily collections chart for this month, total $total';
+  }
+
+  @override
+  String get reportOffline => 'Needs internet. Try again when connected.';
+
+  @override
+  String get leaderboardTitle => 'Leaderboard';
+
+  @override
+  String get leaderboardHidden => 'The leaderboard is off';
+
+  @override
+  String get leaderboardHiddenBody =>
+      'It shows here when the office turns it on';
+
+  @override
+  String get leaderToday => 'Today';
+
+  @override
+  String get leaderMonth => 'This month';
+
+  @override
+  String get leaderMetricCollected => 'Collected';
+
+  @override
+  String get leaderMetricVisits => 'Visit credit';
+
+  @override
+  String get leaderMetricPromises => 'Promises kept';
+
+  @override
+  String get leaderMetricTarget => 'Target achieved';
+
+  @override
+  String get leaderNotRanked => 'Not ranked (too few days present)';
+
+  @override
+  String get leaderNotRankedMe =>
+      'You have too few days present in this period to be ranked';
+
+  @override
+  String get leaderFootnote =>
+      'Collected counts money taken in the field (posted and pending in ERP). Co-work visits add to everyone\'s credit.';
 }

@@ -1,5 +1,15 @@
 # Changelog — staff-app
 
+## [0.7.0] — 2026-11-17
+### Added
+- Contract pinned to field-api 1.10.0 (targets and reports).
+- My daily target on Today (FR-COL-015, owner request 2026-11-17): `/sync/pull` carries `target` (MyTarget: amount, visits, personal or branch, working day) while flag `module.targets` is on; it is stored on the phone, so the Today card works offline. The card compares today's field collections with the amount target and today's visit credit (single + co-work × `cowork.visitCredit`, worked out on the phone) with the visit target, shows "My target" for a personal target, a "Target met" pill, and "Day off, no target today" on a weekly off, holiday or approved leave. A target from another day is ignored.
+- My performance (`/performance`, FR-M-021 / FR-REP-005, flag `module.reports`, self-service): month switcher (this month and 11 back); collected this month against the target to date and the whole month, with posted vs pending in ERP; visit credit against the target to date, single and co-work visits; promises kept, days present, late days; my place in the branch when the leaderboard is visible; a daily bar chart (collected, target met, target tick; days off muted). Online; the last answer per month is kept and shown offline with its time.
+- Leaderboard (`/leaderboard`, FR-REP-005): only when the admin turns on `reports.leaderboardVisibleToStaff` (default off; the server answers 403 otherwise). Today / this month; metric chips (collected, visit credit, promises kept, target achieved); my row highlighted; ties share a rank; staff with too few days present are listed apart as not ranked. Reached from the Me tab and the rank card.
+### Changed
+- The branch settings `dailyTargetPoisha` / `dailyVisitTarget` are no longer read: targets are dated records on the server (contract 1.10.0).
+- Tests: targets and reports flow tests (target on pull and day off, visit credit weight, month online then cached offline, leaderboard ties and hidden, month arithmetic); screenshots 22-performance, 23-leaderboard; Today and Me screenshots updated.
+
 ## [0.6.0] — 2026-11-16
 ### Added
 - Contract pinned to field-api 1.9.1 (co-work 1.9.0; bootstrap of today's working state 1.9.1, handled by the existing generic pull path).

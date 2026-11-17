@@ -1692,4 +1692,141 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get coworkAsked => 'ডাকা হয়েছে';
+
+  @override
+  String get todayTargetMet => 'টার্গেট পূরণ';
+
+  @override
+  String get todayTargetPersonal => 'আমার টার্গেট';
+
+  @override
+  String get todayOffDay => 'আজ ছুটির দিন, টার্গেট নেই';
+
+  @override
+  String get todayVisitTarget => 'ভিজিট টার্গেট';
+
+  @override
+  String todayVisitTargetOf(String done, String target) {
+    return '$done / $target';
+  }
+
+  @override
+  String get perfTitle => 'আমার পারফরম্যান্স';
+
+  @override
+  String get perfMeSubtitle => 'এই মাসের আদায়, ভিজিট, টার্গেট';
+
+  @override
+  String get perfPrevMonth => 'আগের মাস';
+
+  @override
+  String get perfNextMonth => 'পরের মাস';
+
+  @override
+  String perfCachedAt(String time) {
+    return 'ইন্টারনেট নেই। $time-এর হিসাব দেখানো হচ্ছে।';
+  }
+
+  @override
+  String get perfCollected => 'এই মাসে আদায়';
+
+  @override
+  String perfTargetToDate(String toDate, String month) {
+    return 'আজ পর্যন্ত লক্ষ্য $toDate · পুরো মাসে $month';
+  }
+
+  @override
+  String get perfPosted => 'ইআরপি-তে জমা';
+
+  @override
+  String get perfPendingErp => 'ইআরপি-তে অপেক্ষমাণ';
+
+  @override
+  String get perfVisitCredit => 'ভিজিট ক্রেডিট (আজ পর্যন্ত লক্ষ্যের তুলনায়)';
+
+  @override
+  String get perfSoloVisits => 'একক ভিজিট';
+
+  @override
+  String get perfCoWorkVisits => 'কো-ওয়ার্ক ভিজিট';
+
+  @override
+  String get perfPromisesKept => 'প্রতিশ্রুতি রক্ষা';
+
+  @override
+  String perfOf(String a, String b) {
+    return '$a/$b';
+  }
+
+  @override
+  String get perfPresentDays => 'উপস্থিত দিন';
+
+  @override
+  String get perfLateDays => 'দেরিতে আসা';
+
+  @override
+  String perfRank(String rank, String of) {
+    return 'শাখায় আপনার অবস্থান $rank / $of';
+  }
+
+  @override
+  String get perfRankBy => 'আদায়ের হিসাবে · লিডারবোর্ড দেখুন';
+
+  @override
+  String get perfDaily => 'দিনভিত্তিক আদায়';
+
+  @override
+  String get perfLegendCollected => 'আদায়';
+
+  @override
+  String get perfLegendMet => 'লক্ষ্য পূরণ';
+
+  @override
+  String get perfLegendTarget => 'লক্ষ্য';
+
+  @override
+  String perfDailySemantics(String total) {
+    return 'এই মাসে দিনভিত্তিক আদায়ের চার্ট, মোট $total';
+  }
+
+  @override
+  String get reportOffline => 'ইন্টারনেট লাগবে। সংযোগ পেলে আবার চেষ্টা করুন।';
+
+  @override
+  String get leaderboardTitle => 'লিডারবোর্ড';
+
+  @override
+  String get leaderboardHidden => 'লিডারবোর্ড এখন বন্ধ';
+
+  @override
+  String get leaderboardHiddenBody => 'অফিস চালু করলে এখানে দেখা যাবে';
+
+  @override
+  String get leaderToday => 'আজ';
+
+  @override
+  String get leaderMonth => 'এই মাস';
+
+  @override
+  String get leaderMetricCollected => 'আদায়';
+
+  @override
+  String get leaderMetricVisits => 'ভিজিট ক্রেডিট';
+
+  @override
+  String get leaderMetricPromises => 'প্রতিশ্রুতি রক্ষা';
+
+  @override
+  String get leaderMetricTarget => 'টার্গেট অর্জন';
+
+  @override
+  String get leaderNotRanked => 'র‍্যাঙ্কে নেই (উপস্থিতি কম)';
+
+  @override
+  String get leaderNotRankedMe =>
+      'এই সময়ে আপনার উপস্থিতি কম, তাই র‍্যাঙ্ক নেই';
+
+  @override
+  String get leaderFootnote =>
+      'আদায় ধরা হয় মাঠে নেওয়া টাকা (ইআরপি-তে জমা ও অপেক্ষমাণ)। কো-ওয়ার্ক ভিজিট সবার ক্রেডিটে যোগ হয়।';
 }

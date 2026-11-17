@@ -289,6 +289,7 @@ class SyncPullResponse {
     this.flags,
     this.settings,
     this.cash,
+    this.target,
     this.serverTime,
   });
   factory SyncPullResponse.fromJson(Json j) {
@@ -301,6 +302,7 @@ class SyncPullResponse {
       flags: (j['flags'] as Json?)?.map((k, v) => MapEntry(k, v as bool)),
       settings: _opt<Json>(j, 'settings'),
       cash: j['cash'] == null ? null : CashPositionDto.fromJson(j['cash'] as Json),
+      target: j['target'] == null ? null : MyTarget.fromJson(j['target'] as Json),
       serverTime: _date(j['serverTime']),
     );
   }
@@ -311,7 +313,34 @@ class SyncPullResponse {
   final Map<String, bool>? flags;
   final Json? settings;
   final CashPositionDto? cash;
+
+  /// My daily target (1.10.0; only while flag module.targets is on).
+  final MyTarget? target;
   final DateTime? serverTime;
+}
+
+/// The caller's effective target for one business day (contract 1.10.0).
+/// Visits are compared with visit credit (solo + joint × cowork.visitCredit).
+class MyTarget {
+  const MyTarget({required this.businessDate, required this.amountPoisha, required this.visits, this.source = 'branch', this.workingDay = true});
+  factory MyTarget.fromJson(Json j) => MyTarget(
+        businessDate: j['businessDate'] as String,
+        amountPoisha: ((j['amountPoisha'] as num?) ?? 0).toInt(),
+        visits: ((j['visits'] as num?) ?? 0).toInt(),
+        source: (j['source'] as String?) ?? 'branch',
+        workingDay: (j['workingDay'] as bool?) ?? true,
+      );
+  final String businessDate;
+  final int amountPoisha;
+  final int visits;
+
+  /// personal | branch
+  final String source;
+
+  /// false on weekly off, holiday or approved leave (targets are 0).
+  final bool workingDay;
+
+  Json toJson() => {'businessDate': businessDate, 'amountPoisha': amountPoisha, 'visits': visits, 'source': source, 'workingDay': workingDay};
 }
 
 class ReceiptBlockDto {

@@ -53,5 +53,12 @@ LocationEngine spike (ADR-009) → duty-aware tracking, adaptive sampling, filte
 ## Phase 3 — Reports in app
 My performance, targets progress, day route suggestion.
 
+| Item | Status |
+|---|---|
+| Today progress against my daily target (amount + visit credit, day off) | ✅ 0.7.0, flow test + screenshots |
+| My performance (month, cached offline, daily chart, rank) | ✅ 0.7.0, flow test + screenshot |
+| Leaderboard (when visible to staff) | ✅ 0.7.0, flow test + screenshot |
+| Day route suggestion | ☐ |
+
 ## Phase 4 — Premium (as approved)
 Voice notes, offline map packs, Bluetooth printing, broadcasts with acknowledgement, leave requests, staff-initiated handover.

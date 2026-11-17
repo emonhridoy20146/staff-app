@@ -208,6 +208,16 @@ final todayVisitSplitProvider = StreamProvider<VisitSplit>((ref) {
 
 final todayVisitCountProvider = Provider<AsyncValue<int>>((ref) => ref.watch(todayVisitSplitProvider).whenData((s) => s.solo + s.coWork));
 
+/// Visit credit for targets (FR-CW-005): solo + joint × `cowork.visitCredit`
+/// (0–1, default 1). Worked out on the phone so the Today card works
+/// offline; the server's figure is the official one.
+double visitCredit(VisitSplit s, num? weight) => s.solo + s.coWork * ((weight ?? 1).clamp(0, 1)).toDouble();
+
+final todayVisitCreditProvider = Provider<double>((ref) {
+  final s = ref.watch(todayVisitSplitProvider).value ?? (solo: 0, coWork: 0);
+  return visitCredit(s, ref.watch(serverSettingsProvider)['cowork.visitCredit'] as num?);
+});
+
 DateTime parseBusinessDateUtcStart(String ymd) {
   final p = ymd.split('-').map(int.parse).toList();
   return DateTime.utc(p[0], p[1], p[2]).subtract(const Duration(hours: 6));

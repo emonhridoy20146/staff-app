@@ -46,11 +46,12 @@ Master IDs, statuses and permission keys: `field-api/docs/02-requirements.md`. A
 | FR-M-018 **[ADDED]** | Voice note on customer (≤ 60 s, AAC) for low-literacy users. | proposed | P1 | D |
 | FR-M-019 **[ADDED]** | Offline map area packs (download branch area tiles on Wi-Fi). | proposed | P4 | D |
 | FR-M-020 **[ADDED]** | Bluetooth thermal printer receipts (ESC/POS, 58 mm). | proposed | P4 | D |
-| FR-M-021 **[ADDED]** | My performance screen: month-to-date collected, visits, promise kept %, attendance, rank (if leaderboard on). | proposed | P3 | D |
+| FR-M-021 **[ADDED]** | My performance screen: month-to-date collected (posted / pending in ERP) against target to date, visit credit with single / co-work split, promises kept, attendance, rank and leaderboard (if `reports.leaderboardVisibleToStaff`), daily chart; last month cached for offline (contract 1.10.0, 0.7.0). | active | P3 | D |
 | FR-M-022 **[ADDED]** | Day route suggestion: order today's priority customers by nearest-neighbour route from current location. | proposed | P3 | U D |
 | FR-M-023 | Home screen widget / quick tile: none in v1 (dropped to keep scope). | dropped | — | — |
 | FR-M-024 **[ADDED]** | Map filters and list view (owner request 2026-11-16): multi-select filter chips on the map (due today, overdue, promised today, tagged, likely bad; a customer shows if it matches any selected), with a count on each chip; a Map/List toggle where the list shows the same filtered customers nearest first with distance from the staff member's last GPS fix, customers without a pin last. Fully offline (local data); only map tiles need the network. | active | P1 | U D |
 | FR-M-025 **[ADDED]** | Co-work in the app (master FR-CW-001…005, owner request 2026-11-16): ask / accept / reject / leave online with clear errors; invitations and the group on Today and Me; joint-visit switch on the visit screen (offline, `coWorkSessionId`); partners' joint visits on pull and on the timeline; Today visit count split single / co-work. Money stays with the recorder. | active | P2 | U I D |
+| FR-M-026 **[ADDED]** | Today progress against my own daily target (master FR-COL-015): amount and visit credit, personal or branch target, day off shown, offline from the last pull (contract 1.10.0). | active | P3 | U D |
 
 ## 3. Non-functional (app specifics)
 | ID | Requirement |

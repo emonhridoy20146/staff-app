@@ -39,6 +39,14 @@ class FakeFieldApi implements HttpClientAdapter {
   int pushCalls = 0;
   int coworkMaxMembers = 5; // cowork.maxMembers, counts the requester
 
+  /// My daily target (1.10.0). The demo shows the leaderboard; the real
+  /// default of reports.leaderboardVisibleToStaff is false.
+  int targetPoisha = 4000000;
+  int targetVisits = 20;
+  bool workingDay = true;
+  bool leaderboardVisible = true;
+  var _collectedToday = 0;
+
   /// Branch colleagues for co-work (contract 1.9.0). `onDutyToday` is a
   /// test hook; `inSession` is worked out from [_cowork].
   final colleagues = <Json>[
@@ -93,7 +101,7 @@ class FakeFieldApi implements HttpClientAdapter {
     'module.customers': true, 'module.tags': true, 'module.collections': true, 'module.cash': true, //
     'module.visits': true, 'module.notes': true, 'module.promises': true, 'module.attendance': true,
     'module.handovers': true, 'module.location': true, 'module.notifications': true, 'module.sync': true,
-    'module.cowork': true, 'module.reports': false, 'module.microfinance': false,
+    'module.cowork': true, 'module.targets': true, 'module.reports': true, 'module.microfinance': false,
   };
 
   Json get _settings => {
@@ -104,8 +112,8 @@ class FakeFieldApi implements HttpClientAdapter {
         'cashWarnPct': 80,
         'cashBlockOverLimit': false,
         'geofenceRadiusM': 150,
-        'dailyTargetPoisha': 4000000,
-        'dailyVisitTarget': 20,
+        'reports.leaderboardVisibleToStaff': leaderboardVisible,
+        'reports.leaderboardMinPresentDays': 1,
         'hotline': '০১৭০০-০০০০০০',
         'location.trackingProvider': trackingProvider,
         'attendance.selfieRequired': selfieRequired,
@@ -400,6 +408,14 @@ class FakeFieldApi implements HttpClientAdapter {
           });
           return _json(200, {'id': id, 'status': accepted ? 'accepted' : 'rejected'});
         }
+        if (o.method == 'GET' && path == '/reports/me/performance') {
+          return _json(200, _performance(o.queryParameters['month'] as String));
+        }
+        if (o.method == 'GET' && path == '/reports/leaderboard') {
+          final r = _leaderboard((o.queryParameters['period'] as String?) ?? 'month', (o.queryParameters['metric'] as String?) ?? 'collected');
+          if (r is (int, Json)) return _json(r.$1, r.$2);
+          return _json(200, r);
+        }
         if (path.startsWith('/cowork/')) {
           final r = _coworkRoute(o.method, path, body);
           if (r is (int, Json)) return _json(r.$1, r.$2);
@@ -451,9 +467,108 @@ class FakeFieldApi implements HttpClientAdapter {
         'state': _cashOnHand >= _limit ? 'exceeded' : (_cashOnHand >= _limit * 0.8 ? 'warning' : 'ok'),
         'pendingDepositsPoisha': 0,
       },
+      'target': {
+        'businessDate': clock.businessDate(),
+        'amountPoisha': workingDay ? targetPoisha : 0,
+        'visits': workingDay ? targetVisits : 0,
+        'source': 'personal',
+        'workingDay': workingDay,
+      },
       'serverTime': clock.nowUtc().toIso8601String(),
     };
   }
+
+  // ── reports (1.10.0): deterministic demo figures ────────────────────────
+
+  /// Friday is the weekly off in the demo branch.
+  bool _working(DateTime d) => d.weekday != DateTime.friday;
+
+  Json _performance(String month) {
+    final p = month.split('-').map(int.parse).toList();
+    final today = clock.businessDate();
+    final t = today.split('-').map(int.parse).toList();
+    final current = p[0] == t[0] && p[1] == t[1];
+    final lastDay = current ? t[2] : DateTime.utc(p[0], p[1] + 1, 0).day;
+    final monthDays = DateTime.utc(p[0], p[1] + 1, 0).day;
+    final days = <Json>[];
+    var total = 0, solo = 0, joint = 0, present = 0, targetToDate = 0, visitTargetToDate = 0;
+    for (var day = 1; day <= lastDay; day++) {
+      final date = DateTime.utc(p[0], p[1], day);
+      final ymd = '${p[0]}-${p[1].toString().padLeft(2, '0')}-${day.toString().padLeft(2, '0')}';
+      final work = _working(date);
+      final isToday = ymd == today;
+      final collected = !work ? 0 : (isToday ? _collectedToday : (targetPoisha * (55 + (day * 37) % 60) / 100).round() ~/ 100 * 100);
+      final s = !work ? 0 : (isToday ? 0 : 10 + (day * 7) % 9);
+      final j = !work ? 0 : (isToday ? 0 : (day * 3) % 5);
+      if (work) {
+        present++;
+        targetToDate += targetPoisha;
+        visitTargetToDate += targetVisits;
+      }
+      total += collected;
+      solo += s;
+      joint += j;
+      days.add({
+        'date': ymd, 'collectedPoisha': collected, 'collectionsCount': collected ~/ 250000, 'visits': s + j, 'soloVisits': s, 'coWorkVisits': j,
+        'visitCredit': s + j, 'targetPoisha': work ? targetPoisha : 0, 'visitTarget': work ? targetVisits : 0, 'workingDay': work,
+      });
+    }
+    final workingInMonth = [for (var d = 1; d <= monthDays; d++) if (_working(DateTime.utc(p[0], p[1], d))) d].length;
+    final pending = current ? _collectedToday + 1250000 : 0;
+    return {
+      'month': month,
+      'row': {
+        'userId': user['id'], 'collectedPoisha': {'cash': total},
+        'targetPoisha': targetPoisha * workingInMonth, 'visitTarget': targetVisits * workingInMonth,
+        'targetToDatePoisha': targetToDate, 'visitTargetToDate': visitTargetToDate,
+        'amountAchievement': targetToDate == 0 ? null : (total / targetToDate * 100).round() / 100,
+        'visitAchievement': visitTargetToDate == 0 ? null : ((solo + joint) / visitTargetToDate * 100).round() / 100,
+        'soloVisits': solo, 'coWorkVisits': joint, 'visitCredit': solo + joint,
+        'promisesKept': 14, 'promisesDue': 19, 'presentDays': present, 'lateDays': 2,
+      },
+      'collectedTotalPoisha': total,
+      'postedPoisha': total - pending.clamp(0, total),
+      'pendingPoisha': pending.clamp(0, total),
+      'days': days,
+      'rank': leaderboardVisible ? {'metric': 'collected', 'rank': 2, 'of': 4} : null,
+    };
+  }
+
+  Object _leaderboard(String period, String metric) {
+    if (!leaderboardVisible) return (403, _problem(403, 'FORBIDDEN', 'Leaderboard not visible to staff'));
+    final scale = period == 'day' ? 1 : 12;
+    final people = <Json>[
+      {'userId': 'u-fs-020', 'name': 'সজীব আহমেদ', 'employeeCode': 'FS020', 'collected': 5150000, 'credit': 23.5, 'promises': 6, 'ach': 1.12, 'present': 1},
+      {'userId': user['id'], 'name': (user['name'] as Map)['bn'], 'employeeCode': 'FS014', 'collected': 4380000, 'credit': 21.0, 'promises': 5, 'ach': 1.04, 'present': 1},
+      {'userId': 'u-fs-021', 'name': 'তানভীর ইসলাম', 'employeeCode': 'FS021', 'collected': 4380000, 'credit': 18.0, 'promises': 3, 'ach': 0.95, 'present': 1},
+      {'userId': 'u-fs-022', 'name': 'মাহমুদা আক্তার', 'employeeCode': 'FS022', 'collected': 3120000, 'credit': 19.5, 'promises': 4, 'ach': 0.78, 'present': 1},
+      {'userId': 'u-fs-023', 'name': 'রুবেল মিয়া', 'employeeCode': 'FS023', 'collected': 0, 'credit': 0.0, 'promises': 0, 'ach': 0.0, 'present': 0},
+    ];
+    num value(Json r) => switch (metric) {
+          'visit_credit' => (r['credit'] as num) * scale,
+          'promises_kept' => (r['promises'] as num) * scale,
+          'target_achievement' => r['ach'] as num,
+          _ => (r['collected'] as num) * scale,
+        };
+    final eligible = [for (final r in people) if ((r['present'] as int) >= 1) r]..sort((a, b) => value(b).compareTo(value(a)));
+    final rows = <Json>[];
+    for (var i = 0; i < eligible.length; i++) {
+      final r = eligible[i];
+      final rank = i > 0 && value(eligible[i - 1]) == value(r) ? rows[i - 1]['rank'] as int : i + 1;
+      rows.add(_leaderRow(r, value(r), rank, scale));
+    }
+    for (final r in people.where((r) => (r['present'] as int) < 1)) {
+      rows.add(_leaderRow(r, value(r), null, scale));
+    }
+    final me = rows.firstWhere((r) => r['me'] == true);
+    return {'period': period, 'metric': metric, 'rows': rows, 'me': {'rank': me['rank'], 'of': eligible.length}};
+  }
+
+  Json _leaderRow(Json r, num value, int? rank, int scale) => {
+        'rank': rank, 'userId': r['userId'], 'name': r['name'], 'employeeCode': r['employeeCode'], 'value': value,
+        'collectedPoisha': (r['collected'] as int) * scale, 'visitCredit': (r['credit'] as num) * scale, 'promisesKept': (r['promises'] as int) * scale,
+        'amountAchievement': r['ach'], 'presentDays': r['present'], 'eligible': rank != null, 'me': r['userId'] == user['id'],
+      };
 
   Json _push(Json req) {
     final results = <Json>[];
@@ -493,6 +608,7 @@ class FakeFieldApi implements HttpClientAdapter {
       } else {
         r = {'mutationId': id, 'result': 'applied', 'entityId': '$entity-$id', 'status': entity == 'collection' ? 'received' : 'ok'};
         if (entity == 'collection' && payload['method'] == 'cash') _cashOnHand += payload['amountPoisha'] as int;
+        if (entity == 'collection') _collectedToday += payload['amountPoisha'] as int;
         if (entity == 'deposit') _cashOnHand -= payload['amountPoisha'] as int;
         if (entity == 'attendance_event' && payload['type'] == 'work_out') _leaveCoworkOnWorkOut();
         if (entity == 'visit' && m['op'] == 'create' && payload['coWorkSessionId'] != null) {
