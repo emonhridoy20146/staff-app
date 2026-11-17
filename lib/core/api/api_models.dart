@@ -326,13 +326,15 @@ class MyTarget {
   factory MyTarget.fromJson(Json j) => MyTarget(
         businessDate: j['businessDate'] as String,
         amountPoisha: ((j['amountPoisha'] as num?) ?? 0).toInt(),
-        visits: ((j['visits'] as num?) ?? 0).toInt(),
+        visits: ((j['visits'] as num?) ?? 0).toDouble(),
         source: (j['source'] as String?) ?? 'branch',
         workingDay: (j['workingDay'] as bool?) ?? true,
       );
   final String businessDate;
   final int amountPoisha;
-  final int visits;
+
+  /// A number, not a count: compared with visit credit, so it can be 12.5.
+  final double visits;
 
   /// personal | branch
   final String source;

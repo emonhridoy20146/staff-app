@@ -19,7 +19,7 @@ class PerfDay {
         coWorkVisits: _i(j['coWorkVisits']),
         visitCredit: _d(j['visitCredit']),
         targetPoisha: _i(j['targetPoisha']),
-        visitTarget: _i(j['visitTarget']),
+        visitTarget: _d(j['visitTarget']),
         workingDay: (j['workingDay'] as bool?) ?? true,
       );
   final String date;
@@ -28,7 +28,7 @@ class PerfDay {
   final int coWorkVisits;
   final double visitCredit;
   final int targetPoisha;
-  final int visitTarget;
+  final double visitTarget;
   final bool workingDay;
 }
 
@@ -66,8 +66,8 @@ class MyPerformance {
       pendingPoisha: _i(j['pendingPoisha']),
       targetPoisha: _i(row['targetPoisha']),
       targetToDatePoisha: _i(row['targetToDatePoisha']),
-      visitTarget: _i(row['visitTarget']),
-      visitTargetToDate: _i(row['visitTargetToDate']),
+      visitTarget: _d(row['visitTarget']),
+      visitTargetToDate: _d(row['visitTargetToDate']),
       soloVisits: _i(row['soloVisits']),
       coWorkVisits: _i(row['coWorkVisits']),
       visitCredit: _d(row['visitCredit']),
@@ -90,8 +90,8 @@ class MyPerformance {
   final int pendingPoisha;
   final int targetPoisha;
   final int targetToDatePoisha;
-  final int visitTarget;
-  final int visitTargetToDate;
+  final double visitTarget;
+  final double visitTargetToDate;
   final int soloVisits;
   final int coWorkVisits;
   final double visitCredit;
@@ -154,7 +154,7 @@ class Leaderboard {
   factory Leaderboard.fromJson(Json j) {
     final me = j['me'] as Json?;
     return Leaderboard(
-      rows: [for (final r in (j['rows'] as List?) ?? const []) LeaderRow.fromJson(r as Json)],
+      rows: [for (final r in (j['items'] as List?) ?? const []) LeaderRow.fromJson(r as Json)],
       myRank: (me?['rank'] as num?)?.toInt(),
       of: (me?['of'] as num?)?.toInt(),
     );

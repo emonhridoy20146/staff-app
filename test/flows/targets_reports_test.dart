@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:staff_app/core/api/api_models.dart';
 import 'package:staff_app/core/providers.dart';
 import 'package:staff_app/features/reports/src/reports_data.dart';
 import 'package:staff_app/features/visits/src/visits.dart';
@@ -23,13 +24,19 @@ void main() {
     expect(t.visits, 20);
     expect(t.source, 'personal');
     final db = h.read(databaseProvider);
-    expect(jsonDecode((await db.kvGet('my_target'))!)['amountPoisha'], 4000000);
+    expect((jsonDecode((await db.kvGet('my_target'))!) as Map<String, dynamic>)['amountPoisha'], 4000000);
 
     // A day off: the server says so and the targets are 0.
     h.api.workingDay = false;
     await h.read(syncEngineProvider).syncNow();
     expect(h.read(myTargetProvider)!.workingDay, isFalse);
     expect(h.read(myTargetProvider)!.amountPoisha, 0);
+  });
+
+  test('a visit target can be a fraction, since it is compared with visit credit', () {
+    final t = MyTarget.fromJson({'businessDate': '2026-11-15', 'amountPoisha': 4000000, 'visits': 12.5, 'source': 'branch', 'workingDay': true});
+    expect(t.visits, 12.5);
+    expect(MyTarget.fromJson(t.toJson()).visits, 12.5);
   });
 
   test('visit credit: single visits count 1, co-work visits count the admin weight', () {

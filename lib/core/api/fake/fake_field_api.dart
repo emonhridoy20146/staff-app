@@ -561,7 +561,7 @@ class FakeFieldApi implements HttpClientAdapter {
       rows.add(_leaderRow(r, value(r), null, scale));
     }
     final me = rows.firstWhere((r) => r['me'] == true);
-    return {'period': period, 'metric': metric, 'rows': rows, 'me': {'rank': me['rank'], 'of': eligible.length}};
+    return {'period': period, 'metric': metric, 'minPresentDays': 1, 'items': rows, 'me': {'rank': me['rank'], 'of': eligible.length}};
   }
 
   Json _leaderRow(Json r, num value, int? rank, int scale) => {

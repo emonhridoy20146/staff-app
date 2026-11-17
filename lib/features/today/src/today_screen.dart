@@ -207,7 +207,7 @@ class _ProgressCard extends ConsumerWidget {
     final mine = access.flag('module.targets') && my != null && my.businessDate == ref.watch(todayProvider) ? my : null;
     final target = mine?.amountPoisha ?? 0;
     final ratio = target <= 0 ? 0.0 : (totals.total / target).clamp(0.0, 1.0);
-    final visitTarget = mine?.visits ?? 0;
+    final visitTarget = mine?.visits ?? 0.0;
     final credit = ref.watch(todayVisitCreditProvider);
     final visitRatio = visitTarget <= 0 ? 0.0 : (credit / visitTarget).clamp(0.0, 1.0);
     final offDay = mine != null && !mine.workingDay;
@@ -250,7 +250,7 @@ class _ProgressCard extends ConsumerWidget {
             const SizedBox(width: Space.s4),
             Expanded(child: Text(l.todayVisitTarget, style: t.bodyMedium!.copyWith(color: cs.onSurfaceVariant))),
             Text(
-              l.todayVisitTargetOf(f.dec(credit), f.num(visitTarget)),
+              l.todayVisitTargetOf(f.dec(credit), f.dec(visitTarget)),
               style: AppTheme.tabular(t.titleSmall!).copyWith(color: visitRatio >= 1 ? done : null),
             ),
           ]),

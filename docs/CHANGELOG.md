@@ -8,6 +8,7 @@
 - Leaderboard (`/leaderboard`, FR-REP-005): only when the admin turns on `reports.leaderboardVisibleToStaff` (default off; the server answers 403 otherwise). Today / this month; metric chips (collected, visit credit, promises kept, target achieved); my row highlighted; ties share a rank; staff with too few days present are listed apart as not ranked. Reached from the Me tab and the rank card.
 ### Changed
 - The branch settings `dailyTargetPoisha` / `dailyVisitTarget` are no longer read: targets are dated records on the server (contract 1.10.0).
+- Checked against the field-api 1.10.0 contract: visit targets are numbers (a target of 12.5 is kept, not cut to 12) and the leaderboard list is read from `items`.
 - Tests: targets and reports flow tests (target on pull and day off, visit credit weight, month online then cached offline, leaderboard ties and hidden, month arithmetic); screenshots 22-performance, 23-leaderboard; Today and Me screenshots updated.
 
 ## [0.6.0] — 2026-11-16

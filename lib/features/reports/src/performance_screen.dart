@@ -201,7 +201,7 @@ class _VisitsCard extends ConsumerWidget {
         ]),
         const SizedBox(height: 2),
         Text(
-          hasTarget ? l.todayVisitTargetOf(f.dec(d.visitCredit), f.num(d.visitTargetToDate)) : f.dec(d.visitCredit),
+          hasTarget ? l.todayVisitTargetOf(f.dec(d.visitCredit), f.dec(d.visitTargetToDate)) : f.dec(d.visitCredit),
           style: AppTheme.tabular(t.headlineSmall!).copyWith(fontWeight: FontWeight.w700),
         ),
         if (hasTarget) ...[const SizedBox(height: Space.s8), _Bar(ratio: d.visitAchievement, height: 8)],
