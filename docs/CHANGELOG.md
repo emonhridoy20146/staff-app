@@ -1,5 +1,17 @@
 # Changelog — staff-app
 
+## [0.8.0] — 2026-11-17
+### Added
+- Contract pinned to field-api 1.11.0 (map pins, `customers.staffPinApproval`; field-api PR #8, merge d5a0123).
+- Map pin screen (FR-CUS-011, owner request 2026-11-17), replacing the GPS-only pin screen at `/customers/:id/pin`: the pin stays in the middle and the map moves under it, as ride apps pick a pick-up spot (drag, pinch, tap a spot to bring it under the pin; no rotation). It starts at the customer's pin (drawn hollow for comparison), else at the phone's position; the my-location button brings the map back to the phone. It shows the coordinates, how far the pin moved, and how far the phone is from the pin (warning above 300 m). Coordinates can be typed or pasted (decimal, N/E degrees, map links with `@lat,lng` or `q=lat,lng`, Bangla digits; longitude-first pairs are swapped). A camera photo of the house is optional; a note too. Works offline: the pin is saved and sent later.
+- What happens is said before sending: under `customers.staffPinApproval = when_missing` (default, owner decision 2026-11-17) a pin for a customer without a usable location is set as soon as it is sent ("Set pin"); moving an existing pin, a phone reporting a fake location, or the `always` setting waits for a manager ("Send for approval"). Outside Bangladesh cannot be sent. The customer's status line says "set as soon as it is sent" while the pin waits in the queue.
+- The proposal goes as `method: map` with `deviceGeo` (the phone's fix, or null), so the manager sees how far away the staff was; the server's `approved` push result clears the status line at once and the pin arrives with the same sync.
+- Database schema 5: `location_proposals.method` (`gps` for rows from before 0.8.0, which keep their old body) and `location_proposals.device_geo_json`. Migration tests from schema 1, 2, 3 and 4.
+- Demo API: the 1.11.0 pin rules (auto-apply for pinless customers, approved pins update the customer) and the setting.
+### Changed
+- A pin no longer needs the phone at the door with ≤ 30 m GPS accuracy, and the photo is optional (owner request: pin like in Uber). The manager still sees the phone's distance and any fake location.
+- Tests: map pin rules and coordinate parsing (unit), map pin flows (photo and no photo, offline, auto-apply, moved pin and fake location wait, approval brings the pin, old GPS rows), a widget test of the screen (drag, typed coordinates, set pin), screenshot 14 updated.
+
 ## [0.7.0] — 2026-11-17
 ### Added
 - Contract pinned to field-api 1.10.0 (targets and reports).

@@ -22,7 +22,7 @@ Server model: `field-api/docs/06-data-model.md`. Local tables mirror the **user'
 | `notes` | `client_id PK`, `server_id`, `customer_id`, `author_id`, `author_name`, `category`, `text`, `voice_media_client_id`, `created_at`, `editable_until`, `sync_state` | `(customer_id, created_at DESC)` | last 20 per customer |
 | `promises` | `client_id PK`, `server_id`, `customer_id`, `erp_plan_id`, `promised_date`, `promised_amount_poisha`, `status`, `note`, `sync_state`, `reminder_scheduled` | `(promised_date, status)` | |
 | `tag_events` | `client_id PK`, `customer_id`, `previous_json`, `next_json`, `reason_code`, `reason`, `at`, `sync_state` | `(customer_id)` | |
-| `location_proposals` | `client_id PK`, `customer_id`, `lat`, `lng`, `accuracy_m`, `photo_media_client_id`, `note`, `status` (`pending|approved|rejected`), `sync_state` (`waiting_photo|queued|synced|failed`), `decision_reason` (v3) | | |
+| `location_proposals` | `client_id PK`, `customer_id`, `lat`, `lng`, `accuracy_m`, `photo_media_client_id`, `note`, `status` (`pending|approved|rejected`), `sync_state` (`waiting_photo|queued|synced|failed`), `decision_reason` (v3), `method` (v5, `gps|map`, default `gps`; `accuracy_m` is 0 for `map`), `device_geo_json` (v5, the phone's fix when a map pin was picked) | | |
 | `attendance_events` | `client_id PK`, `type`, `at`, `device_time`, `lat`, `lng`, `accuracy_m`, `mock`, `selfie_media_client_id`, `sync_state` | `(at)` | |
 | `attendance_day` | `business_date PK`, `status`, `first_in`, `last_out`, `break_min`, `late_min`, `breaks_json` | | computed locally, replaced by server |
 | `cowork_sessions` (v4) | `id PK`, `business_date`, `status` (`open|ended`), `created_by`, `note`, `members_json` (userId, name, status `invited|accepted|rejected|left`, invitedBy, invitedAt, respondedAt, leftAt), `created_at`, `ended_at` | | server-owned (pull entity `cowork_session` + online calls) |
@@ -37,7 +37,7 @@ Server model: `field-api/docs/06-data-model.md`. Local tables mirror the **user'
 | `kv_settings` | `key PK`, `value_json` | | permissions snapshot, flags, settings, consents |
 
 ## 3. Migrations
-Current `schemaVersion` = **4**. v3 → v4 (0.6.0): create `cowork_sessions`; add `visits.user_id`, `visits.co_work_session_id`, `visits.co_work_participant_ids_json`. v2 → v3 (0.3.0): add `location_proposals.decision_reason`. v1 → v2 (0.2.0): create `contact_attempts`, add index `idx_location_queue_t`. Tested in `test/core/migration_test.dart` (outbox rows survive). `bat`/`chg` in `location_queue` stay null until a battery plugin is added.
+Current `schemaVersion` = **5**. v4 → v5 (0.8.0): add `location_proposals.method` (default `gps`, so queued old proposals keep their body) and `location_proposals.device_geo_json`. v3 → v4 (0.6.0): create `cowork_sessions`; add `visits.user_id`, `visits.co_work_session_id`, `visits.co_work_participant_ids_json`. v2 → v3 (0.3.0): add `location_proposals.decision_reason`. v1 → v2 (0.2.0): create `contact_attempts`, add index `idx_location_queue_t`. Tested in `test/core/migration_test.dart` (outbox rows survive). `bat`/`chg` in `location_queue` stay null until a battery plugin is added.
 
 drift `schemaVersion` integer; each feature contributes `MigrationStep`s registered in `core/db/migrations`; every version upgrade is tested from **every** previous released schema (`drift_dev schema dump` + `verifySchema` tests). Never drop a table containing `outbox`/`collections` rows without migrating data.
 

@@ -38,6 +38,7 @@ class FakeFieldApi implements HttpClientAdapter {
   List<String> selfieEvents = const ['work_in', 'break_start', 'break_end', 'work_out']; // attendance.selfieEvents
   int pushCalls = 0;
   int coworkMaxMembers = 5; // cowork.maxMembers, counts the requester
+  String staffPinApproval = 'when_missing'; // customers.staffPinApproval (1.11.0)
 
   /// My daily target (1.10.0). The demo shows the leaderboard; the real
   /// default of reports.leaderboardVisibleToStaff is false.
@@ -119,6 +120,7 @@ class FakeFieldApi implements HttpClientAdapter {
         'attendance.selfieRequired': selfieRequired,
         'attendance.selfieEvents': selfieEvents,
         'cowork.maxMembers': coworkMaxMembers,
+        'customers.staffPinApproval': staffPinApproval,
         'cowork.visitCredit': 1.0,
         'location.sampling': {'fastSec': 15, 'slowSec': 45, 'stillSec': 180, 'distanceFilterM': 25, 'maxAccuracyM': 50},
       };
@@ -131,6 +133,17 @@ class FakeFieldApi implements HttpClientAdapter {
   void decideProposal(String clientId, String status, {String? reason}) {
     final last = _log.lastWhere((c) => c.entity == 'location_proposal' && c.data?['clientId'] == clientId);
     serverChange('location_proposal', last.id, {...last.data!, 'status': status, 'decisionReason': reason, 'decidedAt': clock.nowUtc().toIso8601String()});
+    if (status == 'approved') _applyPin(last.data!['customerId'] as String, (last.data!['lat'] as num).toDouble(), (last.data!['lng'] as num).toDouble());
+  }
+
+  /// The customer as the server has it now (latest change).
+  Json? _customer(String id) => _log.lastWhere((c) => c.entity == 'customer' && c.id == id, orElse: () => _Change('customer', id, 'upsert', null)).data;
+
+  /// An applied pin reaches the phone as a customer change (1.11.0).
+  void _applyPin(String customerId, double lat, double lng) {
+    final c = _customer(customerId);
+    if (c == null) return;
+    serverChange('customer', customerId, {...c, 'location': {'lat': lat, 'lng': lng, 'status': 'overridden', 'source': 'overlay'}});
   }
 
   String _nameOf(String userId) => userId == user['id']
@@ -628,20 +641,32 @@ class FakeFieldApi implements HttpClientAdapter {
           });
         }
         if (entity == 'location_proposal') {
+          // Server rules (1.11.0): a pin for a customer without a usable pin
+          // applies at once under `when_missing`, unless the phone is mocked.
           final geo = (payload['geo'] as Json?) ?? const {};
+          final method = (payload['method'] as String?) ?? 'gps';
+          final deviceMock = (payload['deviceGeo'] as Json?)?['mock'] == true;
+          final loc = (_customer(payload['customerId'] as String)?['location'] as Json?) ?? const {};
+          final usable = loc['status'] == 'ok' || loc['status'] == 'overridden';
+          final auto = staffPinApproval == 'when_missing' && !usable && !deviceMock;
+          final status = auto ? 'approved' : 'pending';
+          r = {...r, 'status': status};
           serverChange('location_proposal', '$entity-$id', {
             'id': '$entity-$id',
             'clientId': payload['clientId'] ?? id,
             'customerId': payload['customerId'],
-            'status': 'pending',
+            'status': status,
             'lat': geo['lat'],
             'lng': geo['lng'],
             'accuracyM': geo['accuracyM'],
             'note': payload['note'],
             'decisionReason': null,
+            'method': method,
+            'autoApplied': auto,
             'createdAt': clock.nowUtc().toIso8601String(),
-            'decidedAt': null,
+            'decidedAt': auto ? clock.nowUtc().toIso8601String() : null,
           });
+          if (auto) _applyPin(payload['customerId'] as String, (geo['lat'] as num).toDouble(), (geo['lng'] as num).toDouble());
         }
       }
       _applied[id] = r;

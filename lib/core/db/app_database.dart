@@ -46,7 +46,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -89,6 +89,11 @@ class AppDatabase extends _$AppDatabase {
             await m.addColumn(visits, visits.userId);
             await m.addColumn(visits, visits.coWorkSessionId);
             await m.addColumn(visits, visits.coWorkParticipantIdsJson);
+          }
+          // v5 (0.8.0): map pins: how a pin proposal was made, and where the phone was.
+          if (from < 5) {
+            await m.addColumn(locationProposals, locationProposals.method);
+            await m.addColumn(locationProposals, locationProposals.deviceGeoJson);
           }
         },
         beforeOpen: (details) async {

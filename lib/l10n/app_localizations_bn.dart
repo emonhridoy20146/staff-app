@@ -1470,21 +1470,10 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get pinIntro =>
-      'কাস্টমারের দরজায় দাঁড়ান। ফোনের GPS অবস্থানটাই নতুন পিন হিসেবে যাবে, ম্যানেজার অনুমোদন দেবেন।';
-
-  @override
-  String pinAccuracyWeak(String meters, String limit) {
-    return 'GPS-এ $meters মিটার গরমিল। $limit মিটার বা কম লাগবে: খোলা জায়গায় দাঁড়িয়ে একটু অপেক্ষা করুন।';
-  }
+      'ম্যাপ সরিয়ে পিনটা কাস্টমারের দরজার উপর আনুন। কোনো জায়গায় চাপ দিলে সেটা পিনের নিচে চলে আসবে।';
 
   @override
   String get pinOutside => 'এই অবস্থানটা বাংলাদেশের বাইরে।';
-
-  @override
-  String get pinRetry => 'আবার GPS দেখুন';
-
-  @override
-  String get pinPhotoNeeded => 'বাড়ি বা দোকানের একটা ছবি তুলুন';
 
   @override
   String get pinNoteHint => 'চিহ্ন, গেটের রং, তলা…';
@@ -1500,13 +1489,68 @@ class AppLocalizationsBn extends AppLocalizations {
       'নতুন লোকেশন পাঠানো হয়েছে · ম্যানেজারের অনুমোদনের অপেক্ষায়';
 
   @override
-  String get pinFailed =>
-      'সার্ভার এই লোকেশন নেয়নি। ভালো GPS নিয়ে দরজা থেকে আবার চেষ্টা করুন।';
+  String get pinFailed => 'সার্ভার এই লোকেশন নেয়নি। ম্যাপ খুলে আবার পাঠান।';
 
   @override
   String pinDistanceFromOld(String distance) {
     return 'বর্তমান পিন থেকে $distance';
   }
+
+  @override
+  String get pinMapLabel =>
+      'ম্যাপ। টেনে সরিয়ে পিনটা কাস্টমারের দরজার উপর আনুন।';
+
+  @override
+  String get pinAt => 'পিনের অবস্থান';
+
+  @override
+  String pinPhoneDistance(String distance) {
+    return 'আপনি পিন থেকে $distance দূরে';
+  }
+
+  @override
+  String pinPhoneFar(String distance) {
+    return 'আপনি পিন থেকে $distance দূরে। ঠিক বাড়ি কিনা দেখে নিন: ম্যানেজার এই দূরত্ব দেখবেন।';
+  }
+
+  @override
+  String get pinPhoneUnknown => 'আপনার নিজের অবস্থান এখনো জানা যায়নি।';
+
+  @override
+  String get pinPhoneMock =>
+      'ফোনে নকল লোকেশন দেখাচ্ছে, তাই এই পিন ম্যানেজার দেখে নেবেন।';
+
+  @override
+  String get pinWillApply =>
+      'এই কাস্টমারের লোকেশন নেই: পাঠানোর সাথে সাথে পিন বসে যাবে।';
+
+  @override
+  String get pinNeedsManager => 'নতুন পিন বসার আগে ম্যানেজার দেখে নেবেন।';
+
+  @override
+  String get pinPhotoOptional => 'বাড়ি বা দোকানের ছবি (ঐচ্ছিক)';
+
+  @override
+  String get pinSubmitApply => 'পিন বসান';
+
+  @override
+  String get pinSentApplied => 'সেভ হয়েছে। পাঠানোর সাথে সাথে পিন বসে যাবে।';
+
+  @override
+  String get pinApplyWhenSent =>
+      'নতুন লোকেশন সেভ হয়েছে · পাঠানোর সাথে সাথে বসবে';
+
+  @override
+  String get pinTypeCoords => 'কো-অর্ডিনেট লিখুন বা পেস্ট করুন';
+
+  @override
+  String get pinTypeCoordsHelp => 'যেমন 22.70123, 90.37011, বা ম্যাপের লিংক';
+
+  @override
+  String get pinTypeCoordsError => 'এই কো-অর্ডিনেট পড়া যায়নি।';
+
+  @override
+  String get pinGo => 'যান';
 
   @override
   String mapNoPinCount(String count) {
