@@ -30,6 +30,9 @@ Phases match `field-api/docs/09-progress.md`. Start each phase against the Prism
 | Attendance: work-in/out, breaks, summary | ✅ |
 | Attendance photo at every event (setting `attendance.selfieEvents`) | ✅ 0.4.0, flow tests + screenshot; device camera check pending |
 | Handovers incoming/outgoing | ◐ incoming done; outgoing (P4 staff-initiated) not yet |
+| Notices from the office: list, detail, offline "পড়েছি" (`broadcast_ack`), Today banner, Me count (contract 1.12.0) | ✅ 0.9.0, flow tests + screenshots |
+| Leave requests (ask, withdraw, status with reason), holidays of my branch, my shift; cached offline | ✅ 0.9.0, flow tests + screenshots |
+| Guarantor on the customer page with one-tap call, logged offline as a guarantor call | ✅ 0.9.0, flow test + screenshot; device call check pending |
 | Notifications (FCM + centre), Sync centre & Problems | ◐ sync centre done; FCM not yet (needs Firebase project) |
 | Onboarding: consent, permissions primer | ✅ |
 **Acceptance:** M-E2…M-E7, M-E9, M-E10 green; manual device checklist (non-location sections) signed off on 4 OEM devices; pilot 5 staff × 2 weeks with zero lost/duplicate collections.
@@ -61,4 +64,4 @@ My performance, targets progress, day route suggestion.
 | Day route suggestion | ☐ |
 
 ## Phase 4 — Premium (as approved)
-Voice notes, offline map packs, Bluetooth printing, broadcasts with acknowledgement, leave requests, staff-initiated handover.
+Voice notes, offline map packs, Bluetooth printing, staff-initiated handover. (Broadcasts with acknowledgement and leave requests were brought forward to 0.9.0, owner request 2026-11-17.)

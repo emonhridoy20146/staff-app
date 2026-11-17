@@ -174,4 +174,9 @@ void main() {
   testWidgets('22 my performance', (t) async => _shot(t, await _ready(t), '22-performance', go: '/performance'));
   testWidgets('23 leaderboard', (t) async => _shot(t, await _ready(t), '23-leaderboard', go: '/leaderboard'));
   testWidgets('14 set location', (t) async => _shot(t, await _ready(t), '14-set-location', go: '/customers/c-1010/pin'));
+  testWidgets('24 notices', (t) async => _shot(t, await _ready(t), '24-notices', go: '/notices'));
+  testWidgets('25 notice detail', (t) async => _shot(t, await _ready(t), '25-notice-detail', go: '/notices/bc-1'));
+  testWidgets('26 my leave', (t) async => _shot(t, await _ready(t), '26-leave', go: '/attendance/leave'));
+  testWidgets('27 ask for leave', (t) async => _shot(t, await _ready(t), '27-leave-request', go: '/attendance/leave/new'));
+  testWidgets('28 work calendar', (t) async => _shot(t, await _ready(t), '28-work-calendar', go: '/attendance/calendar'));
 }

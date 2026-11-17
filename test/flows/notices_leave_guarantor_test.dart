@@ -1,6 +1,6 @@
+import 'dart:async';
 import 'dart:convert';
 
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:staff_app/core/providers.dart';
 import 'package:staff_app/features/attendance/src/leave_data.dart';
@@ -55,17 +55,25 @@ void main() {
 
     test('must-read notices drive the Today banner until read', () async {
       await h.signIn();
-      Future<List<String>> ids(Provider<List<Notice>> p) async {
-        h.container.invalidate(noticesProvider);
-        await h.container.read(noticesProvider.future);
-        return [for (final n in h.read(p)) n.id];
+      // The screens listen to the notices; wait for the list that matches.
+      Future<List<Notice>> until(bool Function(List<Notice> all) ok) {
+        final got = Completer<List<Notice>>();
+        final sub = h.container.listen(noticesProvider, (_, v) {
+          final all = v.value;
+          if (all != null && ok(all) && !got.isCompleted) got.complete(all);
+        }, fireImmediately: true);
+        return got.future.timeout(const Duration(seconds: 5)).whenComplete(sub.close);
       }
 
-      expect(await ids(mustReadNoticesProvider), ['bc-1']);
-      expect(await ids(unreadNoticesProvider), hasLength(2));
+      await until((all) => all.length == 2);
+      expect(h.read(mustReadNoticesProvider).map((n) => n.id), ['bc-1']);
+      expect(h.read(unreadNoticesProvider), hasLength(2));
       await h.read(noticeServiceProvider).markRead('bc-1');
-      expect(await ids(mustReadNoticesProvider), isEmpty);
-      expect(await ids(unreadNoticesProvider), ['bc-2']);
+      await until((all) => all.where((n) => n.read).length == 1);
+      expect(h.read(mustReadNoticesProvider), isEmpty);
+      expect(h.read(unreadNoticesProvider).map((n) => n.id), ['bc-2']);
+      // The open notice query must end before the database closes.
+      h.container.invalidate(noticesProvider);
     });
 
     test('a new notice from the office reaches the phone on the next sync', () async {
