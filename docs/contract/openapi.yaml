@@ -2225,7 +2225,7 @@ components:
     Leaderboard:
       type: object
       properties:
-        branchId: { type: [string, 'null'] }
+        branchId: { type: [string, 'null'], description: 'The branch asked for; null when the board covers every branch in the caller''s scope. Always the own branch for field staff.' }
         period: { type: string, enum: [day, month] }
         date: { type: string }
         metric: { type: string }
@@ -2237,7 +2237,7 @@ components:
       type: object
       properties:
         generatedAt: { type: string, format: date-time }
-        maxBranchKm: { type: number }
+        maxBranchKm: { type: number, description: 'System default of reports.dataQualityMaxBranchKm; a branch may override it (see branches[].maxBranchKm)' }
         branches:
           type: array
           items:
@@ -2245,6 +2245,7 @@ components:
             properties:
               branchId: { type: string }
               branchName: { $ref: '#/components/schemas/I18nText' }
+              maxBranchKm: { type: number, description: 'Distance used for far_from_branch in this branch' }
               customers: { type: integer, description: 'Active customers checked' }
               withIssues: { type: integer, description: 'Customers with at least one issue' }
               issues: { type: object, additionalProperties: { type: integer }, description: 'Count per DataQualityIssue; every issue key is present' }
