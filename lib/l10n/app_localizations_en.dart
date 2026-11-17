@@ -1830,4 +1830,274 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get leaderFootnote =>
       'Collected counts money taken in the field (posted and pending in ERP). Co-work visits add to everyone\'s credit.';
+
+  @override
+  String get noticesTitle => 'Notices';
+
+  @override
+  String get noticeTitle => 'Notice';
+
+  @override
+  String get noticesEmpty => 'No notices';
+
+  @override
+  String get noticesEmptyBody => 'Notices from the office show here';
+
+  @override
+  String get noticeRead => 'Read';
+
+  @override
+  String get noticeMustRead => 'Confirm reading';
+
+  @override
+  String get noticeUnread => 'New';
+
+  @override
+  String noticeFrom(String name) {
+    return 'From $name';
+  }
+
+  @override
+  String get noticeMarkRead => 'I have read it';
+
+  @override
+  String get noticeThanks => 'Thanks, the office will see it';
+
+  @override
+  String noticeReadAt(String time) {
+    return 'Read at $time';
+  }
+
+  @override
+  String noticeReadQueued(String time) {
+    return 'Read at $time · reaches the office when online';
+  }
+
+  @override
+  String get noticeReadFailed =>
+      'Could not be sent to the office. See the sync centre.';
+
+  @override
+  String todayNoticeOne(String title) {
+    return 'New notice: $title';
+  }
+
+  @override
+  String todayNoticeMany(String n) {
+    return '$n notices to read and confirm';
+  }
+
+  @override
+  String noticesUnreadCount(String n) {
+    return '$n new';
+  }
+
+  @override
+  String get noticesAllRead => 'All read';
+
+  @override
+  String get leaveTitle => 'Leave';
+
+  @override
+  String get leaveMeSubtitle => 'Ask for leave and see the answer';
+
+  @override
+  String get leaveNew => 'Ask for leave';
+
+  @override
+  String get leaveTypeCasual => 'Casual';
+
+  @override
+  String get leaveTypeSick => 'Sick';
+
+  @override
+  String get leaveTypeOther => 'Other';
+
+  @override
+  String get leavePending => 'Pending';
+
+  @override
+  String get leaveApproved => 'Approved';
+
+  @override
+  String get leaveRejected => 'Not approved';
+
+  @override
+  String get leaveCancelled => 'Withdrawn';
+
+  @override
+  String get leaveCancelDone => 'Request withdrawn';
+
+  @override
+  String leaveDays(String n) {
+    return '$n days';
+  }
+
+  @override
+  String leaveTotalDays(String n) {
+    return '$n days in total';
+  }
+
+  @override
+  String leaveAskedAt(String time) {
+    return 'Asked $time';
+  }
+
+  @override
+  String leaveManagerSaid(String reason) {
+    return 'Manager: $reason';
+  }
+
+  @override
+  String get leaveCancelAction => 'Withdraw';
+
+  @override
+  String get leaveCancelTitle => 'Withdraw this request?';
+
+  @override
+  String leaveCancelBody(String from, String to) {
+    return 'The request for $from – $to will be withdrawn. You can ask again if needed.';
+  }
+
+  @override
+  String get leaveCancelConfirm => 'Yes, withdraw';
+
+  @override
+  String get leaveEmpty => 'No leave requests';
+
+  @override
+  String get leaveEmptyBody => 'Tap the button below to ask';
+
+  @override
+  String leaveCachedAt(String time) {
+    return 'Offline · showing what the phone had at $time';
+  }
+
+  @override
+  String get leaveNeedsInternet => 'Needs internet. Try again when connected.';
+
+  @override
+  String get leaveType => 'Type of leave';
+
+  @override
+  String get leaveFrom => 'From';
+
+  @override
+  String get leaveTo => 'To';
+
+  @override
+  String get leaveReason => 'Reason (optional)';
+
+  @override
+  String get leaveReasonHint => 'e.g. sister\'s wedding';
+
+  @override
+  String get leaveOnlineNote =>
+      'Sending needs internet. The manager\'s answer shows here.';
+
+  @override
+  String get leaveSend => 'Send request';
+
+  @override
+  String get leaveSent => 'Request sent';
+
+  @override
+  String get leaveErrToBeforeFrom => 'The end date cannot be before the start';
+
+  @override
+  String get leaveErrTooLong => 'At most 31 days in one request';
+
+  @override
+  String get leaveErrOverlaps =>
+      'You already have a request for some of these days';
+
+  @override
+  String get leaveErrDecided => 'The manager has already decided';
+
+  @override
+  String get calendarTitle => 'Holidays and shift';
+
+  @override
+  String get calendarMeSubtitle => 'Holidays, weekly off and duty hours';
+
+  @override
+  String get calendarMyShift => 'My shift';
+
+  @override
+  String get calendarDefaultShift => 'Branch default shift';
+
+  @override
+  String calendarShiftHours(String start, String end) {
+    return '$start – $end';
+  }
+
+  @override
+  String calendarWeeklyOff(String days) {
+    return 'Weekly off: $days';
+  }
+
+  @override
+  String get calendarNoWeeklyOff => 'No weekly off';
+
+  @override
+  String calendarLateGrace(String grace, String brk) {
+    return 'Late after $grace min · break $brk min';
+  }
+
+  @override
+  String get calendarMyLeave => 'My approved leave';
+
+  @override
+  String get calendarHolidays => 'Holidays';
+
+  @override
+  String get calendarNoHolidays => 'No holidays entered for this year';
+
+  @override
+  String get calendarNoHolidaysBody =>
+      'They show here once the office adds them';
+
+  @override
+  String get calendarNational => 'National';
+
+  @override
+  String get calendarBranch => 'Branch';
+
+  @override
+  String get weekdaySun => 'Sunday';
+
+  @override
+  String get weekdayMon => 'Monday';
+
+  @override
+  String get weekdayTue => 'Tuesday';
+
+  @override
+  String get weekdayWed => 'Wednesday';
+
+  @override
+  String get weekdayThu => 'Thursday';
+
+  @override
+  String get weekdayFri => 'Friday';
+
+  @override
+  String get weekdaySat => 'Saturday';
+
+  @override
+  String timelineGuarantorCall(String outcome) {
+    return 'Guarantor call · $outcome';
+  }
+
+  @override
+  String get guarantorNoName => 'No name';
+
+  @override
+  String get guarantorCall => 'Call the guarantor';
+
+  @override
+  String get guarantorCallShort => 'Call';
+
+  @override
+  String get guarantorNoPhone => 'No phone number';
 }

@@ -15477,6 +15477,16 @@ class $ContactAttemptsTable extends ContactAttempts
     type: DriftSqlType.int,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _targetMeta = const VerificationMeta('target');
+  @override
+  late final GeneratedColumn<String> target = GeneratedColumn<String>(
+    'target',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('customer'),
+  );
   static const VerificationMeta _atMeta = const VerificationMeta('at');
   @override
   late final GeneratedColumn<DateTime> at = GeneratedColumn<DateTime>(
@@ -15525,6 +15535,7 @@ class $ContactAttemptsTable extends ContactAttempts
     customerId,
     channel,
     phoneIndex,
+    target,
     at,
     outcome,
     note,
@@ -15576,6 +15587,12 @@ class $ContactAttemptsTable extends ContactAttempts
       context.handle(
         _phoneIndexMeta,
         phoneIndex.isAcceptableOrUnknown(data['phone_index']!, _phoneIndexMeta),
+      );
+    }
+    if (data.containsKey('target')) {
+      context.handle(
+        _targetMeta,
+        target.isAcceptableOrUnknown(data['target']!, _targetMeta),
       );
     }
     if (data.containsKey('at')) {
@@ -15630,6 +15647,10 @@ class $ContactAttemptsTable extends ContactAttempts
         DriftSqlType.int,
         data['${effectivePrefix}phone_index'],
       ),
+      target: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}target'],
+      )!,
       at: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}at'],
@@ -15666,6 +15687,9 @@ class ContactAttemptRow extends DataClass
 
   /// Index into the customer's phones — never the number itself.
   final int? phoneIndex;
+
+  /// customer | guarantor (schema 6, contract 1.12.0).
+  final String target;
   final DateTime at;
 
   /// connected | no_answer | busy | switched_off | wrong_number | sent
@@ -15678,6 +15702,7 @@ class ContactAttemptRow extends DataClass
     required this.customerId,
     required this.channel,
     this.phoneIndex,
+    required this.target,
     required this.at,
     this.outcome,
     this.note,
@@ -15695,6 +15720,7 @@ class ContactAttemptRow extends DataClass
     if (!nullToAbsent || phoneIndex != null) {
       map['phone_index'] = Variable<int>(phoneIndex);
     }
+    map['target'] = Variable<String>(target);
     map['at'] = Variable<DateTime>(at);
     if (!nullToAbsent || outcome != null) {
       map['outcome'] = Variable<String>(outcome);
@@ -15717,6 +15743,7 @@ class ContactAttemptRow extends DataClass
       phoneIndex: phoneIndex == null && nullToAbsent
           ? const Value.absent()
           : Value(phoneIndex),
+      target: Value(target),
       at: Value(at),
       outcome: outcome == null && nullToAbsent
           ? const Value.absent()
@@ -15737,6 +15764,7 @@ class ContactAttemptRow extends DataClass
       customerId: serializer.fromJson<String>(json['customerId']),
       channel: serializer.fromJson<String>(json['channel']),
       phoneIndex: serializer.fromJson<int?>(json['phoneIndex']),
+      target: serializer.fromJson<String>(json['target']),
       at: serializer.fromJson<DateTime>(json['at']),
       outcome: serializer.fromJson<String?>(json['outcome']),
       note: serializer.fromJson<String?>(json['note']),
@@ -15752,6 +15780,7 @@ class ContactAttemptRow extends DataClass
       'customerId': serializer.toJson<String>(customerId),
       'channel': serializer.toJson<String>(channel),
       'phoneIndex': serializer.toJson<int?>(phoneIndex),
+      'target': serializer.toJson<String>(target),
       'at': serializer.toJson<DateTime>(at),
       'outcome': serializer.toJson<String?>(outcome),
       'note': serializer.toJson<String?>(note),
@@ -15765,6 +15794,7 @@ class ContactAttemptRow extends DataClass
     String? customerId,
     String? channel,
     Value<int?> phoneIndex = const Value.absent(),
+    String? target,
     DateTime? at,
     Value<String?> outcome = const Value.absent(),
     Value<String?> note = const Value.absent(),
@@ -15775,6 +15805,7 @@ class ContactAttemptRow extends DataClass
     customerId: customerId ?? this.customerId,
     channel: channel ?? this.channel,
     phoneIndex: phoneIndex.present ? phoneIndex.value : this.phoneIndex,
+    target: target ?? this.target,
     at: at ?? this.at,
     outcome: outcome.present ? outcome.value : this.outcome,
     note: note.present ? note.value : this.note,
@@ -15791,6 +15822,7 @@ class ContactAttemptRow extends DataClass
       phoneIndex: data.phoneIndex.present
           ? data.phoneIndex.value
           : this.phoneIndex,
+      target: data.target.present ? data.target.value : this.target,
       at: data.at.present ? data.at.value : this.at,
       outcome: data.outcome.present ? data.outcome.value : this.outcome,
       note: data.note.present ? data.note.value : this.note,
@@ -15806,6 +15838,7 @@ class ContactAttemptRow extends DataClass
           ..write('customerId: $customerId, ')
           ..write('channel: $channel, ')
           ..write('phoneIndex: $phoneIndex, ')
+          ..write('target: $target, ')
           ..write('at: $at, ')
           ..write('outcome: $outcome, ')
           ..write('note: $note, ')
@@ -15821,6 +15854,7 @@ class ContactAttemptRow extends DataClass
     customerId,
     channel,
     phoneIndex,
+    target,
     at,
     outcome,
     note,
@@ -15835,6 +15869,7 @@ class ContactAttemptRow extends DataClass
           other.customerId == this.customerId &&
           other.channel == this.channel &&
           other.phoneIndex == this.phoneIndex &&
+          other.target == this.target &&
           other.at == this.at &&
           other.outcome == this.outcome &&
           other.note == this.note &&
@@ -15847,6 +15882,7 @@ class ContactAttemptsCompanion extends UpdateCompanion<ContactAttemptRow> {
   final Value<String> customerId;
   final Value<String> channel;
   final Value<int?> phoneIndex;
+  final Value<String> target;
   final Value<DateTime> at;
   final Value<String?> outcome;
   final Value<String?> note;
@@ -15858,6 +15894,7 @@ class ContactAttemptsCompanion extends UpdateCompanion<ContactAttemptRow> {
     this.customerId = const Value.absent(),
     this.channel = const Value.absent(),
     this.phoneIndex = const Value.absent(),
+    this.target = const Value.absent(),
     this.at = const Value.absent(),
     this.outcome = const Value.absent(),
     this.note = const Value.absent(),
@@ -15870,6 +15907,7 @@ class ContactAttemptsCompanion extends UpdateCompanion<ContactAttemptRow> {
     required String customerId,
     required String channel,
     this.phoneIndex = const Value.absent(),
+    this.target = const Value.absent(),
     required DateTime at,
     this.outcome = const Value.absent(),
     this.note = const Value.absent(),
@@ -15885,6 +15923,7 @@ class ContactAttemptsCompanion extends UpdateCompanion<ContactAttemptRow> {
     Expression<String>? customerId,
     Expression<String>? channel,
     Expression<int>? phoneIndex,
+    Expression<String>? target,
     Expression<DateTime>? at,
     Expression<String>? outcome,
     Expression<String>? note,
@@ -15897,6 +15936,7 @@ class ContactAttemptsCompanion extends UpdateCompanion<ContactAttemptRow> {
       if (customerId != null) 'customer_id': customerId,
       if (channel != null) 'channel': channel,
       if (phoneIndex != null) 'phone_index': phoneIndex,
+      if (target != null) 'target': target,
       if (at != null) 'at': at,
       if (outcome != null) 'outcome': outcome,
       if (note != null) 'note': note,
@@ -15911,6 +15951,7 @@ class ContactAttemptsCompanion extends UpdateCompanion<ContactAttemptRow> {
     Value<String>? customerId,
     Value<String>? channel,
     Value<int?>? phoneIndex,
+    Value<String>? target,
     Value<DateTime>? at,
     Value<String?>? outcome,
     Value<String?>? note,
@@ -15923,6 +15964,7 @@ class ContactAttemptsCompanion extends UpdateCompanion<ContactAttemptRow> {
       customerId: customerId ?? this.customerId,
       channel: channel ?? this.channel,
       phoneIndex: phoneIndex ?? this.phoneIndex,
+      target: target ?? this.target,
       at: at ?? this.at,
       outcome: outcome ?? this.outcome,
       note: note ?? this.note,
@@ -15948,6 +15990,9 @@ class ContactAttemptsCompanion extends UpdateCompanion<ContactAttemptRow> {
     }
     if (phoneIndex.present) {
       map['phone_index'] = Variable<int>(phoneIndex.value);
+    }
+    if (target.present) {
+      map['target'] = Variable<String>(target.value);
     }
     if (at.present) {
       map['at'] = Variable<DateTime>(at.value);
@@ -15975,6 +16020,7 @@ class ContactAttemptsCompanion extends UpdateCompanion<ContactAttemptRow> {
           ..write('customerId: $customerId, ')
           ..write('channel: $channel, ')
           ..write('phoneIndex: $phoneIndex, ')
+          ..write('target: $target, ')
           ..write('at: $at, ')
           ..write('outcome: $outcome, ')
           ..write('note: $note, ')
@@ -16502,6 +16548,682 @@ class CoworkSessionsCompanion extends UpdateCompanion<CoworkSessionRow> {
           ..write('membersJson: $membersJson, ')
           ..write('createdAt: $createdAt, ')
           ..write('endedAt: $endedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $BroadcastsTable extends Broadcasts
+    with TableInfo<$BroadcastsTable, BroadcastRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $BroadcastsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _serverIdMeta = const VerificationMeta(
+    'serverId',
+  );
+  @override
+  late final GeneratedColumn<String> serverId = GeneratedColumn<String>(
+    'server_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _titleBnMeta = const VerificationMeta(
+    'titleBn',
+  );
+  @override
+  late final GeneratedColumn<String> titleBn = GeneratedColumn<String>(
+    'title_bn',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _titleEnMeta = const VerificationMeta(
+    'titleEn',
+  );
+  @override
+  late final GeneratedColumn<String> titleEn = GeneratedColumn<String>(
+    'title_en',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _bodyBnMeta = const VerificationMeta('bodyBn');
+  @override
+  late final GeneratedColumn<String> bodyBn = GeneratedColumn<String>(
+    'body_bn',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _bodyEnMeta = const VerificationMeta('bodyEn');
+  @override
+  late final GeneratedColumn<String> bodyEn = GeneratedColumn<String>(
+    'body_en',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _requireAckMeta = const VerificationMeta(
+    'requireAck',
+  );
+  @override
+  late final GeneratedColumn<bool> requireAck = GeneratedColumn<bool>(
+    'require_ack',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("require_ack" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _senderNameMeta = const VerificationMeta(
+    'senderName',
+  );
+  @override
+  late final GeneratedColumn<String> senderName = GeneratedColumn<String>(
+    'sender_name',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _ackedAtMeta = const VerificationMeta(
+    'ackedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> ackedAt = GeneratedColumn<DateTime>(
+    'acked_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _ackStateMeta = const VerificationMeta(
+    'ackState',
+  );
+  @override
+  late final GeneratedColumn<String> ackState = GeneratedColumn<String>(
+    'ack_state',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('none'),
+  );
+  static const VerificationMeta _ackMutationIdMeta = const VerificationMeta(
+    'ackMutationId',
+  );
+  @override
+  late final GeneratedColumn<String> ackMutationId = GeneratedColumn<String>(
+    'ack_mutation_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    serverId,
+    titleBn,
+    titleEn,
+    bodyBn,
+    bodyEn,
+    requireAck,
+    senderName,
+    createdAt,
+    ackedAt,
+    ackState,
+    ackMutationId,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'broadcasts';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<BroadcastRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('server_id')) {
+      context.handle(
+        _serverIdMeta,
+        serverId.isAcceptableOrUnknown(data['server_id']!, _serverIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_serverIdMeta);
+    }
+    if (data.containsKey('title_bn')) {
+      context.handle(
+        _titleBnMeta,
+        titleBn.isAcceptableOrUnknown(data['title_bn']!, _titleBnMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_titleBnMeta);
+    }
+    if (data.containsKey('title_en')) {
+      context.handle(
+        _titleEnMeta,
+        titleEn.isAcceptableOrUnknown(data['title_en']!, _titleEnMeta),
+      );
+    }
+    if (data.containsKey('body_bn')) {
+      context.handle(
+        _bodyBnMeta,
+        bodyBn.isAcceptableOrUnknown(data['body_bn']!, _bodyBnMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_bodyBnMeta);
+    }
+    if (data.containsKey('body_en')) {
+      context.handle(
+        _bodyEnMeta,
+        bodyEn.isAcceptableOrUnknown(data['body_en']!, _bodyEnMeta),
+      );
+    }
+    if (data.containsKey('require_ack')) {
+      context.handle(
+        _requireAckMeta,
+        requireAck.isAcceptableOrUnknown(data['require_ack']!, _requireAckMeta),
+      );
+    }
+    if (data.containsKey('sender_name')) {
+      context.handle(
+        _senderNameMeta,
+        senderName.isAcceptableOrUnknown(data['sender_name']!, _senderNameMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('acked_at')) {
+      context.handle(
+        _ackedAtMeta,
+        ackedAt.isAcceptableOrUnknown(data['acked_at']!, _ackedAtMeta),
+      );
+    }
+    if (data.containsKey('ack_state')) {
+      context.handle(
+        _ackStateMeta,
+        ackState.isAcceptableOrUnknown(data['ack_state']!, _ackStateMeta),
+      );
+    }
+    if (data.containsKey('ack_mutation_id')) {
+      context.handle(
+        _ackMutationIdMeta,
+        ackMutationId.isAcceptableOrUnknown(
+          data['ack_mutation_id']!,
+          _ackMutationIdMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {serverId};
+  @override
+  BroadcastRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return BroadcastRow(
+      serverId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}server_id'],
+      )!,
+      titleBn: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}title_bn'],
+      )!,
+      titleEn: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}title_en'],
+      ),
+      bodyBn: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}body_bn'],
+      )!,
+      bodyEn: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}body_en'],
+      ),
+      requireAck: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}require_ack'],
+      )!,
+      senderName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sender_name'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      ackedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}acked_at'],
+      ),
+      ackState: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}ack_state'],
+      )!,
+      ackMutationId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}ack_mutation_id'],
+      ),
+    );
+  }
+
+  @override
+  $BroadcastsTable createAlias(String alias) {
+    return $BroadcastsTable(attachedDatabase, alias);
+  }
+}
+
+class BroadcastRow extends DataClass implements Insertable<BroadcastRow> {
+  final String serverId;
+  final String titleBn;
+  final String? titleEn;
+  final String bodyBn;
+  final String? bodyEn;
+  final bool requireAck;
+  final String? senderName;
+  final DateTime createdAt;
+
+  /// When I tapped "read" (or the server's time once it knows).
+  final DateTime? ackedAt;
+
+  /// none | queued | synced | failed
+  final String ackState;
+  final String? ackMutationId;
+  const BroadcastRow({
+    required this.serverId,
+    required this.titleBn,
+    this.titleEn,
+    required this.bodyBn,
+    this.bodyEn,
+    required this.requireAck,
+    this.senderName,
+    required this.createdAt,
+    this.ackedAt,
+    required this.ackState,
+    this.ackMutationId,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['server_id'] = Variable<String>(serverId);
+    map['title_bn'] = Variable<String>(titleBn);
+    if (!nullToAbsent || titleEn != null) {
+      map['title_en'] = Variable<String>(titleEn);
+    }
+    map['body_bn'] = Variable<String>(bodyBn);
+    if (!nullToAbsent || bodyEn != null) {
+      map['body_en'] = Variable<String>(bodyEn);
+    }
+    map['require_ack'] = Variable<bool>(requireAck);
+    if (!nullToAbsent || senderName != null) {
+      map['sender_name'] = Variable<String>(senderName);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    if (!nullToAbsent || ackedAt != null) {
+      map['acked_at'] = Variable<DateTime>(ackedAt);
+    }
+    map['ack_state'] = Variable<String>(ackState);
+    if (!nullToAbsent || ackMutationId != null) {
+      map['ack_mutation_id'] = Variable<String>(ackMutationId);
+    }
+    return map;
+  }
+
+  BroadcastsCompanion toCompanion(bool nullToAbsent) {
+    return BroadcastsCompanion(
+      serverId: Value(serverId),
+      titleBn: Value(titleBn),
+      titleEn: titleEn == null && nullToAbsent
+          ? const Value.absent()
+          : Value(titleEn),
+      bodyBn: Value(bodyBn),
+      bodyEn: bodyEn == null && nullToAbsent
+          ? const Value.absent()
+          : Value(bodyEn),
+      requireAck: Value(requireAck),
+      senderName: senderName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(senderName),
+      createdAt: Value(createdAt),
+      ackedAt: ackedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(ackedAt),
+      ackState: Value(ackState),
+      ackMutationId: ackMutationId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(ackMutationId),
+    );
+  }
+
+  factory BroadcastRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return BroadcastRow(
+      serverId: serializer.fromJson<String>(json['serverId']),
+      titleBn: serializer.fromJson<String>(json['titleBn']),
+      titleEn: serializer.fromJson<String?>(json['titleEn']),
+      bodyBn: serializer.fromJson<String>(json['bodyBn']),
+      bodyEn: serializer.fromJson<String?>(json['bodyEn']),
+      requireAck: serializer.fromJson<bool>(json['requireAck']),
+      senderName: serializer.fromJson<String?>(json['senderName']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      ackedAt: serializer.fromJson<DateTime?>(json['ackedAt']),
+      ackState: serializer.fromJson<String>(json['ackState']),
+      ackMutationId: serializer.fromJson<String?>(json['ackMutationId']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'serverId': serializer.toJson<String>(serverId),
+      'titleBn': serializer.toJson<String>(titleBn),
+      'titleEn': serializer.toJson<String?>(titleEn),
+      'bodyBn': serializer.toJson<String>(bodyBn),
+      'bodyEn': serializer.toJson<String?>(bodyEn),
+      'requireAck': serializer.toJson<bool>(requireAck),
+      'senderName': serializer.toJson<String?>(senderName),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'ackedAt': serializer.toJson<DateTime?>(ackedAt),
+      'ackState': serializer.toJson<String>(ackState),
+      'ackMutationId': serializer.toJson<String?>(ackMutationId),
+    };
+  }
+
+  BroadcastRow copyWith({
+    String? serverId,
+    String? titleBn,
+    Value<String?> titleEn = const Value.absent(),
+    String? bodyBn,
+    Value<String?> bodyEn = const Value.absent(),
+    bool? requireAck,
+    Value<String?> senderName = const Value.absent(),
+    DateTime? createdAt,
+    Value<DateTime?> ackedAt = const Value.absent(),
+    String? ackState,
+    Value<String?> ackMutationId = const Value.absent(),
+  }) => BroadcastRow(
+    serverId: serverId ?? this.serverId,
+    titleBn: titleBn ?? this.titleBn,
+    titleEn: titleEn.present ? titleEn.value : this.titleEn,
+    bodyBn: bodyBn ?? this.bodyBn,
+    bodyEn: bodyEn.present ? bodyEn.value : this.bodyEn,
+    requireAck: requireAck ?? this.requireAck,
+    senderName: senderName.present ? senderName.value : this.senderName,
+    createdAt: createdAt ?? this.createdAt,
+    ackedAt: ackedAt.present ? ackedAt.value : this.ackedAt,
+    ackState: ackState ?? this.ackState,
+    ackMutationId: ackMutationId.present
+        ? ackMutationId.value
+        : this.ackMutationId,
+  );
+  BroadcastRow copyWithCompanion(BroadcastsCompanion data) {
+    return BroadcastRow(
+      serverId: data.serverId.present ? data.serverId.value : this.serverId,
+      titleBn: data.titleBn.present ? data.titleBn.value : this.titleBn,
+      titleEn: data.titleEn.present ? data.titleEn.value : this.titleEn,
+      bodyBn: data.bodyBn.present ? data.bodyBn.value : this.bodyBn,
+      bodyEn: data.bodyEn.present ? data.bodyEn.value : this.bodyEn,
+      requireAck: data.requireAck.present
+          ? data.requireAck.value
+          : this.requireAck,
+      senderName: data.senderName.present
+          ? data.senderName.value
+          : this.senderName,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      ackedAt: data.ackedAt.present ? data.ackedAt.value : this.ackedAt,
+      ackState: data.ackState.present ? data.ackState.value : this.ackState,
+      ackMutationId: data.ackMutationId.present
+          ? data.ackMutationId.value
+          : this.ackMutationId,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('BroadcastRow(')
+          ..write('serverId: $serverId, ')
+          ..write('titleBn: $titleBn, ')
+          ..write('titleEn: $titleEn, ')
+          ..write('bodyBn: $bodyBn, ')
+          ..write('bodyEn: $bodyEn, ')
+          ..write('requireAck: $requireAck, ')
+          ..write('senderName: $senderName, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('ackedAt: $ackedAt, ')
+          ..write('ackState: $ackState, ')
+          ..write('ackMutationId: $ackMutationId')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    serverId,
+    titleBn,
+    titleEn,
+    bodyBn,
+    bodyEn,
+    requireAck,
+    senderName,
+    createdAt,
+    ackedAt,
+    ackState,
+    ackMutationId,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is BroadcastRow &&
+          other.serverId == this.serverId &&
+          other.titleBn == this.titleBn &&
+          other.titleEn == this.titleEn &&
+          other.bodyBn == this.bodyBn &&
+          other.bodyEn == this.bodyEn &&
+          other.requireAck == this.requireAck &&
+          other.senderName == this.senderName &&
+          other.createdAt == this.createdAt &&
+          other.ackedAt == this.ackedAt &&
+          other.ackState == this.ackState &&
+          other.ackMutationId == this.ackMutationId);
+}
+
+class BroadcastsCompanion extends UpdateCompanion<BroadcastRow> {
+  final Value<String> serverId;
+  final Value<String> titleBn;
+  final Value<String?> titleEn;
+  final Value<String> bodyBn;
+  final Value<String?> bodyEn;
+  final Value<bool> requireAck;
+  final Value<String?> senderName;
+  final Value<DateTime> createdAt;
+  final Value<DateTime?> ackedAt;
+  final Value<String> ackState;
+  final Value<String?> ackMutationId;
+  final Value<int> rowid;
+  const BroadcastsCompanion({
+    this.serverId = const Value.absent(),
+    this.titleBn = const Value.absent(),
+    this.titleEn = const Value.absent(),
+    this.bodyBn = const Value.absent(),
+    this.bodyEn = const Value.absent(),
+    this.requireAck = const Value.absent(),
+    this.senderName = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.ackedAt = const Value.absent(),
+    this.ackState = const Value.absent(),
+    this.ackMutationId = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  BroadcastsCompanion.insert({
+    required String serverId,
+    required String titleBn,
+    this.titleEn = const Value.absent(),
+    required String bodyBn,
+    this.bodyEn = const Value.absent(),
+    this.requireAck = const Value.absent(),
+    this.senderName = const Value.absent(),
+    required DateTime createdAt,
+    this.ackedAt = const Value.absent(),
+    this.ackState = const Value.absent(),
+    this.ackMutationId = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : serverId = Value(serverId),
+       titleBn = Value(titleBn),
+       bodyBn = Value(bodyBn),
+       createdAt = Value(createdAt);
+  static Insertable<BroadcastRow> custom({
+    Expression<String>? serverId,
+    Expression<String>? titleBn,
+    Expression<String>? titleEn,
+    Expression<String>? bodyBn,
+    Expression<String>? bodyEn,
+    Expression<bool>? requireAck,
+    Expression<String>? senderName,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? ackedAt,
+    Expression<String>? ackState,
+    Expression<String>? ackMutationId,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (serverId != null) 'server_id': serverId,
+      if (titleBn != null) 'title_bn': titleBn,
+      if (titleEn != null) 'title_en': titleEn,
+      if (bodyBn != null) 'body_bn': bodyBn,
+      if (bodyEn != null) 'body_en': bodyEn,
+      if (requireAck != null) 'require_ack': requireAck,
+      if (senderName != null) 'sender_name': senderName,
+      if (createdAt != null) 'created_at': createdAt,
+      if (ackedAt != null) 'acked_at': ackedAt,
+      if (ackState != null) 'ack_state': ackState,
+      if (ackMutationId != null) 'ack_mutation_id': ackMutationId,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  BroadcastsCompanion copyWith({
+    Value<String>? serverId,
+    Value<String>? titleBn,
+    Value<String?>? titleEn,
+    Value<String>? bodyBn,
+    Value<String?>? bodyEn,
+    Value<bool>? requireAck,
+    Value<String?>? senderName,
+    Value<DateTime>? createdAt,
+    Value<DateTime?>? ackedAt,
+    Value<String>? ackState,
+    Value<String?>? ackMutationId,
+    Value<int>? rowid,
+  }) {
+    return BroadcastsCompanion(
+      serverId: serverId ?? this.serverId,
+      titleBn: titleBn ?? this.titleBn,
+      titleEn: titleEn ?? this.titleEn,
+      bodyBn: bodyBn ?? this.bodyBn,
+      bodyEn: bodyEn ?? this.bodyEn,
+      requireAck: requireAck ?? this.requireAck,
+      senderName: senderName ?? this.senderName,
+      createdAt: createdAt ?? this.createdAt,
+      ackedAt: ackedAt ?? this.ackedAt,
+      ackState: ackState ?? this.ackState,
+      ackMutationId: ackMutationId ?? this.ackMutationId,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (serverId.present) {
+      map['server_id'] = Variable<String>(serverId.value);
+    }
+    if (titleBn.present) {
+      map['title_bn'] = Variable<String>(titleBn.value);
+    }
+    if (titleEn.present) {
+      map['title_en'] = Variable<String>(titleEn.value);
+    }
+    if (bodyBn.present) {
+      map['body_bn'] = Variable<String>(bodyBn.value);
+    }
+    if (bodyEn.present) {
+      map['body_en'] = Variable<String>(bodyEn.value);
+    }
+    if (requireAck.present) {
+      map['require_ack'] = Variable<bool>(requireAck.value);
+    }
+    if (senderName.present) {
+      map['sender_name'] = Variable<String>(senderName.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (ackedAt.present) {
+      map['acked_at'] = Variable<DateTime>(ackedAt.value);
+    }
+    if (ackState.present) {
+      map['ack_state'] = Variable<String>(ackState.value);
+    }
+    if (ackMutationId.present) {
+      map['ack_mutation_id'] = Variable<String>(ackMutationId.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('BroadcastsCompanion(')
+          ..write('serverId: $serverId, ')
+          ..write('titleBn: $titleBn, ')
+          ..write('titleEn: $titleEn, ')
+          ..write('bodyBn: $bodyBn, ')
+          ..write('bodyEn: $bodyEn, ')
+          ..write('requireAck: $requireAck, ')
+          ..write('senderName: $senderName, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('ackedAt: $ackedAt, ')
+          ..write('ackState: $ackState, ')
+          ..write('ackMutationId: $ackMutationId, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -17203,6 +17925,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     this,
   );
   late final $CoworkSessionsTable coworkSessions = $CoworkSessionsTable(this);
+  late final $BroadcastsTable broadcasts = $BroadcastsTable(this);
   late final $NotificationsTable notifications = $NotificationsTable(this);
   late final $KvSettingsTable kvSettings = $KvSettingsTable(this);
   @override
@@ -17234,6 +17957,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     locationQueue,
     contactAttempts,
     coworkSessions,
+    broadcasts,
     notifications,
     kvSettings,
   ];
@@ -24720,6 +25444,7 @@ typedef $$ContactAttemptsTableCreateCompanionBuilder =
       required String customerId,
       required String channel,
       Value<int?> phoneIndex,
+      Value<String> target,
       required DateTime at,
       Value<String?> outcome,
       Value<String?> note,
@@ -24733,6 +25458,7 @@ typedef $$ContactAttemptsTableUpdateCompanionBuilder =
       Value<String> customerId,
       Value<String> channel,
       Value<int?> phoneIndex,
+      Value<String> target,
       Value<DateTime> at,
       Value<String?> outcome,
       Value<String?> note,
@@ -24771,6 +25497,11 @@ class $$ContactAttemptsTableFilterComposer
 
   ColumnFilters<int> get phoneIndex => $composableBuilder(
     column: $table.phoneIndex,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get target => $composableBuilder(
+    column: $table.target,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -24829,6 +25560,11 @@ class $$ContactAttemptsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get target => $composableBuilder(
+    column: $table.target,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get at => $composableBuilder(
     column: $table.at,
     builder: (column) => ColumnOrderings(column),
@@ -24877,6 +25613,9 @@ class $$ContactAttemptsTableAnnotationComposer
     column: $table.phoneIndex,
     builder: (column) => column,
   );
+
+  GeneratedColumn<String> get target =>
+      $composableBuilder(column: $table.target, builder: (column) => column);
 
   GeneratedColumn<DateTime> get at =>
       $composableBuilder(column: $table.at, builder: (column) => column);
@@ -24933,6 +25672,7 @@ class $$ContactAttemptsTableTableManager
                 Value<String> customerId = const Value.absent(),
                 Value<String> channel = const Value.absent(),
                 Value<int?> phoneIndex = const Value.absent(),
+                Value<String> target = const Value.absent(),
                 Value<DateTime> at = const Value.absent(),
                 Value<String?> outcome = const Value.absent(),
                 Value<String?> note = const Value.absent(),
@@ -24944,6 +25684,7 @@ class $$ContactAttemptsTableTableManager
                 customerId: customerId,
                 channel: channel,
                 phoneIndex: phoneIndex,
+                target: target,
                 at: at,
                 outcome: outcome,
                 note: note,
@@ -24957,6 +25698,7 @@ class $$ContactAttemptsTableTableManager
                 required String customerId,
                 required String channel,
                 Value<int?> phoneIndex = const Value.absent(),
+                Value<String> target = const Value.absent(),
                 required DateTime at,
                 Value<String?> outcome = const Value.absent(),
                 Value<String?> note = const Value.absent(),
@@ -24968,6 +25710,7 @@ class $$ContactAttemptsTableTableManager
                 customerId: customerId,
                 channel: channel,
                 phoneIndex: phoneIndex,
+                target: target,
                 at: at,
                 outcome: outcome,
                 note: note,
@@ -25282,6 +26025,333 @@ typedef $$CoworkSessionsTableProcessedTableManager =
         BaseReferences<_$AppDatabase, $CoworkSessionsTable, CoworkSessionRow>,
       ),
       CoworkSessionRow,
+      PrefetchHooks Function()
+    >;
+typedef $$BroadcastsTableCreateCompanionBuilder = BroadcastsCompanion Function({
+  required String serverId,
+  required String titleBn,
+  Value<String?> titleEn,
+  required String bodyBn,
+  Value<String?> bodyEn,
+  Value<bool> requireAck,
+  Value<String?> senderName,
+  required DateTime createdAt,
+  Value<DateTime?> ackedAt,
+  Value<String> ackState,
+  Value<String?> ackMutationId,
+  Value<int> rowid,
+});
+typedef $$BroadcastsTableUpdateCompanionBuilder = BroadcastsCompanion Function({
+  Value<String> serverId,
+  Value<String> titleBn,
+  Value<String?> titleEn,
+  Value<String> bodyBn,
+  Value<String?> bodyEn,
+  Value<bool> requireAck,
+  Value<String?> senderName,
+  Value<DateTime> createdAt,
+  Value<DateTime?> ackedAt,
+  Value<String> ackState,
+  Value<String?> ackMutationId,
+  Value<int> rowid,
+});
+
+class $$BroadcastsTableFilterComposer
+    extends Composer<_$AppDatabase, $BroadcastsTable> {
+  $$BroadcastsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get serverId => $composableBuilder(
+    column: $table.serverId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get titleBn => $composableBuilder(
+    column: $table.titleBn,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get titleEn => $composableBuilder(
+    column: $table.titleEn,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get bodyBn => $composableBuilder(
+    column: $table.bodyBn,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get bodyEn => $composableBuilder(
+    column: $table.bodyEn,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get requireAck => $composableBuilder(
+    column: $table.requireAck,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get senderName => $composableBuilder(
+    column: $table.senderName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get ackedAt => $composableBuilder(
+    column: $table.ackedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get ackState => $composableBuilder(
+    column: $table.ackState,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get ackMutationId => $composableBuilder(
+    column: $table.ackMutationId,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$BroadcastsTableOrderingComposer
+    extends Composer<_$AppDatabase, $BroadcastsTable> {
+  $$BroadcastsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get serverId => $composableBuilder(
+    column: $table.serverId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get titleBn => $composableBuilder(
+    column: $table.titleBn,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get titleEn => $composableBuilder(
+    column: $table.titleEn,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get bodyBn => $composableBuilder(
+    column: $table.bodyBn,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get bodyEn => $composableBuilder(
+    column: $table.bodyEn,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get requireAck => $composableBuilder(
+    column: $table.requireAck,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get senderName => $composableBuilder(
+    column: $table.senderName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get ackedAt => $composableBuilder(
+    column: $table.ackedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get ackState => $composableBuilder(
+    column: $table.ackState,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get ackMutationId => $composableBuilder(
+    column: $table.ackMutationId,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$BroadcastsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $BroadcastsTable> {
+  $$BroadcastsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get serverId =>
+      $composableBuilder(column: $table.serverId, builder: (column) => column);
+
+  GeneratedColumn<String> get titleBn =>
+      $composableBuilder(column: $table.titleBn, builder: (column) => column);
+
+  GeneratedColumn<String> get titleEn =>
+      $composableBuilder(column: $table.titleEn, builder: (column) => column);
+
+  GeneratedColumn<String> get bodyBn =>
+      $composableBuilder(column: $table.bodyBn, builder: (column) => column);
+
+  GeneratedColumn<String> get bodyEn =>
+      $composableBuilder(column: $table.bodyEn, builder: (column) => column);
+
+  GeneratedColumn<bool> get requireAck => $composableBuilder(
+    column: $table.requireAck,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get senderName => $composableBuilder(
+    column: $table.senderName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get ackedAt =>
+      $composableBuilder(column: $table.ackedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get ackState =>
+      $composableBuilder(column: $table.ackState, builder: (column) => column);
+
+  GeneratedColumn<String> get ackMutationId => $composableBuilder(
+    column: $table.ackMutationId,
+    builder: (column) => column,
+  );
+}
+
+class $$BroadcastsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $BroadcastsTable,
+          BroadcastRow,
+          $$BroadcastsTableFilterComposer,
+          $$BroadcastsTableOrderingComposer,
+          $$BroadcastsTableAnnotationComposer,
+          $$BroadcastsTableCreateCompanionBuilder,
+          $$BroadcastsTableUpdateCompanionBuilder,
+          (
+            BroadcastRow,
+            BaseReferences<_$AppDatabase, $BroadcastsTable, BroadcastRow>,
+          ),
+          BroadcastRow,
+          PrefetchHooks Function()
+        > {
+  $$BroadcastsTableTableManager(_$AppDatabase db, $BroadcastsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$BroadcastsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$BroadcastsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$BroadcastsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> serverId = const Value.absent(),
+                Value<String> titleBn = const Value.absent(),
+                Value<String?> titleEn = const Value.absent(),
+                Value<String> bodyBn = const Value.absent(),
+                Value<String?> bodyEn = const Value.absent(),
+                Value<bool> requireAck = const Value.absent(),
+                Value<String?> senderName = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime?> ackedAt = const Value.absent(),
+                Value<String> ackState = const Value.absent(),
+                Value<String?> ackMutationId = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => BroadcastsCompanion(
+                serverId: serverId,
+                titleBn: titleBn,
+                titleEn: titleEn,
+                bodyBn: bodyBn,
+                bodyEn: bodyEn,
+                requireAck: requireAck,
+                senderName: senderName,
+                createdAt: createdAt,
+                ackedAt: ackedAt,
+                ackState: ackState,
+                ackMutationId: ackMutationId,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String serverId,
+                required String titleBn,
+                Value<String?> titleEn = const Value.absent(),
+                required String bodyBn,
+                Value<String?> bodyEn = const Value.absent(),
+                Value<bool> requireAck = const Value.absent(),
+                Value<String?> senderName = const Value.absent(),
+                required DateTime createdAt,
+                Value<DateTime?> ackedAt = const Value.absent(),
+                Value<String> ackState = const Value.absent(),
+                Value<String?> ackMutationId = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => BroadcastsCompanion.insert(
+                serverId: serverId,
+                titleBn: titleBn,
+                titleEn: titleEn,
+                bodyBn: bodyBn,
+                bodyEn: bodyEn,
+                requireAck: requireAck,
+                senderName: senderName,
+                createdAt: createdAt,
+                ackedAt: ackedAt,
+                ackState: ackState,
+                ackMutationId: ackMutationId,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$BroadcastsTable, BroadcastRow>(table),
+                  BaseReferences<_$AppDatabase, $BroadcastsTable, BroadcastRow>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$BroadcastsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $BroadcastsTable,
+      BroadcastRow,
+      $$BroadcastsTableFilterComposer,
+      $$BroadcastsTableOrderingComposer,
+      $$BroadcastsTableAnnotationComposer,
+      $$BroadcastsTableCreateCompanionBuilder,
+      $$BroadcastsTableUpdateCompanionBuilder,
+      (
+        BroadcastRow,
+        BaseReferences<_$AppDatabase, $BroadcastsTable, BroadcastRow>,
+      ),
+      BroadcastRow,
       PrefetchHooks Function()
     >;
 typedef $$NotificationsTableCreateCompanionBuilder =
@@ -25727,6 +26797,8 @@ class $AppDatabaseManager {
       $$ContactAttemptsTableTableManager(_db, _db.contactAttempts);
   $$CoworkSessionsTableTableManager get coworkSessions =>
       $$CoworkSessionsTableTableManager(_db, _db.coworkSessions);
+  $$BroadcastsTableTableManager get broadcasts =>
+      $$BroadcastsTableTableManager(_db, _db.broadcasts);
   $$NotificationsTableTableManager get notifications =>
       $$NotificationsTableTableManager(_db, _db.notifications);
   $$KvSettingsTableTableManager get kvSettings =>

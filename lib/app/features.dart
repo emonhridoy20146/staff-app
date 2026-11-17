@@ -10,6 +10,7 @@ import '../features/handovers/handovers.dart';
 import '../features/location/location.dart';
 import '../features/map/map.dart';
 import '../features/notes/notes.dart';
+import '../features/notices/notices.dart';
 import '../features/onboarding/onboarding.dart';
 import '../features/promises/promises.dart';
 import '../features/reports/reports.dart';
@@ -25,6 +26,7 @@ List<FeatureManifest> buildFeatureManifests(SyncHandlerRegistry Function() regis
       authManifest,
       onboardingManifest,
       todayManifest,
+      noticesManifest,
       customersManifest(registry),
       collectionsManifest,
       cashManifest,

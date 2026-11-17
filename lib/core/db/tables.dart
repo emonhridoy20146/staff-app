@@ -446,6 +446,9 @@ class ContactAttempts extends Table {
 
   /// Index into the customer's phones — never the number itself.
   IntColumn get phoneIndex => integer().nullable()();
+
+  /// customer | guarantor (schema 6, contract 1.12.0).
+  TextColumn get target => text().withDefault(const Constant('customer'))();
   DateTimeColumn get at => dateTime()();
 
   /// connected | no_answer | busy | switched_off | wrong_number | sent
@@ -498,6 +501,31 @@ class LocationQueue extends Table {
   RealColumn get bat => real().nullable()();
   BoolColumn get chg => boolean().nullable()();
   BoolColumn get mock => boolean().withDefault(const Constant(false))();
+}
+
+// ── notices (broadcasts, schema 6, contract 1.12.0) ──────────────────────────
+/// Notices from the office (`broadcast` sync entity). "Read" is tapped on
+/// the phone and sent as the `broadcast_ack` mutation, so it works offline.
+@DataClassName('BroadcastRow')
+class Broadcasts extends Table {
+  TextColumn get serverId => text()();
+  TextColumn get titleBn => text()();
+  TextColumn get titleEn => text().nullable()();
+  TextColumn get bodyBn => text()();
+  TextColumn get bodyEn => text().nullable()();
+  BoolColumn get requireAck => boolean().withDefault(const Constant(false))();
+  TextColumn get senderName => text().nullable()();
+  DateTimeColumn get createdAt => dateTime()();
+
+  /// When I tapped "read" (or the server's time once it knows).
+  DateTimeColumn get ackedAt => dateTime().nullable()();
+
+  /// none | queued | synced | failed
+  TextColumn get ackState => text().withDefault(const Constant('none'))();
+  TextColumn get ackMutationId => text().nullable()();
+
+  @override
+  Set<Column> get primaryKey => {serverId};
 }
 
 // ── notifications / settings ─────────────────────────────────────────────────

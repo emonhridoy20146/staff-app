@@ -1829,4 +1829,272 @@ class AppLocalizationsBn extends AppLocalizations {
   @override
   String get leaderFootnote =>
       'আদায় ধরা হয় মাঠে নেওয়া টাকা (ইআরপি-তে জমা ও অপেক্ষমাণ)। কো-ওয়ার্ক ভিজিট সবার ক্রেডিটে যোগ হয়।';
+
+  @override
+  String get noticesTitle => 'নোটিশ';
+
+  @override
+  String get noticeTitle => 'নোটিশ';
+
+  @override
+  String get noticesEmpty => 'কোনো নোটিশ নেই';
+
+  @override
+  String get noticesEmptyBody => 'অফিস থেকে নোটিশ এলে এখানে দেখাবে';
+
+  @override
+  String get noticeRead => 'পড়েছি';
+
+  @override
+  String get noticeMustRead => 'পড়ে নিশ্চিত করুন';
+
+  @override
+  String get noticeUnread => 'নতুন';
+
+  @override
+  String noticeFrom(String name) {
+    return '$name পাঠিয়েছেন';
+  }
+
+  @override
+  String get noticeMarkRead => 'পড়েছি';
+
+  @override
+  String get noticeThanks => 'ধন্যবাদ, অফিস জানতে পারবে';
+
+  @override
+  String noticeReadAt(String time) {
+    return '$time-এ পড়েছেন';
+  }
+
+  @override
+  String noticeReadQueued(String time) {
+    return '$time-এ পড়েছেন · নেট পেলে অফিসে যাবে';
+  }
+
+  @override
+  String get noticeReadFailed => 'অফিসে পাঠানো যায়নি। সিঙ্ক কেন্দ্রে দেখুন।';
+
+  @override
+  String todayNoticeOne(String title) {
+    return 'নতুন নোটিশ: $title';
+  }
+
+  @override
+  String todayNoticeMany(String n) {
+    return '$nটি নোটিশ পড়ে নিশ্চিত করতে হবে';
+  }
+
+  @override
+  String noticesUnreadCount(String n) {
+    return '$nটি নতুন';
+  }
+
+  @override
+  String get noticesAllRead => 'সব পড়া হয়েছে';
+
+  @override
+  String get leaveTitle => 'ছুটি';
+
+  @override
+  String get leaveMeSubtitle => 'আবেদন করুন ও অবস্থা দেখুন';
+
+  @override
+  String get leaveNew => 'ছুটির আবেদন';
+
+  @override
+  String get leaveTypeCasual => 'নৈমিত্তিক';
+
+  @override
+  String get leaveTypeSick => 'অসুস্থতা';
+
+  @override
+  String get leaveTypeOther => 'অন্যান্য';
+
+  @override
+  String get leavePending => 'অপেক্ষমাণ';
+
+  @override
+  String get leaveApproved => 'অনুমোদিত';
+
+  @override
+  String get leaveRejected => 'অনুমোদিত হয়নি';
+
+  @override
+  String get leaveCancelled => 'বাতিল';
+
+  @override
+  String get leaveCancelDone => 'আবেদন বাতিল হয়েছে';
+
+  @override
+  String leaveDays(String n) {
+    return '$n দিন';
+  }
+
+  @override
+  String leaveTotalDays(String n) {
+    return 'মোট $n দিন';
+  }
+
+  @override
+  String leaveAskedAt(String time) {
+    return 'আবেদন $time';
+  }
+
+  @override
+  String leaveManagerSaid(String reason) {
+    return 'ম্যানেজার: $reason';
+  }
+
+  @override
+  String get leaveCancelAction => 'বাতিল করুন';
+
+  @override
+  String get leaveCancelTitle => 'আবেদন বাতিল করবেন?';
+
+  @override
+  String leaveCancelBody(String from, String to) {
+    return '$from – $to এর আবেদন বাতিল হবে। দরকার হলে নতুন করে আবেদন করতে পারবেন।';
+  }
+
+  @override
+  String get leaveCancelConfirm => 'হ্যাঁ, বাতিল';
+
+  @override
+  String get leaveEmpty => 'কোনো ছুটির আবেদন নেই';
+
+  @override
+  String get leaveEmptyBody => 'নিচের বোতাম চেপে আবেদন করুন';
+
+  @override
+  String leaveCachedAt(String time) {
+    return 'ইন্টারনেট নেই · $time এর তথ্য দেখাচ্ছে';
+  }
+
+  @override
+  String get leaveNeedsInternet =>
+      'ইন্টারনেট লাগবে। সংযোগ পেলে আবার চেষ্টা করুন।';
+
+  @override
+  String get leaveType => 'ছুটির ধরন';
+
+  @override
+  String get leaveFrom => 'যেদিন থেকে';
+
+  @override
+  String get leaveTo => 'যেদিন পর্যন্ত';
+
+  @override
+  String get leaveReason => 'কারণ (ঐচ্ছিক)';
+
+  @override
+  String get leaveReasonHint => 'যেমন: বোনের বিয়ে';
+
+  @override
+  String get leaveOnlineNote =>
+      'আবেদন পাঠাতে ইন্টারনেট লাগবে। ম্যানেজার সিদ্ধান্ত দিলে এখানে দেখাবে।';
+
+  @override
+  String get leaveSend => 'আবেদন পাঠান';
+
+  @override
+  String get leaveSent => 'আবেদন পাঠানো হয়েছে';
+
+  @override
+  String get leaveErrToBeforeFrom => 'শেষের তারিখ শুরুর আগে হতে পারে না';
+
+  @override
+  String get leaveErrTooLong => 'একবারে সর্বোচ্চ ৩১ দিনের আবেদন করা যায়';
+
+  @override
+  String get leaveErrOverlaps => 'এই দিনগুলোর জন্য আগেই একটি আবেদন আছে';
+
+  @override
+  String get leaveErrDecided => 'ম্যানেজার আগেই সিদ্ধান্ত দিয়েছেন';
+
+  @override
+  String get calendarTitle => 'ছুটির দিন ও শিফট';
+
+  @override
+  String get calendarMeSubtitle => 'সরকারি ছুটি, সাপ্তাহিক ছুটি ও ডিউটির সময়';
+
+  @override
+  String get calendarMyShift => 'আমার শিফট';
+
+  @override
+  String get calendarDefaultShift => 'শাখার সাধারণ শিফট';
+
+  @override
+  String calendarShiftHours(String start, String end) {
+    return '$start – $end';
+  }
+
+  @override
+  String calendarWeeklyOff(String days) {
+    return 'সাপ্তাহিক ছুটি: $days';
+  }
+
+  @override
+  String get calendarNoWeeklyOff => 'সাপ্তাহিক ছুটি নেই';
+
+  @override
+  String calendarLateGrace(String grace, String brk) {
+    return '$grace মিনিট পর্যন্ত দেরি ধরা হয় না · বিরতি $brk মিনিট';
+  }
+
+  @override
+  String get calendarMyLeave => 'আমার অনুমোদিত ছুটি';
+
+  @override
+  String get calendarHolidays => 'ছুটির দিন';
+
+  @override
+  String get calendarNoHolidays => 'এই বছরের ছুটির দিন দেওয়া হয়নি';
+
+  @override
+  String get calendarNoHolidaysBody => 'অফিস যোগ করলে এখানে দেখাবে';
+
+  @override
+  String get calendarNational => 'জাতীয়';
+
+  @override
+  String get calendarBranch => 'শাখা';
+
+  @override
+  String get weekdaySun => 'রবিবার';
+
+  @override
+  String get weekdayMon => 'সোমবার';
+
+  @override
+  String get weekdayTue => 'মঙ্গলবার';
+
+  @override
+  String get weekdayWed => 'বুধবার';
+
+  @override
+  String get weekdayThu => 'বৃহস্পতিবার';
+
+  @override
+  String get weekdayFri => 'শুক্রবার';
+
+  @override
+  String get weekdaySat => 'শনিবার';
+
+  @override
+  String timelineGuarantorCall(String outcome) {
+    return 'জামিনদারকে কল · $outcome';
+  }
+
+  @override
+  String get guarantorNoName => 'নাম নেই';
+
+  @override
+  String get guarantorCall => 'জামিনদারকে কল করুন';
+
+  @override
+  String get guarantorCallShort => 'কল';
+
+  @override
+  String get guarantorNoPhone => 'ফোন নম্বর নেই';
 }

@@ -1165,5 +1165,204 @@
   "leaderMetricTarget": "Target achieved",
   "leaderNotRanked": "Not ranked (too few days present)",
   "leaderNotRankedMe": "You have too few days present in this period to be ranked",
-  "leaderFootnote": "Collected counts money taken in the field (posted and pending in ERP). Co-work visits add to everyone's credit."
+  "leaderFootnote": "Collected counts money taken in the field (posted and pending in ERP). Co-work visits add to everyone's credit.",
+  "noticesTitle": "Notices",
+  "noticeTitle": "Notice",
+  "noticesEmpty": "No notices",
+  "noticesEmptyBody": "Notices from the office show here",
+  "noticeRead": "Read",
+  "noticeMustRead": "Confirm reading",
+  "noticeUnread": "New",
+  "noticeFrom": "From {name}",
+  "@noticeFrom": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "noticeMarkRead": "I have read it",
+  "noticeThanks": "Thanks, the office will see it",
+  "noticeReadAt": "Read at {time}",
+  "@noticeReadAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "noticeReadQueued": "Read at {time} · reaches the office when online",
+  "@noticeReadQueued": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "noticeReadFailed": "Could not be sent to the office. See the sync centre.",
+  "todayNoticeOne": "New notice: {title}",
+  "@todayNoticeOne": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "todayNoticeMany": "{n} notices to read and confirm",
+  "@todayNoticeMany": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "noticesUnreadCount": "{n} new",
+  "@noticesUnreadCount": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "noticesAllRead": "All read",
+  "leaveTitle": "Leave",
+  "leaveMeSubtitle": "Ask for leave and see the answer",
+  "leaveNew": "Ask for leave",
+  "leaveTypeCasual": "Casual",
+  "leaveTypeSick": "Sick",
+  "leaveTypeOther": "Other",
+  "leavePending": "Pending",
+  "leaveApproved": "Approved",
+  "leaveRejected": "Not approved",
+  "leaveCancelled": "Withdrawn",
+  "leaveCancelDone": "Request withdrawn",
+  "leaveDays": "{n} days",
+  "@leaveDays": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "leaveTotalDays": "{n} days in total",
+  "@leaveTotalDays": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "leaveAskedAt": "Asked {time}",
+  "@leaveAskedAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "leaveManagerSaid": "Manager: {reason}",
+  "@leaveManagerSaid": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "leaveCancelAction": "Withdraw",
+  "leaveCancelTitle": "Withdraw this request?",
+  "leaveCancelBody": "The request for {from} – {to} will be withdrawn. You can ask again if needed.",
+  "@leaveCancelBody": {
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "leaveCancelConfirm": "Yes, withdraw",
+  "leaveEmpty": "No leave requests",
+  "leaveEmptyBody": "Tap the button below to ask",
+  "leaveCachedAt": "Offline · showing what the phone had at {time}",
+  "@leaveCachedAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "leaveNeedsInternet": "Needs internet. Try again when connected.",
+  "leaveType": "Type of leave",
+  "leaveFrom": "From",
+  "leaveTo": "To",
+  "leaveReason": "Reason (optional)",
+  "leaveReasonHint": "e.g. sister's wedding",
+  "leaveOnlineNote": "Sending needs internet. The manager's answer shows here.",
+  "leaveSend": "Send request",
+  "leaveSent": "Request sent",
+  "leaveErrToBeforeFrom": "The end date cannot be before the start",
+  "leaveErrTooLong": "At most 31 days in one request",
+  "leaveErrOverlaps": "You already have a request for some of these days",
+  "leaveErrDecided": "The manager has already decided",
+  "calendarTitle": "Holidays and shift",
+  "calendarMeSubtitle": "Holidays, weekly off and duty hours",
+  "calendarMyShift": "My shift",
+  "calendarDefaultShift": "Branch default shift",
+  "calendarShiftHours": "{start} – {end}",
+  "@calendarShiftHours": {
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "calendarWeeklyOff": "Weekly off: {days}",
+  "@calendarWeeklyOff": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
+  "calendarNoWeeklyOff": "No weekly off",
+  "calendarLateGrace": "Late after {grace} min · break {brk} min",
+  "@calendarLateGrace": {
+    "placeholders": {
+      "grace": {
+        "type": "String"
+      },
+      "brk": {
+        "type": "String"
+      }
+    }
+  },
+  "calendarMyLeave": "My approved leave",
+  "calendarHolidays": "Holidays",
+  "calendarNoHolidays": "No holidays entered for this year",
+  "calendarNoHolidaysBody": "They show here once the office adds them",
+  "calendarNational": "National",
+  "calendarBranch": "Branch",
+  "weekdaySun": "Sunday",
+  "weekdayMon": "Monday",
+  "weekdayTue": "Tuesday",
+  "weekdayWed": "Wednesday",
+  "weekdayThu": "Thursday",
+  "weekdayFri": "Friday",
+  "weekdaySat": "Saturday",
+  "timelineGuarantorCall": "Guarantor call · {outcome}",
+  "@timelineGuarantorCall": {
+    "placeholders": {
+      "outcome": {
+        "type": "String"
+      }
+    }
+  },
+  "guarantorNoName": "No name",
+  "guarantorCall": "Call the guarantor",
+  "guarantorCallShort": "Call",
+  "guarantorNoPhone": "No phone number"
 }
