@@ -11,6 +11,7 @@ import 'src/contact_attempts.dart';
 import 'src/pin_correction.dart';
 import 'src/data/customer_repository.dart';
 import 'src/presentation/customer_detail_screen.dart';
+import 'src/presentation/map_pin_screen.dart';
 
 /// Customers: list, search, filters, detail, plans, schedule, ERP payments
 /// (FR-CUS-001…008, 010). Read-only mirror of the ERP via field-api.
@@ -19,7 +20,7 @@ FeatureManifest customersManifest(SyncHandlerRegistry Function() registry) => Fe
       flag: 'module.customers',
       permissions: const [Perm.customerView, Perm.customerLocationPropose],
       routes: [
-        GoRoute(path: '/customers/:id/pin', builder: (_, s) => PinCorrectionScreen(customerId: s.pathParameters['id']!)),
+        GoRoute(path: '/customers/:id/pin', builder: (_, s) => MapPinScreen(customerId: s.pathParameters['id']!)),
         GoRoute(path: '/customers/:id', builder: (_, s) => CustomerDetailScreen(customerId: s.pathParameters['id']!, initialAction: s.uri.queryParameters['action'])),
       ],
       pullHandlers: [CustomerPullHandler(registry), ContactAttemptPullHandler(), LocationProposalPullHandler()],

@@ -2711,32 +2711,14 @@ abstract class AppLocalizations {
   /// No description provided for @pinIntro.
   ///
   /// In en, this message translates to:
-  /// **'Stand at the customer\'s door. Your phone\'s GPS position is sent as the new pin, and a manager approves it.'**
+  /// **'Move the map until the pin sits on the customer\'s door. Tap a spot to bring it under the pin.'**
   String get pinIntro;
-
-  /// No description provided for @pinAccuracyWeak.
-  ///
-  /// In en, this message translates to:
-  /// **'GPS is off by {meters} m. It must be {limit} m or better: step into the open and wait a moment.'**
-  String pinAccuracyWeak(String meters, String limit);
 
   /// No description provided for @pinOutside.
   ///
   /// In en, this message translates to:
   /// **'This position is outside Bangladesh.'**
   String get pinOutside;
-
-  /// No description provided for @pinRetry.
-  ///
-  /// In en, this message translates to:
-  /// **'Check GPS again'**
-  String get pinRetry;
-
-  /// No description provided for @pinPhotoNeeded.
-  ///
-  /// In en, this message translates to:
-  /// **'Take a photo of the house or shop'**
-  String get pinPhotoNeeded;
 
   /// No description provided for @pinNoteHint.
   ///
@@ -2765,7 +2747,7 @@ abstract class AppLocalizations {
   /// No description provided for @pinFailed.
   ///
   /// In en, this message translates to:
-  /// **'The server refused this location. Try again from the door with good GPS.'**
+  /// **'The server refused this location. Open the map and send it again.'**
   String get pinFailed;
 
   /// No description provided for @pinDistanceFromOld.
@@ -2773,6 +2755,102 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{distance} from the current pin'**
   String pinDistanceFromOld(String distance);
+
+  /// No description provided for @pinMapLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Map. Drag it to put the pin on the customer\'s door.'**
+  String get pinMapLabel;
+
+  /// No description provided for @pinAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Pin at'**
+  String get pinAt;
+
+  /// No description provided for @pinPhoneDistance.
+  ///
+  /// In en, this message translates to:
+  /// **'You are {distance} from the pin'**
+  String pinPhoneDistance(String distance);
+
+  /// No description provided for @pinPhoneFar.
+  ///
+  /// In en, this message translates to:
+  /// **'You are {distance} from the pin. Check it is the right house: the manager sees this distance.'**
+  String pinPhoneFar(String distance);
+
+  /// No description provided for @pinPhoneUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Your own location is not known yet.'**
+  String get pinPhoneUnknown;
+
+  /// No description provided for @pinPhoneMock.
+  ///
+  /// In en, this message translates to:
+  /// **'Your phone reports a fake location, so a manager checks this pin.'**
+  String get pinPhoneMock;
+
+  /// No description provided for @pinWillApply.
+  ///
+  /// In en, this message translates to:
+  /// **'This customer has no location yet: the pin is set as soon as it is sent.'**
+  String get pinWillApply;
+
+  /// No description provided for @pinNeedsManager.
+  ///
+  /// In en, this message translates to:
+  /// **'A manager checks the new pin before it changes.'**
+  String get pinNeedsManager;
+
+  /// No description provided for @pinPhotoOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo of the house or shop (optional)'**
+  String get pinPhotoOptional;
+
+  /// No description provided for @pinSubmitApply.
+  ///
+  /// In en, this message translates to:
+  /// **'Set pin'**
+  String get pinSubmitApply;
+
+  /// No description provided for @pinSentApplied.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved. The pin is set as soon as it is sent.'**
+  String get pinSentApplied;
+
+  /// No description provided for @pinApplyWhenSent.
+  ///
+  /// In en, this message translates to:
+  /// **'New location saved · it is set as soon as it is sent'**
+  String get pinApplyWhenSent;
+
+  /// No description provided for @pinTypeCoords.
+  ///
+  /// In en, this message translates to:
+  /// **'Type or paste coordinates'**
+  String get pinTypeCoords;
+
+  /// No description provided for @pinTypeCoordsHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'For example 22.70123, 90.37011, or a map link'**
+  String get pinTypeCoordsHelp;
+
+  /// No description provided for @pinTypeCoordsError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not read these coordinates.'**
+  String get pinTypeCoordsError;
+
+  /// No description provided for @pinGo.
+  ///
+  /// In en, this message translates to:
+  /// **'Go'**
+  String get pinGo;
 
   /// No description provided for @mapNoPinCount.
   ///

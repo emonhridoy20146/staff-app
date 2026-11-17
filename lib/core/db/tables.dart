@@ -113,6 +113,14 @@ class LocationProposals extends Table {
   /// Manager's reason when rejected (v3, contract 1.7.0).
   TextColumn get decisionReason => text().nullable()();
 
+  /// v5 (contract 1.11.0): `gps` (the phone's own fix, before 0.8.0) or
+  /// `map` (the point under the pin on the map; [accuracyM] is then 0).
+  TextColumn get method => text().withDefault(const Constant('gps'))();
+
+  /// v5: where the phone was when a `map` pin was picked (GeoFix JSON),
+  /// sent as `deviceGeo` so the manager sees how far away the staff was.
+  TextColumn get deviceGeoJson => text().nullable()();
+
   @override
   Set<Column> get primaryKey => {clientId};
 }

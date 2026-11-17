@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Howlader Field Operations API
-  version: 1.10.0
+  version: 1.11.0
   description: |
     Contract owned by field-api. Consumers (admin-web, staff-app) generate types from this file.
     Conventions (auth, pagination, idempotency, errors) are described in docs/05-api-contract.md.
@@ -503,6 +503,13 @@ paths:
     post:
       tags: [customers]
       operationId: proposeLocation
+      description: |
+        Staff pin for a customer (FR-CUS-008, FR-CUS-011). Idempotent by `clientId` (a replay answers 200 with the stored status).
+        `method: gps` (default) proposes the phone's fix: accuracy must be ≤ 30 m and not mock. `method: map` (1.11.0) proposes a point
+        picked on the map (Uber style); `geo` is that point (`accuracyM` 0) and `deviceGeo` is where the phone was, if it had a fix.
+        Both must be inside Bangladesh. When the customer has no usable pin and the branch setting `customers.staffPinApproval` is
+        `when_missing` (default) the pin is applied at once and the answer is `status: approved`; otherwise it waits for a manager
+        (`pending`). A mock `deviceGeo` never applies at once.
       parameters: [ { $ref: '#/components/parameters/Id' } ]
       requestBody:
         required: true
@@ -514,10 +521,46 @@ paths:
               properties:
                 clientId: { type: string, format: uuid }
                 geo: { $ref: '#/components/schemas/GeoFix' }
+                method: { type: string, enum: [gps, map], default: gps, description: 'Added in 1.11.0' }
+                deviceGeo: { oneOf: [ { $ref: '#/components/schemas/GeoFix' }, { type: 'null' } ], description: 'Phone position when a map pin was picked. Added in 1.11.0' }
                 photoMediaId: { type: string }
                 note: { type: string }
       responses:
-        '201': { description: Created }
+        '201': { description: Created, content: { application/json: { schema: { $ref: '#/components/schemas/PinResult' } } } }
+        '200': { description: Replay of the same clientId, content: { application/json: { schema: { $ref: '#/components/schemas/PinResult' } } } }
+        '404': { $ref: '#/components/responses/Problem' }
+        '422': { description: 'BUSINESS_RULE: LOW_ACCURACY, MOCK_LOCATION (gps only), OUTSIDE_BANGLADESH', content: { application/problem+json: { schema: { $ref: '#/components/schemas/Problem' } } } }
+  /customers/{id}/location:
+    post:
+      tags: [customers]
+      operationId: setCustomerLocation
+      description: |
+        1.11.0 (FR-CUS-011): a manager sets the customer's pin directly, usually by dropping it on a map. It becomes the official FOS
+        pin at once (overlay over the ERP coordinates), appears in the pin history as an approved item with `direct: true`, is audited
+        as `customer.location.set`, reaches the assignee's phone through sync and recomputes polygon areas. Idempotent by `clientId`.
+        Pending staff proposals for the customer stay pending. Permission `customer.location.approve`; out of scope → 404.
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [clientId, lat, lng]
+              properties:
+                clientId: { type: string, format: uuid }
+                lat: { type: number, minimum: -90, maximum: 90 }
+                lng: { type: number, minimum: -180, maximum: 180 }
+                method: { type: string, enum: [map, gps], default: map }
+                note: { type: string, maxLength: 500, description: 'Why the pin was set or moved (kept in the audit log)' }
+      responses:
+        '201': { description: Pin set, content: { application/json: { schema: { $ref: '#/components/schemas/SetLocationResult' } } } }
+        '200': { description: Replay of the same clientId, content: { application/json: { schema: { $ref: '#/components/schemas/SetLocationResult' } } } }
+        '400': { $ref: '#/components/responses/Problem' }
+        '403': { $ref: '#/components/responses/Problem' }
+        '404': { $ref: '#/components/responses/Problem' }
+        '409': { description: 'INVALID_STATE CLIENT_ID_REUSED: the clientId belongs to another pin', content: { application/problem+json: { schema: { $ref: '#/components/schemas/Problem' } } } }
+        '422': { description: 'BUSINESS_RULE OUTSIDE_BANGLADESH', content: { application/problem+json: { schema: { $ref: '#/components/schemas/Problem' } } } }
   /location-proposals:
     get:
       tags: [customers]
@@ -1658,6 +1701,7 @@ components:
         overduePoisha: { type: integer, description: 'Sum of overdue unpaid schedule amounts (ERP cache). Added in 1.2.0' }
         areaName: { oneOf: [ { $ref: '#/components/schemas/I18nText' }, { type: 'null' } ], description: 'FOS area the customer falls in. Added in 1.2.0' }
         assignee: { type: object, properties: { id: { type: string }, name: { type: string } } }
+        branchId: { type: [string, 'null'], description: 'FOS branch of the customer. Added in 1.11.0' }
         erpFetchedAt: { type: string, format: date-time }
     CustomerPage:
       type: object
@@ -1907,6 +1951,8 @@ components:
         decisionReason: { type: [string, 'null'], description: "The manager's reason; always present when rejected" }
         createdAt: { type: string }
         decidedAt: { type: [string, 'null'] }
+        method: { type: string, enum: [gps, map], description: 'Added in 1.11.0' }
+        autoApplied: { type: boolean, description: 'Applied without a manager because the customer had no pin (1.11.0)' }
     LocationProposal:
       type: object
       properties:
@@ -1914,13 +1960,35 @@ components:
         customer: { type: object, properties: { id: { type: string }, name: { $ref: '#/components/schemas/I18nText' }, code: { type: string }, current: { type: [object, 'null'], description: 'Current pin, if any' } } }
         lat: { type: number }
         lng: { type: number }
-        accuracyM: { type: number }
+        accuracyM: { type: number, description: 'GPS accuracy of a gps proposal; 0 for a map pin; absent for a pin a manager set directly' }
         photoMediaId: { type: [string, 'null'] }
         note: { type: [string, 'null'] }
         proposedBy: { type: string }
         proposer: { type: object, properties: { id: { type: string }, name: { type: string } } }
         status: { type: string, enum: [pending, approved, rejected] }
+        method: { type: string, enum: [gps, map], description: 'How the point was chosen (1.11.0)' }
+        deviceDistanceM: { type: [integer, 'null'], description: 'Metres between a map pin and where the phone was when it was picked (1.11.0)' }
+        deviceMock: { type: boolean, description: 'The phone reported a mock location when the map pin was picked (1.11.0)' }
+        autoApplied: { type: boolean, description: 'Staff pin applied at once because the customer had no pin (1.11.0)' }
+        direct: { type: boolean, description: 'Set directly by a manager with POST /customers/{id}/location (1.11.0)' }
+        decider: { oneOf: [ { type: object, properties: { id: { type: string }, name: { type: string } } }, { type: 'null' } ], description: 'Who approved/rejected or set it (1.11.0)' }
+        decidedAt: { type: [string, 'null'], format: date-time, description: 'Added in 1.11.0' }
         createdAt: { type: string, format: date-time }
+    PinResult:
+      type: object
+      description: 'Answer to a staff pin (1.11.0 declares it; the shape is unchanged since 1.0.0)'
+      required: [id, status]
+      properties:
+        id: { type: string }
+        status: { type: string, enum: [pending, approved, rejected], description: '`approved` when it was applied at once' }
+    SetLocationResult:
+      type: object
+      description: Added in 1.11.0
+      required: [id, status, location]
+      properties:
+        id: { type: string, description: 'Pin history item id (a location proposal with direct: true)' }
+        status: { type: string, enum: [approved] }
+        location: { $ref: '#/components/schemas/CustomerLocation' }
     AttendanceSummaryRow:
       type: object
       properties: { userId: { type: string }, userName: { type: string }, present: { type: integer }, late: { type: integer }, absent: { type: integer }, leave: { type: integer }, holiday: { type: integer }, weeklyOff: { type: integer }, lateMin: { type: integer }, breakMin: { type: integer }, dutyMin: { type: integer }, overBreakDays: { type: integer } }

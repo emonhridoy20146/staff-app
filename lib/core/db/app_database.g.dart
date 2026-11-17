@@ -3761,6 +3761,27 @@ class $LocationProposalsTable extends LocationProposals
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _methodMeta = const VerificationMeta('method');
+  @override
+  late final GeneratedColumn<String> method = GeneratedColumn<String>(
+    'method',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('gps'),
+  );
+  static const VerificationMeta _deviceGeoJsonMeta = const VerificationMeta(
+    'deviceGeoJson',
+  );
+  @override
+  late final GeneratedColumn<String> deviceGeoJson = GeneratedColumn<String>(
+    'device_geo_json',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     clientId,
@@ -3773,6 +3794,8 @@ class $LocationProposalsTable extends LocationProposals
     status,
     syncState,
     decisionReason,
+    method,
+    deviceGeoJson,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -3862,6 +3885,21 @@ class $LocationProposalsTable extends LocationProposals
         ),
       );
     }
+    if (data.containsKey('method')) {
+      context.handle(
+        _methodMeta,
+        method.isAcceptableOrUnknown(data['method']!, _methodMeta),
+      );
+    }
+    if (data.containsKey('device_geo_json')) {
+      context.handle(
+        _deviceGeoJsonMeta,
+        deviceGeoJson.isAcceptableOrUnknown(
+          data['device_geo_json']!,
+          _deviceGeoJsonMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -3911,6 +3949,14 @@ class $LocationProposalsTable extends LocationProposals
         DriftSqlType.string,
         data['${effectivePrefix}decision_reason'],
       ),
+      method: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}method'],
+      )!,
+      deviceGeoJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}device_geo_json'],
+      ),
     );
   }
 
@@ -3934,6 +3980,14 @@ class LocationProposalRow extends DataClass
 
   /// Manager's reason when rejected (v3, contract 1.7.0).
   final String? decisionReason;
+
+  /// v5 (contract 1.11.0): `gps` (the phone's own fix, before 0.8.0) or
+  /// `map` (the point under the pin on the map; [accuracyM] is then 0).
+  final String method;
+
+  /// v5: where the phone was when a `map` pin was picked (GeoFix JSON),
+  /// sent as `deviceGeo` so the manager sees how far away the staff was.
+  final String? deviceGeoJson;
   const LocationProposalRow({
     required this.clientId,
     required this.customerId,
@@ -3945,6 +3999,8 @@ class LocationProposalRow extends DataClass
     required this.status,
     required this.syncState,
     this.decisionReason,
+    required this.method,
+    this.deviceGeoJson,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -3965,6 +4021,10 @@ class LocationProposalRow extends DataClass
     if (!nullToAbsent || decisionReason != null) {
       map['decision_reason'] = Variable<String>(decisionReason);
     }
+    map['method'] = Variable<String>(method);
+    if (!nullToAbsent || deviceGeoJson != null) {
+      map['device_geo_json'] = Variable<String>(deviceGeoJson);
+    }
     return map;
   }
 
@@ -3984,6 +4044,10 @@ class LocationProposalRow extends DataClass
       decisionReason: decisionReason == null && nullToAbsent
           ? const Value.absent()
           : Value(decisionReason),
+      method: Value(method),
+      deviceGeoJson: deviceGeoJson == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deviceGeoJson),
     );
   }
 
@@ -4005,6 +4069,8 @@ class LocationProposalRow extends DataClass
       status: serializer.fromJson<String>(json['status']),
       syncState: serializer.fromJson<String>(json['syncState']),
       decisionReason: serializer.fromJson<String?>(json['decisionReason']),
+      method: serializer.fromJson<String>(json['method']),
+      deviceGeoJson: serializer.fromJson<String?>(json['deviceGeoJson']),
     );
   }
   @override
@@ -4021,6 +4087,8 @@ class LocationProposalRow extends DataClass
       'status': serializer.toJson<String>(status),
       'syncState': serializer.toJson<String>(syncState),
       'decisionReason': serializer.toJson<String?>(decisionReason),
+      'method': serializer.toJson<String>(method),
+      'deviceGeoJson': serializer.toJson<String?>(deviceGeoJson),
     };
   }
 
@@ -4035,6 +4103,8 @@ class LocationProposalRow extends DataClass
     String? status,
     String? syncState,
     Value<String?> decisionReason = const Value.absent(),
+    String? method,
+    Value<String?> deviceGeoJson = const Value.absent(),
   }) => LocationProposalRow(
     clientId: clientId ?? this.clientId,
     customerId: customerId ?? this.customerId,
@@ -4050,6 +4120,10 @@ class LocationProposalRow extends DataClass
     decisionReason: decisionReason.present
         ? decisionReason.value
         : this.decisionReason,
+    method: method ?? this.method,
+    deviceGeoJson: deviceGeoJson.present
+        ? deviceGeoJson.value
+        : this.deviceGeoJson,
   );
   LocationProposalRow copyWithCompanion(LocationProposalsCompanion data) {
     return LocationProposalRow(
@@ -4069,6 +4143,10 @@ class LocationProposalRow extends DataClass
       decisionReason: data.decisionReason.present
           ? data.decisionReason.value
           : this.decisionReason,
+      method: data.method.present ? data.method.value : this.method,
+      deviceGeoJson: data.deviceGeoJson.present
+          ? data.deviceGeoJson.value
+          : this.deviceGeoJson,
     );
   }
 
@@ -4084,7 +4162,9 @@ class LocationProposalRow extends DataClass
           ..write('note: $note, ')
           ..write('status: $status, ')
           ..write('syncState: $syncState, ')
-          ..write('decisionReason: $decisionReason')
+          ..write('decisionReason: $decisionReason, ')
+          ..write('method: $method, ')
+          ..write('deviceGeoJson: $deviceGeoJson')
           ..write(')'))
         .toString();
   }
@@ -4101,6 +4181,8 @@ class LocationProposalRow extends DataClass
     status,
     syncState,
     decisionReason,
+    method,
+    deviceGeoJson,
   );
   @override
   bool operator ==(Object other) =>
@@ -4115,7 +4197,9 @@ class LocationProposalRow extends DataClass
           other.note == this.note &&
           other.status == this.status &&
           other.syncState == this.syncState &&
-          other.decisionReason == this.decisionReason);
+          other.decisionReason == this.decisionReason &&
+          other.method == this.method &&
+          other.deviceGeoJson == this.deviceGeoJson);
 }
 
 class LocationProposalsCompanion extends UpdateCompanion<LocationProposalRow> {
@@ -4129,6 +4213,8 @@ class LocationProposalsCompanion extends UpdateCompanion<LocationProposalRow> {
   final Value<String> status;
   final Value<String> syncState;
   final Value<String?> decisionReason;
+  final Value<String> method;
+  final Value<String?> deviceGeoJson;
   final Value<int> rowid;
   const LocationProposalsCompanion({
     this.clientId = const Value.absent(),
@@ -4141,6 +4227,8 @@ class LocationProposalsCompanion extends UpdateCompanion<LocationProposalRow> {
     this.status = const Value.absent(),
     this.syncState = const Value.absent(),
     this.decisionReason = const Value.absent(),
+    this.method = const Value.absent(),
+    this.deviceGeoJson = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   LocationProposalsCompanion.insert({
@@ -4154,6 +4242,8 @@ class LocationProposalsCompanion extends UpdateCompanion<LocationProposalRow> {
     this.status = const Value.absent(),
     this.syncState = const Value.absent(),
     this.decisionReason = const Value.absent(),
+    this.method = const Value.absent(),
+    this.deviceGeoJson = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : clientId = Value(clientId),
        customerId = Value(customerId),
@@ -4171,6 +4261,8 @@ class LocationProposalsCompanion extends UpdateCompanion<LocationProposalRow> {
     Expression<String>? status,
     Expression<String>? syncState,
     Expression<String>? decisionReason,
+    Expression<String>? method,
+    Expression<String>? deviceGeoJson,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -4185,6 +4277,8 @@ class LocationProposalsCompanion extends UpdateCompanion<LocationProposalRow> {
       if (status != null) 'status': status,
       if (syncState != null) 'sync_state': syncState,
       if (decisionReason != null) 'decision_reason': decisionReason,
+      if (method != null) 'method': method,
+      if (deviceGeoJson != null) 'device_geo_json': deviceGeoJson,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -4200,6 +4294,8 @@ class LocationProposalsCompanion extends UpdateCompanion<LocationProposalRow> {
     Value<String>? status,
     Value<String>? syncState,
     Value<String?>? decisionReason,
+    Value<String>? method,
+    Value<String?>? deviceGeoJson,
     Value<int>? rowid,
   }) {
     return LocationProposalsCompanion(
@@ -4213,6 +4309,8 @@ class LocationProposalsCompanion extends UpdateCompanion<LocationProposalRow> {
       status: status ?? this.status,
       syncState: syncState ?? this.syncState,
       decisionReason: decisionReason ?? this.decisionReason,
+      method: method ?? this.method,
+      deviceGeoJson: deviceGeoJson ?? this.deviceGeoJson,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -4250,6 +4348,12 @@ class LocationProposalsCompanion extends UpdateCompanion<LocationProposalRow> {
     if (decisionReason.present) {
       map['decision_reason'] = Variable<String>(decisionReason.value);
     }
+    if (method.present) {
+      map['method'] = Variable<String>(method.value);
+    }
+    if (deviceGeoJson.present) {
+      map['device_geo_json'] = Variable<String>(deviceGeoJson.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -4269,6 +4373,8 @@ class LocationProposalsCompanion extends UpdateCompanion<LocationProposalRow> {
           ..write('status: $status, ')
           ..write('syncState: $syncState, ')
           ..write('decisionReason: $decisionReason, ')
+          ..write('method: $method, ')
+          ..write('deviceGeoJson: $deviceGeoJson, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -19664,6 +19770,8 @@ typedef $$LocationProposalsTableCreateCompanionBuilder =
       Value<String> status,
       Value<String> syncState,
       Value<String?> decisionReason,
+      Value<String> method,
+      Value<String?> deviceGeoJson,
       Value<int> rowid,
     });
 typedef $$LocationProposalsTableUpdateCompanionBuilder =
@@ -19678,6 +19786,8 @@ typedef $$LocationProposalsTableUpdateCompanionBuilder =
       Value<String> status,
       Value<String> syncState,
       Value<String?> decisionReason,
+      Value<String> method,
+      Value<String?> deviceGeoJson,
       Value<int> rowid,
     });
 
@@ -19737,6 +19847,16 @@ class $$LocationProposalsTableFilterComposer
 
   ColumnFilters<String> get decisionReason => $composableBuilder(
     column: $table.decisionReason,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get method => $composableBuilder(
+    column: $table.method,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get deviceGeoJson => $composableBuilder(
+    column: $table.deviceGeoJson,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -19799,6 +19919,16 @@ class $$LocationProposalsTableOrderingComposer
     column: $table.decisionReason,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get method => $composableBuilder(
+    column: $table.method,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get deviceGeoJson => $composableBuilder(
+    column: $table.deviceGeoJson,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$LocationProposalsTableAnnotationComposer
@@ -19843,6 +19973,14 @@ class $$LocationProposalsTableAnnotationComposer
 
   GeneratedColumn<String> get decisionReason => $composableBuilder(
     column: $table.decisionReason,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get method =>
+      $composableBuilder(column: $table.method, builder: (column) => column);
+
+  GeneratedColumn<String> get deviceGeoJson => $composableBuilder(
+    column: $table.deviceGeoJson,
     builder: (column) => column,
   );
 }
@@ -19897,6 +20035,8 @@ class $$LocationProposalsTableTableManager
                 Value<String> status = const Value.absent(),
                 Value<String> syncState = const Value.absent(),
                 Value<String?> decisionReason = const Value.absent(),
+                Value<String> method = const Value.absent(),
+                Value<String?> deviceGeoJson = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => LocationProposalsCompanion(
                 clientId: clientId,
@@ -19909,6 +20049,8 @@ class $$LocationProposalsTableTableManager
                 status: status,
                 syncState: syncState,
                 decisionReason: decisionReason,
+                method: method,
+                deviceGeoJson: deviceGeoJson,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -19923,6 +20065,8 @@ class $$LocationProposalsTableTableManager
                 Value<String> status = const Value.absent(),
                 Value<String> syncState = const Value.absent(),
                 Value<String?> decisionReason = const Value.absent(),
+                Value<String> method = const Value.absent(),
+                Value<String?> deviceGeoJson = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => LocationProposalsCompanion.insert(
                 clientId: clientId,
@@ -19935,6 +20079,8 @@ class $$LocationProposalsTableTableManager
                 status: status,
                 syncState: syncState,
                 decisionReason: decisionReason,
+                method: method,
+                deviceGeoJson: deviceGeoJson,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

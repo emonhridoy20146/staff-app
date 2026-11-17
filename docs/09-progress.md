@@ -26,7 +26,7 @@ Phases match `field-api/docs/09-progress.md`. Start each phase against the Prism
 | Cash: position, limit, deposits with slip, end-of-day closing | ◐ slip photo and closing not yet |
 | Visits with camera, media queue | ✅ |
 | Notes, promises, local reminders | ✅ |
-| Tags (with reason), pin correction proposals | ✅ tags; pin correction in 0.3.0 (flow test + screenshots) |
+| Tags (with reason), pin correction proposals | ✅ tags; pin correction in 0.3.0 (flow test + screenshots); map pin screen in 0.8.0 (contract 1.11.0: map moves under a fixed pin, typed coordinates, optional photo, set at once for customers without a location; flow + widget tests, screenshot) |
 | Attendance: work-in/out, breaks, summary | ✅ |
 | Attendance photo at every event (setting `attendance.selfieEvents`) | ✅ 0.4.0, flow tests + screenshot; device camera check pending |
 | Handovers incoming/outgoing | ◐ incoming done; outgoing (P4 staff-initiated) not yet |

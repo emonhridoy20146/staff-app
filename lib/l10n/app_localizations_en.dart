@@ -1470,21 +1470,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pinIntro =>
-      'Stand at the customer\'s door. Your phone\'s GPS position is sent as the new pin, and a manager approves it.';
-
-  @override
-  String pinAccuracyWeak(String meters, String limit) {
-    return 'GPS is off by $meters m. It must be $limit m or better: step into the open and wait a moment.';
-  }
+      'Move the map until the pin sits on the customer\'s door. Tap a spot to bring it under the pin.';
 
   @override
   String get pinOutside => 'This position is outside Bangladesh.';
-
-  @override
-  String get pinRetry => 'Check GPS again';
-
-  @override
-  String get pinPhotoNeeded => 'Take a photo of the house or shop';
 
   @override
   String get pinNoteHint => 'Landmark, gate colour, floor…';
@@ -1500,12 +1489,70 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pinFailed =>
-      'The server refused this location. Try again from the door with good GPS.';
+      'The server refused this location. Open the map and send it again.';
 
   @override
   String pinDistanceFromOld(String distance) {
     return '$distance from the current pin';
   }
+
+  @override
+  String get pinMapLabel =>
+      'Map. Drag it to put the pin on the customer\'s door.';
+
+  @override
+  String get pinAt => 'Pin at';
+
+  @override
+  String pinPhoneDistance(String distance) {
+    return 'You are $distance from the pin';
+  }
+
+  @override
+  String pinPhoneFar(String distance) {
+    return 'You are $distance from the pin. Check it is the right house: the manager sees this distance.';
+  }
+
+  @override
+  String get pinPhoneUnknown => 'Your own location is not known yet.';
+
+  @override
+  String get pinPhoneMock =>
+      'Your phone reports a fake location, so a manager checks this pin.';
+
+  @override
+  String get pinWillApply =>
+      'This customer has no location yet: the pin is set as soon as it is sent.';
+
+  @override
+  String get pinNeedsManager =>
+      'A manager checks the new pin before it changes.';
+
+  @override
+  String get pinPhotoOptional => 'Photo of the house or shop (optional)';
+
+  @override
+  String get pinSubmitApply => 'Set pin';
+
+  @override
+  String get pinSentApplied => 'Saved. The pin is set as soon as it is sent.';
+
+  @override
+  String get pinApplyWhenSent =>
+      'New location saved · it is set as soon as it is sent';
+
+  @override
+  String get pinTypeCoords => 'Type or paste coordinates';
+
+  @override
+  String get pinTypeCoordsHelp =>
+      'For example 22.70123, 90.37011, or a map link';
+
+  @override
+  String get pinTypeCoordsError => 'Could not read these coordinates.';
+
+  @override
+  String get pinGo => 'Go';
 
   @override
   String mapNoPinCount(String count) {

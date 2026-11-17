@@ -18,6 +18,11 @@ class Customer {
   String? get address => row.address;
   String? get areaName => row.areaName;
   bool get hasPin => row.lat != null && row.lng != null && row.locationStatus != 'missing' && row.locationStatus != 'invalid';
+
+  /// A pin the server trusts (`ok` or set by a manager / approved). A swapped
+  /// or missing one does not count: a staff map pin then applies at once
+  /// under `customers.staffPinApproval = when_missing` (field-api 1.11.0).
+  bool get pinUsable => hasPin && (row.locationStatus == 'ok' || row.locationStatus == 'overridden');
   int get outstanding => row.totalOutstandingPoisha;
   int get overdueAmount => row.overduePoisha;
   int? get installment => row.installmentPoisha;

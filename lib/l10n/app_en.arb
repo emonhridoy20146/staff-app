@@ -907,26 +907,13 @@
   "visitSuggestYes": "Record visit",
   "actionSetLocation": "Set location",
   "actionCorrectLocation": "Correct location",
-  "pinIntro": "Stand at the customer's door. Your phone's GPS position is sent as the new pin, and a manager approves it.",
-  "pinAccuracyWeak": "GPS is off by {meters} m. It must be {limit} m or better: step into the open and wait a moment.",
-  "@pinAccuracyWeak": {
-    "placeholders": {
-      "meters": {
-        "type": "String"
-      },
-      "limit": {
-        "type": "String"
-      }
-    }
-  },
+  "pinIntro": "Move the map until the pin sits on the customer's door. Tap a spot to bring it under the pin.",
   "pinOutside": "This position is outside Bangladesh.",
-  "pinRetry": "Check GPS again",
-  "pinPhotoNeeded": "Take a photo of the house or shop",
   "pinNoteHint": "Landmark, gate colour, floor…",
   "pinSubmit": "Send for approval",
   "pinSent": "Sent. The pin changes after a manager approves it.",
   "pinPending": "New location sent · waiting for manager approval",
-  "pinFailed": "The server refused this location. Try again from the door with good GPS.",
+  "pinFailed": "The server refused this location. Open the map and send it again.",
   "pinDistanceFromOld": "{distance} from the current pin",
   "@pinDistanceFromOld": {
     "placeholders": {
@@ -935,6 +922,36 @@
       }
     }
   },
+  "pinMapLabel": "Map. Drag it to put the pin on the customer's door.",
+  "pinAt": "Pin at",
+  "pinPhoneDistance": "You are {distance} from the pin",
+  "@pinPhoneDistance": {
+    "placeholders": {
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
+  "pinPhoneFar": "You are {distance} from the pin. Check it is the right house: the manager sees this distance.",
+  "@pinPhoneFar": {
+    "placeholders": {
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
+  "pinPhoneUnknown": "Your own location is not known yet.",
+  "pinPhoneMock": "Your phone reports a fake location, so a manager checks this pin.",
+  "pinWillApply": "This customer has no location yet: the pin is set as soon as it is sent.",
+  "pinNeedsManager": "A manager checks the new pin before it changes.",
+  "pinPhotoOptional": "Photo of the house or shop (optional)",
+  "pinSubmitApply": "Set pin",
+  "pinSentApplied": "Saved. The pin is set as soon as it is sent.",
+  "pinApplyWhenSent": "New location saved · it is set as soon as it is sent",
+  "pinTypeCoords": "Type or paste coordinates",
+  "pinTypeCoordsHelp": "For example 22.70123, 90.37011, or a map link",
+  "pinTypeCoordsError": "Could not read these coordinates.",
+  "pinGo": "Go",
   "mapNoPinCount": "{count} without location",
   "@mapNoPinCount": {
     "placeholders": {
