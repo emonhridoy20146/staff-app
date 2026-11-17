@@ -20,56 +20,61 @@ import '../../../core/ui/common.dart';
 import '../../../l10n/app_localizations.dart';
 import 'customer_providers.dart';
 import 'domain/customer.dart';
+import 'domain/map_pin.dart';
 
-/// Pin correction (FR-CUS-008): the staff stands at the customer and
-/// proposes the phone's GPS position as the new pin, with a camera photo.
-/// A manager approves it on the web; the pin itself only changes when the
-/// approved customer comes back through sync.
+/// Customer pins (FR-CUS-008, FR-CUS-011): the staff picks the point on a
+/// map (the map moves under a fixed pin, ride-app style; see
+/// `MapPinScreen`) and the phone sends it as a `location_proposal` with
+/// `method: map` and where the phone was (`deviceGeo`, contract 1.11.0).
 ///
-/// Server rules mirrored here so the staff sees the reason before sending:
-/// accuracy ≤ 30 m, no mock location, inside Bangladesh.
-const pinMaxAccuracyM = 30;
+/// Under `customers.staffPinApproval = when_missing` (default) the server
+/// sets the pin at once for a customer without a usable pin; moving an
+/// existing pin waits for a manager. The pin itself always arrives as a
+/// customer change on pull. Rules shown before sending: `domain/map_pin.dart`.
 
-/// Rough Bangladesh bounding box (server does the exact check).
-bool insideBangladesh(double lat, double lng) => lat >= 20.5 && lat <= 26.7 && lng >= 88.0 && lng <= 92.75;
+/// The branch's `customers.staffPinApproval`; missing → `when_missing`.
+final staffPinApprovalProvider = Provider<StaffPinApproval>((ref) => StaffPinApproval.parse(ref.watch(serverSettingsProvider)['customers.staffPinApproval']));
 
-enum PinFixProblem { none, noFix, mock, weak, outside }
-
-PinFixProblem checkPinFix(GeoFix? fix) {
-  if (fix == null) return PinFixProblem.noFix;
-  if (fix.mock) return PinFixProblem.mock;
-  if (fix.accuracyM > pinMaxAccuracyM) return PinFixProblem.weak;
-  if (!insideBangladesh(fix.lat, fix.lng)) return PinFixProblem.outside;
-  return PinFixProblem.none;
-}
-
-/// Saves the proposal on the phone and queues its photo. The
-/// `location_proposal` mutation is queued once the photo is confirmed
-/// (see [submitLocationProposal]) because the contract wants the server
-/// media id in the body. Until then the row is `waiting_photo` and the
-/// photo sits in the media queue — nothing is lost offline.
-Future<String> recordLocationProposal(Ref ref, {required Customer customer, required GeoFix fix, required Uint8List photo, String? note}) async {
-  assert(checkPinFix(fix) == PinFixProblem.none);
+/// Saves the proposal on the phone. With a photo, the photo is queued and
+/// the `location_proposal` mutation follows once the photo is confirmed
+/// (see [submitLocationProposal]), because the contract wants the server
+/// media id in the body; until then the row is `waiting_photo` and nothing
+/// is lost offline. Without a photo the mutation is queued at once, in the
+/// same transaction as the row. The client id (UUIDv7) is made here once.
+Future<String> recordLocationProposal(Ref ref, {required Customer customer, required double lat, required double lng, GeoFix? phone, Uint8List? photo, String? note}) async {
+  assert(insideBangladesh(lat, lng));
   final db = ref.read(databaseProvider);
   final clock = ref.read(clockProvider);
   final id = const Uuid().v7();
   final text = note?.trim();
-  await db.into(db.locationProposals).insert(LocationProposalsCompanion.insert(
-        clientId: id,
-        customerId: customer.id,
-        lat: fix.lat,
-        lng: fix.lng,
-        accuracyM: fix.accuracyM,
-        note: Value(text == null || text.isEmpty ? null : text),
-        syncState: const Value('waiting_photo'),
-      ));
+  final row = LocationProposalsCompanion.insert(
+    clientId: id,
+    customerId: customer.id,
+    lat: lat,
+    lng: lng,
+    accuracyM: 0,
+    method: const Value('map'),
+    deviceGeoJson: Value(phone == null ? null : jsonEncode(phone.toJson())),
+    note: Value(text == null || text.isEmpty ? null : text),
+    syncState: Value(photo == null ? 'queued' : 'waiting_photo'),
+  );
+  if (photo == null) {
+    final outbox = ref.read(outboxWriterProvider);
+    await db.transaction(() async {
+      await db.into(db.locationProposals).insert(row);
+      await submitLocationProposal(outbox, db, id, const []);
+    });
+    unawaited(ref.read(syncEngineProvider).kick(reason: 'pin'));
+    return id;
+  }
+  await db.into(db.locationProposals).insert(row);
   final user = await ref.read(secureStoreProvider).read('session_user');
   final code = user == null ? '' : ((jsonDecode(user) as Map)['employeeCode'] ?? '').toString();
   final f = ref.read(fmtProvider);
   final at = clock.nowUtc();
-  final wm = '${f.dateTime(at).replaceAll(RegExp('[^\\x00-\\x7F]'), '')} ${clock.businessDate()} $code ${fix.lat.toStringAsFixed(5)},${fix.lng.toStringAsFixed(5)}';
+  final wm = '${f.dateTime(at).replaceAll(RegExp('[^\\x00-\\x7F]'), '')} ${clock.businessDate()} $code ${lat.toStringAsFixed(5)},${lng.toStringAsFixed(5)}';
   final processed = await processPhoto(photo, watermark: wm.trim());
-  final mediaId = await ref.read(mediaServiceProvider).enqueue(photo: processed, kind: 'location_proof', ownerEntity: 'location_proposal', ownerClientId: id, fix: fix);
+  final mediaId = await ref.read(mediaServiceProvider).enqueue(photo: processed, kind: 'location_proof', ownerEntity: 'location_proposal', ownerClientId: id, fix: phone);
   await (db.update(db.locationProposals)..where((t) => t.clientId.equals(id))).write(LocationProposalsCompanion(photoMediaClientId: Value(mediaId)));
   unawaited(ref.read(mediaServiceProvider).uploadPending().catchError((Object _) {}));
   return id;
@@ -78,11 +83,31 @@ Future<String> recordLocationProposal(Ref ref, {required Customer customer, requ
 class PinCorrectionService {
   PinCorrectionService(this._ref);
   final Ref _ref;
-  Future<String> record({required Customer customer, required GeoFix fix, required Uint8List photo, String? note}) =>
-      recordLocationProposal(_ref, customer: customer, fix: fix, photo: photo, note: note);
+  Future<String> record({required Customer customer, required double lat, required double lng, GeoFix? phone, Uint8List? photo, String? note}) =>
+      recordLocationProposal(_ref, customer: customer, lat: lat, lng: lng, phone: phone, photo: photo, note: note);
 }
 
 final pinCorrectionServiceProvider = Provider<PinCorrectionService>(PinCorrectionService.new);
+
+/// Body of the `location_proposal` mutation. Rows from before 0.8.0 are
+/// GPS proposals and keep their old shape (no `method`: the server reads
+/// that as `gps`).
+Json locationProposalPayload(LocationProposalRow p, List<String> mediaIds) {
+  final device = p.deviceGeoJson == null ? null : jsonDecode(p.deviceGeoJson!) as Json;
+  return {
+    'clientId': p.clientId,
+    'customerId': p.customerId,
+    'geo': {'lat': p.lat, 'lng': p.lng, 'accuracyM': p.accuracyM, 'mock': false},
+    if (p.method == 'map') ...{
+      'method': 'map',
+      'deviceGeo': device == null
+          ? null
+          : {'lat': device['lat'], 'lng': device['lng'], 'accuracyM': device['accuracyM'], 'mock': device['mock'] ?? false, if (device['fixAt'] != null) 'capturedAt': device['fixAt']},
+    },
+    if (mediaIds.isNotEmpty) 'photoMediaId': mediaIds.first,
+    'note': ?p.note,
+  };
+}
 
 /// Media hook: the photo is on the server → queue the proposal itself.
 /// Idempotent: the mutation id is the proposal's client id.
@@ -90,13 +115,7 @@ Future<void> submitLocationProposal(OutboxWriter outbox, AppDatabase db, String 
   final p = await (db.select(db.locationProposals)..where((t) => t.clientId.equals(proposalClientId))).getSingleOrNull();
   if (p == null) return;
   await db.transaction(() async {
-    await outbox.enqueue(mutationId: p.clientId, entity: 'location_proposal', payload: {
-      'clientId': p.clientId,
-      'customerId': p.customerId,
-      'geo': {'lat': p.lat, 'lng': p.lng, 'accuracyM': p.accuracyM, 'mock': false},
-      if (mediaIds.isNotEmpty) 'photoMediaId': mediaIds.first,
-      'note': ?p.note,
-    });
+    await outbox.enqueue(mutationId: p.clientId, entity: 'location_proposal', payload: locationProposalPayload(p, mediaIds));
     if (p.syncState == 'waiting_photo') {
       await (db.update(db.locationProposals)..where((t) => t.clientId.equals(p.clientId))).write(const LocationProposalsCompanion(syncState: Value('queued')));
     }
@@ -107,10 +126,13 @@ class LocationProposalPushHandler implements PushResultHandler {
   @override
   Set<String> get mutationTypes => const {'location_proposal'};
   @override
-  Future<void> onResult(AppDatabase db, OutboxRow m, SyncPushResult r) =>
-      (db.update(db.locationProposals)..where((t) => t.clientId.equals(m.mutationId))).write(
-        LocationProposalsCompanion(syncState: Value(r.result == 'rejected' ? 'failed' : 'synced')),
-      );
+  Future<void> onResult(AppDatabase db, OutboxRow m, SyncPushResult r) => (db.update(db.locationProposals)..where((t) => t.clientId.equals(m.mutationId))).write(
+    LocationProposalsCompanion(
+      syncState: Value(r.result == 'rejected' ? 'failed' : 'synced'),
+      // 1.11.0: a pin the server set at once comes back `approved`.
+      status: r.status == 'approved' ? const Value('approved') : const Value.absent(),
+    ),
+  );
 }
 
 /// Pull (contract 1.7.0): the server sends `location_proposal` to the
@@ -124,22 +146,27 @@ class LocationProposalPullHandler implements PullHandler {
     final clientId = (d['clientId'] as String?) ?? id;
     final status = (d['status'] as String?) ?? 'pending';
     final reason = d['decisionReason'] as String?;
-    final updated = await (db.update(db.locationProposals)..where((t) => t.clientId.equals(clientId))).write(
-      LocationProposalsCompanion(status: Value(status), decisionReason: Value(reason), syncState: const Value('synced')),
-    );
+    final updated = await (db.update(
+      db.locationProposals,
+    )..where((t) => t.clientId.equals(clientId))).write(LocationProposalsCompanion(status: Value(status), decisionReason: Value(reason), syncState: const Value('synced')));
     if (updated == 0 && d['customerId'] != null && d['lat'] != null && d['lng'] != null) {
       // Not on this phone (reinstall): keep the server's copy.
-      await db.into(db.locationProposals).insertOnConflictUpdate(LocationProposalsCompanion.insert(
-            clientId: clientId,
-            customerId: d['customerId'] as String,
-            lat: (d['lat'] as num).toDouble(),
-            lng: (d['lng'] as num).toDouble(),
-            accuracyM: ((d['accuracyM'] as num?) ?? 0).toDouble(),
-            note: Value(d['note'] as String?),
-            status: Value(status),
-            decisionReason: Value(reason),
-            syncState: const Value('synced'),
-          ));
+      await db
+          .into(db.locationProposals)
+          .insertOnConflictUpdate(
+            LocationProposalsCompanion.insert(
+              clientId: clientId,
+              customerId: d['customerId'] as String,
+              lat: (d['lat'] as num).toDouble(),
+              lng: (d['lng'] as num).toDouble(),
+              accuracyM: ((d['accuracyM'] as num?) ?? 0).toDouble(),
+              note: Value(d['note'] as String?),
+              method: Value((d['method'] as String?) ?? 'gps'),
+              status: Value(status),
+              decisionReason: Value(reason),
+              syncState: const Value('synced'),
+            ),
+          );
     }
   }
 
@@ -163,141 +190,6 @@ final openProposalProvider = StreamProvider.family<LocationProposalRow?, String>
 /// Opens the pin screen.
 void openPinCorrection(BuildContext context, String customerId) => context.push('/customers/$customerId/pin');
 
-class PinCorrectionScreen extends ConsumerStatefulWidget {
-  const PinCorrectionScreen({super.key, required this.customerId});
-  final String customerId;
-  @override
-  ConsumerState<PinCorrectionScreen> createState() => _PinCorrectionScreenState();
-}
-
-class _PinCorrectionScreenState extends ConsumerState<PinCorrectionScreen> {
-  late Future<GeoFix?> _fix = ref.read(locationEngineProvider).currentFix();
-  Uint8List? _photo;
-  final _note = TextEditingController();
-  bool _busy = false;
-
-  @override
-  void dispose() {
-    _note.dispose();
-    super.dispose();
-  }
-
-  Future<void> _takePhoto() async {
-    final bytes = await ref.read(photoCapturerProvider).capture(context);
-    if (bytes != null) setState(() => _photo = bytes);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context);
-    final t = Theme.of(context).textTheme;
-    final cs = Theme.of(context).colorScheme;
-    final f = ref.watch(fmtProvider);
-    final lang = Localizations.localeOf(context).languageCode;
-    final c = ref.watch(customerProvider(widget.customerId)).value;
-    if (c == null) return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    return FutureBuilder<GeoFix?>(
-      future: _fix,
-      builder: (context, s) {
-        final searching = s.connectionState != ConnectionState.done;
-        final fix = s.data;
-        final problem = searching ? null : checkPinFix(fix);
-        final ok = problem == PinFixProblem.none && _photo != null && !_busy;
-        return Scaffold(
-          appBar: AppBar(title: Text(c.hasPin ? l.actionCorrectLocation : l.actionSetLocation)),
-          body: ListView(
-            padding: const EdgeInsets.all(Space.screen),
-            children: [
-              Text(c.nameOf(lang), style: t.titleLarge),
-              Text(c.code, style: t.bodyMedium!.copyWith(color: cs.onSurfaceVariant)),
-              const SizedBox(height: Space.s12),
-              Text(l.pinIntro, style: t.bodyLarge),
-              const SizedBox(height: Space.s16),
-              if (searching)
-                InfoBanner(icon: Icons.my_location_rounded, text: l.collectGpsSearching)
-              else
-                InfoBanner(
-                  icon: switch (problem!) {
-                    PinFixProblem.none => Icons.gps_fixed_rounded,
-                    PinFixProblem.mock => Icons.gpp_maybe_rounded,
-                    PinFixProblem.noFix => Icons.location_disabled_rounded,
-                    _ => Icons.gps_not_fixed_rounded,
-                  },
-                  tone: switch (problem) {
-                    PinFixProblem.none => BannerTone.success,
-                    PinFixProblem.mock || PinFixProblem.outside => BannerTone.danger,
-                    _ => BannerTone.warning,
-                  },
-                  text: switch (problem) {
-                    PinFixProblem.none => l.collectGpsAccurate(f.num(fix!.accuracyM.round())),
-                    PinFixProblem.noFix => l.collectGpsNone,
-                    PinFixProblem.mock => l.collectGpsMock,
-                    PinFixProblem.weak => l.pinAccuracyWeak(f.num(fix!.accuracyM.round()), f.num(pinMaxAccuracyM)),
-                    PinFixProblem.outside => l.pinOutside,
-                  },
-                ),
-              if (!searching && fix != null && c.hasPin && problem == PinFixProblem.none) ...[
-                const SizedBox(height: Space.s8),
-                Text(l.pinDistanceFromOld(f.distance(distanceMeters(fix.lat, fix.lng, c.row.lat!, c.row.lng!))), style: t.bodyMedium),
-              ],
-              if (!searching && problem != PinFixProblem.none) ...[
-                const SizedBox(height: Space.s8),
-                Align(
-                  alignment: AlignmentDirectional.centerStart,
-                  child: TextButton.icon(
-                    onPressed: () => setState(() => _fix = ref.read(locationEngineProvider).currentFix()),
-                    icon: const Icon(Icons.refresh_rounded),
-                    label: Text(l.pinRetry),
-                  ),
-                ),
-              ],
-              const SizedBox(height: Space.s20),
-              Text(l.pinPhotoNeeded, style: t.titleSmall),
-              const SizedBox(height: Space.s8),
-              if (_photo == null)
-                OutlinedButton.icon(onPressed: _takePhoto, icon: const Icon(Icons.photo_camera_rounded), label: Text(l.visitTakePhoto))
-              else
-                ClipRRect(
-                  borderRadius: Radii.brXl,
-                  child: Stack(children: [
-                    Image.memory(_photo!, height: 200, width: double.infinity, fit: BoxFit.cover),
-                    Positioned(
-                      right: Space.s8,
-                      bottom: Space.s8,
-                      child: FilledButton.tonalIcon(onPressed: _takePhoto, icon: const Icon(Icons.refresh_rounded), label: Text(l.visitRetake)),
-                    ),
-                  ]),
-                ),
-              const SizedBox(height: Space.s4),
-              Text(l.visitCameraOnly, style: t.bodySmall!.copyWith(color: cs.onSurfaceVariant)),
-              const SizedBox(height: Space.s16),
-              TextField(controller: _note, maxLines: 2, maxLength: 500, decoration: InputDecoration(hintText: l.pinNoteHint, labelText: l.actionNote)),
-            ],
-          ),
-          bottomNavigationBar: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(Space.screen, Space.s8, Space.screen, Space.s16),
-              child: FilledButton.icon(
-                icon: const Icon(Icons.send_rounded),
-                onPressed: !ok
-                    ? null
-                    : () async {
-                        setState(() => _busy = true);
-                        await ref.read(pinCorrectionServiceProvider).record(customer: c, fix: fix!, photo: _photo!, note: _note.text);
-                        if (!context.mounted) return;
-                        showAppSnack(context, l.pinSent);
-                        context.pop();
-                      },
-                label: Text(l.pinSubmit),
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-}
-
 /// Small status line on customer detail while a proposal is open.
 class PinProposalStatus extends ConsumerWidget {
   const PinProposalStatus({super.key, required this.customerId});
@@ -309,14 +201,31 @@ class PinProposalStatus extends ConsumerWidget {
     final l = AppLocalizations.of(context);
     final rejected = p.status == 'rejected';
     final failed = p.syncState == 'failed';
+    // Not sent yet, and the server will set it at once (customer had no pin).
+    final c = ref.watch(customerProvider(customerId)).value;
+    final policy = ref.watch(staffPinApprovalProvider);
+    final appliesWhenSent =
+        !rejected && !failed && p.syncState != 'synced' && c != null && checkMapPin(lat: p.lat, lng: p.lng, phone: _phoneOf(p), customerHasUsablePin: c.pinUsable, policy: policy).appliesAtOnce;
     return Padding(
       padding: const EdgeInsets.only(top: Space.s12),
       child: InfoBanner(
-        icon: rejected || failed ? Icons.error_outline_rounded : Icons.hourglass_top_rounded,
+        icon: rejected || failed ? Icons.error_outline_rounded : (appliesWhenSent ? Icons.cloud_upload_rounded : Icons.hourglass_top_rounded),
         tone: rejected ? BannerTone.warning : (failed ? BannerTone.danger : BannerTone.info),
-        text: rejected ? l.pinRejected(p.decisionReason ?? '') : (failed ? l.pinFailed : l.pinPending),
+        text: rejected ? l.pinRejected(p.decisionReason ?? '') : (failed ? l.pinFailed : (appliesWhenSent ? l.pinApplyWhenSent : l.pinPending)),
         onTap: rejected ? () => openPinCorrection(context, customerId) : null,
       ),
     );
   }
+}
+
+GeoFix? _phoneOf(LocationProposalRow p) {
+  if (p.deviceGeoJson == null) return null;
+  final d = jsonDecode(p.deviceGeoJson!) as Json;
+  return GeoFix(
+    lat: (d['lat'] as num).toDouble(),
+    lng: (d['lng'] as num).toDouble(),
+    accuracyM: ((d['accuracyM'] as num?) ?? 0).toDouble(),
+    mock: d['mock'] == true,
+    fixAt: DateTime.tryParse('${d['fixAt']}') ?? DateTime.utc(1970),
+  );
 }
