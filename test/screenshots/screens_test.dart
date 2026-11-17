@@ -171,5 +171,7 @@ void main() {
     final h = await _ready(t, setup: _coworkGroup);
     await _shot(t, h, '21-visit-cowork', go: '/visit/c-1002');
   });
+  testWidgets('22 my performance', (t) async => _shot(t, await _ready(t), '22-performance', go: '/performance'));
+  testWidgets('23 leaderboard', (t) async => _shot(t, await _ready(t), '23-leaderboard', go: '/leaderboard'));
   testWidgets('14 set location', (t) async => _shot(t, await _ready(t), '14-set-location', go: '/customers/c-1010/pin'));
 }

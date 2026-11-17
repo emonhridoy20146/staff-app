@@ -64,9 +64,20 @@ class Fmt {
 
   String money(int poisha) => formatMoney(poisha, digits: digits);
   String num(Object n) => localizeDigits('$n', digits);
+
+  /// Whole numbers as-is, otherwise one decimal (visit credit 12.5).
+  String dec(double v) => num(v == v.roundToDouble() ? v.toInt() : (v * 10).round() / 10);
+
+  /// 0.734 → "৭৩%".
+  String pct(double ratio) => '${num((ratio * 100).round())}%';
   String words(int poisha) => amountInWords(poisha, lang);
   String date(String ymd, {bool withYear = false}) {
     final s = formatBusinessDate(ymd, lang, withYear: withYear);
+    return digits == DigitStyle.latin ? toLatinDigits(s) : s;
+  }
+
+  String month(String ym) {
+    final s = formatMonth(ym, lang);
     return digits == DigitStyle.latin ? toLatinDigits(s) : s;
   }
 

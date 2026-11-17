@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Howlader Field Operations API
-  version: 1.9.1
+  version: 1.10.0
   description: |
     Contract owned by field-api. Consumers (admin-web, staff-app) generate types from this file.
     Conventions (auth, pagination, idempotency, errors) are described in docs/05-api-contract.md.
@@ -34,6 +34,7 @@ tags:
   - name: notifications
   - name: inbox
   - name: reports
+  - name: targets
   - name: audit
 
 paths:
@@ -848,6 +849,63 @@ paths:
       parameters: [ { $ref: '#/components/parameters/Id' } ]
       responses:
         '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/CoworkSession' } } } }
+  /targets:
+    get:
+      tags: [targets]
+      operationId: listTargets
+      description: |
+        Daily targets in force for every active field staff member of a branch on a date (1.10.0, FR-COL-015). A personal target, when one
+        is in force, wins over the branch default. Non-working days (weekly off, holiday, approved leave) have no target: their row has
+        workingDay false and zeros. Permission target.view. branchId defaults to the caller's first branch; out of scope is 404.
+      parameters: [ { $ref: '#/components/parameters/BranchId' }, { name: date, in: query, schema: { type: string, format: date }, description: 'Default today (Dhaka)' } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/BranchTargets' } } } }
+  /targets/me:
+    get:
+      tags: [targets]
+      operationId: myTarget
+      description: "The caller's own effective target for a date (1.10.0). Self-service. Also sent as `target` on /sync/pull and /sync/bootstrap."
+      parameters: [ { name: date, in: query, schema: { type: string, format: date }, description: 'Default today (Dhaka)' } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/MyTarget' } } } }
+  /targets/users/{id}:
+    put:
+      tags: [targets]
+      operationId: setUserTarget
+      description: |
+        Set a personal daily target for one field staff member from effectiveFrom on (1.10.0). Permission target.manage, audited (target.set).
+        422 BUSINESS_RULE TARGET_IN_PAST when effectiveFrom is before today: targets of past days stay as they were, so reports do not change afterwards.
+        404 when the user is not active field staff in the caller's scope.
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      requestBody: { required: true, content: { application/json: { schema: { type: object, required: [amountPoisha, visits, reason], properties: { amountPoisha: { type: integer, minimum: 0 }, visits: { type: number, minimum: 0, maximum: 100, description: 'Compared with visitCredit' }, effectiveFrom: { type: string, format: date, description: 'Default today' }, reason: { type: string, minLength: 3, maxLength: 300 } } } } } }
+      responses:
+        '200': { description: 'The target row as it applies on effectiveFrom', content: { application/json: { schema: { $ref: '#/components/schemas/StaffTarget' } } } }
+  /targets/users/{id}/clear:
+    post:
+      tags: [targets]
+      operationId: clearUserTarget
+      description: 'From effectiveFrom on, the person follows the branch default again (1.10.0). Permission target.manage, audited (target.cleared). Same 422 / 404 as PUT.'
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      requestBody: { required: true, content: { application/json: { schema: { type: object, required: [reason], properties: { effectiveFrom: { type: string, format: date }, reason: { type: string, minLength: 3, maxLength: 300 } } } } } }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/StaffTarget' } } } }
+  /targets/users/{id}/history:
+    get:
+      tags: [targets]
+      operationId: userTargetHistory
+      description: 'Every personal target change of one staff member, newest first (1.10.0). Permission target.view.'
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/TargetChange' } } } } }
+  /targets/branches/{id}:
+    put:
+      tags: [targets]
+      operationId: setBranchTarget
+      description: 'Branch default daily target from effectiveFrom on, for everyone without a personal target (1.10.0). Permission target.manage, audited (target.branch_set). Same 422 TARGET_IN_PAST; another branch is 404.'
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      requestBody: { required: true, content: { application/json: { schema: { type: object, required: [amountPoisha, visits, reason], properties: { amountPoisha: { type: integer, minimum: 0 }, visits: { type: number, minimum: 0, maximum: 100 }, effectiveFrom: { type: string, format: date }, reason: { type: string, minLength: 3, maxLength: 300 } } } } } }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/TargetValue' } } } }
   /handovers:
     get:
       tags: [handovers]
@@ -1303,6 +1361,49 @@ paths:
       description: 'FOS collections of one business date against the field payments the ERP reported (cached copy; see erpFetchedAt). (Response schema declared in 1.6.0.)'
       responses:
         '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/ReconciliationReport' } } } }
+  /reports/me/performance:
+    get:
+      tags: [reports]
+      operationId: myPerformance
+      description: |
+        The caller's own performance for a month, with targets and one row per day (1.10.0, FR-REP-005, FR-M-021). Self-service, online.
+        `rank` is filled only when the leaderboard is visible to staff (setting reports.leaderboardVisibleToStaff) and ranks by collected.
+      parameters: [ { name: month, in: query, required: true, schema: { type: string, description: 'YYYY-MM, this month or earlier' } } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/MyPerformance' } } } }
+  /reports/leaderboard:
+    get:
+      tags: [reports]
+      operationId: leaderboard
+      description: |
+        Field staff ranked for a day or a month (1.10.0, FR-REP-005). Managers with report.view always see it for any branch in scope.
+        Field staff see their own branch only, and only when setting reports.leaderboardVisibleToStaff is true (default false, OD-15); otherwise 403 FORBIDDEN.
+        Rules: a person needs at least reports.leaderboardMinPresentDays present days in the period (default 1) to be ranked; others follow with rank null.
+        Equal values share a rank (1, 2, 2, 4) and are ordered by name. target_achievement ranks amount achieved ÷ amount target; people without a target are not ranked for it.
+      parameters: [ { $ref: '#/components/parameters/BranchId' }, { name: period, in: query, required: true, schema: { type: string, enum: [day, month] } }, { name: date, in: query, schema: { type: string, description: 'YYYY-MM-DD for day, YYYY-MM for month; default the current one' } }, { name: metric, in: query, schema: { type: string, enum: [collected, visit_credit, promises_kept, target_achievement], default: collected } } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Leaderboard' } } } }
+  /reports/data-quality:
+    get:
+      tags: [reports]
+      operationId: dataQuality
+      description: |
+        Customer data problems per branch, one count per issue (1.10.0, FR-CUS-009). Active ERP customers only; a customer can have several issues.
+        Issues: no_location, invalid_location (0,0 or outside Bangladesh), suspect_swapped (lat/lng look swapped), far_from_branch (pin more than
+        setting reports.dataQualityMaxBranchKm, default 30 km, from the branch), missing_phone, invalid_phone (not an 11-digit Bangladesh mobile),
+        shared_phone (same number on another customer of the branch), plan_without_schedule (an open plan with no installment schedule),
+        unassigned (no field staff). Permission report.view.
+      parameters: [ { $ref: '#/components/parameters/BranchId' } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/DataQualitySummary' } } } }
+  /reports/data-quality/items:
+    get:
+      tags: [reports]
+      operationId: dataQualityItems
+      description: 'Customers with one issue, paged (1.10.0). Permission report.view.'
+      parameters: [ { $ref: '#/components/parameters/BranchId' }, { name: issue, in: query, required: true, schema: { $ref: '#/components/schemas/DataQualityIssue' } }, { $ref: '#/components/parameters/Limit' }, { $ref: '#/components/parameters/Cursor' } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: object, properties: { items: { type: array, items: { $ref: '#/components/schemas/DataQualityItem' } }, nextCursor: { type: [string, 'null'] } } } } } }
   /reports/exports:
     post:
       tags: [reports]
@@ -1311,13 +1412,13 @@ paths:
         Async export, built by the worker within about a minute, kept 7 days, visible only to the requester (1.6.0 documents params).
         `params` per type: staff_performance → { period, date, branchId?, userId? } · collections → { from, to, branchId? } (≤ 92 days) ·
         attendance → { from, to, branchId? } (≤ 62 days) · overdue_customers, cash_positions → { branchId? } ·
-        audit → { from, to, branchId? } (≤ 31 days; also needs `audit.view`, else 403) (1.7.1).
-        `format: pdf` is answered with 422 BUSINESS_RULE (`export_format_unavailable`) until it is built.
+        audit → { from, to, branchId? } (≤ 31 days; also needs `audit.view`, else 403) (1.7.1) · data_quality → { branchId?, issue? } (1.10.0).
+        `format: pdf` (1.10.0): A4 landscape PDF with the Bangla font embedded (Noto Sans Bengali, shaped with HarfBuzz) and the table header repeated on every page.
       requestBody:
         required: true
         content:
           application/json:
-            schema: { type: object, required: [type, format], properties: { type: { type: string, enum: [staff_performance, collections, attendance, overdue_customers, cash_positions, audit] }, format: { type: string, enum: [csv, xlsx, pdf] }, params: { type: object, additionalProperties: true }, locale: { type: string, enum: [bn, en] } } }
+            schema: { type: object, required: [type, format], properties: { type: { type: string, enum: [staff_performance, collections, attendance, overdue_customers, cash_positions, audit, data_quality] }, format: { type: string, enum: [csv, xlsx, pdf] }, params: { type: object, additionalProperties: true }, locale: { type: string, enum: [bn, en] } } }
       responses:
         '202': { description: Accepted, content: { application/json: { schema: { type: object, properties: { id: { type: string }, status: { type: string } } } } } }
   /reports/exports/{id}:
@@ -1982,6 +2083,7 @@ components:
         flags: { type: object, additionalProperties: { type: boolean } }
         settings: { type: object, additionalProperties: true }
         cash: { $ref: '#/components/schemas/CashPosition' }
+        target: { $ref: '#/components/schemas/MyTarget' }
         serverTime: { type: string, format: date-time }
     SyncPullResponse:
       type: object
@@ -1993,6 +2095,7 @@ components:
         flags: { type: object, additionalProperties: { type: boolean } }
         settings: { type: object, additionalProperties: true }
         cash: { $ref: '#/components/schemas/CashPosition' }
+        target: { $ref: '#/components/schemas/MyTarget' }
         serverTime: { type: string, format: date-time }
     InboxItem:
       type: object
@@ -2001,8 +2104,8 @@ components:
       type: object
       properties:
         date: { type: string, format: date }
-        collected: { type: object, properties: { totalPoisha: { type: integer }, cashPoisha: { type: integer }, mobilePoisha: { type: integer }, count: { type: integer }, targetPoisha: { type: integer } } }
-        visits: { type: object, properties: { count: { type: integer }, uniqueCustomers: { type: integer } } }
+        collected: { type: object, properties: { totalPoisha: { type: integer }, cashPoisha: { type: integer }, mobilePoisha: { type: integer }, count: { type: integer }, targetPoisha: { type: integer, description: 'Sum of daily amount targets in force for field staff in scope (filled since 1.10.0)' } } }
+        visits: { type: object, properties: { count: { type: integer }, uniqueCustomers: { type: integer }, credit: { type: number, description: 'Visit credit of field staff (1.10.0)' }, target: { type: number, description: 'Sum of daily visit targets in force (1.10.0)' } } }
         promises: { type: object, properties: { dueToday: { type: integer }, keptToday: { type: integer }, brokenYesterday: { type: integer } } }
         attendance: { type: object, properties: { present: { type: integer }, late: { type: integer }, absent: { type: integer }, onDutyNow: { type: integer } } }
         cash: { type: object, properties: { onHandPoisha: { type: integer }, overLimitStaff: { type: integer }, pendingDeposits: { type: integer } } }
@@ -2020,7 +2123,7 @@ components:
         uniqueCustomers: { type: integer }
         collectionsCount: { type: integer }
         collectedPoisha: { type: object, additionalProperties: { type: integer } }
-        targetPoisha: { type: integer }
+        targetPoisha: { type: integer, description: 'Sum of daily amount targets over the working days of the period (filled since 1.10.0)' }
         promisesDue: { type: integer }
         promisesKept: { type: integer }
         promiseFulfilmentRate: { type: number }
@@ -2033,6 +2136,131 @@ components:
         soloVisits: { type: integer, description: 'Visits recorded alone (1.9.0)' }
         coWorkVisits: { type: integer, description: 'Joint visits this person took part in, as recorder or as partner; one joint visit counts once per person (1.9.0)' }
         visitCredit: { type: number, description: 'soloVisits + coWorkVisits × setting cowork.visitCredit; the figure visit targets use (1.9.0)' }
+        visitTarget: { type: number, description: 'Sum of daily visit targets over the working days of the period (1.10.0)' }
+        targetToDatePoisha: { type: integer, description: 'Amount target up to today when the period is still running, else equal to targetPoisha (1.10.0)' }
+        visitTargetToDate: { type: number, description: 'Visit target up to today when the period is still running (1.10.0)' }
+        amountAchievement: { type: [number, 'null'], description: 'Collected ÷ targetToDatePoisha, 2 decimals; null without a target (1.10.0)' }
+        visitAchievement: { type: [number, 'null'], description: 'visitCredit ÷ visitTargetToDate, 2 decimals; null without a target (1.10.0)' }
+        targetDays: { type: integer, description: 'Working days of the period that carry a target (1.10.0)' }
+    TargetValue:
+      type: object
+      required: [amountPoisha, visits]
+      properties:
+        amountPoisha: { type: integer, description: 'Daily amount target; 0 = none' }
+        visits: { type: number, description: 'Daily visit-credit target; 0 = none' }
+        effectiveFrom: { type: [string, 'null'], format: date }
+        reason: { type: [string, 'null'] }
+        setBy: { type: [object, 'null'], properties: { id: { type: string }, name: { type: string } } }
+        setAt: { type: [string, 'null'], format: date-time }
+    StaffTarget:
+      description: 'One person on one date (1.10.0)'
+      allOf:
+        - $ref: '#/components/schemas/TargetValue'
+        - type: object
+          required: [userId, source, workingDay]
+          properties:
+            userId: { type: string }
+            name: { type: string }
+            employeeCode: { type: string }
+            source: { type: string, enum: [personal, branch], description: 'personal = a personal target is in force; branch = the branch default (possibly 0)' }
+            workingDay: { type: boolean, description: 'false on weekly off, holiday or approved leave; the target is then 0' }
+    BranchTargets:
+      type: object
+      properties:
+        branchId: { type: string }
+        date: { type: string, format: date }
+        defaults: { $ref: '#/components/schemas/TargetValue' }
+        items: { type: array, items: { $ref: '#/components/schemas/StaffTarget' } }
+    MyTarget:
+      type: object
+      description: "The caller's effective target (1.10.0). Progress is computed on the device from today's collections and visit credit."
+      properties:
+        businessDate: { type: string, format: date }
+        amountPoisha: { type: integer }
+        visits: { type: number }
+        source: { type: string, enum: [personal, branch] }
+        workingDay: { type: boolean }
+    TargetChange:
+      type: object
+      properties:
+        id: { type: string }
+        userId: { type: [string, 'null'] }
+        branchId: { type: string }
+        kind: { type: string, enum: [set, cleared] }
+        amountPoisha: { type: [integer, 'null'] }
+        visits: { type: [number, 'null'] }
+        effectiveFrom: { type: string, format: date }
+        reason: { type: string }
+        setBy: { type: object, properties: { id: { type: string }, name: { type: string } } }
+        setAt: { type: string, format: date-time }
+    MyPerformance:
+      type: object
+      properties:
+        month: { type: string }
+        row: { $ref: '#/components/schemas/StaffPerformanceRow' }
+        collectedTotalPoisha: { type: integer, description: 'All methods; money recorded in FOS, not the ERP balance' }
+        postedPoisha: { type: integer, description: 'Part already posted to the ERP' }
+        pendingPoisha: { type: integer, description: 'Part still waiting for the ERP (received, posting, failed, conflict)' }
+        days:
+          type: array
+          items:
+            type: object
+            properties: { date: { type: string, format: date }, collectedPoisha: { type: integer }, collectionsCount: { type: integer }, visits: { type: integer }, soloVisits: { type: integer }, coWorkVisits: { type: integer }, visitCredit: { type: number }, targetPoisha: { type: integer }, visitTarget: { type: number }, workingDay: { type: boolean } }
+        rank: { type: [object, 'null'], properties: { metric: { type: string }, rank: { type: [integer, 'null'] }, of: { type: integer } } }
+    LeaderboardRow:
+      type: object
+      properties:
+        rank: { type: [integer, 'null'], description: 'null when not ranked (too few present days, or no target for target_achievement)' }
+        userId: { type: string }
+        name: { type: string }
+        employeeCode: { type: string }
+        value: { type: [number, 'null'], description: 'The ranking metric: poisha for collected, credit for visit_credit, count for promises_kept, ratio for target_achievement' }
+        collectedPoisha: { type: integer }
+        visitCredit: { type: number }
+        promisesKept: { type: integer }
+        amountAchievement: { type: [number, 'null'] }
+        presentDays: { type: integer }
+        eligible: { type: boolean }
+        me: { type: boolean, description: 'The caller' }
+    Leaderboard:
+      type: object
+      properties:
+        branchId: { type: [string, 'null'], description: 'The branch asked for; null when the board covers every branch in the caller''s scope. Always the own branch for field staff.' }
+        period: { type: string, enum: [day, month] }
+        date: { type: string }
+        metric: { type: string }
+        minPresentDays: { type: integer }
+        items: { type: array, items: { $ref: '#/components/schemas/LeaderboardRow' } }
+        me: { type: [object, 'null'], properties: { rank: { type: [integer, 'null'] }, of: { type: integer } } }
+    DataQualityIssue: { type: string, enum: [no_location, invalid_location, suspect_swapped, far_from_branch, missing_phone, invalid_phone, shared_phone, plan_without_schedule, unassigned] }
+    DataQualitySummary:
+      type: object
+      properties:
+        generatedAt: { type: string, format: date-time }
+        maxBranchKm: { type: number, description: 'System default of reports.dataQualityMaxBranchKm; a branch may override it (see branches[].maxBranchKm)' }
+        branches:
+          type: array
+          items:
+            type: object
+            properties:
+              branchId: { type: string }
+              branchName: { $ref: '#/components/schemas/I18nText' }
+              maxBranchKm: { type: number, description: 'Distance used for far_from_branch in this branch' }
+              customers: { type: integer, description: 'Active customers checked' }
+              withIssues: { type: integer, description: 'Customers with at least one issue' }
+              issues: { type: object, additionalProperties: { type: integer }, description: 'Count per DataQualityIssue; every issue key is present' }
+    DataQualityItem:
+      type: object
+      properties:
+        customerId: { type: string }
+        code: { type: string }
+        name: { $ref: '#/components/schemas/I18nText' }
+        branchId: { type: string }
+        areaCode: { type: [string, 'null'] }
+        assignee: { type: [object, 'null'], properties: { id: { type: string }, name: { type: string } } }
+        issue: { $ref: '#/components/schemas/DataQualityIssue' }
+        detail: { type: string, description: 'What is wrong, e.g. the invalid number or the distance in km' }
+        issues: { type: array, items: { $ref: '#/components/schemas/DataQualityIssue' }, description: 'All issues of this customer' }
     OverdueBucket:
       type: object
       properties: { count: { type: integer }, amountPoisha: { type: integer } }

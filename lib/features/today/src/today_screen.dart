@@ -202,26 +202,62 @@ class _ProgressCard extends ConsumerWidget {
     final totals = ref.watch(todayTotalsProvider).value ?? const DayTotals();
     final split = ref.watch(todayVisitSplitProvider).value ?? (solo: 0, coWork: 0);
     final visits = split.solo + split.coWork;
-    final target = ((ref.watch(serverSettingsProvider)['dailyTargetPoisha'] as num?) ?? 0).toInt();
+    // My target for today (1.10.0, from the last pull; ignored once stale).
+    final my = ref.watch(myTargetProvider);
+    final mine = access.flag('module.targets') && my != null && my.businessDate == ref.watch(todayProvider) ? my : null;
+    final target = mine?.amountPoisha ?? 0;
     final ratio = target <= 0 ? 0.0 : (totals.total / target).clamp(0.0, 1.0);
+    final visitTarget = mine?.visits ?? 0.0;
+    final credit = ref.watch(todayVisitCreditProvider);
+    final visitRatio = visitTarget <= 0 ? 0.0 : (credit / visitTarget).clamp(0.0, 1.0);
+    final offDay = mine != null && !mine.workingDay;
     final showCash = access.flag('module.cash') && access.can(Perm.cashView);
+    final done = context.semanticColors.success.fg;
 
     return AppCard(
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(l.todayCollected, style: t.bodyMedium!.copyWith(color: cs.onSurfaceVariant)),
+        Row(children: [
+          Expanded(child: Text(l.todayCollected, style: t.bodyMedium!.copyWith(color: cs.onSurfaceVariant))),
+          if (ratio >= 1)
+            _TargetMet(label: l.todayTargetMet)
+          else if (mine?.source == 'personal' && target > 0)
+            Text(l.todayTargetPersonal, style: t.labelMedium!.copyWith(color: cs.primary)),
+        ]),
         const SizedBox(height: 2),
         Row(crossAxisAlignment: CrossAxisAlignment.baseline, textBaseline: TextBaseline.alphabetic, children: [
           MoneyText(totals.total, style: t.headlineMedium!.copyWith(fontWeight: FontWeight.w700)),
           const SizedBox(width: Space.s8),
           Expanded(
-            child: Text(target > 0 ? l.todayOfTarget(f.money(target)) : l.todayNoTarget, style: t.bodyMedium!.copyWith(color: cs.onSurfaceVariant), maxLines: 1, overflow: TextOverflow.ellipsis),
+            child: Text(
+              target > 0 ? l.todayOfTarget(f.money(target)) : (offDay ? l.todayOffDay : l.todayNoTarget),
+              style: t.bodyMedium!.copyWith(color: cs.onSurfaceVariant),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
         ]),
         if (target > 0) ...[
           const SizedBox(height: Space.s8),
           ClipRRect(
             borderRadius: const BorderRadius.all(Radius.circular(Radii.full)),
-            child: LinearProgressIndicator(value: ratio, minHeight: 10, color: ratio >= 1 ? context.semanticColors.success.fg : cs.primary),
+            child: LinearProgressIndicator(value: ratio, minHeight: 10, color: ratio >= 1 ? done : cs.primary),
+          ),
+        ],
+        if (visitTarget > 0) ...[
+          const SizedBox(height: Space.s12),
+          Row(children: [
+            Icon(Icons.where_to_vote_outlined, size: 18, color: cs.onSurfaceVariant),
+            const SizedBox(width: Space.s4),
+            Expanded(child: Text(l.todayVisitTarget, style: t.bodyMedium!.copyWith(color: cs.onSurfaceVariant))),
+            Text(
+              l.todayVisitTargetOf(f.dec(credit), f.dec(visitTarget)),
+              style: AppTheme.tabular(t.titleSmall!).copyWith(color: visitRatio >= 1 ? done : null),
+            ),
+          ]),
+          const SizedBox(height: Space.s4),
+          ClipRRect(
+            borderRadius: const BorderRadius.all(Radius.circular(Radii.full)),
+            child: LinearProgressIndicator(value: visitRatio, minHeight: 6, color: visitRatio >= 1 ? done : cs.primary),
           ),
         ],
         const SizedBox(height: Space.s16),
@@ -242,6 +278,27 @@ class _ProgressCard extends ConsumerWidget {
           const CashMeter(compact: true),
         ],
       ]),
+    );
+  }
+}
+
+/// "Target met" pill (success tone).
+class _TargetMet extends StatelessWidget {
+  const _TargetMet({required this.label});
+  final String label;
+  @override
+  Widget build(BuildContext context) {
+    final st = context.semanticColors.success;
+    return DecoratedBox(
+      decoration: BoxDecoration(color: st.bg, borderRadius: Radii.brSm),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: Space.s8, vertical: Space.s2),
+        child: Row(mainAxisSize: MainAxisSize.min, children: [
+          Icon(Icons.emoji_events_rounded, size: 16, color: st.fg),
+          const SizedBox(width: Space.s4),
+          Text(label, style: Theme.of(context).textTheme.labelMedium!.copyWith(color: st.fg)),
+        ]),
+      ),
     );
   }
 }

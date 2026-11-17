@@ -25,6 +25,12 @@ String _formatDay(DateTime d, String lang, {bool withYear = false}) {
   return '${d.day} ${_enMonths[d.month - 1]}${withYear ? ' ${d.year}' : ''}';
 }
 
+/// `নভেম্বর ২০২৬` / `Nov 2026` for a month `2026-11`.
+String formatMonth(String ym, String lang) {
+  final p = ym.split('-').map(int.parse).toList();
+  return lang == 'bn' ? toBanglaDigits('${_bnMonths[p[1] - 1]} ${p[0]}') : '${_enMonths[p[1] - 1]} ${p[0]}';
+}
+
 /// `০৯:০৮` (24 h, Dhaka) from a UTC instant.
 String formatTimeDhaka(DateTime utc, DigitStyle digits) {
   final d = toDhaka(utc);

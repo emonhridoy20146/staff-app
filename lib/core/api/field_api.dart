@@ -135,6 +135,18 @@ class FieldApi {
 
   Future<Json> leaveCowork(String id) => _call(() => _dio.post<dynamic>('/cowork/sessions/$id/leave'), (d) => d as Json);
 
+  // ── reports (1.10.0) — online; the app keeps the last answer for offline viewing.
+
+  /// My month: totals, per-day rows, rank (null unless the leaderboard is visible to staff).
+  Future<Json> myPerformance(String month) =>
+      _call(() => _dio.get<dynamic>('/reports/me/performance', queryParameters: {'month': month}), (d) => d as Json);
+
+  /// My branch's leaderboard; 403 unless setting reports.leaderboardVisibleToStaff.
+  Future<Json> leaderboard({required String period, String? date, String? metric}) => _call(
+        () => _dio.get<dynamic>('/reports/leaderboard', queryParameters: {'period': period, 'date': ?date, 'metric': ?metric}),
+        (d) => d as Json,
+      );
+
   /// Online-only: on-demand balance refresh from ERP.
   Future<Json> refreshCustomer(String id) =>
       _call(() => _dio.post<dynamic>('/customers/$id/refresh'), (d) => d as Json);

@@ -136,6 +136,10 @@ final serverSettingsProvider = StateProvider<Json>((ref) => const {});
 /// Latest cash position from the server (pull snapshot).
 final serverCashProvider = StateProvider<CashPositionDto?>((ref) => null);
 
+/// My daily target from the last pull (1.10.0), kept for offline use.
+/// Only valid for its own business date (see `todayTargetProvider`).
+final myTargetProvider = StateProvider<MyTarget?>((ref) => null);
+
 final syncEngineProvider = Provider<SyncEngine>((ref) {
   final db = ref.watch(databaseProvider);
   final engine = SyncEngine(
@@ -164,6 +168,10 @@ final syncEngineProvider = Provider<SyncEngine>((ref) {
           'pendingDepositsPoisha': s.cash!.pendingDepositsPoisha,
           'state': s.cash!.state,
         })));
+      }
+      if (s.target != null) {
+        ref.read(myTargetProvider.notifier).state = s.target;
+        unawaited(db.kvSet('my_target', jsonEncode(s.target!.toJson())));
       }
     },
   );

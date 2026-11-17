@@ -3085,6 +3085,252 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Asked'**
   String get coworkAsked;
+
+  /// No description provided for @todayTargetMet.
+  ///
+  /// In en, this message translates to:
+  /// **'Target met'**
+  String get todayTargetMet;
+
+  /// No description provided for @todayTargetPersonal.
+  ///
+  /// In en, this message translates to:
+  /// **'My target'**
+  String get todayTargetPersonal;
+
+  /// No description provided for @todayOffDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Day off, no target today'**
+  String get todayOffDay;
+
+  /// No description provided for @todayVisitTarget.
+  ///
+  /// In en, this message translates to:
+  /// **'Visit target'**
+  String get todayVisitTarget;
+
+  /// No description provided for @todayVisitTargetOf.
+  ///
+  /// In en, this message translates to:
+  /// **'{done} / {target}'**
+  String todayVisitTargetOf(String done, String target);
+
+  /// No description provided for @perfTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'My performance'**
+  String get perfTitle;
+
+  /// No description provided for @perfMeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'This month\'s collections, visits, target'**
+  String get perfMeSubtitle;
+
+  /// No description provided for @perfPrevMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous month'**
+  String get perfPrevMonth;
+
+  /// No description provided for @perfNextMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Next month'**
+  String get perfNextMonth;
+
+  /// No description provided for @perfCachedAt.
+  ///
+  /// In en, this message translates to:
+  /// **'No internet. Showing figures from {time}.'**
+  String perfCachedAt(String time);
+
+  /// No description provided for @perfCollected.
+  ///
+  /// In en, this message translates to:
+  /// **'Collected this month'**
+  String get perfCollected;
+
+  /// No description provided for @perfTargetToDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Target to date {toDate} · whole month {month}'**
+  String perfTargetToDate(String toDate, String month);
+
+  /// No description provided for @perfPosted.
+  ///
+  /// In en, this message translates to:
+  /// **'Posted in ERP'**
+  String get perfPosted;
+
+  /// No description provided for @perfPendingErp.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending in ERP'**
+  String get perfPendingErp;
+
+  /// No description provided for @perfVisitCredit.
+  ///
+  /// In en, this message translates to:
+  /// **'Visit credit (against target to date)'**
+  String get perfVisitCredit;
+
+  /// No description provided for @perfSoloVisits.
+  ///
+  /// In en, this message translates to:
+  /// **'Single visits'**
+  String get perfSoloVisits;
+
+  /// No description provided for @perfCoWorkVisits.
+  ///
+  /// In en, this message translates to:
+  /// **'Co-work visits'**
+  String get perfCoWorkVisits;
+
+  /// No description provided for @perfPromisesKept.
+  ///
+  /// In en, this message translates to:
+  /// **'Promises kept'**
+  String get perfPromisesKept;
+
+  /// No description provided for @perfOf.
+  ///
+  /// In en, this message translates to:
+  /// **'{a}/{b}'**
+  String perfOf(String a, String b);
+
+  /// No description provided for @perfPresentDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Days present'**
+  String get perfPresentDays;
+
+  /// No description provided for @perfLateDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Late days'**
+  String get perfLateDays;
+
+  /// No description provided for @perfRank.
+  ///
+  /// In en, this message translates to:
+  /// **'Your place in the branch: {rank} of {of}'**
+  String perfRank(String rank, String of);
+
+  /// No description provided for @perfRankBy.
+  ///
+  /// In en, this message translates to:
+  /// **'By collections · see leaderboard'**
+  String get perfRankBy;
+
+  /// No description provided for @perfDaily.
+  ///
+  /// In en, this message translates to:
+  /// **'Collections by day'**
+  String get perfDaily;
+
+  /// No description provided for @perfLegendCollected.
+  ///
+  /// In en, this message translates to:
+  /// **'Collected'**
+  String get perfLegendCollected;
+
+  /// No description provided for @perfLegendMet.
+  ///
+  /// In en, this message translates to:
+  /// **'Target met'**
+  String get perfLegendMet;
+
+  /// No description provided for @perfLegendTarget.
+  ///
+  /// In en, this message translates to:
+  /// **'Target'**
+  String get perfLegendTarget;
+
+  /// No description provided for @perfDailySemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily collections chart for this month, total {total}'**
+  String perfDailySemantics(String total);
+
+  /// No description provided for @reportOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'Needs internet. Try again when connected.'**
+  String get reportOffline;
+
+  /// No description provided for @leaderboardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Leaderboard'**
+  String get leaderboardTitle;
+
+  /// No description provided for @leaderboardHidden.
+  ///
+  /// In en, this message translates to:
+  /// **'The leaderboard is off'**
+  String get leaderboardHidden;
+
+  /// No description provided for @leaderboardHiddenBody.
+  ///
+  /// In en, this message translates to:
+  /// **'It shows here when the office turns it on'**
+  String get leaderboardHiddenBody;
+
+  /// No description provided for @leaderToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get leaderToday;
+
+  /// No description provided for @leaderMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'This month'**
+  String get leaderMonth;
+
+  /// No description provided for @leaderMetricCollected.
+  ///
+  /// In en, this message translates to:
+  /// **'Collected'**
+  String get leaderMetricCollected;
+
+  /// No description provided for @leaderMetricVisits.
+  ///
+  /// In en, this message translates to:
+  /// **'Visit credit'**
+  String get leaderMetricVisits;
+
+  /// No description provided for @leaderMetricPromises.
+  ///
+  /// In en, this message translates to:
+  /// **'Promises kept'**
+  String get leaderMetricPromises;
+
+  /// No description provided for @leaderMetricTarget.
+  ///
+  /// In en, this message translates to:
+  /// **'Target achieved'**
+  String get leaderMetricTarget;
+
+  /// No description provided for @leaderNotRanked.
+  ///
+  /// In en, this message translates to:
+  /// **'Not ranked (too few days present)'**
+  String get leaderNotRanked;
+
+  /// No description provided for @leaderNotRankedMe.
+  ///
+  /// In en, this message translates to:
+  /// **'You have too few days present in this period to be ranked'**
+  String get leaderNotRankedMe;
+
+  /// No description provided for @leaderFootnote.
+  ///
+  /// In en, this message translates to:
+  /// **'Collected counts money taken in the field (posted and pending in ERP). Co-work visits add to everyone\'s credit.'**
+  String get leaderFootnote;
 }
 
 class _AppLocalizationsDelegate

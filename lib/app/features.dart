@@ -12,6 +12,7 @@ import '../features/map/map.dart';
 import '../features/notes/notes.dart';
 import '../features/onboarding/onboarding.dart';
 import '../features/promises/promises.dart';
+import '../features/reports/reports.dart';
 import '../features/settings/settings.dart';
 import '../features/sync/sync.dart';
 import '../features/tags/tags.dart';
@@ -36,6 +37,7 @@ List<FeatureManifest> buildFeatureManifests(SyncHandlerRegistry Function() regis
       coworkManifest,
       locationManifest,
       mapManifest,
+      reportsManifest,
       syncManifest,
       settingsManifest,
     ];

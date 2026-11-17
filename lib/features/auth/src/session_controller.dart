@@ -71,6 +71,8 @@ class SessionController extends Notifier<SessionState> {
     if (ss != null) ref.read(serverSettingsProvider.notifier).state = jsonDecode(ss) as Json;
     final cash = await db.kvGet('server_cash');
     if (cash != null) ref.read(serverCashProvider.notifier).state = CashPositionDto.fromJson(jsonDecode(cash) as Json);
+    final target = await db.kvGet('my_target');
+    if (target != null) ref.read(myTargetProvider.notifier).state = MyTarget.fromJson(jsonDecode(target) as Json);
     final fails = int.tryParse(await store.read(_kPinFails) ?? '0') ?? 0;
     if (!tokens.hasSession || userJson == null) {
       state = SessionState(stage: SessionStage.signedOut, lockedOut: (await store.read(_kLockedUser)) != null);
@@ -228,6 +230,7 @@ class SessionController extends Notifier<SessionState> {
     }
     await ref.read(databaseProvider).wipeAll();
     ref.read(accessProvider.notifier).clear();
+    ref.read(myTargetProvider.notifier).state = null;
     state = const SessionState(stage: SessionStage.signedOut);
   }
 }
