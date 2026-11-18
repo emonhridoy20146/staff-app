@@ -8,6 +8,7 @@
 - Guard test `test/core/live_config_test.dart`: committed `config/*.env` files may hold only `APP_ENV`, `API_BASE_URL` and `API_MODE`, nothing that looks like a secret, an `https` field-api URL ending in `/api/v1` and never the ERP; every `.run` configuration uses a file that exists; Android does not allow cleartext HTTP.
 ### Changed
 - `Env.fromValues` holds the define rules (used by `Env.fromDefines` and the guard test); behaviour is unchanged and a build without defines is still the demo.
+- Test fix: the call-record flow test checked that the pushed JSON has no `017` anywhere, which failed whenever the random UUIDv7 `clientId` happened to contain those digits (CI run on PR #10). It now checks that none of the customer's real numbers (last 8 digits) and no phone field are in the payload, which is stricter and not random.
 - README: how to run against the live server, and the two admin steps before the first login (staff user with linked ERP employee; minimum app version `0.10.0` while the app is below 1.0.0, because the server default `1.0.0` shows "update required").
 
 ## [0.10.0] — 2026-11-18

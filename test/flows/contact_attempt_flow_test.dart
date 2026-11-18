@@ -31,6 +31,17 @@ void main() {
     final p = h.api.appliedPayloads.values.singleWhere((x) => x.containsKey('phoneIndex'));
     expect(p['phoneIndex'], 0);
     expect(p['outcome'], 'no_answer');
-    expect(jsonEncode(p), isNot(contains('017')));
+    // Never the number: none of this customer's numbers (nor their last 8
+    // digits) and no phone field. Checked against the real numbers, because
+    // the payload's random UUIDv7 can contain any short digit run like '017'.
+    final customer = await (db.select(db.customers)..where((c) => c.serverId.equals('c-1001'))).getSingle();
+    final numbers = RegExp(r'\d{10,}').allMatches(customer.phonesJson).map((m) => m.group(0)!).toList();
+    expect(numbers, isNotEmpty);
+    final body = jsonEncode(p);
+    for (final n in numbers) {
+      expect(body, isNot(contains(n.substring(n.length - 8))));
+    }
+    expect(p.keys.where((k) => k.toLowerCase().contains('phone') && k != 'phoneIndex'), isEmpty);
+    expect(p.containsKey('number'), isFalse);
   });
 }
