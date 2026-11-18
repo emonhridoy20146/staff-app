@@ -2,6 +2,7 @@ import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:staff_app/core/db/app_database.dart';
 import 'package:staff_app/core/location/tracking/tracking_provider.dart';
+import 'package:staff_app/core/media/media.dart';
 import 'package:staff_app/core/permissions/permission_service.dart';
 import 'package:staff_app/core/providers.dart';
 import 'package:staff_app/features/attendance/attendance.dart';
@@ -38,6 +39,14 @@ void main() {
     await tracker().reconcile(onDuty: true);
   }
 
+  /// Photo uploaded and the work-in on the server.
+  Future<void> syncAttendance() async {
+    await Future<void>.delayed(const Duration(milliseconds: 50)); // let the fire-and-forget upload try finish
+    h.clock.advance(const Duration(minutes: 1)); // past the retry wait of a failed photo upload
+    await h.read(mediaServiceProvider).uploadPending();
+    await h.read(syncEngineProvider).syncNow();
+  }
+
   test('does not track off duty and stores nothing', () async {
     build();
     await h.signIn();
@@ -63,10 +72,32 @@ void main() {
     expect(await queued(), 2, reason: 'offline: points stay');
 
     h.api.offline = false;
+    await syncAttendance();
     await tracker().uploadPending();
     expect(await queued(), 0);
     expect(h.api.locationPoints, hasLength(2));
     expect(h.api.locationPoints.first['lat'], 22.7010);
+  });
+
+  test('points wait on the phone until the work-in is on the server, then go out', () async {
+    // Live test server report 2026-11-18: the work-in photo could not upload, the work-in stayed
+    // "sync pending", and every point sent meanwhile was refused as off duty and deleted.
+    build();
+    await h.signIn();
+    h.api.offline = true; // the work-in and its photo cannot reach the server yet
+    await workIn();
+    await tracker().handle(pt(0));
+    await tracker().handle(pt(30, lat: 22.7013));
+    h.api.offline = false;
+    await tracker().uploadPending();
+    expect(h.api.locationPoints, isEmpty, reason: 'work-in still unsent: the server would refuse them');
+    expect(await queued(), 2);
+
+    await syncAttendance();
+    await Future<void>.delayed(const Duration(milliseconds: 100)); // the background wiring flushes once it is in
+    await tracker().uploadPending();
+    expect(h.api.locationPoints, hasLength(2));
+    expect(await queued(), 0);
   });
 
   test('stops at work-out', () async {

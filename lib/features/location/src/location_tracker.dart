@@ -226,8 +226,15 @@ class LocationTracker {
 
   /// Sends queued points in batches of 500 (oldest first). Rows are deleted
   /// only after the server confirmed them.
+  ///
+  /// The server keeps only points taken on duty, and it learns that duty
+  /// started from the work-in (FR-LOC-001). Points sent before the work-in
+  /// reaches it are refused as `OFF_DUTY` and would be lost, so they wait on
+  /// the phone while an attendance event is still unsent (e.g. its photo is
+  /// still uploading). [locationBackgroundProvider] sends them once it is in.
   Future<void> uploadPending() async {
     if (_uploading) return;
+    if (await _ref.read(outboxReaderProvider).hasUnsentOf('attendance_event')) return;
     _uploading = true;
     try {
       final api = _ref.read(fieldApiProvider);
@@ -342,10 +349,16 @@ final locationBackgroundProvider = Provider<void>((ref) {
 
   void go() => unawaited(tracker.reconcile(onDuty: onDuty()));
   ref.listen(todayAttendanceProvider, (_, _) => go());
+  // Points held back while attendance was unsent go out as soon as it is in.
+  ref.listen(_unsentAttendanceProvider, (prev, next) {
+    if ((prev?.value ?? 0) > 0 && next.value == 0) unawaited(tracker.uploadPending());
+  });
   ref.listen(serverSettingsProvider, (_, _) => go());
   ref.listen(accessProvider, (_, _) => go());
   go();
 });
+
+final _unsentAttendanceProvider = StreamProvider<int>((ref) => ref.watch(outboxReaderProvider).watchUnsentOf('attendance_event'));
 
 /// Live count of points waiting for upload (Me tab card).
 final pendingPointsProvider = StreamProvider<int>((ref) {

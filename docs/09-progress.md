@@ -47,7 +47,7 @@ LocationEngine spike (ADR-009) → duty-aware tracking, adaptive sampling, filte
 |---|---|
 | Provider abstraction; free provider (geolocator foreground service); paid slot; admin setting switch with fallback (ADR-M11) | ✅ unit + flow tests (fake provider) |
 | Duty-aware start/stop, shift end + 3 h limit, module flag | ✅ flow tests |
-| Adaptive sampling, filters, 20,000 cap, batch upload, heartbeat | ✅ unit + flow tests |
+| Adaptive sampling, filters, 20,000 cap, batch upload, heartbeat | ✅ unit + flow tests; 0.10.2: points wait until the work-in is on the server (else refused as OFF_DUTY) |
 | Mock flag sent with each point | ◐ sent; server decides |
 | Visit suggestion (5 min / 60 m) | ✅ flow test; Today card |
 | Tracking status card (Me) | ✅ screenshot |
