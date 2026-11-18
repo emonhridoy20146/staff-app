@@ -47,7 +47,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 7;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -101,6 +101,21 @@ class AppDatabase extends _$AppDatabase {
             await m.createTable(broadcasts);
             // A v1 file got contact_attempts from the v2 step above, already with the column.
             if (from >= 2) await m.addColumn(contactAttempts, contactAttempts.target);
+          }
+          // v7 (0.10.0, contract 1.13.0): the real ERP's shape. Cached ERP data only; the next
+          // sync fills the new columns, nothing unsynced is touched.
+          if (from < 7) {
+            for (final c in [customers.detailedAddress, customers.directions, customers.erpRiskJson]) {
+              await m.addColumn(customers, c);
+            }
+            for (final c in [plans.kind, plans.invoiceNo, plans.saleDate, plans.frequency, plans.customDays, plans.itemsJson, plans.guarantorJson, plans.writtenOffPoisha]) {
+              await m.addColumn(plans, c);
+            }
+            await m.addColumn(scheduleLines, scheduleLines.lateFeePoisha);
+            await m.addColumn(scheduleLines, scheduleLines.rolled);
+            for (final c in [erpPayments.methodLabel, erpPayments.collectorName, erpPayments.advance, erpPayments.discountPoisha]) {
+              await m.addColumn(erpPayments, c);
+            }
           }
         },
         beforeOpen: (details) async {

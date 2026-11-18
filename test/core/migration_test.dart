@@ -4,7 +4,7 @@ import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:staff_app/core/db/app_database.dart';
 
-/// Every released schema upgrades to the current one (v6, 0.9.0) and
+/// Every released schema upgrades to the current one (v7, 0.10.0) and
 /// existing rows survive.
 void main() {
   test('migrates a 0.1.0 database to the current schema without losing outbox rows', () async {
@@ -14,6 +14,7 @@ void main() {
     // Build a v1-shaped file: current schema minus what v2 added.
     final v1 = AppDatabase(NativeDatabase(file));
     await v1.customStatement('SELECT 1');
+    await _dropV7(v1);
     await v1.customStatement('DROP TABLE broadcasts');
     await v1.customStatement('ALTER TABLE location_proposals DROP COLUMN method');
     await v1.customStatement('ALTER TABLE location_proposals DROP COLUMN device_geo_json');
@@ -32,7 +33,7 @@ void main() {
     await v1.close();
 
     final v2 = AppDatabase(NativeDatabase(file));
-    expect(v2.schemaVersion, 6);
+    expect(v2.schemaVersion, 7);
     expect(await v2.select(v2.coworkSessions).get(), isEmpty);
     final props = await v2.select(v2.locationProposals).get();
     expect(props.single.decisionReason, isNull);
@@ -51,6 +52,7 @@ void main() {
     final file = File('${dir.path}/app.db');
     final v2 = AppDatabase(NativeDatabase(file));
     await v2.customStatement('SELECT 1');
+    await _dropV7(v2);
     await v2.customStatement('DROP TABLE broadcasts');
     await v2.customStatement('ALTER TABLE contact_attempts DROP COLUMN target');
     await v2.customStatement('ALTER TABLE location_proposals DROP COLUMN method');
@@ -78,6 +80,7 @@ void main() {
     final file = File('${dir.path}/app.db');
     final v3 = AppDatabase(NativeDatabase(file));
     await v3.customStatement('SELECT 1');
+    await _dropV7(v3);
     await v3.customStatement('DROP TABLE broadcasts');
     await v3.customStatement('ALTER TABLE contact_attempts DROP COLUMN target');
     await v3.customStatement('ALTER TABLE location_proposals DROP COLUMN method');
@@ -109,6 +112,7 @@ void main() {
     final file = File('${dir.path}/app.db');
     final v4 = AppDatabase(NativeDatabase(file));
     await v4.customStatement('SELECT 1');
+    await _dropV7(v4);
     await v4.customStatement('DROP TABLE broadcasts');
     await v4.customStatement('ALTER TABLE contact_attempts DROP COLUMN target');
     await v4.customStatement('ALTER TABLE location_proposals DROP COLUMN method');
@@ -136,6 +140,7 @@ void main() {
     final file = File('${dir.path}/app.db');
     final v5 = AppDatabase(NativeDatabase(file));
     await v5.customStatement('SELECT 1');
+    await _dropV7(v5);
     await v5.customStatement('DROP TABLE broadcasts');
     await v5.customStatement('ALTER TABLE contact_attempts DROP COLUMN target');
     await v5.customStatement(
@@ -155,4 +160,62 @@ void main() {
     await v6.close();
     await dir.delete(recursive: true);
   });
+
+  test('migrates a 0.9.0 (schema 6) database: ERP invoice columns get their defaults, cached plans and the outbox stay', () async {
+    final dir = await Directory.systemTemp.createTemp('mig6');
+    final file = File('${dir.path}/app.db');
+    final v6 = AppDatabase(NativeDatabase(file));
+    await v6.customStatement('SELECT 1');
+    await _dropV7(v6);
+    await v6.customStatement("INSERT INTO customers (server_id, code, name_bn) VALUES ('c-6', 'C-6', 'গ্রাহক')");
+    await v6.customStatement(
+        'INSERT INTO plans (erp_plan_id, customer_id, product, start_date, final_due_date, installment_count, total_payable_poisha, paid_poisha, outstanding_poisha, status) '
+        "VALUES ('pl-6', 'c-6', 'Fridge', '2026-01-01', '2026-12-01', 12, 1200000, 300000, 900000, 'active')");
+    await v6.customStatement(
+        "INSERT INTO schedule_lines (erp_plan_id, seq, due_date, amount_poisha, paid_poisha, status) VALUES ('pl-6', 1, '2026-02-01', 100000, 100000, 'paid')");
+    await v6.customStatement(
+        "INSERT INTO erp_payments (erp_payment_id, customer_id, plan_id, date, amount_poisha, method, source) VALUES ('ep-6', 'c-6', 'pl-6', '2026-02-01', 100000, 'cash', 'office')");
+    await v6.customStatement(
+        "INSERT INTO outbox (mutation_id, entity, op, payload_json, created_at) VALUES ('col-6', 'collection', 'create', '{}', 0)");
+    await v6.customStatement('PRAGMA user_version = 6');
+    await v6.close();
+
+    final v7 = AppDatabase(NativeDatabase(file));
+    final c = (await v7.select(v7.customers).get()).single;
+    expect(c.serverId, 'c-6');
+    expect(c.detailedAddress, isNull);
+    expect(c.erpRiskJson, isNull);
+    final plan = (await v7.select(v7.plans).get()).single;
+    expect(plan.erpPlanId, 'pl-6');
+    expect(plan.kind, 'installment');
+    expect(plan.invoiceNo, isNull);
+    expect(plan.writtenOffPoisha, 0);
+    expect(plan.outstandingPoisha, 900000);
+    final line = (await v7.select(v7.scheduleLines).get()).single;
+    expect(line.rolled, isFalse);
+    expect(line.lateFeePoisha, 0);
+    final pay = (await v7.select(v7.erpPayments).get()).single;
+    expect(pay.advance, isFalse);
+    expect(pay.discountPoisha, 0);
+    expect(pay.collectorName, isNull);
+    expect((await v7.select(v7.outbox).get()).single.mutationId, 'col-6');
+    await v7.close();
+    await dir.delete(recursive: true);
+  });
+}
+
+/// What schema 7 (0.10.0, contract 1.13.0) added: the real ERP shape on the cached tables.
+Future<void> _dropV7(AppDatabase db) async {
+  for (final c in ['detailed_address', 'directions', 'erp_risk_json']) {
+    await db.customStatement('ALTER TABLE customers DROP COLUMN $c');
+  }
+  for (final c in ['kind', 'invoice_no', 'sale_date', 'frequency', 'custom_days', 'items_json', 'guarantor_json', 'written_off_poisha']) {
+    await db.customStatement('ALTER TABLE plans DROP COLUMN $c');
+  }
+  for (final c in ['late_fee_poisha', 'rolled']) {
+    await db.customStatement('ALTER TABLE schedule_lines DROP COLUMN $c');
+  }
+  for (final c in ['method_label', 'collector_name', 'advance', 'discount_poisha']) {
+    await db.customStatement('ALTER TABLE erp_payments DROP COLUMN $c');
+  }
 }

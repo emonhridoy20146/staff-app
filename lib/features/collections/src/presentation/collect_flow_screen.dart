@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../../core/db/app_database.dart';
 import '../../../../core/location/location_engine.dart';
 import '../../../../core/providers.dart';
 import '../../../../core/settings/ui_prefs.dart';
@@ -93,9 +94,17 @@ class _CollectFlowScreenState extends ConsumerState<CollectFlowScreen> {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
     final c = ref.watch(customerProvider(widget.customerId)).value;
-    final plans = ref.watch(customerPlansProvider(widget.customerId)).value ?? const <PlanWithSchedule>[];
+    // Only invoices that can still take money are offered (returned, cancelled and settled ones are not).
+    final plans = (ref.watch(customerPlansProvider(widget.customerId)).value ?? const <PlanWithSchedule>[]).where((p) => p.collectable).toList();
     if (c == null) return const Scaffold(body: Center(child: CircularProgressIndicator()));
     _planId ??= plans.isNotEmpty ? plans.first.plan.erpPlanId : null;
+    final chosen = plans.where((p) => p.plan.erpPlanId == _planId).firstOrNull;
+    final sameDay = sameDayPaymentRisk(
+      planId: _planId,
+      installment: chosen != null && !chosen.credit,
+      erpPaidToday: ref.watch(plansPaidTodayProvider(widget.customerId)).value ?? const {},
+      localPlanIdsToday: [for (final r in ref.watch(todayCollectionsProvider).value ?? const <CollectionRow>[]) if (r.customerId == widget.customerId) r.erpPlanId],
+    );
     final steps = [l.collectStepAmount, l.collectStepMethod, l.collectStepReview];
 
     return PopScope(
@@ -129,6 +138,7 @@ class _CollectFlowScreenState extends ConsumerState<CollectFlowScreen> {
                     plans: plans,
                     planId: _planId,
                     onPlan: (p) => setState(() => _planId = p),
+                    sameDay: sameDay,
                     amount: _amount,
                     onAmount: (v) => setState(() => _amount = v),
                     onNext: _poisha > 0 ? () => _go(1) : null,
@@ -146,7 +156,8 @@ class _CollectFlowScreenState extends ConsumerState<CollectFlowScreen> {
                   _ => _ReviewStep(
                     key: const ValueKey(2),
                     customer: c,
-                    plan: plans.where((p) => p.plan.erpPlanId == _planId).firstOrNull,
+                    plan: chosen,
+                    sameDay: sameDay,
                     poisha: _poisha,
                     method: _method,
                     txn: _txn.text,
@@ -238,6 +249,7 @@ class _AmountStep extends ConsumerWidget {
     required this.plans,
     required this.planId,
     required this.onPlan,
+    required this.sameDay,
     required this.amount,
     required this.onAmount,
     required this.onNext,
@@ -246,6 +258,7 @@ class _AmountStep extends ConsumerWidget {
   final List<PlanWithSchedule> plans;
   final String? planId;
   final ValueChanged<String> onPlan;
+  final bool sameDay;
   final String amount;
   final ValueChanged<String> onAmount;
   final VoidCallback? onNext;
@@ -270,7 +283,7 @@ class _AmountStep extends ConsumerWidget {
             padding: const EdgeInsets.fromLTRB(Space.screen, Space.s12, Space.screen, 0),
             child: DropdownButtonFormField<String>(
               initialValue: planId,
-              items: [for (final p in plans) DropdownMenuItem(value: p.plan.erpPlanId, child: Text(p.plan.product))],
+              items: [for (final p in plans) DropdownMenuItem(value: p.plan.erpPlanId, child: Text(planChoiceLabel(p), overflow: TextOverflow.ellipsis))],
               onChanged: (v) => v == null ? null : onPlan(v),
             ),
           ),
@@ -301,6 +314,11 @@ class _AmountStep extends ConsumerWidget {
                   Padding(
                     padding: const EdgeInsets.fromLTRB(Space.s24, Space.s8, Space.s24, 0),
                     child: InfoBanner(icon: Icons.info_rounded, text: l.collectOverOutstanding, tone: BannerTone.warning),
+                  ),
+                if (sameDay)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(Space.s24, Space.s8, Space.s24, 0),
+                    child: InfoBanner(icon: Icons.event_repeat_rounded, text: l.collectSameDayWarning, tone: BannerTone.warning),
                   ),
               ],
             ),
@@ -524,6 +542,7 @@ class _ReviewStep extends ConsumerWidget {
     super.key,
     required this.customer,
     required this.plan,
+    required this.sameDay,
     required this.poisha,
     required this.method,
     required this.txn,
@@ -533,6 +552,7 @@ class _ReviewStep extends ConsumerWidget {
   });
   final Customer customer;
   final PlanWithSchedule? plan;
+  final bool sameDay;
   final int poisha;
   final PaymentMethod method;
   final String txn;
@@ -575,7 +595,7 @@ class _ReviewStep extends ConsumerWidget {
                       const Divider(height: 1),
                       const SizedBox(height: Space.s4),
                       KeyValueRow(label: l.collectReviewCustomer, value: Text('${customer.nameOf(lang)}\n${customer.code}')),
-                      if (plan != null) KeyValueRow(label: l.collectReviewPlan, value: Text(plan!.plan.product)),
+                      if (plan != null) KeyValueRow(label: l.collectReviewPlan, value: Text(planChoiceLabel(plan!))),
                       KeyValueRow(
                         label: l.collectReviewMethod,
                         value: Row(
@@ -621,6 +641,10 @@ class _ReviewStep extends ConsumerWidget {
                   );
                 },
               ),
+              if (sameDay) ...[
+                const SizedBox(height: Space.cardGap),
+                InfoBanner(icon: Icons.event_repeat_rounded, text: l.collectSameDayWarning, tone: BannerTone.warning),
+              ],
               if (overLimit) ...[
                 const SizedBox(height: Space.cardGap),
                 InfoBanner(
@@ -648,3 +672,6 @@ class _ReviewStep extends ConsumerWidget {
     );
   }
 }
+
+/// "INV-10045 · Walton fridge": the ERP invoice number staff and the office both see.
+String planChoiceLabel(PlanWithSchedule p) => [if (p.plan.invoiceNo != null && p.plan.invoiceNo!.isNotEmpty) p.plan.invoiceNo!, p.plan.product].join(' · ');

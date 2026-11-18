@@ -3877,6 +3877,150 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No phone number'**
   String get guarantorNoPhone;
+
+  /// No description provided for @planCreditSale.
+  ///
+  /// In en, this message translates to:
+  /// **'Credit sale'**
+  String get planCreditSale;
+
+  /// No description provided for @planPayBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay by {date}'**
+  String planPayBy(String date);
+
+  /// No description provided for @planReturned.
+  ///
+  /// In en, this message translates to:
+  /// **'Returned in the ERP · not collectable'**
+  String get planReturned;
+
+  /// No description provided for @planCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled in the ERP · not collectable'**
+  String get planCancelled;
+
+  /// No description provided for @planFreqMonthly.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly'**
+  String get planFreqMonthly;
+
+  /// No description provided for @planFreqWeekly.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly'**
+  String get planFreqWeekly;
+
+  /// No description provided for @planFreqDaily.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily'**
+  String get planFreqDaily;
+
+  /// No description provided for @planFreqEveryNDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Every {n} days'**
+  String planFreqEveryNDays(String n);
+
+  /// No description provided for @planFreqCustom.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom dates'**
+  String get planFreqCustom;
+
+  /// No description provided for @planProducts.
+  ///
+  /// In en, this message translates to:
+  /// **'Products'**
+  String get planProducts;
+
+  /// No description provided for @planSerials.
+  ///
+  /// In en, this message translates to:
+  /// **'Serial: {list}'**
+  String planSerials(String list);
+
+  /// No description provided for @planGuarantor.
+  ///
+  /// In en, this message translates to:
+  /// **'Guarantor for this plan'**
+  String get planGuarantor;
+
+  /// No description provided for @planWrittenOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Written off {amount}'**
+  String planWrittenOff(String amount);
+
+  /// No description provided for @scheduleLateFee.
+  ///
+  /// In en, this message translates to:
+  /// **'incl. late fee {amount}'**
+  String scheduleLateFee(String amount);
+
+  /// No description provided for @planRolledHidden.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} unpaid installments were moved to a later one in the ERP and are hidden'**
+  String planRolledHidden(String n);
+
+  /// No description provided for @detailDirections.
+  ///
+  /// In en, this message translates to:
+  /// **'Directions'**
+  String get detailDirections;
+
+  /// No description provided for @erpRiskBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'ERP grade {grade}'**
+  String erpRiskBadge(String grade);
+
+  /// No description provided for @erpRiskLow.
+  ///
+  /// In en, this message translates to:
+  /// **'low risk'**
+  String get erpRiskLow;
+
+  /// No description provided for @erpRiskMedium.
+  ///
+  /// In en, this message translates to:
+  /// **'medium risk'**
+  String get erpRiskMedium;
+
+  /// No description provided for @erpRiskHigh.
+  ///
+  /// In en, this message translates to:
+  /// **'high risk'**
+  String get erpRiskHigh;
+
+  /// No description provided for @timelineCollector.
+  ///
+  /// In en, this message translates to:
+  /// **'by {name}'**
+  String timelineCollector(String name);
+
+  /// No description provided for @timelineAdvance.
+  ///
+  /// In en, this message translates to:
+  /// **'advance'**
+  String get timelineAdvance;
+
+  /// No description provided for @timelineRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'removed in the ERP'**
+  String get timelineRemoved;
+
+  /// No description provided for @collectSameDayWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'This invoice already has a payment today. The ERP takes one a day, so the office may need to decide on this one.'**
+  String get collectSameDayWarning;
 }
 
 class _AppLocalizationsDelegate

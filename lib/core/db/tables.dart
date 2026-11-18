@@ -42,6 +42,10 @@ class Customers extends Table {
   TextColumn get assigneeId => text().nullable()();
   DateTimeColumn get erpFetchedAt => dateTime().nullable()();
   TextColumn get guarantorJson => text().nullable()();
+  // v7 (0.10.0, contract 1.13.0): from the real ERP.
+  TextColumn get detailedAddress => text().nullable()();
+  TextColumn get directions => text().nullable()();
+  TextColumn get erpRiskJson => text().nullable()();
   TextColumn get searchText => text().withDefault(const Constant(''))();
   IntColumn get version => integer().withDefault(const Constant(0))();
 
@@ -63,6 +67,17 @@ class Plans extends Table {
   IntColumn get outstandingPoisha => integer()();
   TextColumn get status => text()();
   BoolColumn get badSuggested => boolean().withDefault(const Constant(false))();
+  // v7 (0.10.0, contract 1.13.0): one plan = one ERP invoice.
+  /// installment | credit
+  TextColumn get kind => text().withDefault(const Constant('installment'))();
+  TextColumn get invoiceNo => text().nullable()();
+  TextColumn get saleDate => text().nullable()();
+  /// monthly | weekly | daily | custom (installment plans only)
+  TextColumn get frequency => text().nullable()();
+  IntColumn get customDays => integer().nullable()();
+  TextColumn get itemsJson => text().nullable()();
+  TextColumn get guarantorJson => text().nullable()();
+  IntColumn get writtenOffPoisha => integer().withDefault(const Constant(0))();
 
   @override
   Set<Column> get primaryKey => {erpPlanId};
@@ -77,6 +92,9 @@ class ScheduleLines extends Table {
   IntColumn get paidPoisha => integer()();
   TextColumn get status => text()();
   BoolColumn get estimated => boolean().withDefault(const Constant(false))();
+  // v7 (0.10.0): late fee inside amountPoisha; a line the ERP rolled forward (amount 0, hidden).
+  IntColumn get lateFeePoisha => integer().withDefault(const Constant(0))();
+  BoolColumn get rolled => boolean().withDefault(const Constant(false))();
 
   @override
   Set<Column> get primaryKey => {erpPlanId, seq};
@@ -93,6 +111,11 @@ class ErpPayments extends Table {
   TextColumn get source => text()();
   TextColumn get receiptNo => text().nullable()();
   BoolColumn get reversed => boolean().withDefault(const Constant(false))();
+  // v7 (0.10.0, contract 1.13.0)
+  TextColumn get methodLabel => text().nullable()();
+  TextColumn get collectorName => text().nullable()();
+  BoolColumn get advance => boolean().withDefault(const Constant(false))();
+  IntColumn get discountPoisha => integer().withDefault(const Constant(0))();
 
   @override
   Set<Column> get primaryKey => {erpPaymentId};

@@ -1381,5 +1381,85 @@
   "guarantorNoName": "No name",
   "guarantorCall": "Call the guarantor",
   "guarantorCallShort": "Call",
-  "guarantorNoPhone": "No phone number"
+  "guarantorNoPhone": "No phone number",
+  "planCreditSale": "Credit sale",
+  "planPayBy": "Pay by {date}",
+  "@planPayBy": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "planReturned": "Returned in the ERP · not collectable",
+  "planCancelled": "Cancelled in the ERP · not collectable",
+  "planFreqMonthly": "Monthly",
+  "planFreqWeekly": "Weekly",
+  "planFreqDaily": "Daily",
+  "planFreqEveryNDays": "Every {n} days",
+  "@planFreqEveryNDays": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "planFreqCustom": "Custom dates",
+  "planProducts": "Products",
+  "planSerials": "Serial: {list}",
+  "@planSerials": {
+    "placeholders": {
+      "list": {
+        "type": "String"
+      }
+    }
+  },
+  "planGuarantor": "Guarantor for this plan",
+  "planWrittenOff": "Written off {amount}",
+  "@planWrittenOff": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "scheduleLateFee": "incl. late fee {amount}",
+  "@scheduleLateFee": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "planRolledHidden": "{n} unpaid installments were moved to a later one in the ERP and are hidden",
+  "@planRolledHidden": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "detailDirections": "Directions",
+  "erpRiskBadge": "ERP grade {grade}",
+  "@erpRiskBadge": {
+    "placeholders": {
+      "grade": {
+        "type": "String"
+      }
+    }
+  },
+  "erpRiskLow": "low risk",
+  "erpRiskMedium": "medium risk",
+  "erpRiskHigh": "high risk",
+  "timelineCollector": "by {name}",
+  "@timelineCollector": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "timelineAdvance": "advance",
+  "timelineRemoved": "removed in the ERP",
+  "collectSameDayWarning": "This invoice already has a payment today. The ERP takes one a day, so the office may need to decide on this one."
 }

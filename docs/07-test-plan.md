@@ -43,6 +43,8 @@ Devices (minimum set): **Xiaomi Redmi (MIUI/HyperOS, 2–3 GB)**, **Samsung Gala
 - [ ] Collection flow ≤ 15 s for experienced user; amount in words correct for 1, 15, 101, 1,000, 1,00,000, 12,50,500
 - [ ] Receipt image shares to WhatsApp and is readable
 - [ ] Cash limit warn/block per setting works offline
+- [ ] Same-day warning (0.10.0): collect twice on one installment invoice in a day; the second shows the warning, is still saved and synced, and arrives in admin as a conflict (OD-27 default)
+- [ ] Real ERP data (0.10.0, against field-api in `live` mode): invoice numbers, products and serials, late fees and the ERP receipt numbers match the ERP for 5 customers; returned invoices are not offered for collection
 **Camera & media**
 - [ ] No gallery option anywhere; watermark correct; size ≤ 250 KB; upload resumes after network loss
 **Location (P2)**

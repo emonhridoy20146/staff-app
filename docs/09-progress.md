@@ -33,6 +33,8 @@ Phases match `field-api/docs/09-progress.md`. Start each phase against the Prism
 | Notices from the office: list, detail, offline "পড়েছি" (`broadcast_ack`), Today banner, Me count (contract 1.12.0) | ✅ 0.9.0, flow tests + screenshots |
 | Leave requests (ask, withdraw, status with reason), holidays of my branch, my shift; cached offline | ✅ 0.9.0, flow tests + screenshots |
 | Guarantor on the customer page with one-tap call, logged offline as a guarantor call | ✅ 0.9.0, flow test + screenshot; device call check pending |
+| Real ERP shape (contract 1.13.0): invoice numbers, products and serials, credit sales, frequency, late fees, rolled lines hidden, returned invoices not collectable, directions and risk grade, ERP method and collector on payments; database schema 7 | ✅ 0.10.0, unit + migration tests, screenshots 29-31; check with real ERP data once field-api runs in `live` mode |
+| Same-day warning in the collect flow (one payment per installment invoice per day, OD-27) | ✅ 0.10.0, unit test + screenshot; device check pending |
 | Notifications (FCM + centre), Sync centre & Problems | ◐ sync centre done; FCM not yet (needs Firebase project) |
 | Onboarding: consent, permissions primer | ✅ |
 **Acceptance:** M-E2…M-E7, M-E9, M-E10 green; manual device checklist (non-location sections) signed off on 4 OEM devices; pilot 5 staff × 2 weeks with zero lost/duplicate collections.

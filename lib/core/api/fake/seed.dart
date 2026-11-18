@@ -57,6 +57,12 @@ class DemoSeed {
 
   static const _streets = ['বাজার রোড', 'স্কুল রোড', 'মসজিদ গলি', 'কলেজ রোড', 'ব্রিজ রোড', 'পুকুরপাড়'];
 
+  /// ERP "directions" text (how to find the house), for some customers.
+  static const _directions = ['মসজিদের পরের দ্বিতীয় বাড়ি, নীল গেট', 'স্কুলের সামনের গলি দিয়ে ঢুকে বাম দিকে', 'বাজারের পূর্ব পাশে, দোতলা বাড়ি'];
+
+  /// Model codes for the products (fake), as the ERP's invoice items carry them.
+  static const _models = ['FR-252', 'TV-43U', 'TV-32H', 'WM-7KG', 'AC-15T', 'MC-125', 'MW-20L', 'CF-56', 'SP-A15'];
+
   static const _products = [
     ['ফ্রিজ ২৫২ লিটার', 4500000],
     ['এলইডি টিভি ৪৩"', 3800000],
@@ -138,6 +144,9 @@ class DemoSeed {
           'estimated': false,
         });
       }
+      // The ERP keeps a late fee inside an overdue line's amount (contract 1.13.0).
+      final firstOverdue = schedule.where((l) => l['status'] == 'overdue').firstOrNull;
+      if (firstOverdue != null && i % 4 == 0) firstOverdue['lateFeePoisha'] = 5000;
       final finalDue = schedule.last['dueDate'] as String;
       final outstanding = total - paid;
       final daysOver = schedule
@@ -158,6 +167,8 @@ class DemoSeed {
       final lng = (area[3] as double) + (_r.nextDouble() - 0.5) * 0.018;
       final hasPin = i != 9 && i != 21;
       final planId = 'P-${2400 + i}';
+      final grade = daysOver == 0 ? 'A' : daysOver < 15 ? 'B' : daysOver < 30 ? 'C' : daysOver < 60 ? 'D' : 'E';
+      String receipt(String date, int n) => 'PAY-${date.replaceAll('-', '')}-${n.toString().padLeft(5, '0')}';
       final payments = <Json>[
         for (var s = 1; s <= min(paidCount, 4); s++)
           {
@@ -166,8 +177,13 @@ class DemoSeed {
             'amountPoisha': inst,
             'method': s.isEven ? 'bkash' : 'cash',
             'source': s.isEven ? 'field' : 'office',
-            'receiptNo': 'R-${88000 + i * 10 + s}',
+            'receiptNo': receipt(_date(startOffset + 30 * (paidCount - s + 1) - 2), 8000 + i * 10 + s),
             'reversed': false,
+            'erpPlanId': planId,
+            'methodLabel': s.isEven ? 'bKash' : 'Cash',
+            'collectorName': s.isEven ? assigneeName : null,
+            'advance': false,
+            'discountPoisha': 0,
           },
       ];
       out.add({
@@ -178,6 +194,9 @@ class DemoSeed {
         'phone': '017${(10000000 + _r.nextInt(89999999)).toString()}',
         'phones': ['017${(10000000 + _r.nextInt(89999999)).toString()}'],
         'address': '${_r.nextInt(120) + 1}, ${_streets[_r.nextInt(_streets.length)]}, ${area[1]}, বরিশাল',
+        'detailedAddress': i % 3 == 2 ? '${_streets[i % _streets.length]}, ${area[1]} বাজারের কাছে, বরিশাল' : null,
+        'directions': i % 3 == 2 ? _directions[(i ~/ 3) % _directions.length] : null,
+        'erpRisk': {'grade': grade, 'level': grade == 'A' || grade == 'B' ? 'Low' : grade == 'C' ? 'Medium' : 'High', 'overdueCount': schedule.where((l) => l['status'] == 'overdue').length, 'maxDaysLate': daysOver},
         'areaId': area[0],
         'areaName': area[1],
         'location': {'lat': hasPin ? lat : null, 'lng': hasPin ? lng : null, 'status': hasPin ? 'ok' : 'missing', 'source': 'erp'},
@@ -211,6 +230,14 @@ class DemoSeed {
         'plans': [
           {
             'erpPlanId': planId,
+            'kind': 'installment',
+            'invoiceNo': 'INV-${30100 + i}',
+            'saleDate': _date(startOffset),
+            'frequency': 'monthly',
+            'items': [
+              {'name': prod[0], 'model': _models[_products.indexOf(prod)], 'qty': 1, 'serials': ['SN${740000 + i * 37}']},
+            ],
+            'writtenOffPoisha': 0,
             'product': prod[0],
             'startDate': _date(startOffset),
             'finalDueDate': finalDue,

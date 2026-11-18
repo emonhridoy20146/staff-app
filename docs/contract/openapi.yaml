@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Howlader Field Operations API
-  version: 1.12.0
+  version: 1.13.0
   description: |
     Contract owned by field-api. Consumers (admin-web, staff-app) generate types from this file.
     Conventions (auth, pagination, idempotency, errors) are described in docs/05-api-contract.md.
@@ -158,6 +158,24 @@ paths:
       operationId: erpStatus
       responses:
         '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/ErpStatus' } } } }
+  /system/erp-employees:
+    get:
+      tags: [system]
+      operationId: listErpEmployees
+      description: |
+        Added in 1.13.0. ERP employees, read live from the ERP, to link a staff user (`erpEmployeeId`).
+        The ERP requires a collector employee on every payment; an unlinked collector gets the
+        `COLLECTOR_NOT_LINKED` conflict. 503 `ERP_UNAVAILABLE` when the ERP cannot be reached.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/ErpEmployee' } }
+        '503': { $ref: '#/components/responses/Problem' }
   /system/sync-health:
     get:
       tags: [system]
@@ -339,6 +357,27 @@ paths:
       operationId: listBranches
       responses:
         '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/Branch' } } } } }
+  /branches/{id}/location:
+    put:
+      tags: [system]
+      operationId: setBranchLocation
+      description: |
+        Added in 1.13.0. The ERP has no branch coordinates, so the map point of a branch is set in FOS
+        (used by the data-quality "far from branch" check and map centring). ERP sync never clears it.
+        Send `{lat: null, lng: null}` to clear. Must be inside Bangladesh (422 `BUSINESS_RULE`).
+      parameters: [ { name: id, in: path, required: true, schema: { type: string } } ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [lat, lng]
+              properties: { lat: { type: [number, 'null'] }, lng: { type: [number, 'null'] } }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Branch' } } } }
+        '404': { $ref: '#/components/responses/Problem' }
+        '422': { $ref: '#/components/responses/Problem' }
   /settings:
     get:
       tags: [system]
@@ -1649,6 +1688,7 @@ components:
         branchIds: { type: array, items: { type: string } }
         shiftId: { type: string }
         cashLimitPoisha: { type: integer }
+        erpEmployeeId: { type: [string, 'null'], description: 'Documented in 1.13.0 (already accepted). Links the user to an ERP employee (GET /system/erp-employees); null unlinks' }
         reason: { type: string }
     UserPage:
       type: object
@@ -1679,9 +1719,13 @@ components:
       properties:
         key: { type: string }
         effect: { type: string, enum: [allow, deny, inherit] }
+    ErpEmployee:
+      type: object
+      description: Added in 1.13.0
+      properties: { erpEmployeeId: { type: string }, code: { type: string }, name: { type: string }, erpBranchIds: { type: array, items: { type: string } }, active: { type: boolean } }
     Branch:
       type: object
-      properties: { id: { type: string }, erpBranchId: { type: string }, code: { type: string }, name: { $ref: '#/components/schemas/I18nText' }, district: { type: string }, address: { type: string }, lat: { type: [number, 'null'] }, lng: { type: [number, 'null'] }, active: { type: boolean } }
+      properties: { id: { type: string }, erpBranchId: { type: string }, code: { type: string }, kind: { type: string, enum: [branch, warehouse], description: 'Added in 1.13.0. ERP location type; a warehouse can hold receivables too' }, name: { $ref: '#/components/schemas/I18nText' }, district: { type: string }, address: { type: string }, lat: { type: [number, 'null'] }, lng: { type: [number, 'null'] }, active: { type: boolean } }
     FeatureFlag:
       type: object
       properties: { key: { type: string }, defaultEnabled: { type: boolean }, branchOverrides: { type: array, items: { type: object, properties: { branchId: { type: string }, enabled: { type: boolean } } } }, description: { type: string }, owner: { type: string }, reviewBy: { type: string }, lockedReason: { type: string } }
@@ -1766,6 +1810,9 @@ components:
         total: { type: integer }
     Plan:
       type: object
+      description: |
+        One collectable ERP receivable. Since 1.13.0 this is documented as one ERP invoice
+        (installment or credit sale); `erpPlanId` is the invoice id (ADR-033).
       properties:
         erpPlanId: { type: string }
         product: { type: string }
@@ -1776,12 +1823,50 @@ components:
         downPaymentPoisha: { type: integer }
         paidPoisha: { type: integer }
         outstandingPoisha: { type: integer }
-        status: { type: string, enum: [active, completed, closed, defaulted, cancelled] }
+        status: { type: string, enum: [active, completed, closed, defaulted, cancelled], description: '`closed` = returned in the ERP; closed and cancelled plans are not collectable and not counted in totals' }
         badSuggested: { type: boolean }
-        schedule: { type: array, items: { type: object, properties: { seq: { type: integer }, dueDate: { type: string, format: date }, amountPoisha: { type: integer }, paidPoisha: { type: integer }, status: { type: string, enum: [paid, partial, due, overdue, upcoming] }, estimated: { type: boolean } } } }
+        schedule:
+          type: array
+          items:
+            type: object
+            properties:
+              seq: { type: integer }
+              dueDate: { type: string, format: date }
+              amountPoisha: { type: integer, description: 'Due amount including any late fee' }
+              paidPoisha: { type: integer }
+              status: { type: string, enum: [paid, partial, due, overdue, upcoming] }
+              estimated: { type: boolean }
+              lateFeePoisha: { type: integer, description: 'Added in 1.13.0. Late fee included in amountPoisha' }
+              rolled: { type: boolean, description: 'Added in 1.13.0. The ERP moved this line''s balance to a later line (amount 0). Apps hide it' }
+        kind: { type: string, enum: [installment, credit], description: 'Added in 1.13.0. Credit = pay-later sale with one due date' }
+        invoiceNo: { type: string, description: 'Added in 1.13.0. ERP invoice number' }
+        saleDate: { type: string, format: date, description: 'Added in 1.13.0' }
+        frequency: { type: string, enum: [monthly, weekly, daily, custom], description: 'Added in 1.13.0. Installment plans only' }
+        customDays: { type: integer, description: 'Added in 1.13.0. Days between lines when frequency is custom' }
+        items:
+          type: array
+          description: Added in 1.13.0. Products on the invoice
+          items: { type: object, properties: { name: { type: string }, model: { type: [string, 'null'] }, qty: { type: integer }, serials: { type: array, items: { type: string } } } }
+        guarantor:
+          type: object
+          description: Added in 1.13.0. Guarantor of this plan (never an ID number)
+          properties: { name: { type: string }, phone: { type: string }, phones: { type: array, items: { type: string } }, address: { type: string } }
+        writtenOffPoisha: { type: integer, description: 'Added in 1.13.0. Amount the office wrote off (already out of outstanding)' }
     Payment:
       type: object
-      properties: { erpPaymentId: { type: string }, date: { type: string, format: date }, amountPoisha: { type: integer }, method: { type: string }, source: { type: string, enum: [office, field] }, receiptNo: { type: string }, reversed: { type: boolean } }
+      properties:
+        erpPaymentId: { type: string }
+        date: { type: string, format: date }
+        amountPoisha: { type: integer }
+        method: { type: string }
+        source: { type: string, enum: [office, field] }
+        receiptNo: { type: string, description: 'ERP payment number (PAY-YYYYMMDD-NNNNN)' }
+        reversed: { type: boolean, description: 'The office removed this payment in the ERP' }
+        erpPlanId: { type: string, description: 'Added in 1.13.0. Plan (invoice) the payment went to' }
+        methodLabel: { type: string, description: 'Added in 1.13.0. ERP payment method name, e.g. Cash-03' }
+        collectorName: { type: string, description: 'Added in 1.13.0. ERP employee recorded as collector' }
+        advance: { type: boolean, description: 'Added in 1.13.0. Down-payment advance' }
+        discountPoisha: { type: integer, description: 'Added in 1.13.0. Settlement discount given with the payment' }
     CustomerDetail:
       allOf:
         - $ref: '#/components/schemas/CustomerListItem'
@@ -1789,6 +1874,18 @@ components:
           properties:
             phones: { type: array, items: { type: string } }
             guarantor: { type: object, properties: { name: { type: string }, phone: { type: string } } }
+            detailedAddress: { type: string, description: 'Added in 1.13.0. ERP detailed address' }
+            directions: { type: string, description: 'Added in 1.13.0. How to find the house (ERP location instructions)' }
+            erpRisk:
+              type: object
+              description: Added in 1.13.0. ERP customer risk snapshot, read-only, shown next to FOS tags
+              properties:
+                grade: { type: [string, 'null'] }
+                level: { type: [string, 'null'] }
+                classification: { type: [string, 'null'] }
+                overdueCount: { type: integer }
+                maxDaysLate: { type: integer }
+                computedAt: { type: [string, 'null'] }
             plans: { type: array, items: { $ref: '#/components/schemas/Plan' } }
             payments: { type: array, items: { $ref: '#/components/schemas/Payment' } }
             pendingCollections: { type: array, items: { $ref: '#/components/schemas/Collection' } }
@@ -1846,7 +1943,15 @@ components:
         recordedAt: { type: string, format: date-time }
         receivedAt: { type: string, format: date-time }
         status: { $ref: '#/components/schemas/CollectionStatus' }
-        conflict: { type: [object, 'null'], properties: { code: { type: string }, message: { $ref: '#/components/schemas/I18nText' }, raisedAt: { type: string } } }
+        conflict:
+          type: [object, 'null']
+          description: |
+            `code` is one of PLAN_SETTLED, AMOUNT_EXCEEDS_OUTSTANDING, PLAN_NOT_FOUND, CUSTOMER_INACTIVE, PERIOD_LOCKED,
+            ERP_VALIDATION, GAVE_UP and, since 1.13.0, PLAN_CLOSED (invoice returned/cancelled in the ERP),
+            DUPLICATE_SAME_DAY (the ERP already has a payment on that invoice that day), METHOD_NOT_AVAILABLE
+            (no ERP payment method of that kind at the branch), COLLECTOR_NOT_LINKED (staff user has no ERP employee).
+            Show `message` (bn/en); unknown codes are possible.
+          properties: { code: { type: string }, message: { $ref: '#/components/schemas/I18nText' }, raisedAt: { type: string } }
         resolution: { type: [object, 'null'], properties: { action: { type: string }, by: { type: string }, at: { type: string }, reason: { type: string } } }
         flags: { type: array, items: { type: string, enum: [far_from_pin, mock_location, clock_skew, late_sync, duplicate_txn_ref, not_in_scope_at_record_time, no_location] } }
         distanceToPinM: { type: [integer, 'null'] }

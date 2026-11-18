@@ -45,6 +45,19 @@ String formatReceiptNo(String prefix, String businessDate, int seq, {bool offlin
   return '$prefix-$ymd-$s';
 }
 
+/// FR-M-031 (contract 1.13.0, OD-27): the ERP takes one payment per installment invoice
+/// per day. True when this collection would be the second on [planId] today: the ERP
+/// already has one ([erpPaidToday]) or this phone recorded one ([localPlanIdsToday],
+/// collections of today that are not voided or rejected). Only a warning: the
+/// collection is still saved and the office decides (never dropped, ADR-018).
+bool sameDayPaymentRisk({
+  required String? planId,
+  required bool installment,
+  required Set<String> erpPaidToday,
+  required Iterable<String?> localPlanIdsToday,
+}) =>
+    planId != null && installment && (erpPaidToday.contains(planId) || localPlanIdsToday.contains(planId));
+
 /// Remaining numbers below which a new block is requested (FR-M-007).
 const receiptLowWater = 20;
 

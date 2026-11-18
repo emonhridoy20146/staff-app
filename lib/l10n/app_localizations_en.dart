@@ -2147,4 +2147,93 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get guarantorNoPhone => 'No phone number';
+
+  @override
+  String get planCreditSale => 'Credit sale';
+
+  @override
+  String planPayBy(String date) {
+    return 'Pay by $date';
+  }
+
+  @override
+  String get planReturned => 'Returned in the ERP · not collectable';
+
+  @override
+  String get planCancelled => 'Cancelled in the ERP · not collectable';
+
+  @override
+  String get planFreqMonthly => 'Monthly';
+
+  @override
+  String get planFreqWeekly => 'Weekly';
+
+  @override
+  String get planFreqDaily => 'Daily';
+
+  @override
+  String planFreqEveryNDays(String n) {
+    return 'Every $n days';
+  }
+
+  @override
+  String get planFreqCustom => 'Custom dates';
+
+  @override
+  String get planProducts => 'Products';
+
+  @override
+  String planSerials(String list) {
+    return 'Serial: $list';
+  }
+
+  @override
+  String get planGuarantor => 'Guarantor for this plan';
+
+  @override
+  String planWrittenOff(String amount) {
+    return 'Written off $amount';
+  }
+
+  @override
+  String scheduleLateFee(String amount) {
+    return 'incl. late fee $amount';
+  }
+
+  @override
+  String planRolledHidden(String n) {
+    return '$n unpaid installments were moved to a later one in the ERP and are hidden';
+  }
+
+  @override
+  String get detailDirections => 'Directions';
+
+  @override
+  String erpRiskBadge(String grade) {
+    return 'ERP grade $grade';
+  }
+
+  @override
+  String get erpRiskLow => 'low risk';
+
+  @override
+  String get erpRiskMedium => 'medium risk';
+
+  @override
+  String get erpRiskHigh => 'high risk';
+
+  @override
+  String timelineCollector(String name) {
+    return 'by $name';
+  }
+
+  @override
+  String get timelineAdvance => 'advance';
+
+  @override
+  String get timelineRemoved => 'removed in the ERP';
+
+  @override
+  String get collectSameDayWarning =>
+      'This invoice already has a payment today. The ERP takes one a day, so the office may need to decide on this one.';
 }
