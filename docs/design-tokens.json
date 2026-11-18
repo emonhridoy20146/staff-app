@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0",
+  "version": "1.1.0",
   "source": "admin-web/docs/03-design-guide.md §2 (canonical); must equal staff-app copy",
   "color": {
     "brand": {
@@ -148,7 +148,70 @@
       "rocket": "#7C3AED",
       "bank_transfer": "#0EA5A4",
       "other_mobile": "#64748B"
-    }
+    },
+    "payState": {
+      "bad": {
+        "pin": "#DC2626",
+        "fg": "#B91C1C",
+        "bg": "#FDECEC",
+        "dark": {
+          "pin": "#EF4444",
+          "fg": "#F87171",
+          "bg": "#2D1212"
+        }
+      },
+      "missedMany": {
+        "pin": "#EA580C",
+        "fg": "#C2410C",
+        "bg": "#FFF1E8",
+        "dark": {
+          "pin": "#F97316",
+          "fg": "#FB923C",
+          "bg": "#2E1A0C"
+        }
+      },
+      "missedOne": {
+        "pin": "#EAB308",
+        "fg": "#854D0E",
+        "bg": "#FEF9C3",
+        "dark": {
+          "pin": "#FACC15",
+          "fg": "#FDE047",
+          "bg": "#2E2A08"
+        }
+      },
+      "dueToday": {
+        "pin": "#2563EB",
+        "fg": "#1D4ED8",
+        "bg": "#E8F0FE",
+        "dark": {
+          "pin": "#60A5FA",
+          "fg": "#93C5FD",
+          "bg": "#0F1F3D"
+        }
+      },
+      "onTrack": {
+        "pin": "#16A34A",
+        "fg": "#166534",
+        "bg": "#E8F6EC",
+        "dark": {
+          "pin": "#4ADE80",
+          "fg": "#4ADE80",
+          "bg": "#0F2A1A"
+        }
+      },
+      "paidOff": {
+        "pin": "#64748B",
+        "fg": "#475569",
+        "bg": "#EEF1F5",
+        "dark": {
+          "pin": "#94A3B8",
+          "fg": "#A9B1BF",
+          "bg": "#1A2030"
+        }
+      }
+    },
+    "pinShadow": "rgb(16 24 40 / 0.35)"
   },
   "font": {
     "sans": [

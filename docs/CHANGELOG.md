@@ -1,5 +1,9 @@
 # Changelog — staff-app
 
+## [Unreleased]
+### Changed
+- Shared design tokens v1.1 (docs only, mirrors admin-web `docs/03-design-guide.md §2.3a`, admin ADR-W18): pay-state colours (`payState.bad`, `missedMany`, `missedOne`, `dueToday`, `onTrack`, `paidOff`, each pin / fg / bg, light and dark) and the pin shadow, from field-api contract 1.14.0 `PayState` (ADR-035). `docs/design-tokens.json` is the same file as admin-web's again. Nothing in the app changes yet; its map keeps the `status.*` markers.
+
 ## [0.10.1] — 2026-11-18
 ### Added
 - Build against the live test server without typing flags (owner request 2026-11-18, ADR-M16): `config/live.env` is committed with public values only (`APP_ENV=staging`, `API_BASE_URL=https://howlader-apps-api.vercel.app/api/v1`, `API_MODE=live`). No token, key or password is in it or anywhere in the app; the app talks only to field-api, never to the ERP.

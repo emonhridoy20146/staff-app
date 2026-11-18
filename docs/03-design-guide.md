@@ -14,7 +14,7 @@ Design intent: **a tool you can use with one thumb, in sunlight, on a 5.5-inch �
 7. **Honest tracking.** When tracking is on, the user always sees it (status chip + persistent notification).
 8. **Forgiving.** Undo for non-money actions; drafts autosave; nothing lost when the app is killed.
 
-## 2. Shared design tokens v1.0 (identical to admin-web)
+## 2. Shared design tokens v1.1 (identical to admin-web)
 
 Canonical values: `admin-web/docs/03-design-guide.md §2`. Repeated here for the app team; **must stay identical**.
 
@@ -25,10 +25,14 @@ Canonical values: `admin-web/docs/03-design-guide.md §2`. Repeated here for the
 | Semantic fg / bg | success `#166534`/`#E8F6EC` · warning `#92400E`/`#FEF3C7` · danger `#B91C1C`/`#FDECEC` · info `#0369A1`/`#E6F4FB` |
 | Status fg / bg | overdue `#C62828`/`#FDECEC` · dueToday `#92400E`/`#FEF3C7` · promised `#6D28D9`/`#F1EAFE` · current `#2C44CC`/`#EEF3FF` · paid `#166534`/`#E8F6EC` · badSuggested `#C2410C`/`#FFF1E8` (dashed) · tagged white on `#7F1D1D` · pending `#475569`/`#EEF1F5` · mock `#9D174D`/`#FCE7F3` |
 | Dark (fg / bg) | text `#E7EAF0` on `#0B0E14`; surface `#121722`; raised `#1A2030`; primary `#7C93FA`; overdue `#F87171`/`#2D1212`; dueToday `#FBBF24`/`#2E2208`; promised `#A78BFA`/`#1F1536`; paid `#4ADE80`/`#0F2A1A`; pending `#A9B1BF`/`#1A2030`; tagged white on `#B91C1C` |
+| Pay state (pin / fg / bg, v1.1) | bad `#DC2626`/`#B91C1C`/`#FDECEC` · missedMany `#EA580C`/`#C2410C`/`#FFF1E8` · missedOne `#EAB308`/`#854D0E`/`#FEF9C3` · dueToday `#2563EB`/`#1D4ED8`/`#E8F0FE` · onTrack `#16A34A`/`#166534`/`#E8F6EC` · paidOff `#64748B`/`#475569`/`#EEF1F5`; pin shadow `rgb(16 24 40 / 0.35)` |
+| Pay state dark (pin / fg / bg) | bad `#EF4444`/`#F87171`/`#2D1212` · missedMany `#F97316`/`#FB923C`/`#2E1A0C` · missedOne `#FACC15`/`#FDE047`/`#2E2A08` · dueToday `#60A5FA`/`#93C5FD`/`#0F1F3D` · onTrack `#4ADE80`/`#4ADE80`/`#0F2A1A` · paidOff `#94A3B8`/`#A9B1BF`/`#1A2030` |
 | Spacing (4-pt) | 0, 2, 4, 8, 12, 16, 20, 24, 32, 40, 48, 64 (dp) |
 | Radius | xs 4 · sm 6 · md 8 · lg 12 · xl 16 · xxl 28 (M3 large FAB/sheets) · full |
 | Motion | fast 120 ms · base 200 ms · slow 300 ms; standard `cubic-bezier(.2,0,0,1)`; emphasized M3 curves for sheets |
 | Icons | Material Symbols Rounded, weight 400, fill 0 (fill 1 for selected nav) — mapping table in admin-web §2.7 |
+
+**Pay state (v1.1, field-api `PayState`, ADR-035):** the colour of a customer's map pin and pay-state badge, worst first: bad = tagged bad or the full term is over with money left (glyph `!`); missedMany = 2+ installments missed (glyph = number missed); missedOne = one missed (glyph 1); dueToday = due today, nothing missed (dot); onTrack = everything due so far paid (check); paidOff = nothing left (check). The pin has the map-pin shape (round head, point on the spot), the pin colour as body with a 1.25 outline in the fg colour, a white face and the glyph in the fg colour; clusters take the worst state. admin-web uses these on its customer map since contract 1.14.0; the app's map still uses `status.*` glyph markers (§5.6) until it is moved to pay state.
 
 ## 3. Material 3 theme
 
