@@ -31,6 +31,7 @@ System journeys J-1…J-12 and the FR traceability matrix: `field-api/docs/07-te
 Devices (minimum set): **Xiaomi Redmi (MIUI/HyperOS, 2–3 GB)**, **Samsung Galaxy A0x/A1x**, **Realme or Oppo (ColorOS)**, **Vivo (Funtouch)**, **one Android 8/9 device**, **one Android 14/15 device**.
 
 **Install & onboarding**
+- [ ] Live build (`Live API (release)` or `staff-app-live-apk`): no demo ribbon, login with a staff user from the admin panel, first sync pulls the staff's customers; a second phone on the same account waits for approval under Devices
 - [ ] Fresh install, permissions primer, "While using the app" location flow works per Android version (no background permission asked)
 - [ ] Battery optimisation guide opens the correct OEM settings page
 - [ ] Bangla renders correctly everywhere (conjuncts ক্ষ ঙ্গ ন্ত্র, reph, ya-phala, hasanta), no clipped matras at font scale 1.3

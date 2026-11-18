@@ -1,4 +1,4 @@
-.PHONY: gen check test screenshots apk-demo
+.PHONY: gen check test screenshots apk-demo apk-live
 
 gen:
 	dart run build_runner build --delete-conflicting-outputs
@@ -14,3 +14,6 @@ screenshots:
 
 apk-demo:
 	flutter build apk --release --dart-define=APP_ENV=demo
+
+apk-live:
+	flutter build apk --release --dart-define-from-file=config/live.env

@@ -1,5 +1,15 @@
 # Changelog — staff-app
 
+## [0.10.1] — 2026-11-18
+### Added
+- Build against the live test server without typing flags (owner request 2026-11-18, ADR-M16): `config/live.env` is committed with public values only (`APP_ENV=staging`, `API_BASE_URL=https://howlader-apps-api.vercel.app/api/v1`, `API_MODE=live`). No token, key or password is in it or anywhere in the app; the app talks only to field-api, never to the ERP.
+- Android Studio run configurations in `.run/`: **Live API** (debug), **Live API (release)** and **Demo (no server)**. They appear in the run list after `git pull`.
+- `make apk-live` and the README command `flutter build apk --release --dart-define-from-file=config/live.env`; CI uploads a live APK (`staff-app-live-apk`) beside the demo APK.
+- Guard test `test/core/live_config_test.dart`: committed `config/*.env` files may hold only `APP_ENV`, `API_BASE_URL` and `API_MODE`, nothing that looks like a secret, an `https` field-api URL ending in `/api/v1` and never the ERP; every `.run` configuration uses a file that exists; Android does not allow cleartext HTTP.
+### Changed
+- `Env.fromValues` holds the define rules (used by `Env.fromDefines` and the guard test); behaviour is unchanged and a build without defines is still the demo.
+- README: how to run against the live server, and the two admin steps before the first login (staff user with linked ERP employee; minimum app version `0.10.0` while the app is below 1.0.0, because the server default `1.0.0` shows "update required").
+
 ## [0.10.0] — 2026-11-18
 ### Added
 - Contract pinned to field-api 1.13.0, the shape of the real Laravel ERP (field-api ADR-033, master FR-ERP-006; field-api PR #10, merge c69ed55). The ERP itself was not changed.

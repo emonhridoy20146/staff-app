@@ -20,7 +20,7 @@ Read first: `docs/01-system-analysis.md`, `docs/02-requirements.md`, `docs/03-de
 10. **Design tokens:** use `core/theme` tokens and `StatusColors`; no raw colours or ad-hoc sizes; targets ≥ 48 dp; body ≥ 16 sp. Token changes must match `admin-web/docs/03-design-guide.md §2`.
 11. **Strings:** all user-visible text in `app_bn.arb` + `app_en.arb` (`tool/check_l10n.dart`); Bangla default.
 12. **Time:** use `core/time/clock.dart` (server-offset aware, Dhaka); no `DateTime.now()` in domain/application code.
-13. **Secrets:** none in the repo; `--dart-define-from-file` with `.env` files that are git-ignored; `.env.example` names only; signing keys only in CI secrets.
+13. **Secrets:** none in the repo; `--dart-define-from-file` with `.env` files that are git-ignored; `.env.example` names only; signing keys only in CI secrets. The one committed config, `config/live.env`, holds public values only (URL, env, mode; ADR-M16) and `test/core/live_config_test.dart` guards it.
 14. Microfinance: reserved — do not build.
 
 ## 3. Workflow for every change
