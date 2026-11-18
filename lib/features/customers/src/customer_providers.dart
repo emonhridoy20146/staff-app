@@ -32,6 +32,11 @@ final customerPlansProvider = StreamProvider.family<List<PlanWithSchedule>, Stri
   (ref, id) => ref.watch(customerRepositoryProvider).watchPlans(id),
 );
 
+/// Plans (invoices) of a customer that already have an ERP payment today (OD-27).
+final plansPaidTodayProvider = StreamProvider.family<Set<String>, String>(
+  (ref, id) => ref.watch(customerRepositoryProvider).watchPlansPaidOn(id, ref.watch(todayProvider)),
+);
+
 final customerPaymentsProvider = StreamProvider.family<List<ErpPaymentRow>, String>(
   (ref, id) => ref.watch(customerRepositoryProvider).watchPayments(id),
 );

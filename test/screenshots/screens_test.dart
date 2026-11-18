@@ -175,6 +175,24 @@ void main() {
   testWidgets('23 leaderboard', (t) async => _shot(t, await _ready(t), '23-leaderboard', go: '/leaderboard'));
   testWidgets('14 set location', (t) async => _shot(t, await _ready(t), '14-set-location', go: '/customers/c-1010/pin'));
   testWidgets('24 notices', (t) async => _shot(t, await _ready(t), '24-notices', go: '/notices'));
+  // Contract 1.13.0, the real ERP shape: risk grade, detailed address, directions, invoice with products and a late fee.
+  testWidgets('29 customer ERP details', (t) async => _shot(t, await _ready(t), '29-customer-erp', go: '/customers/c-1021'));
+  testWidgets('30 customer invoice', (t) async {
+    final h = await _ready(t);
+    await _shot(t, h, '30-customer-invoice', go: '/customers/c-1021', then: () async {
+      await t.scrollUntilVisible(find.text('পণ্য'), 300, scrollable: find.byType(Scrollable).first);
+      await t.ensureVisible(find.text('পণ্য'));
+      await t.drag(find.byType(Scrollable).first, const Offset(0, 330));
+    });
+  });
+  testWidgets('31 collect same-day warning', (t) async {
+    final h = await _ready(t, setup: (h) async {
+      final c = (await h.read(customerRepositoryProvider).getOne('c-1005'))!;
+      await h.read(recordCollectionProvider)(
+          CollectionInput(customerId: c.id, customerName: c.row.nameBn, customerCode: c.code, amountPoisha: 100000, method: PaymentMethod.cash, erpPlanId: 'P-2404', outstandingPoisha: c.outstanding));
+    });
+    await _shot(t, h, '31-collect-same-day', go: '/collect/c-1005');
+  });
   testWidgets('25 notice detail', (t) async => _shot(t, await _ready(t), '25-notice-detail', go: '/notices/bc-1'));
   testWidgets('26 my leave', (t) async => _shot(t, await _ready(t), '26-leave', go: '/attendance/leave'));
   testWidgets('27 ask for leave', (t) async => _shot(t, await _ready(t), '27-leave-request', go: '/attendance/leave/new'));

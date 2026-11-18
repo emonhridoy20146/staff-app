@@ -228,6 +228,7 @@ class _Header extends ConsumerWidget {
             children: [
               for (final b in badges)
                 StatusBadge(b, label: b == AppStatus.overdue ? l.statusOverdueDays(f.num(customer.row.daysOverdue)) : null),
+              if (customer.erpRisk != null) _ErpRiskChip(risk: customer.erpRisk!),
             ],
           ),
           const SizedBox(height: Space.s16),
@@ -237,10 +238,31 @@ class _Header extends ConsumerWidget {
               children: [
                 Padding(padding: const EdgeInsets.only(top: 2), child: Icon(Icons.place_rounded, size: 20, color: cs.onSurfaceVariant)),
                 const SizedBox(width: Space.s8),
-                Expanded(child: Text(customer.address!, style: t.bodyMedium)),
+                Expanded(
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Text(customer.address!, style: t.bodyMedium),
+                    if (customer.detailedAddress != null) Text(customer.detailedAddress!, style: t.bodyMedium!.copyWith(color: cs.onSurfaceVariant)),
+                  ]),
+                ),
                 if (customer.distanceM != null) Text(f.distance(customer.distanceM!), style: t.labelMedium!.copyWith(color: cs.onSurfaceVariant)),
               ],
             ),
+          if (customer.directions != null) ...[
+            const SizedBox(height: Space.s8),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(padding: const EdgeInsets.only(top: 2), child: Icon(Icons.signpost_rounded, size: 20, color: cs.onSurfaceVariant)),
+                const SizedBox(width: Space.s8),
+                Expanded(
+                  child: Semantics(
+                    label: l.detailDirections,
+                    child: Text(customer.directions!, style: t.bodyMedium),
+                  ),
+                ),
+              ],
+            ),
+          ],
           const SizedBox(height: Space.s16),
           Row(
             children: [
@@ -488,19 +510,31 @@ class _Plans extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Padding(padding: const EdgeInsets.fromLTRB(Space.s16, Space.s16, Space.s16, Space.s4), child: Text(l.detailPlans, style: t.titleSmall)),
-          for (final p in plans)
+          for (final p in sortedPlans(plans))
             Theme(
               data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
               child: ExpansionTile(
                 initiallyExpanded: plans.length == 1,
                 tilePadding: const EdgeInsets.symmetric(horizontal: Space.s16),
                 childrenPadding: const EdgeInsets.fromLTRB(Space.s16, 0, Space.s16, Space.s12),
-                title: Text(p.plan.product, style: t.titleMedium),
+                expandedCrossAxisAlignment: CrossAxisAlignment.stretch,
+                title: Text(p.plan.product, style: t.titleMedium!.copyWith(color: p.closedInErp ? cs.onSurfaceVariant : null)),
                 subtitle: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: Space.s4),
-                    Text(l.detailInstallments(f.num(p.paidCount), f.num(p.plan.installmentCount)), style: t.bodySmall!.copyWith(color: cs.onSurfaceVariant)),
+                    Text(
+                      [
+                        if (p.plan.invoiceNo != null) p.plan.invoiceNo!,
+                        if (p.credit) l.planCreditSale else l.detailInstallments(f.num(p.paidCount), f.num(p.shownCount)),
+                        ?_frequency(l, f, p),
+                      ].join(' · '),
+                      style: t.bodySmall!.copyWith(color: cs.onSurfaceVariant),
+                    ),
+                    if (p.closedInErp) ...[
+                      const SizedBox(height: Space.s4),
+                      Text(p.plan.status == 'cancelled' ? l.planCancelled : l.planReturned, style: t.bodySmall!.copyWith(color: context.semanticColors.warning.fg, fontWeight: FontWeight.w600)),
+                    ],
                     const SizedBox(height: Space.s8),
                     ClipRRect(
                       borderRadius: const BorderRadius.all(Radius.circular(Radii.full)),
@@ -510,10 +544,24 @@ class _Plans extends ConsumerWidget {
                       ),
                     ),
                     const SizedBox(height: Space.s4),
-                    Text(l.detailFinalDue(f.date(p.plan.finalDueDate, withYear: true)), style: t.bodySmall!.copyWith(color: cs.onSurfaceVariant)),
+                    Text(
+                      [
+                        p.credit ? l.planPayBy(f.date(p.plan.finalDueDate, withYear: true)) : l.detailFinalDue(f.date(p.plan.finalDueDate, withYear: true)),
+                        if (p.plan.writtenOffPoisha > 0) l.planWrittenOff(f.money(p.plan.writtenOffPoisha)),
+                      ].join(' · '),
+                      style: t.bodySmall!.copyWith(color: cs.onSurfaceVariant),
+                    ),
                   ],
                 ),
-                children: [for (final s in p.schedule) _ScheduleRow(line: s)],
+                children: [
+                  if (p.items.isNotEmpty || p.guarantor != null) _PlanFacts(plan: p),
+                  for (final s in p.visibleSchedule) _ScheduleRow(line: s),
+                  if (p.rolledCount > 0)
+                    Padding(
+                      padding: const EdgeInsets.only(top: Space.s4),
+                      child: Text(l.planRolledHidden(f.num(p.rolledCount)), style: t.bodySmall!.copyWith(color: cs.onSurfaceVariant)),
+                    ),
+                ],
               ),
             ),
         ],
@@ -548,7 +596,14 @@ class _ScheduleRow extends ConsumerWidget {
         Expanded(child: Text(f.date(line.dueDate, withYear: true), style: t.bodyMedium)),
         Text(label, style: t.labelMedium!.copyWith(color: color)),
         const SizedBox(width: Space.s12),
-        SizedBox(width: 92, child: MoneyText(line.amountPoisha, style: t.bodyMedium, textAlign: TextAlign.end)),
+        SizedBox(
+          width: 92,
+          child: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.end, children: [
+            MoneyText(line.amountPoisha, style: t.bodyMedium, textAlign: TextAlign.end),
+            if (line.lateFeePoisha > 0)
+              Text(l.scheduleLateFee(f.money(line.lateFeePoisha)), style: t.labelSmall!.copyWith(color: cs.onSurfaceVariant), textAlign: TextAlign.end, maxLines: 1, overflow: TextOverflow.ellipsis),
+          ]),
+        ),
       ]),
     );
   }
@@ -601,7 +656,14 @@ class _TimelineState extends ConsumerState<_Timeline> {
           at: DateTime.parse('${p.date}T06:00:00Z'),
           icon: Icons.receipt_long_rounded,
           title: l.timelineErpPayment(f.money(p.amountPoisha), p.source == 'office' ? l.timelineOffice : l.timelineField),
-          subtitle: [f.date(p.date, withYear: true), if (p.receiptNo != null) p.receiptNo!].join(' · '),
+          subtitle: [
+            f.date(p.date, withYear: true),
+            if (p.receiptNo != null) p.receiptNo!,
+            if (p.methodLabel != null) p.methodLabel!,
+            if (p.collectorName != null) l.timelineCollector(p.collectorName!),
+            if (p.advance) l.timelineAdvance,
+            if (p.reversed) l.timelineRemoved,
+          ].join(' · '),
         ),
       for (final v in _sources.values) ...v,
     ]..sort((a, b) => b.at.compareTo(a.at));
@@ -656,6 +718,95 @@ class _TimelineState extends ConsumerState<_Timeline> {
               ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Collectable plans first (newest final due first); returned and cancelled ones last.
+List<PlanWithSchedule> sortedPlans(List<PlanWithSchedule> plans) => [...plans]
+  ..sort((a, b) {
+    final c = (a.closedInErp ? 1 : 0).compareTo(b.closedInErp ? 1 : 0);
+    return c != 0 ? c : b.plan.finalDueDate.compareTo(a.plan.finalDueDate);
+  });
+
+String? _frequency(AppLocalizations l, Fmt f, PlanWithSchedule p) {
+  if (p.credit) return null;
+  return switch (p.plan.frequency) {
+    'monthly' => l.planFreqMonthly,
+    'weekly' => l.planFreqWeekly,
+    'daily' => l.planFreqDaily,
+    'custom' => p.plan.customDays != null ? l.planFreqEveryNDays(f.num(p.plan.customDays!)) : l.planFreqCustom,
+    _ => null,
+  };
+}
+
+/// Products (with serial numbers) and the guarantor of this sale.
+class _PlanFacts extends ConsumerWidget {
+  const _PlanFacts({required this.plan});
+  final PlanWithSchedule plan;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context);
+    final t = Theme.of(context).textTheme;
+    final cs = Theme.of(context).colorScheme;
+    final f = ref.watch(fmtProvider);
+    final g = plan.guarantor;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: Space.s8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (plan.items.isNotEmpty) ...[
+            Text(l.planProducts, style: t.labelMedium!.copyWith(color: cs.onSurfaceVariant)),
+            for (final it in plan.items) ...[
+              Text(it.label, style: t.bodyMedium),
+              if (it.serials.isNotEmpty) Text(l.planSerials(it.serials.join(', ')), style: AppTheme.mono(t.bodySmall!.copyWith(color: cs.onSurfaceVariant))),
+            ],
+            const SizedBox(height: Space.s8),
+          ],
+          if (g != null) ...[
+            Text(l.planGuarantor, style: t.labelMedium!.copyWith(color: cs.onSurfaceVariant)),
+            Text([if (g.name.isNotEmpty) g.name, if (g.phone.isNotEmpty) f.num(g.phone)].join(' · '), style: t.bodyMedium),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+/// The ERP's own risk grade, read only, next to the status badges.
+class _ErpRiskChip extends StatelessWidget {
+  const _ErpRiskChip({required this.risk});
+  final ErpRisk risk;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final t = Theme.of(context).textTheme;
+    final cs = Theme.of(context).colorScheme;
+    final sem = context.semanticColors;
+    final (fg, bg, level) = switch (risk.levelKey) {
+      'high' => (sem.danger.fg, sem.danger.bg, l.erpRiskHigh),
+      'medium' => (sem.warning.fg, sem.warning.bg, l.erpRiskMedium),
+      'low' => (cs.onSurfaceVariant, cs.surfaceContainerHighest, l.erpRiskLow),
+      _ => (cs.onSurfaceVariant, cs.surfaceContainerHighest, null),
+    };
+    final label = l.erpRiskBadge(risk.grade);
+    // Medium and high risk say so in words too (colour + icon + label); low risk shows the grade only.
+    final shown = risk.levelKey == 'medium' || risk.levelKey == 'high' ? '$label · $level' : label;
+    return Semantics(
+      label: [label, ?level].join(', '),
+      excludeSemantics: true,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: Space.s8, vertical: Space.s4),
+        decoration: BoxDecoration(color: bg, borderRadius: Radii.brSm),
+        child: Row(mainAxisSize: MainAxisSize.min, children: [
+          Icon(Icons.speed_rounded, size: 16, color: fg),
+          const SizedBox(width: Space.s4),
+          Text(shown, style: t.labelMedium!.copyWith(color: fg, fontWeight: FontWeight.w600)),
+        ]),
       ),
     );
   }

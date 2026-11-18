@@ -366,6 +366,39 @@ class $CustomersTable extends Customers
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _detailedAddressMeta = const VerificationMeta(
+    'detailedAddress',
+  );
+  @override
+  late final GeneratedColumn<String> detailedAddress = GeneratedColumn<String>(
+    'detailed_address',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _directionsMeta = const VerificationMeta(
+    'directions',
+  );
+  @override
+  late final GeneratedColumn<String> directions = GeneratedColumn<String>(
+    'directions',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _erpRiskJsonMeta = const VerificationMeta(
+    'erpRiskJson',
+  );
+  @override
+  late final GeneratedColumn<String> erpRiskJson = GeneratedColumn<String>(
+    'erp_risk_json',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _searchTextMeta = const VerificationMeta(
     'searchText',
   );
@@ -424,6 +457,9 @@ class $CustomersTable extends Customers
     assigneeId,
     erpFetchedAt,
     guarantorJson,
+    detailedAddress,
+    directions,
+    erpRiskJson,
     searchText,
     version,
   ];
@@ -688,6 +724,30 @@ class $CustomersTable extends Customers
         ),
       );
     }
+    if (data.containsKey('detailed_address')) {
+      context.handle(
+        _detailedAddressMeta,
+        detailedAddress.isAcceptableOrUnknown(
+          data['detailed_address']!,
+          _detailedAddressMeta,
+        ),
+      );
+    }
+    if (data.containsKey('directions')) {
+      context.handle(
+        _directionsMeta,
+        directions.isAcceptableOrUnknown(data['directions']!, _directionsMeta),
+      );
+    }
+    if (data.containsKey('erp_risk_json')) {
+      context.handle(
+        _erpRiskJsonMeta,
+        erpRiskJson.isAcceptableOrUnknown(
+          data['erp_risk_json']!,
+          _erpRiskJsonMeta,
+        ),
+      );
+    }
     if (data.containsKey('search_text')) {
       context.handle(
         _searchTextMeta,
@@ -837,6 +897,18 @@ class $CustomersTable extends Customers
         DriftSqlType.string,
         data['${effectivePrefix}guarantor_json'],
       ),
+      detailedAddress: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}detailed_address'],
+      ),
+      directions: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}directions'],
+      ),
+      erpRiskJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}erp_risk_json'],
+      ),
       searchText: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}search_text'],
@@ -887,6 +959,9 @@ class CustomerRow extends DataClass implements Insertable<CustomerRow> {
   final String? assigneeId;
   final DateTime? erpFetchedAt;
   final String? guarantorJson;
+  final String? detailedAddress;
+  final String? directions;
+  final String? erpRiskJson;
   final String searchText;
   final int version;
   const CustomerRow({
@@ -922,6 +997,9 @@ class CustomerRow extends DataClass implements Insertable<CustomerRow> {
     this.assigneeId,
     this.erpFetchedAt,
     this.guarantorJson,
+    this.detailedAddress,
+    this.directions,
+    this.erpRiskJson,
     required this.searchText,
     required this.version,
   });
@@ -998,6 +1076,15 @@ class CustomerRow extends DataClass implements Insertable<CustomerRow> {
     if (!nullToAbsent || guarantorJson != null) {
       map['guarantor_json'] = Variable<String>(guarantorJson);
     }
+    if (!nullToAbsent || detailedAddress != null) {
+      map['detailed_address'] = Variable<String>(detailedAddress);
+    }
+    if (!nullToAbsent || directions != null) {
+      map['directions'] = Variable<String>(directions);
+    }
+    if (!nullToAbsent || erpRiskJson != null) {
+      map['erp_risk_json'] = Variable<String>(erpRiskJson);
+    }
     map['search_text'] = Variable<String>(searchText);
     map['version'] = Variable<int>(version);
     return map;
@@ -1071,6 +1158,15 @@ class CustomerRow extends DataClass implements Insertable<CustomerRow> {
       guarantorJson: guarantorJson == null && nullToAbsent
           ? const Value.absent()
           : Value(guarantorJson),
+      detailedAddress: detailedAddress == null && nullToAbsent
+          ? const Value.absent()
+          : Value(detailedAddress),
+      directions: directions == null && nullToAbsent
+          ? const Value.absent()
+          : Value(directions),
+      erpRiskJson: erpRiskJson == null && nullToAbsent
+          ? const Value.absent()
+          : Value(erpRiskJson),
       searchText: Value(searchText),
       version: Value(version),
     );
@@ -1116,6 +1212,9 @@ class CustomerRow extends DataClass implements Insertable<CustomerRow> {
       assigneeId: serializer.fromJson<String?>(json['assigneeId']),
       erpFetchedAt: serializer.fromJson<DateTime?>(json['erpFetchedAt']),
       guarantorJson: serializer.fromJson<String?>(json['guarantorJson']),
+      detailedAddress: serializer.fromJson<String?>(json['detailedAddress']),
+      directions: serializer.fromJson<String?>(json['directions']),
+      erpRiskJson: serializer.fromJson<String?>(json['erpRiskJson']),
       searchText: serializer.fromJson<String>(json['searchText']),
       version: serializer.fromJson<int>(json['version']),
     );
@@ -1156,6 +1255,9 @@ class CustomerRow extends DataClass implements Insertable<CustomerRow> {
       'assigneeId': serializer.toJson<String?>(assigneeId),
       'erpFetchedAt': serializer.toJson<DateTime?>(erpFetchedAt),
       'guarantorJson': serializer.toJson<String?>(guarantorJson),
+      'detailedAddress': serializer.toJson<String?>(detailedAddress),
+      'directions': serializer.toJson<String?>(directions),
+      'erpRiskJson': serializer.toJson<String?>(erpRiskJson),
       'searchText': serializer.toJson<String>(searchText),
       'version': serializer.toJson<int>(version),
     };
@@ -1194,6 +1296,9 @@ class CustomerRow extends DataClass implements Insertable<CustomerRow> {
     Value<String?> assigneeId = const Value.absent(),
     Value<DateTime?> erpFetchedAt = const Value.absent(),
     Value<String?> guarantorJson = const Value.absent(),
+    Value<String?> detailedAddress = const Value.absent(),
+    Value<String?> directions = const Value.absent(),
+    Value<String?> erpRiskJson = const Value.absent(),
     String? searchText,
     int? version,
   }) => CustomerRow(
@@ -1244,6 +1349,11 @@ class CustomerRow extends DataClass implements Insertable<CustomerRow> {
     guarantorJson: guarantorJson.present
         ? guarantorJson.value
         : this.guarantorJson,
+    detailedAddress: detailedAddress.present
+        ? detailedAddress.value
+        : this.detailedAddress,
+    directions: directions.present ? directions.value : this.directions,
+    erpRiskJson: erpRiskJson.present ? erpRiskJson.value : this.erpRiskJson,
     searchText: searchText ?? this.searchText,
     version: version ?? this.version,
   );
@@ -1319,6 +1429,15 @@ class CustomerRow extends DataClass implements Insertable<CustomerRow> {
       guarantorJson: data.guarantorJson.present
           ? data.guarantorJson.value
           : this.guarantorJson,
+      detailedAddress: data.detailedAddress.present
+          ? data.detailedAddress.value
+          : this.detailedAddress,
+      directions: data.directions.present
+          ? data.directions.value
+          : this.directions,
+      erpRiskJson: data.erpRiskJson.present
+          ? data.erpRiskJson.value
+          : this.erpRiskJson,
       searchText: data.searchText.present
           ? data.searchText.value
           : this.searchText,
@@ -1361,6 +1480,9 @@ class CustomerRow extends DataClass implements Insertable<CustomerRow> {
           ..write('assigneeId: $assigneeId, ')
           ..write('erpFetchedAt: $erpFetchedAt, ')
           ..write('guarantorJson: $guarantorJson, ')
+          ..write('detailedAddress: $detailedAddress, ')
+          ..write('directions: $directions, ')
+          ..write('erpRiskJson: $erpRiskJson, ')
           ..write('searchText: $searchText, ')
           ..write('version: $version')
           ..write(')'))
@@ -1401,6 +1523,9 @@ class CustomerRow extends DataClass implements Insertable<CustomerRow> {
     assigneeId,
     erpFetchedAt,
     guarantorJson,
+    detailedAddress,
+    directions,
+    erpRiskJson,
     searchText,
     version,
   ]);
@@ -1440,6 +1565,9 @@ class CustomerRow extends DataClass implements Insertable<CustomerRow> {
           other.assigneeId == this.assigneeId &&
           other.erpFetchedAt == this.erpFetchedAt &&
           other.guarantorJson == this.guarantorJson &&
+          other.detailedAddress == this.detailedAddress &&
+          other.directions == this.directions &&
+          other.erpRiskJson == this.erpRiskJson &&
           other.searchText == this.searchText &&
           other.version == this.version);
 }
@@ -1477,6 +1605,9 @@ class CustomersCompanion extends UpdateCompanion<CustomerRow> {
   final Value<String?> assigneeId;
   final Value<DateTime?> erpFetchedAt;
   final Value<String?> guarantorJson;
+  final Value<String?> detailedAddress;
+  final Value<String?> directions;
+  final Value<String?> erpRiskJson;
   final Value<String> searchText;
   final Value<int> version;
   final Value<int> rowid;
@@ -1513,6 +1644,9 @@ class CustomersCompanion extends UpdateCompanion<CustomerRow> {
     this.assigneeId = const Value.absent(),
     this.erpFetchedAt = const Value.absent(),
     this.guarantorJson = const Value.absent(),
+    this.detailedAddress = const Value.absent(),
+    this.directions = const Value.absent(),
+    this.erpRiskJson = const Value.absent(),
     this.searchText = const Value.absent(),
     this.version = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -1550,6 +1684,9 @@ class CustomersCompanion extends UpdateCompanion<CustomerRow> {
     this.assigneeId = const Value.absent(),
     this.erpFetchedAt = const Value.absent(),
     this.guarantorJson = const Value.absent(),
+    this.detailedAddress = const Value.absent(),
+    this.directions = const Value.absent(),
+    this.erpRiskJson = const Value.absent(),
     this.searchText = const Value.absent(),
     this.version = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -1589,6 +1726,9 @@ class CustomersCompanion extends UpdateCompanion<CustomerRow> {
     Expression<String>? assigneeId,
     Expression<DateTime>? erpFetchedAt,
     Expression<String>? guarantorJson,
+    Expression<String>? detailedAddress,
+    Expression<String>? directions,
+    Expression<String>? erpRiskJson,
     Expression<String>? searchText,
     Expression<int>? version,
     Expression<int>? rowid,
@@ -1628,6 +1768,9 @@ class CustomersCompanion extends UpdateCompanion<CustomerRow> {
       if (assigneeId != null) 'assignee_id': assigneeId,
       if (erpFetchedAt != null) 'erp_fetched_at': erpFetchedAt,
       if (guarantorJson != null) 'guarantor_json': guarantorJson,
+      if (detailedAddress != null) 'detailed_address': detailedAddress,
+      if (directions != null) 'directions': directions,
+      if (erpRiskJson != null) 'erp_risk_json': erpRiskJson,
       if (searchText != null) 'search_text': searchText,
       if (version != null) 'version': version,
       if (rowid != null) 'rowid': rowid,
@@ -1667,6 +1810,9 @@ class CustomersCompanion extends UpdateCompanion<CustomerRow> {
     Value<String?>? assigneeId,
     Value<DateTime?>? erpFetchedAt,
     Value<String?>? guarantorJson,
+    Value<String?>? detailedAddress,
+    Value<String?>? directions,
+    Value<String?>? erpRiskJson,
     Value<String>? searchText,
     Value<int>? version,
     Value<int>? rowid,
@@ -1705,6 +1851,9 @@ class CustomersCompanion extends UpdateCompanion<CustomerRow> {
       assigneeId: assigneeId ?? this.assigneeId,
       erpFetchedAt: erpFetchedAt ?? this.erpFetchedAt,
       guarantorJson: guarantorJson ?? this.guarantorJson,
+      detailedAddress: detailedAddress ?? this.detailedAddress,
+      directions: directions ?? this.directions,
+      erpRiskJson: erpRiskJson ?? this.erpRiskJson,
       searchText: searchText ?? this.searchText,
       version: version ?? this.version,
       rowid: rowid ?? this.rowid,
@@ -1812,6 +1961,15 @@ class CustomersCompanion extends UpdateCompanion<CustomerRow> {
     if (guarantorJson.present) {
       map['guarantor_json'] = Variable<String>(guarantorJson.value);
     }
+    if (detailedAddress.present) {
+      map['detailed_address'] = Variable<String>(detailedAddress.value);
+    }
+    if (directions.present) {
+      map['directions'] = Variable<String>(directions.value);
+    }
+    if (erpRiskJson.present) {
+      map['erp_risk_json'] = Variable<String>(erpRiskJson.value);
+    }
     if (searchText.present) {
       map['search_text'] = Variable<String>(searchText.value);
     }
@@ -1859,6 +2017,9 @@ class CustomersCompanion extends UpdateCompanion<CustomerRow> {
           ..write('assigneeId: $assigneeId, ')
           ..write('erpFetchedAt: $erpFetchedAt, ')
           ..write('guarantorJson: $guarantorJson, ')
+          ..write('detailedAddress: $detailedAddress, ')
+          ..write('directions: $directions, ')
+          ..write('erpRiskJson: $erpRiskJson, ')
           ..write('searchText: $searchText, ')
           ..write('version: $version, ')
           ..write('rowid: $rowid')
@@ -2006,6 +2167,94 @@ class $PlansTable extends Plans with TableInfo<$PlansTable, PlanRow> {
     ),
     defaultValue: const Constant(false),
   );
+  static const VerificationMeta _kindMeta = const VerificationMeta('kind');
+  @override
+  late final GeneratedColumn<String> kind = GeneratedColumn<String>(
+    'kind',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('installment'),
+  );
+  static const VerificationMeta _invoiceNoMeta = const VerificationMeta(
+    'invoiceNo',
+  );
+  @override
+  late final GeneratedColumn<String> invoiceNo = GeneratedColumn<String>(
+    'invoice_no',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _saleDateMeta = const VerificationMeta(
+    'saleDate',
+  );
+  @override
+  late final GeneratedColumn<String> saleDate = GeneratedColumn<String>(
+    'sale_date',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _frequencyMeta = const VerificationMeta(
+    'frequency',
+  );
+  @override
+  late final GeneratedColumn<String> frequency = GeneratedColumn<String>(
+    'frequency',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _customDaysMeta = const VerificationMeta(
+    'customDays',
+  );
+  @override
+  late final GeneratedColumn<int> customDays = GeneratedColumn<int>(
+    'custom_days',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _itemsJsonMeta = const VerificationMeta(
+    'itemsJson',
+  );
+  @override
+  late final GeneratedColumn<String> itemsJson = GeneratedColumn<String>(
+    'items_json',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _guarantorJsonMeta = const VerificationMeta(
+    'guarantorJson',
+  );
+  @override
+  late final GeneratedColumn<String> guarantorJson = GeneratedColumn<String>(
+    'guarantor_json',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _writtenOffPoishaMeta = const VerificationMeta(
+    'writtenOffPoisha',
+  );
+  @override
+  late final GeneratedColumn<int> writtenOffPoisha = GeneratedColumn<int>(
+    'written_off_poisha',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     erpPlanId,
@@ -2020,6 +2269,14 @@ class $PlansTable extends Plans with TableInfo<$PlansTable, PlanRow> {
     outstandingPoisha,
     status,
     badSuggested,
+    kind,
+    invoiceNo,
+    saleDate,
+    frequency,
+    customDays,
+    itemsJson,
+    guarantorJson,
+    writtenOffPoisha,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -2143,6 +2400,60 @@ class $PlansTable extends Plans with TableInfo<$PlansTable, PlanRow> {
         ),
       );
     }
+    if (data.containsKey('kind')) {
+      context.handle(
+        _kindMeta,
+        kind.isAcceptableOrUnknown(data['kind']!, _kindMeta),
+      );
+    }
+    if (data.containsKey('invoice_no')) {
+      context.handle(
+        _invoiceNoMeta,
+        invoiceNo.isAcceptableOrUnknown(data['invoice_no']!, _invoiceNoMeta),
+      );
+    }
+    if (data.containsKey('sale_date')) {
+      context.handle(
+        _saleDateMeta,
+        saleDate.isAcceptableOrUnknown(data['sale_date']!, _saleDateMeta),
+      );
+    }
+    if (data.containsKey('frequency')) {
+      context.handle(
+        _frequencyMeta,
+        frequency.isAcceptableOrUnknown(data['frequency']!, _frequencyMeta),
+      );
+    }
+    if (data.containsKey('custom_days')) {
+      context.handle(
+        _customDaysMeta,
+        customDays.isAcceptableOrUnknown(data['custom_days']!, _customDaysMeta),
+      );
+    }
+    if (data.containsKey('items_json')) {
+      context.handle(
+        _itemsJsonMeta,
+        itemsJson.isAcceptableOrUnknown(data['items_json']!, _itemsJsonMeta),
+      );
+    }
+    if (data.containsKey('guarantor_json')) {
+      context.handle(
+        _guarantorJsonMeta,
+        guarantorJson.isAcceptableOrUnknown(
+          data['guarantor_json']!,
+          _guarantorJsonMeta,
+        ),
+      );
+    }
+    if (data.containsKey('written_off_poisha')) {
+      context.handle(
+        _writtenOffPoishaMeta,
+        writtenOffPoisha.isAcceptableOrUnknown(
+          data['written_off_poisha']!,
+          _writtenOffPoishaMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -2200,6 +2511,38 @@ class $PlansTable extends Plans with TableInfo<$PlansTable, PlanRow> {
         DriftSqlType.bool,
         data['${effectivePrefix}bad_suggested'],
       )!,
+      kind: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}kind'],
+      )!,
+      invoiceNo: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}invoice_no'],
+      ),
+      saleDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sale_date'],
+      ),
+      frequency: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}frequency'],
+      ),
+      customDays: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}custom_days'],
+      ),
+      itemsJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}items_json'],
+      ),
+      guarantorJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}guarantor_json'],
+      ),
+      writtenOffPoisha: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}written_off_poisha'],
+      )!,
     );
   }
 
@@ -2222,6 +2565,18 @@ class PlanRow extends DataClass implements Insertable<PlanRow> {
   final int outstandingPoisha;
   final String status;
   final bool badSuggested;
+
+  /// installment | credit
+  final String kind;
+  final String? invoiceNo;
+  final String? saleDate;
+
+  /// monthly | weekly | daily | custom (installment plans only)
+  final String? frequency;
+  final int? customDays;
+  final String? itemsJson;
+  final String? guarantorJson;
+  final int writtenOffPoisha;
   const PlanRow({
     required this.erpPlanId,
     required this.customerId,
@@ -2235,6 +2590,14 @@ class PlanRow extends DataClass implements Insertable<PlanRow> {
     required this.outstandingPoisha,
     required this.status,
     required this.badSuggested,
+    required this.kind,
+    this.invoiceNo,
+    this.saleDate,
+    this.frequency,
+    this.customDays,
+    this.itemsJson,
+    this.guarantorJson,
+    required this.writtenOffPoisha,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -2251,6 +2614,26 @@ class PlanRow extends DataClass implements Insertable<PlanRow> {
     map['outstanding_poisha'] = Variable<int>(outstandingPoisha);
     map['status'] = Variable<String>(status);
     map['bad_suggested'] = Variable<bool>(badSuggested);
+    map['kind'] = Variable<String>(kind);
+    if (!nullToAbsent || invoiceNo != null) {
+      map['invoice_no'] = Variable<String>(invoiceNo);
+    }
+    if (!nullToAbsent || saleDate != null) {
+      map['sale_date'] = Variable<String>(saleDate);
+    }
+    if (!nullToAbsent || frequency != null) {
+      map['frequency'] = Variable<String>(frequency);
+    }
+    if (!nullToAbsent || customDays != null) {
+      map['custom_days'] = Variable<int>(customDays);
+    }
+    if (!nullToAbsent || itemsJson != null) {
+      map['items_json'] = Variable<String>(itemsJson);
+    }
+    if (!nullToAbsent || guarantorJson != null) {
+      map['guarantor_json'] = Variable<String>(guarantorJson);
+    }
+    map['written_off_poisha'] = Variable<int>(writtenOffPoisha);
     return map;
   }
 
@@ -2268,6 +2651,26 @@ class PlanRow extends DataClass implements Insertable<PlanRow> {
       outstandingPoisha: Value(outstandingPoisha),
       status: Value(status),
       badSuggested: Value(badSuggested),
+      kind: Value(kind),
+      invoiceNo: invoiceNo == null && nullToAbsent
+          ? const Value.absent()
+          : Value(invoiceNo),
+      saleDate: saleDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(saleDate),
+      frequency: frequency == null && nullToAbsent
+          ? const Value.absent()
+          : Value(frequency),
+      customDays: customDays == null && nullToAbsent
+          ? const Value.absent()
+          : Value(customDays),
+      itemsJson: itemsJson == null && nullToAbsent
+          ? const Value.absent()
+          : Value(itemsJson),
+      guarantorJson: guarantorJson == null && nullToAbsent
+          ? const Value.absent()
+          : Value(guarantorJson),
+      writtenOffPoisha: Value(writtenOffPoisha),
     );
   }
 
@@ -2289,6 +2692,14 @@ class PlanRow extends DataClass implements Insertable<PlanRow> {
       outstandingPoisha: serializer.fromJson<int>(json['outstandingPoisha']),
       status: serializer.fromJson<String>(json['status']),
       badSuggested: serializer.fromJson<bool>(json['badSuggested']),
+      kind: serializer.fromJson<String>(json['kind']),
+      invoiceNo: serializer.fromJson<String?>(json['invoiceNo']),
+      saleDate: serializer.fromJson<String?>(json['saleDate']),
+      frequency: serializer.fromJson<String?>(json['frequency']),
+      customDays: serializer.fromJson<int?>(json['customDays']),
+      itemsJson: serializer.fromJson<String?>(json['itemsJson']),
+      guarantorJson: serializer.fromJson<String?>(json['guarantorJson']),
+      writtenOffPoisha: serializer.fromJson<int>(json['writtenOffPoisha']),
     );
   }
   @override
@@ -2307,6 +2718,14 @@ class PlanRow extends DataClass implements Insertable<PlanRow> {
       'outstandingPoisha': serializer.toJson<int>(outstandingPoisha),
       'status': serializer.toJson<String>(status),
       'badSuggested': serializer.toJson<bool>(badSuggested),
+      'kind': serializer.toJson<String>(kind),
+      'invoiceNo': serializer.toJson<String?>(invoiceNo),
+      'saleDate': serializer.toJson<String?>(saleDate),
+      'frequency': serializer.toJson<String?>(frequency),
+      'customDays': serializer.toJson<int?>(customDays),
+      'itemsJson': serializer.toJson<String?>(itemsJson),
+      'guarantorJson': serializer.toJson<String?>(guarantorJson),
+      'writtenOffPoisha': serializer.toJson<int>(writtenOffPoisha),
     };
   }
 
@@ -2323,6 +2742,14 @@ class PlanRow extends DataClass implements Insertable<PlanRow> {
     int? outstandingPoisha,
     String? status,
     bool? badSuggested,
+    String? kind,
+    Value<String?> invoiceNo = const Value.absent(),
+    Value<String?> saleDate = const Value.absent(),
+    Value<String?> frequency = const Value.absent(),
+    Value<int?> customDays = const Value.absent(),
+    Value<String?> itemsJson = const Value.absent(),
+    Value<String?> guarantorJson = const Value.absent(),
+    int? writtenOffPoisha,
   }) => PlanRow(
     erpPlanId: erpPlanId ?? this.erpPlanId,
     customerId: customerId ?? this.customerId,
@@ -2336,6 +2763,16 @@ class PlanRow extends DataClass implements Insertable<PlanRow> {
     outstandingPoisha: outstandingPoisha ?? this.outstandingPoisha,
     status: status ?? this.status,
     badSuggested: badSuggested ?? this.badSuggested,
+    kind: kind ?? this.kind,
+    invoiceNo: invoiceNo.present ? invoiceNo.value : this.invoiceNo,
+    saleDate: saleDate.present ? saleDate.value : this.saleDate,
+    frequency: frequency.present ? frequency.value : this.frequency,
+    customDays: customDays.present ? customDays.value : this.customDays,
+    itemsJson: itemsJson.present ? itemsJson.value : this.itemsJson,
+    guarantorJson: guarantorJson.present
+        ? guarantorJson.value
+        : this.guarantorJson,
+    writtenOffPoisha: writtenOffPoisha ?? this.writtenOffPoisha,
   );
   PlanRow copyWithCompanion(PlansCompanion data) {
     return PlanRow(
@@ -2367,6 +2804,20 @@ class PlanRow extends DataClass implements Insertable<PlanRow> {
       badSuggested: data.badSuggested.present
           ? data.badSuggested.value
           : this.badSuggested,
+      kind: data.kind.present ? data.kind.value : this.kind,
+      invoiceNo: data.invoiceNo.present ? data.invoiceNo.value : this.invoiceNo,
+      saleDate: data.saleDate.present ? data.saleDate.value : this.saleDate,
+      frequency: data.frequency.present ? data.frequency.value : this.frequency,
+      customDays: data.customDays.present
+          ? data.customDays.value
+          : this.customDays,
+      itemsJson: data.itemsJson.present ? data.itemsJson.value : this.itemsJson,
+      guarantorJson: data.guarantorJson.present
+          ? data.guarantorJson.value
+          : this.guarantorJson,
+      writtenOffPoisha: data.writtenOffPoisha.present
+          ? data.writtenOffPoisha.value
+          : this.writtenOffPoisha,
     );
   }
 
@@ -2384,7 +2835,15 @@ class PlanRow extends DataClass implements Insertable<PlanRow> {
           ..write('paidPoisha: $paidPoisha, ')
           ..write('outstandingPoisha: $outstandingPoisha, ')
           ..write('status: $status, ')
-          ..write('badSuggested: $badSuggested')
+          ..write('badSuggested: $badSuggested, ')
+          ..write('kind: $kind, ')
+          ..write('invoiceNo: $invoiceNo, ')
+          ..write('saleDate: $saleDate, ')
+          ..write('frequency: $frequency, ')
+          ..write('customDays: $customDays, ')
+          ..write('itemsJson: $itemsJson, ')
+          ..write('guarantorJson: $guarantorJson, ')
+          ..write('writtenOffPoisha: $writtenOffPoisha')
           ..write(')'))
         .toString();
   }
@@ -2403,6 +2862,14 @@ class PlanRow extends DataClass implements Insertable<PlanRow> {
     outstandingPoisha,
     status,
     badSuggested,
+    kind,
+    invoiceNo,
+    saleDate,
+    frequency,
+    customDays,
+    itemsJson,
+    guarantorJson,
+    writtenOffPoisha,
   );
   @override
   bool operator ==(Object other) =>
@@ -2419,7 +2886,15 @@ class PlanRow extends DataClass implements Insertable<PlanRow> {
           other.paidPoisha == this.paidPoisha &&
           other.outstandingPoisha == this.outstandingPoisha &&
           other.status == this.status &&
-          other.badSuggested == this.badSuggested);
+          other.badSuggested == this.badSuggested &&
+          other.kind == this.kind &&
+          other.invoiceNo == this.invoiceNo &&
+          other.saleDate == this.saleDate &&
+          other.frequency == this.frequency &&
+          other.customDays == this.customDays &&
+          other.itemsJson == this.itemsJson &&
+          other.guarantorJson == this.guarantorJson &&
+          other.writtenOffPoisha == this.writtenOffPoisha);
 }
 
 class PlansCompanion extends UpdateCompanion<PlanRow> {
@@ -2435,6 +2910,14 @@ class PlansCompanion extends UpdateCompanion<PlanRow> {
   final Value<int> outstandingPoisha;
   final Value<String> status;
   final Value<bool> badSuggested;
+  final Value<String> kind;
+  final Value<String?> invoiceNo;
+  final Value<String?> saleDate;
+  final Value<String?> frequency;
+  final Value<int?> customDays;
+  final Value<String?> itemsJson;
+  final Value<String?> guarantorJson;
+  final Value<int> writtenOffPoisha;
   final Value<int> rowid;
   const PlansCompanion({
     this.erpPlanId = const Value.absent(),
@@ -2449,6 +2932,14 @@ class PlansCompanion extends UpdateCompanion<PlanRow> {
     this.outstandingPoisha = const Value.absent(),
     this.status = const Value.absent(),
     this.badSuggested = const Value.absent(),
+    this.kind = const Value.absent(),
+    this.invoiceNo = const Value.absent(),
+    this.saleDate = const Value.absent(),
+    this.frequency = const Value.absent(),
+    this.customDays = const Value.absent(),
+    this.itemsJson = const Value.absent(),
+    this.guarantorJson = const Value.absent(),
+    this.writtenOffPoisha = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   PlansCompanion.insert({
@@ -2464,6 +2955,14 @@ class PlansCompanion extends UpdateCompanion<PlanRow> {
     required int outstandingPoisha,
     required String status,
     this.badSuggested = const Value.absent(),
+    this.kind = const Value.absent(),
+    this.invoiceNo = const Value.absent(),
+    this.saleDate = const Value.absent(),
+    this.frequency = const Value.absent(),
+    this.customDays = const Value.absent(),
+    this.itemsJson = const Value.absent(),
+    this.guarantorJson = const Value.absent(),
+    this.writtenOffPoisha = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : erpPlanId = Value(erpPlanId),
        customerId = Value(customerId),
@@ -2488,6 +2987,14 @@ class PlansCompanion extends UpdateCompanion<PlanRow> {
     Expression<int>? outstandingPoisha,
     Expression<String>? status,
     Expression<bool>? badSuggested,
+    Expression<String>? kind,
+    Expression<String>? invoiceNo,
+    Expression<String>? saleDate,
+    Expression<String>? frequency,
+    Expression<int>? customDays,
+    Expression<String>? itemsJson,
+    Expression<String>? guarantorJson,
+    Expression<int>? writtenOffPoisha,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -2504,6 +3011,14 @@ class PlansCompanion extends UpdateCompanion<PlanRow> {
       if (outstandingPoisha != null) 'outstanding_poisha': outstandingPoisha,
       if (status != null) 'status': status,
       if (badSuggested != null) 'bad_suggested': badSuggested,
+      if (kind != null) 'kind': kind,
+      if (invoiceNo != null) 'invoice_no': invoiceNo,
+      if (saleDate != null) 'sale_date': saleDate,
+      if (frequency != null) 'frequency': frequency,
+      if (customDays != null) 'custom_days': customDays,
+      if (itemsJson != null) 'items_json': itemsJson,
+      if (guarantorJson != null) 'guarantor_json': guarantorJson,
+      if (writtenOffPoisha != null) 'written_off_poisha': writtenOffPoisha,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -2521,6 +3036,14 @@ class PlansCompanion extends UpdateCompanion<PlanRow> {
     Value<int>? outstandingPoisha,
     Value<String>? status,
     Value<bool>? badSuggested,
+    Value<String>? kind,
+    Value<String?>? invoiceNo,
+    Value<String?>? saleDate,
+    Value<String?>? frequency,
+    Value<int?>? customDays,
+    Value<String?>? itemsJson,
+    Value<String?>? guarantorJson,
+    Value<int>? writtenOffPoisha,
     Value<int>? rowid,
   }) {
     return PlansCompanion(
@@ -2536,6 +3059,14 @@ class PlansCompanion extends UpdateCompanion<PlanRow> {
       outstandingPoisha: outstandingPoisha ?? this.outstandingPoisha,
       status: status ?? this.status,
       badSuggested: badSuggested ?? this.badSuggested,
+      kind: kind ?? this.kind,
+      invoiceNo: invoiceNo ?? this.invoiceNo,
+      saleDate: saleDate ?? this.saleDate,
+      frequency: frequency ?? this.frequency,
+      customDays: customDays ?? this.customDays,
+      itemsJson: itemsJson ?? this.itemsJson,
+      guarantorJson: guarantorJson ?? this.guarantorJson,
+      writtenOffPoisha: writtenOffPoisha ?? this.writtenOffPoisha,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -2579,6 +3110,30 @@ class PlansCompanion extends UpdateCompanion<PlanRow> {
     if (badSuggested.present) {
       map['bad_suggested'] = Variable<bool>(badSuggested.value);
     }
+    if (kind.present) {
+      map['kind'] = Variable<String>(kind.value);
+    }
+    if (invoiceNo.present) {
+      map['invoice_no'] = Variable<String>(invoiceNo.value);
+    }
+    if (saleDate.present) {
+      map['sale_date'] = Variable<String>(saleDate.value);
+    }
+    if (frequency.present) {
+      map['frequency'] = Variable<String>(frequency.value);
+    }
+    if (customDays.present) {
+      map['custom_days'] = Variable<int>(customDays.value);
+    }
+    if (itemsJson.present) {
+      map['items_json'] = Variable<String>(itemsJson.value);
+    }
+    if (guarantorJson.present) {
+      map['guarantor_json'] = Variable<String>(guarantorJson.value);
+    }
+    if (writtenOffPoisha.present) {
+      map['written_off_poisha'] = Variable<int>(writtenOffPoisha.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -2600,6 +3155,14 @@ class PlansCompanion extends UpdateCompanion<PlanRow> {
           ..write('outstandingPoisha: $outstandingPoisha, ')
           ..write('status: $status, ')
           ..write('badSuggested: $badSuggested, ')
+          ..write('kind: $kind, ')
+          ..write('invoiceNo: $invoiceNo, ')
+          ..write('saleDate: $saleDate, ')
+          ..write('frequency: $frequency, ')
+          ..write('customDays: $customDays, ')
+          ..write('itemsJson: $itemsJson, ')
+          ..write('guarantorJson: $guarantorJson, ')
+          ..write('writtenOffPoisha: $writtenOffPoisha, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -2689,6 +3252,31 @@ class $ScheduleLinesTable extends ScheduleLines
     ),
     defaultValue: const Constant(false),
   );
+  static const VerificationMeta _lateFeePoishaMeta = const VerificationMeta(
+    'lateFeePoisha',
+  );
+  @override
+  late final GeneratedColumn<int> lateFeePoisha = GeneratedColumn<int>(
+    'late_fee_poisha',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _rolledMeta = const VerificationMeta('rolled');
+  @override
+  late final GeneratedColumn<bool> rolled = GeneratedColumn<bool>(
+    'rolled',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("rolled" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     erpPlanId,
@@ -2698,6 +3286,8 @@ class $ScheduleLinesTable extends ScheduleLines
     paidPoisha,
     status,
     estimated,
+    lateFeePoisha,
+    rolled,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -2768,6 +3358,21 @@ class $ScheduleLinesTable extends ScheduleLines
         estimated.isAcceptableOrUnknown(data['estimated']!, _estimatedMeta),
       );
     }
+    if (data.containsKey('late_fee_poisha')) {
+      context.handle(
+        _lateFeePoishaMeta,
+        lateFeePoisha.isAcceptableOrUnknown(
+          data['late_fee_poisha']!,
+          _lateFeePoishaMeta,
+        ),
+      );
+    }
+    if (data.containsKey('rolled')) {
+      context.handle(
+        _rolledMeta,
+        rolled.isAcceptableOrUnknown(data['rolled']!, _rolledMeta),
+      );
+    }
     return context;
   }
 
@@ -2805,6 +3410,14 @@ class $ScheduleLinesTable extends ScheduleLines
         DriftSqlType.bool,
         data['${effectivePrefix}estimated'],
       )!,
+      lateFeePoisha: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}late_fee_poisha'],
+      )!,
+      rolled: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}rolled'],
+      )!,
     );
   }
 
@@ -2822,6 +3435,8 @@ class ScheduleLineRow extends DataClass implements Insertable<ScheduleLineRow> {
   final int paidPoisha;
   final String status;
   final bool estimated;
+  final int lateFeePoisha;
+  final bool rolled;
   const ScheduleLineRow({
     required this.erpPlanId,
     required this.seq,
@@ -2830,6 +3445,8 @@ class ScheduleLineRow extends DataClass implements Insertable<ScheduleLineRow> {
     required this.paidPoisha,
     required this.status,
     required this.estimated,
+    required this.lateFeePoisha,
+    required this.rolled,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -2841,6 +3458,8 @@ class ScheduleLineRow extends DataClass implements Insertable<ScheduleLineRow> {
     map['paid_poisha'] = Variable<int>(paidPoisha);
     map['status'] = Variable<String>(status);
     map['estimated'] = Variable<bool>(estimated);
+    map['late_fee_poisha'] = Variable<int>(lateFeePoisha);
+    map['rolled'] = Variable<bool>(rolled);
     return map;
   }
 
@@ -2853,6 +3472,8 @@ class ScheduleLineRow extends DataClass implements Insertable<ScheduleLineRow> {
       paidPoisha: Value(paidPoisha),
       status: Value(status),
       estimated: Value(estimated),
+      lateFeePoisha: Value(lateFeePoisha),
+      rolled: Value(rolled),
     );
   }
 
@@ -2869,6 +3490,8 @@ class ScheduleLineRow extends DataClass implements Insertable<ScheduleLineRow> {
       paidPoisha: serializer.fromJson<int>(json['paidPoisha']),
       status: serializer.fromJson<String>(json['status']),
       estimated: serializer.fromJson<bool>(json['estimated']),
+      lateFeePoisha: serializer.fromJson<int>(json['lateFeePoisha']),
+      rolled: serializer.fromJson<bool>(json['rolled']),
     );
   }
   @override
@@ -2882,6 +3505,8 @@ class ScheduleLineRow extends DataClass implements Insertable<ScheduleLineRow> {
       'paidPoisha': serializer.toJson<int>(paidPoisha),
       'status': serializer.toJson<String>(status),
       'estimated': serializer.toJson<bool>(estimated),
+      'lateFeePoisha': serializer.toJson<int>(lateFeePoisha),
+      'rolled': serializer.toJson<bool>(rolled),
     };
   }
 
@@ -2893,6 +3518,8 @@ class ScheduleLineRow extends DataClass implements Insertable<ScheduleLineRow> {
     int? paidPoisha,
     String? status,
     bool? estimated,
+    int? lateFeePoisha,
+    bool? rolled,
   }) => ScheduleLineRow(
     erpPlanId: erpPlanId ?? this.erpPlanId,
     seq: seq ?? this.seq,
@@ -2901,6 +3528,8 @@ class ScheduleLineRow extends DataClass implements Insertable<ScheduleLineRow> {
     paidPoisha: paidPoisha ?? this.paidPoisha,
     status: status ?? this.status,
     estimated: estimated ?? this.estimated,
+    lateFeePoisha: lateFeePoisha ?? this.lateFeePoisha,
+    rolled: rolled ?? this.rolled,
   );
   ScheduleLineRow copyWithCompanion(ScheduleLinesCompanion data) {
     return ScheduleLineRow(
@@ -2915,6 +3544,10 @@ class ScheduleLineRow extends DataClass implements Insertable<ScheduleLineRow> {
           : this.paidPoisha,
       status: data.status.present ? data.status.value : this.status,
       estimated: data.estimated.present ? data.estimated.value : this.estimated,
+      lateFeePoisha: data.lateFeePoisha.present
+          ? data.lateFeePoisha.value
+          : this.lateFeePoisha,
+      rolled: data.rolled.present ? data.rolled.value : this.rolled,
     );
   }
 
@@ -2927,7 +3560,9 @@ class ScheduleLineRow extends DataClass implements Insertable<ScheduleLineRow> {
           ..write('amountPoisha: $amountPoisha, ')
           ..write('paidPoisha: $paidPoisha, ')
           ..write('status: $status, ')
-          ..write('estimated: $estimated')
+          ..write('estimated: $estimated, ')
+          ..write('lateFeePoisha: $lateFeePoisha, ')
+          ..write('rolled: $rolled')
           ..write(')'))
         .toString();
   }
@@ -2941,6 +3576,8 @@ class ScheduleLineRow extends DataClass implements Insertable<ScheduleLineRow> {
     paidPoisha,
     status,
     estimated,
+    lateFeePoisha,
+    rolled,
   );
   @override
   bool operator ==(Object other) =>
@@ -2952,7 +3589,9 @@ class ScheduleLineRow extends DataClass implements Insertable<ScheduleLineRow> {
           other.amountPoisha == this.amountPoisha &&
           other.paidPoisha == this.paidPoisha &&
           other.status == this.status &&
-          other.estimated == this.estimated);
+          other.estimated == this.estimated &&
+          other.lateFeePoisha == this.lateFeePoisha &&
+          other.rolled == this.rolled);
 }
 
 class ScheduleLinesCompanion extends UpdateCompanion<ScheduleLineRow> {
@@ -2963,6 +3602,8 @@ class ScheduleLinesCompanion extends UpdateCompanion<ScheduleLineRow> {
   final Value<int> paidPoisha;
   final Value<String> status;
   final Value<bool> estimated;
+  final Value<int> lateFeePoisha;
+  final Value<bool> rolled;
   final Value<int> rowid;
   const ScheduleLinesCompanion({
     this.erpPlanId = const Value.absent(),
@@ -2972,6 +3613,8 @@ class ScheduleLinesCompanion extends UpdateCompanion<ScheduleLineRow> {
     this.paidPoisha = const Value.absent(),
     this.status = const Value.absent(),
     this.estimated = const Value.absent(),
+    this.lateFeePoisha = const Value.absent(),
+    this.rolled = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   ScheduleLinesCompanion.insert({
@@ -2982,6 +3625,8 @@ class ScheduleLinesCompanion extends UpdateCompanion<ScheduleLineRow> {
     required int paidPoisha,
     required String status,
     this.estimated = const Value.absent(),
+    this.lateFeePoisha = const Value.absent(),
+    this.rolled = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : erpPlanId = Value(erpPlanId),
        seq = Value(seq),
@@ -2997,6 +3642,8 @@ class ScheduleLinesCompanion extends UpdateCompanion<ScheduleLineRow> {
     Expression<int>? paidPoisha,
     Expression<String>? status,
     Expression<bool>? estimated,
+    Expression<int>? lateFeePoisha,
+    Expression<bool>? rolled,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -3007,6 +3654,8 @@ class ScheduleLinesCompanion extends UpdateCompanion<ScheduleLineRow> {
       if (paidPoisha != null) 'paid_poisha': paidPoisha,
       if (status != null) 'status': status,
       if (estimated != null) 'estimated': estimated,
+      if (lateFeePoisha != null) 'late_fee_poisha': lateFeePoisha,
+      if (rolled != null) 'rolled': rolled,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -3019,6 +3668,8 @@ class ScheduleLinesCompanion extends UpdateCompanion<ScheduleLineRow> {
     Value<int>? paidPoisha,
     Value<String>? status,
     Value<bool>? estimated,
+    Value<int>? lateFeePoisha,
+    Value<bool>? rolled,
     Value<int>? rowid,
   }) {
     return ScheduleLinesCompanion(
@@ -3029,6 +3680,8 @@ class ScheduleLinesCompanion extends UpdateCompanion<ScheduleLineRow> {
       paidPoisha: paidPoisha ?? this.paidPoisha,
       status: status ?? this.status,
       estimated: estimated ?? this.estimated,
+      lateFeePoisha: lateFeePoisha ?? this.lateFeePoisha,
+      rolled: rolled ?? this.rolled,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -3057,6 +3710,12 @@ class ScheduleLinesCompanion extends UpdateCompanion<ScheduleLineRow> {
     if (estimated.present) {
       map['estimated'] = Variable<bool>(estimated.value);
     }
+    if (lateFeePoisha.present) {
+      map['late_fee_poisha'] = Variable<int>(lateFeePoisha.value);
+    }
+    if (rolled.present) {
+      map['rolled'] = Variable<bool>(rolled.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -3073,6 +3732,8 @@ class ScheduleLinesCompanion extends UpdateCompanion<ScheduleLineRow> {
           ..write('paidPoisha: $paidPoisha, ')
           ..write('status: $status, ')
           ..write('estimated: $estimated, ')
+          ..write('lateFeePoisha: $lateFeePoisha, ')
+          ..write('rolled: $rolled, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -3180,6 +3841,55 @@ class $ErpPaymentsTable extends ErpPayments
     ),
     defaultValue: const Constant(false),
   );
+  static const VerificationMeta _methodLabelMeta = const VerificationMeta(
+    'methodLabel',
+  );
+  @override
+  late final GeneratedColumn<String> methodLabel = GeneratedColumn<String>(
+    'method_label',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _collectorNameMeta = const VerificationMeta(
+    'collectorName',
+  );
+  @override
+  late final GeneratedColumn<String> collectorName = GeneratedColumn<String>(
+    'collector_name',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _advanceMeta = const VerificationMeta(
+    'advance',
+  );
+  @override
+  late final GeneratedColumn<bool> advance = GeneratedColumn<bool>(
+    'advance',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("advance" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _discountPoishaMeta = const VerificationMeta(
+    'discountPoisha',
+  );
+  @override
+  late final GeneratedColumn<int> discountPoisha = GeneratedColumn<int>(
+    'discount_poisha',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     erpPaymentId,
@@ -3191,6 +3901,10 @@ class $ErpPaymentsTable extends ErpPayments
     source,
     receiptNo,
     reversed,
+    methodLabel,
+    collectorName,
+    advance,
+    discountPoisha,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -3276,6 +3990,39 @@ class $ErpPaymentsTable extends ErpPayments
         reversed.isAcceptableOrUnknown(data['reversed']!, _reversedMeta),
       );
     }
+    if (data.containsKey('method_label')) {
+      context.handle(
+        _methodLabelMeta,
+        methodLabel.isAcceptableOrUnknown(
+          data['method_label']!,
+          _methodLabelMeta,
+        ),
+      );
+    }
+    if (data.containsKey('collector_name')) {
+      context.handle(
+        _collectorNameMeta,
+        collectorName.isAcceptableOrUnknown(
+          data['collector_name']!,
+          _collectorNameMeta,
+        ),
+      );
+    }
+    if (data.containsKey('advance')) {
+      context.handle(
+        _advanceMeta,
+        advance.isAcceptableOrUnknown(data['advance']!, _advanceMeta),
+      );
+    }
+    if (data.containsKey('discount_poisha')) {
+      context.handle(
+        _discountPoishaMeta,
+        discountPoisha.isAcceptableOrUnknown(
+          data['discount_poisha']!,
+          _discountPoishaMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -3321,6 +4068,22 @@ class $ErpPaymentsTable extends ErpPayments
         DriftSqlType.bool,
         data['${effectivePrefix}reversed'],
       )!,
+      methodLabel: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}method_label'],
+      ),
+      collectorName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}collector_name'],
+      ),
+      advance: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}advance'],
+      )!,
+      discountPoisha: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}discount_poisha'],
+      )!,
     );
   }
 
@@ -3340,6 +4103,10 @@ class ErpPaymentRow extends DataClass implements Insertable<ErpPaymentRow> {
   final String source;
   final String? receiptNo;
   final bool reversed;
+  final String? methodLabel;
+  final String? collectorName;
+  final bool advance;
+  final int discountPoisha;
   const ErpPaymentRow({
     required this.erpPaymentId,
     required this.customerId,
@@ -3350,6 +4117,10 @@ class ErpPaymentRow extends DataClass implements Insertable<ErpPaymentRow> {
     required this.source,
     this.receiptNo,
     required this.reversed,
+    this.methodLabel,
+    this.collectorName,
+    required this.advance,
+    required this.discountPoisha,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -3367,6 +4138,14 @@ class ErpPaymentRow extends DataClass implements Insertable<ErpPaymentRow> {
       map['receipt_no'] = Variable<String>(receiptNo);
     }
     map['reversed'] = Variable<bool>(reversed);
+    if (!nullToAbsent || methodLabel != null) {
+      map['method_label'] = Variable<String>(methodLabel);
+    }
+    if (!nullToAbsent || collectorName != null) {
+      map['collector_name'] = Variable<String>(collectorName);
+    }
+    map['advance'] = Variable<bool>(advance);
+    map['discount_poisha'] = Variable<int>(discountPoisha);
     return map;
   }
 
@@ -3385,6 +4164,14 @@ class ErpPaymentRow extends DataClass implements Insertable<ErpPaymentRow> {
           ? const Value.absent()
           : Value(receiptNo),
       reversed: Value(reversed),
+      methodLabel: methodLabel == null && nullToAbsent
+          ? const Value.absent()
+          : Value(methodLabel),
+      collectorName: collectorName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(collectorName),
+      advance: Value(advance),
+      discountPoisha: Value(discountPoisha),
     );
   }
 
@@ -3403,6 +4190,10 @@ class ErpPaymentRow extends DataClass implements Insertable<ErpPaymentRow> {
       source: serializer.fromJson<String>(json['source']),
       receiptNo: serializer.fromJson<String?>(json['receiptNo']),
       reversed: serializer.fromJson<bool>(json['reversed']),
+      methodLabel: serializer.fromJson<String?>(json['methodLabel']),
+      collectorName: serializer.fromJson<String?>(json['collectorName']),
+      advance: serializer.fromJson<bool>(json['advance']),
+      discountPoisha: serializer.fromJson<int>(json['discountPoisha']),
     );
   }
   @override
@@ -3418,6 +4209,10 @@ class ErpPaymentRow extends DataClass implements Insertable<ErpPaymentRow> {
       'source': serializer.toJson<String>(source),
       'receiptNo': serializer.toJson<String?>(receiptNo),
       'reversed': serializer.toJson<bool>(reversed),
+      'methodLabel': serializer.toJson<String?>(methodLabel),
+      'collectorName': serializer.toJson<String?>(collectorName),
+      'advance': serializer.toJson<bool>(advance),
+      'discountPoisha': serializer.toJson<int>(discountPoisha),
     };
   }
 
@@ -3431,6 +4226,10 @@ class ErpPaymentRow extends DataClass implements Insertable<ErpPaymentRow> {
     String? source,
     Value<String?> receiptNo = const Value.absent(),
     bool? reversed,
+    Value<String?> methodLabel = const Value.absent(),
+    Value<String?> collectorName = const Value.absent(),
+    bool? advance,
+    int? discountPoisha,
   }) => ErpPaymentRow(
     erpPaymentId: erpPaymentId ?? this.erpPaymentId,
     customerId: customerId ?? this.customerId,
@@ -3441,6 +4240,12 @@ class ErpPaymentRow extends DataClass implements Insertable<ErpPaymentRow> {
     source: source ?? this.source,
     receiptNo: receiptNo.present ? receiptNo.value : this.receiptNo,
     reversed: reversed ?? this.reversed,
+    methodLabel: methodLabel.present ? methodLabel.value : this.methodLabel,
+    collectorName: collectorName.present
+        ? collectorName.value
+        : this.collectorName,
+    advance: advance ?? this.advance,
+    discountPoisha: discountPoisha ?? this.discountPoisha,
   );
   ErpPaymentRow copyWithCompanion(ErpPaymentsCompanion data) {
     return ErpPaymentRow(
@@ -3459,6 +4264,16 @@ class ErpPaymentRow extends DataClass implements Insertable<ErpPaymentRow> {
       source: data.source.present ? data.source.value : this.source,
       receiptNo: data.receiptNo.present ? data.receiptNo.value : this.receiptNo,
       reversed: data.reversed.present ? data.reversed.value : this.reversed,
+      methodLabel: data.methodLabel.present
+          ? data.methodLabel.value
+          : this.methodLabel,
+      collectorName: data.collectorName.present
+          ? data.collectorName.value
+          : this.collectorName,
+      advance: data.advance.present ? data.advance.value : this.advance,
+      discountPoisha: data.discountPoisha.present
+          ? data.discountPoisha.value
+          : this.discountPoisha,
     );
   }
 
@@ -3473,7 +4288,11 @@ class ErpPaymentRow extends DataClass implements Insertable<ErpPaymentRow> {
           ..write('method: $method, ')
           ..write('source: $source, ')
           ..write('receiptNo: $receiptNo, ')
-          ..write('reversed: $reversed')
+          ..write('reversed: $reversed, ')
+          ..write('methodLabel: $methodLabel, ')
+          ..write('collectorName: $collectorName, ')
+          ..write('advance: $advance, ')
+          ..write('discountPoisha: $discountPoisha')
           ..write(')'))
         .toString();
   }
@@ -3489,6 +4308,10 @@ class ErpPaymentRow extends DataClass implements Insertable<ErpPaymentRow> {
     source,
     receiptNo,
     reversed,
+    methodLabel,
+    collectorName,
+    advance,
+    discountPoisha,
   );
   @override
   bool operator ==(Object other) =>
@@ -3502,7 +4325,11 @@ class ErpPaymentRow extends DataClass implements Insertable<ErpPaymentRow> {
           other.method == this.method &&
           other.source == this.source &&
           other.receiptNo == this.receiptNo &&
-          other.reversed == this.reversed);
+          other.reversed == this.reversed &&
+          other.methodLabel == this.methodLabel &&
+          other.collectorName == this.collectorName &&
+          other.advance == this.advance &&
+          other.discountPoisha == this.discountPoisha);
 }
 
 class ErpPaymentsCompanion extends UpdateCompanion<ErpPaymentRow> {
@@ -3515,6 +4342,10 @@ class ErpPaymentsCompanion extends UpdateCompanion<ErpPaymentRow> {
   final Value<String> source;
   final Value<String?> receiptNo;
   final Value<bool> reversed;
+  final Value<String?> methodLabel;
+  final Value<String?> collectorName;
+  final Value<bool> advance;
+  final Value<int> discountPoisha;
   final Value<int> rowid;
   const ErpPaymentsCompanion({
     this.erpPaymentId = const Value.absent(),
@@ -3526,6 +4357,10 @@ class ErpPaymentsCompanion extends UpdateCompanion<ErpPaymentRow> {
     this.source = const Value.absent(),
     this.receiptNo = const Value.absent(),
     this.reversed = const Value.absent(),
+    this.methodLabel = const Value.absent(),
+    this.collectorName = const Value.absent(),
+    this.advance = const Value.absent(),
+    this.discountPoisha = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   ErpPaymentsCompanion.insert({
@@ -3538,6 +4373,10 @@ class ErpPaymentsCompanion extends UpdateCompanion<ErpPaymentRow> {
     required String source,
     this.receiptNo = const Value.absent(),
     this.reversed = const Value.absent(),
+    this.methodLabel = const Value.absent(),
+    this.collectorName = const Value.absent(),
+    this.advance = const Value.absent(),
+    this.discountPoisha = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : erpPaymentId = Value(erpPaymentId),
        customerId = Value(customerId),
@@ -3555,6 +4394,10 @@ class ErpPaymentsCompanion extends UpdateCompanion<ErpPaymentRow> {
     Expression<String>? source,
     Expression<String>? receiptNo,
     Expression<bool>? reversed,
+    Expression<String>? methodLabel,
+    Expression<String>? collectorName,
+    Expression<bool>? advance,
+    Expression<int>? discountPoisha,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -3567,6 +4410,10 @@ class ErpPaymentsCompanion extends UpdateCompanion<ErpPaymentRow> {
       if (source != null) 'source': source,
       if (receiptNo != null) 'receipt_no': receiptNo,
       if (reversed != null) 'reversed': reversed,
+      if (methodLabel != null) 'method_label': methodLabel,
+      if (collectorName != null) 'collector_name': collectorName,
+      if (advance != null) 'advance': advance,
+      if (discountPoisha != null) 'discount_poisha': discountPoisha,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -3581,6 +4428,10 @@ class ErpPaymentsCompanion extends UpdateCompanion<ErpPaymentRow> {
     Value<String>? source,
     Value<String?>? receiptNo,
     Value<bool>? reversed,
+    Value<String?>? methodLabel,
+    Value<String?>? collectorName,
+    Value<bool>? advance,
+    Value<int>? discountPoisha,
     Value<int>? rowid,
   }) {
     return ErpPaymentsCompanion(
@@ -3593,6 +4444,10 @@ class ErpPaymentsCompanion extends UpdateCompanion<ErpPaymentRow> {
       source: source ?? this.source,
       receiptNo: receiptNo ?? this.receiptNo,
       reversed: reversed ?? this.reversed,
+      methodLabel: methodLabel ?? this.methodLabel,
+      collectorName: collectorName ?? this.collectorName,
+      advance: advance ?? this.advance,
+      discountPoisha: discountPoisha ?? this.discountPoisha,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -3627,6 +4482,18 @@ class ErpPaymentsCompanion extends UpdateCompanion<ErpPaymentRow> {
     if (reversed.present) {
       map['reversed'] = Variable<bool>(reversed.value);
     }
+    if (methodLabel.present) {
+      map['method_label'] = Variable<String>(methodLabel.value);
+    }
+    if (collectorName.present) {
+      map['collector_name'] = Variable<String>(collectorName.value);
+    }
+    if (advance.present) {
+      map['advance'] = Variable<bool>(advance.value);
+    }
+    if (discountPoisha.present) {
+      map['discount_poisha'] = Variable<int>(discountPoisha.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -3645,6 +4512,10 @@ class ErpPaymentsCompanion extends UpdateCompanion<ErpPaymentRow> {
           ..write('source: $source, ')
           ..write('receiptNo: $receiptNo, ')
           ..write('reversed: $reversed, ')
+          ..write('methodLabel: $methodLabel, ')
+          ..write('collectorName: $collectorName, ')
+          ..write('advance: $advance, ')
+          ..write('discountPoisha: $discountPoisha, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -18102,6 +18973,9 @@ typedef $$CustomersTableCreateCompanionBuilder = CustomersCompanion Function({
   Value<String?> assigneeId,
   Value<DateTime?> erpFetchedAt,
   Value<String?> guarantorJson,
+  Value<String?> detailedAddress,
+  Value<String?> directions,
+  Value<String?> erpRiskJson,
   Value<String> searchText,
   Value<int> version,
   Value<int> rowid,
@@ -18139,6 +19013,9 @@ typedef $$CustomersTableUpdateCompanionBuilder = CustomersCompanion Function({
   Value<String?> assigneeId,
   Value<DateTime?> erpFetchedAt,
   Value<String?> guarantorJson,
+  Value<String?> detailedAddress,
+  Value<String?> directions,
+  Value<String?> erpRiskJson,
   Value<String> searchText,
   Value<int> version,
   Value<int> rowid,
@@ -18310,6 +19187,21 @@ class $$CustomersTableFilterComposer
 
   ColumnFilters<String> get guarantorJson => $composableBuilder(
     column: $table.guarantorJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get detailedAddress => $composableBuilder(
+    column: $table.detailedAddress,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get directions => $composableBuilder(
+    column: $table.directions,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get erpRiskJson => $composableBuilder(
+    column: $table.erpRiskJson,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -18493,6 +19385,21 @@ class $$CustomersTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get detailedAddress => $composableBuilder(
+    column: $table.detailedAddress,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get directions => $composableBuilder(
+    column: $table.directions,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get erpRiskJson => $composableBuilder(
+    column: $table.erpRiskJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get searchText => $composableBuilder(
     column: $table.searchText,
     builder: (column) => ColumnOrderings(column),
@@ -18647,6 +19554,21 @@ class $$CustomersTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<String> get detailedAddress => $composableBuilder(
+    column: $table.detailedAddress,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get directions => $composableBuilder(
+    column: $table.directions,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get erpRiskJson => $composableBuilder(
+    column: $table.erpRiskJson,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<String> get searchText => $composableBuilder(
     column: $table.searchText,
     builder: (column) => column,
@@ -18719,6 +19641,9 @@ class $$CustomersTableTableManager
                 Value<String?> assigneeId = const Value.absent(),
                 Value<DateTime?> erpFetchedAt = const Value.absent(),
                 Value<String?> guarantorJson = const Value.absent(),
+                Value<String?> detailedAddress = const Value.absent(),
+                Value<String?> directions = const Value.absent(),
+                Value<String?> erpRiskJson = const Value.absent(),
                 Value<String> searchText = const Value.absent(),
                 Value<int> version = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -18755,6 +19680,9 @@ class $$CustomersTableTableManager
                 assigneeId: assigneeId,
                 erpFetchedAt: erpFetchedAt,
                 guarantorJson: guarantorJson,
+                detailedAddress: detailedAddress,
+                directions: directions,
+                erpRiskJson: erpRiskJson,
                 searchText: searchText,
                 version: version,
                 rowid: rowid,
@@ -18793,6 +19721,9 @@ class $$CustomersTableTableManager
                 Value<String?> assigneeId = const Value.absent(),
                 Value<DateTime?> erpFetchedAt = const Value.absent(),
                 Value<String?> guarantorJson = const Value.absent(),
+                Value<String?> detailedAddress = const Value.absent(),
+                Value<String?> directions = const Value.absent(),
+                Value<String?> erpRiskJson = const Value.absent(),
                 Value<String> searchText = const Value.absent(),
                 Value<int> version = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -18829,6 +19760,9 @@ class $$CustomersTableTableManager
                 assigneeId: assigneeId,
                 erpFetchedAt: erpFetchedAt,
                 guarantorJson: guarantorJson,
+                detailedAddress: detailedAddress,
+                directions: directions,
+                erpRiskJson: erpRiskJson,
                 searchText: searchText,
                 version: version,
                 rowid: rowid,
@@ -18880,6 +19814,14 @@ typedef $$PlansTableCreateCompanionBuilder = PlansCompanion Function({
   required int outstandingPoisha,
   required String status,
   Value<bool> badSuggested,
+  Value<String> kind,
+  Value<String?> invoiceNo,
+  Value<String?> saleDate,
+  Value<String?> frequency,
+  Value<int?> customDays,
+  Value<String?> itemsJson,
+  Value<String?> guarantorJson,
+  Value<int> writtenOffPoisha,
   Value<int> rowid,
 });
 typedef $$PlansTableUpdateCompanionBuilder = PlansCompanion Function({
@@ -18895,6 +19837,14 @@ typedef $$PlansTableUpdateCompanionBuilder = PlansCompanion Function({
   Value<int> outstandingPoisha,
   Value<String> status,
   Value<bool> badSuggested,
+  Value<String> kind,
+  Value<String?> invoiceNo,
+  Value<String?> saleDate,
+  Value<String?> frequency,
+  Value<int?> customDays,
+  Value<String?> itemsJson,
+  Value<String?> guarantorJson,
+  Value<int> writtenOffPoisha,
   Value<int> rowid,
 });
 
@@ -18963,6 +19913,46 @@ class $$PlansTableFilterComposer extends Composer<_$AppDatabase, $PlansTable> {
 
   ColumnFilters<bool> get badSuggested => $composableBuilder(
     column: $table.badSuggested,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get invoiceNo => $composableBuilder(
+    column: $table.invoiceNo,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get saleDate => $composableBuilder(
+    column: $table.saleDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get frequency => $composableBuilder(
+    column: $table.frequency,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get customDays => $composableBuilder(
+    column: $table.customDays,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get itemsJson => $composableBuilder(
+    column: $table.itemsJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get guarantorJson => $composableBuilder(
+    column: $table.guarantorJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get writtenOffPoisha => $composableBuilder(
+    column: $table.writtenOffPoisha,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -19035,6 +20025,46 @@ class $$PlansTableOrderingComposer
     column: $table.badSuggested,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get invoiceNo => $composableBuilder(
+    column: $table.invoiceNo,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get saleDate => $composableBuilder(
+    column: $table.saleDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get frequency => $composableBuilder(
+    column: $table.frequency,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get customDays => $composableBuilder(
+    column: $table.customDays,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get itemsJson => $composableBuilder(
+    column: $table.itemsJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get guarantorJson => $composableBuilder(
+    column: $table.guarantorJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get writtenOffPoisha => $composableBuilder(
+    column: $table.writtenOffPoisha,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$PlansTableAnnotationComposer
@@ -19097,6 +20127,36 @@ class $$PlansTableAnnotationComposer
     column: $table.badSuggested,
     builder: (column) => column,
   );
+
+  GeneratedColumn<String> get kind =>
+      $composableBuilder(column: $table.kind, builder: (column) => column);
+
+  GeneratedColumn<String> get invoiceNo =>
+      $composableBuilder(column: $table.invoiceNo, builder: (column) => column);
+
+  GeneratedColumn<String> get saleDate =>
+      $composableBuilder(column: $table.saleDate, builder: (column) => column);
+
+  GeneratedColumn<String> get frequency =>
+      $composableBuilder(column: $table.frequency, builder: (column) => column);
+
+  GeneratedColumn<int> get customDays => $composableBuilder(
+    column: $table.customDays,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get itemsJson =>
+      $composableBuilder(column: $table.itemsJson, builder: (column) => column);
+
+  GeneratedColumn<String> get guarantorJson => $composableBuilder(
+    column: $table.guarantorJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get writtenOffPoisha => $composableBuilder(
+    column: $table.writtenOffPoisha,
+    builder: (column) => column,
+  );
 }
 
 class $$PlansTableTableManager
@@ -19139,6 +20199,14 @@ class $$PlansTableTableManager
                 Value<int> outstandingPoisha = const Value.absent(),
                 Value<String> status = const Value.absent(),
                 Value<bool> badSuggested = const Value.absent(),
+                Value<String> kind = const Value.absent(),
+                Value<String?> invoiceNo = const Value.absent(),
+                Value<String?> saleDate = const Value.absent(),
+                Value<String?> frequency = const Value.absent(),
+                Value<int?> customDays = const Value.absent(),
+                Value<String?> itemsJson = const Value.absent(),
+                Value<String?> guarantorJson = const Value.absent(),
+                Value<int> writtenOffPoisha = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => PlansCompanion(
                 erpPlanId: erpPlanId,
@@ -19153,6 +20221,14 @@ class $$PlansTableTableManager
                 outstandingPoisha: outstandingPoisha,
                 status: status,
                 badSuggested: badSuggested,
+                kind: kind,
+                invoiceNo: invoiceNo,
+                saleDate: saleDate,
+                frequency: frequency,
+                customDays: customDays,
+                itemsJson: itemsJson,
+                guarantorJson: guarantorJson,
+                writtenOffPoisha: writtenOffPoisha,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -19169,6 +20245,14 @@ class $$PlansTableTableManager
                 required int outstandingPoisha,
                 required String status,
                 Value<bool> badSuggested = const Value.absent(),
+                Value<String> kind = const Value.absent(),
+                Value<String?> invoiceNo = const Value.absent(),
+                Value<String?> saleDate = const Value.absent(),
+                Value<String?> frequency = const Value.absent(),
+                Value<int?> customDays = const Value.absent(),
+                Value<String?> itemsJson = const Value.absent(),
+                Value<String?> guarantorJson = const Value.absent(),
+                Value<int> writtenOffPoisha = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => PlansCompanion.insert(
                 erpPlanId: erpPlanId,
@@ -19183,6 +20267,14 @@ class $$PlansTableTableManager
                 outstandingPoisha: outstandingPoisha,
                 status: status,
                 badSuggested: badSuggested,
+                kind: kind,
+                invoiceNo: invoiceNo,
+                saleDate: saleDate,
+                frequency: frequency,
+                customDays: customDays,
+                itemsJson: itemsJson,
+                guarantorJson: guarantorJson,
+                writtenOffPoisha: writtenOffPoisha,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -19225,6 +20317,8 @@ typedef $$ScheduleLinesTableCreateCompanionBuilder =
       required int paidPoisha,
       required String status,
       Value<bool> estimated,
+      Value<int> lateFeePoisha,
+      Value<bool> rolled,
       Value<int> rowid,
     });
 typedef $$ScheduleLinesTableUpdateCompanionBuilder =
@@ -19236,6 +20330,8 @@ typedef $$ScheduleLinesTableUpdateCompanionBuilder =
       Value<int> paidPoisha,
       Value<String> status,
       Value<bool> estimated,
+      Value<int> lateFeePoisha,
+      Value<bool> rolled,
       Value<int> rowid,
     });
 
@@ -19280,6 +20376,16 @@ class $$ScheduleLinesTableFilterComposer
 
   ColumnFilters<bool> get estimated => $composableBuilder(
     column: $table.estimated,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get lateFeePoisha => $composableBuilder(
+    column: $table.lateFeePoisha,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get rolled => $composableBuilder(
+    column: $table.rolled,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -19327,6 +20433,16 @@ class $$ScheduleLinesTableOrderingComposer
     column: $table.estimated,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<int> get lateFeePoisha => $composableBuilder(
+    column: $table.lateFeePoisha,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get rolled => $composableBuilder(
+    column: $table.rolled,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$ScheduleLinesTableAnnotationComposer
@@ -19362,6 +20478,14 @@ class $$ScheduleLinesTableAnnotationComposer
 
   GeneratedColumn<bool> get estimated =>
       $composableBuilder(column: $table.estimated, builder: (column) => column);
+
+  GeneratedColumn<int> get lateFeePoisha => $composableBuilder(
+    column: $table.lateFeePoisha,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get rolled =>
+      $composableBuilder(column: $table.rolled, builder: (column) => column);
 }
 
 class $$ScheduleLinesTableTableManager
@@ -19402,6 +20526,8 @@ class $$ScheduleLinesTableTableManager
                 Value<int> paidPoisha = const Value.absent(),
                 Value<String> status = const Value.absent(),
                 Value<bool> estimated = const Value.absent(),
+                Value<int> lateFeePoisha = const Value.absent(),
+                Value<bool> rolled = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => ScheduleLinesCompanion(
                 erpPlanId: erpPlanId,
@@ -19411,6 +20537,8 @@ class $$ScheduleLinesTableTableManager
                 paidPoisha: paidPoisha,
                 status: status,
                 estimated: estimated,
+                lateFeePoisha: lateFeePoisha,
+                rolled: rolled,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -19422,6 +20550,8 @@ class $$ScheduleLinesTableTableManager
                 required int paidPoisha,
                 required String status,
                 Value<bool> estimated = const Value.absent(),
+                Value<int> lateFeePoisha = const Value.absent(),
+                Value<bool> rolled = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => ScheduleLinesCompanion.insert(
                 erpPlanId: erpPlanId,
@@ -19431,6 +20561,8 @@ class $$ScheduleLinesTableTableManager
                 paidPoisha: paidPoisha,
                 status: status,
                 estimated: estimated,
+                lateFeePoisha: lateFeePoisha,
+                rolled: rolled,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -19478,6 +20610,10 @@ typedef $$ErpPaymentsTableCreateCompanionBuilder =
       required String source,
       Value<String?> receiptNo,
       Value<bool> reversed,
+      Value<String?> methodLabel,
+      Value<String?> collectorName,
+      Value<bool> advance,
+      Value<int> discountPoisha,
       Value<int> rowid,
     });
 typedef $$ErpPaymentsTableUpdateCompanionBuilder =
@@ -19491,6 +20627,10 @@ typedef $$ErpPaymentsTableUpdateCompanionBuilder =
       Value<String> source,
       Value<String?> receiptNo,
       Value<bool> reversed,
+      Value<String?> methodLabel,
+      Value<String?> collectorName,
+      Value<bool> advance,
+      Value<int> discountPoisha,
       Value<int> rowid,
     });
 
@@ -19545,6 +20685,26 @@ class $$ErpPaymentsTableFilterComposer
 
   ColumnFilters<bool> get reversed => $composableBuilder(
     column: $table.reversed,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get methodLabel => $composableBuilder(
+    column: $table.methodLabel,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get collectorName => $composableBuilder(
+    column: $table.collectorName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get advance => $composableBuilder(
+    column: $table.advance,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get discountPoisha => $composableBuilder(
+    column: $table.discountPoisha,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -19602,6 +20762,26 @@ class $$ErpPaymentsTableOrderingComposer
     column: $table.reversed,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get methodLabel => $composableBuilder(
+    column: $table.methodLabel,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get collectorName => $composableBuilder(
+    column: $table.collectorName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get advance => $composableBuilder(
+    column: $table.advance,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get discountPoisha => $composableBuilder(
+    column: $table.discountPoisha,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$ErpPaymentsTableAnnotationComposer
@@ -19645,6 +20825,24 @@ class $$ErpPaymentsTableAnnotationComposer
 
   GeneratedColumn<bool> get reversed =>
       $composableBuilder(column: $table.reversed, builder: (column) => column);
+
+  GeneratedColumn<String> get methodLabel => $composableBuilder(
+    column: $table.methodLabel,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get collectorName => $composableBuilder(
+    column: $table.collectorName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get advance =>
+      $composableBuilder(column: $table.advance, builder: (column) => column);
+
+  GeneratedColumn<int> get discountPoisha => $composableBuilder(
+    column: $table.discountPoisha,
+    builder: (column) => column,
+  );
 }
 
 class $$ErpPaymentsTableTableManager
@@ -19687,6 +20885,10 @@ class $$ErpPaymentsTableTableManager
                 Value<String> source = const Value.absent(),
                 Value<String?> receiptNo = const Value.absent(),
                 Value<bool> reversed = const Value.absent(),
+                Value<String?> methodLabel = const Value.absent(),
+                Value<String?> collectorName = const Value.absent(),
+                Value<bool> advance = const Value.absent(),
+                Value<int> discountPoisha = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => ErpPaymentsCompanion(
                 erpPaymentId: erpPaymentId,
@@ -19698,6 +20900,10 @@ class $$ErpPaymentsTableTableManager
                 source: source,
                 receiptNo: receiptNo,
                 reversed: reversed,
+                methodLabel: methodLabel,
+                collectorName: collectorName,
+                advance: advance,
+                discountPoisha: discountPoisha,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -19711,6 +20917,10 @@ class $$ErpPaymentsTableTableManager
                 required String source,
                 Value<String?> receiptNo = const Value.absent(),
                 Value<bool> reversed = const Value.absent(),
+                Value<String?> methodLabel = const Value.absent(),
+                Value<String?> collectorName = const Value.absent(),
+                Value<bool> advance = const Value.absent(),
+                Value<int> discountPoisha = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => ErpPaymentsCompanion.insert(
                 erpPaymentId: erpPaymentId,
@@ -19722,6 +20932,10 @@ class $$ErpPaymentsTableTableManager
                 source: source,
                 receiptNo: receiptNo,
                 reversed: reversed,
+                methodLabel: methodLabel,
+                collectorName: collectorName,
+                advance: advance,
+                discountPoisha: discountPoisha,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

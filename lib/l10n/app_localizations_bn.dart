@@ -2141,4 +2141,93 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get guarantorNoPhone => 'ফোন নম্বর নেই';
+
+  @override
+  String get planCreditSale => 'বাকিতে বিক্রি';
+
+  @override
+  String planPayBy(String date) {
+    return '$date এর মধ্যে পরিশোধ';
+  }
+
+  @override
+  String get planReturned => 'ইআরপি-তে ফেরত · আদায়যোগ্য নয়';
+
+  @override
+  String get planCancelled => 'ইআরপি-তে বাতিল · আদায়যোগ্য নয়';
+
+  @override
+  String get planFreqMonthly => 'মাসিক';
+
+  @override
+  String get planFreqWeekly => 'সাপ্তাহিক';
+
+  @override
+  String get planFreqDaily => 'দৈনিক';
+
+  @override
+  String planFreqEveryNDays(String n) {
+    return 'প্রতি $n দিনে';
+  }
+
+  @override
+  String get planFreqCustom => 'নির্দিষ্ট তারিখে';
+
+  @override
+  String get planProducts => 'পণ্য';
+
+  @override
+  String planSerials(String list) {
+    return 'সিরিয়াল: $list';
+  }
+
+  @override
+  String get planGuarantor => 'এই কিস্তির জামিনদার';
+
+  @override
+  String planWrittenOff(String amount) {
+    return 'মওকুফ $amount';
+  }
+
+  @override
+  String scheduleLateFee(String amount) {
+    return 'বিলম্ব ফি $amount সহ';
+  }
+
+  @override
+  String planRolledHidden(String n) {
+    return 'ইআরপি-তে $nটি অপরিশোধিত কিস্তি পরের কিস্তিতে সরানো হয়েছে, তাই দেখানো হচ্ছে না';
+  }
+
+  @override
+  String get detailDirections => 'যাওয়ার পথ';
+
+  @override
+  String erpRiskBadge(String grade) {
+    return 'ইআরপি গ্রেড $grade';
+  }
+
+  @override
+  String get erpRiskLow => 'কম ঝুঁকি';
+
+  @override
+  String get erpRiskMedium => 'মাঝারি ঝুঁকি';
+
+  @override
+  String get erpRiskHigh => 'বেশি ঝুঁকি';
+
+  @override
+  String timelineCollector(String name) {
+    return 'আদায়: $name';
+  }
+
+  @override
+  String get timelineAdvance => 'অগ্রিম';
+
+  @override
+  String get timelineRemoved => 'ইআরপি থেকে মুছে ফেলা';
+
+  @override
+  String get collectSameDayWarning =>
+      'এই ইনভয়েসে আজ আগেই একটি পেমেন্ট আছে। ইআরপি দিনে একটিই নেয়, তাই অফিসকে সিদ্ধান্ত নিতে হতে পারে।';
 }

@@ -33,6 +33,13 @@ class Customer {
   /// neither. Kept on the phone with the customer, so it shows offline.
   Guarantor? get guarantor => Guarantor.parse(row.guarantorJson);
 
+  /// ERP extras (contract 1.13.0): the ERP's longer address and how to find the house.
+  String? get detailedAddress => (row.detailedAddress?.trim().isEmpty ?? true) || row.detailedAddress == row.address ? null : row.detailedAddress;
+  String? get directions => (row.directions?.trim().isEmpty ?? true) ? null : row.directions;
+
+  /// The ERP's own risk grade, read only (never a FOS tag).
+  ErpRisk? get erpRisk => ErpRisk.parse(row.erpRiskJson);
+
   bool promisedOn(String today) => row.openPromiseDate == today;
 
   Customer withDistance(int? d) => Customer(row, distanceM: d);
@@ -72,11 +79,70 @@ class Guarantor {
     final m = jsonDecode(json);
     if (m is! Map) return null;
     final name = ((m['name'] as String?) ?? '').trim();
-    final phone = ((m['phone'] as String?) ?? '').trim();
+    final list = ((m['phones'] as List?) ?? const []).whereType<String>().map((p) => p.trim()).where((p) => p.isNotEmpty);
+    final phone = (((m['phone'] as String?) ?? '').trim().isNotEmpty ? (m['phone'] as String).trim() : (list.isEmpty ? '' : list.first));
     if (name.isEmpty && phone.isEmpty) return null;
     return Guarantor(name: name, phone: phone);
   }
 }
+
+/// The ERP's customer risk snapshot (grade A–E, level Low/Medium/High).
+class ErpRisk {
+  const ErpRisk({required this.grade, this.level, this.overdueCount = 0, this.maxDaysLate = 0});
+  final String grade;
+  final String? level;
+  final int overdueCount;
+  final int maxDaysLate;
+
+  /// low | medium | high | null
+  String? get levelKey => switch (level?.toLowerCase()) { 'low' => 'low', 'medium' => 'medium', 'high' => 'high', _ => null };
+
+  static ErpRisk? parse(String? json) {
+    if (json == null || json.isEmpty) return null;
+    final m = jsonDecode(json);
+    if (m is! Map) return null;
+    final grade = ((m['grade'] as String?) ?? '').trim();
+    if (grade.isEmpty || grade.toUpperCase() == 'N/A') return null;
+    return ErpRisk(
+      grade: grade,
+      level: m['level'] as String?,
+      overdueCount: (m['overdueCount'] as num?)?.toInt() ?? 0,
+      maxDaysLate: (m['maxDaysLate'] as num?)?.toInt() ?? 0,
+    );
+  }
+}
+
+/// A product on an ERP invoice.
+class PlanItem {
+  const PlanItem({required this.name, this.model, this.qty = 1, this.serials = const []});
+  final String name;
+  final String? model;
+  final int qty;
+  final List<String> serials;
+
+  /// "Walton fridge WFC-3F5 ×2"
+  String get label => [name, if (model != null && model!.isNotEmpty) model!, if (qty > 1) '×$qty'].join(' ');
+}
+
+List<PlanItem> decodePlanItems(String? json) {
+  if (json == null || json.isEmpty) return const [];
+  final l = jsonDecode(json);
+  if (l is! List) return const [];
+  return [
+    for (final m in l.whereType<Map<String, dynamic>>())
+      if (((m['name'] as String?) ?? '').trim().isNotEmpty)
+        PlanItem(
+          name: (m['name'] as String).trim(),
+          model: m['model'] as String?,
+          qty: (m['qty'] as num?)?.toInt() ?? 1,
+          serials: ((m['serials'] as List?) ?? const []).whereType<String>().toList(),
+        ),
+  ];
+}
+
+/// Returned (closed), cancelled and settled invoices take no more money.
+bool isCollectablePlan({required String status, required int outstandingPoisha}) =>
+    outstandingPoisha > 0 && status != 'closed' && status != 'cancelled' && status != 'completed';
 
 enum CustomerFilter { all, dueToday, overdue, promisedToday, mine, badSuggested, tagged, noPin }
 

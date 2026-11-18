@@ -1,7 +1,7 @@
 name: staff_app
 description: "Howlader Field Operations — staff app (offline-first, Android first)."
 publish_to: 'none'
-version: 0.9.0+9
+version: 0.10.0+10
 
 environment:
   sdk: ^3.14.0

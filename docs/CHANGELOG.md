@@ -1,5 +1,19 @@
 # Changelog — staff-app
 
+## [0.10.0] — 2026-11-18
+### Added
+- Contract pinned to field-api 1.13.0, the shape of the real Laravel ERP (field-api ADR-033, master FR-ERP-006; field-api PR #10, merge c69ed55). The ERP itself was not changed.
+- ERP invoice details on the customer page (FR-M-030): each plan is one ERP invoice and shows its invoice number (`INV-…`), "credit sale" or the installment count, how often installments fall due (monthly, weekly, daily, every N days), "pay by" for a credit sale, any written-off amount, the products with model, quantity and serial numbers, and the plan's own guarantor. A line whose late fee the ERP added shows "incl. late fee". Lines the ERP rolled forward (amount 0) are hidden, with a note saying how many. Returned and cancelled invoices are listed last, muted, with "not collectable".
+- Customer header: the ERP's detailed address (when it differs from the address), the ERP "directions" text with a signpost icon, and the ERP risk grade (colour + icon + label; medium and high risk also say so in words).
+- Customer timeline: the ERP method name, the collector's name, "advance" and "removed in the ERP" on ERP payments.
+- Same-day warning in the collect flow (FR-M-031, open decision OD-27): the ERP takes one payment per installment invoice per day, so when the chosen invoice already has a payment today (an ERP payment on the phone, or a collection recorded on this phone today) the amount and review steps say the office may need to decide on it. The collection is still saved and sent; the server turns it into a conflict instead of dropping it. Credit invoices are not warned about.
+- Database schema 7: `customers.detailed_address`, `directions`, `erp_risk_json`; `plans.kind` (default `installment`), `invoice_no`, `sale_date`, `frequency`, `custom_days`, `items_json`, `guarantor_json`, `written_off_poisha`; `schedule_lines.late_fee_poisha`, `rolled`; `erp_payments.method_label`, `collector_name`, `advance`, `discount_poisha`. Migration tests from schema 1 to 6.
+- Demo API: invoice numbers, products with model and serial, monthly frequency, ERP receipt numbers (`PAY-YYYYMMDD-NNNNN`), method names and collectors, a late fee on some overdue lines, risk grades, detailed addresses and directions.
+### Changed
+- The collect flow offers only invoices that can still take money (not returned, cancelled or settled), and names them "invoice number · product".
+- ERP payments are linked to their invoice by `erpPlanId` (the 1.13.0 name); `planId` is still read.
+- Tests: ERP shape unit tests (same-day rule, collectable invoices, products, risk, guarantor phones, customer pull with rolled lines, late fees and today's paid invoices), migration test from schema 6; screenshots 29-customer-erp, 30-customer-invoice, 31-collect-same-day; 04, 10 and 13 updated.
+
 ## [0.9.0] — 2026-11-17
 ### Added
 - Contract pinned to field-api 1.12.0 (leave cancel and filters, holiday ids, my shift, broadcast `ackedAt` and recipients, `broadcast_ack` mutation, contact attempt `target`; field-api PR #9, merge 8a57b85).

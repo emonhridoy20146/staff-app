@@ -67,6 +67,9 @@ class CustomerPullHandler implements PullHandler {
             assigneeId: Value((d['assignee'] as Json?)?['id'] as String?),
             erpFetchedAt: Value(d['erpFetchedAt'] == null ? null : DateTime.parse(d['erpFetchedAt'] as String).toUtc()),
             guarantorJson: Value(d['guarantor'] == null ? null : jsonEncode(d['guarantor'])),
+            detailedAddress: Value(d['detailedAddress'] as String?),
+            directions: Value(d['directions'] as String?),
+            erpRiskJson: Value(d['erpRisk'] == null ? null : jsonEncode(d['erpRisk'])),
             searchText: Value(search),
             version: Value((d['version'] as num?)?.toInt() ?? 0),
           ),
@@ -92,6 +95,14 @@ class CustomerPullHandler implements PullHandler {
               outstandingPoisha: (p['outstandingPoisha'] as num?)?.toInt() ?? 0,
               status: (p['status'] as String?) ?? 'active',
               badSuggested: Value((p['badSuggested'] as bool?) ?? false),
+              kind: Value((p['kind'] as String?) ?? 'installment'),
+              invoiceNo: Value(p['invoiceNo'] as String?),
+              saleDate: Value(p['saleDate'] as String?),
+              frequency: Value(p['frequency'] as String?),
+              customDays: Value((p['customDays'] as num?)?.toInt()),
+              itemsJson: Value(p['items'] == null ? null : jsonEncode(p['items'])),
+              guarantorJson: Value(p['guarantor'] == null ? null : jsonEncode(p['guarantor'])),
+              writtenOffPoisha: Value((p['writtenOffPoisha'] as num?)?.toInt() ?? 0),
             ));
         for (final s in ((p['schedule'] as List?) ?? const []).cast<Json>()) {
           await db.into(db.scheduleLines).insertOnConflictUpdate(ScheduleLinesCompanion.insert(
@@ -102,6 +113,8 @@ class CustomerPullHandler implements PullHandler {
                 paidPoisha: (s['paidPoisha'] as num?)?.toInt() ?? 0,
                 status: (s['status'] as String?) ?? 'upcoming',
                 estimated: Value((s['estimated'] as bool?) ?? false),
+                lateFeePoisha: Value((s['lateFeePoisha'] as num?)?.toInt() ?? 0),
+                rolled: Value((s['rolled'] as bool?) ?? false),
               ));
         }
       }
@@ -113,13 +126,17 @@ class CustomerPullHandler implements PullHandler {
         await db.into(db.erpPayments).insertOnConflictUpdate(ErpPaymentsCompanion.insert(
               erpPaymentId: p['erpPaymentId'] as String,
               customerId: id,
-              planId: Value(p['planId'] as String?),
+              planId: Value((p['erpPlanId'] ?? p['planId']) as String?),
               date: p['date'] as String,
               amountPoisha: (p['amountPoisha'] as num).toInt(),
               method: (p['method'] as String?) ?? 'cash',
               source: (p['source'] as String?) ?? 'office',
               receiptNo: Value(p['receiptNo'] as String?),
               reversed: Value((p['reversed'] as bool?) ?? false),
+              methodLabel: Value(p['methodLabel'] as String?),
+              collectorName: Value(p['collectorName'] as String?),
+              advance: Value((p['advance'] as bool?) ?? false),
+              discountPoisha: Value((p['discountPoisha'] as num?)?.toInt() ?? 0),
             ));
       }
     }
@@ -153,7 +170,25 @@ class PlanWithSchedule {
   final PlanRow plan;
   final List<ScheduleLineRow> schedule;
 
-  int get paidCount => schedule.where((s) => s.status == 'paid').length;
+  /// Lines the ERP rolled forward (amount 0) are hidden so the schedule matches the office's.
+  List<ScheduleLineRow> get visibleSchedule => schedule.where((s) => !s.rolled).toList();
+  int get rolledCount => schedule.where((s) => s.rolled).length;
+
+  int get paidCount => visibleSchedule.where((s) => s.status == 'paid').length;
+
+  /// Installments to show: the visible lines when the ERP sent a schedule, else the plan's count.
+  int get shownCount => schedule.isEmpty ? plan.installmentCount : visibleSchedule.length;
+
+  bool get credit => plan.kind == 'credit';
+
+  /// Returned (closed) or cancelled in the ERP: shown muted, never offered for collection.
+  bool get closedInErp => plan.status == 'closed' || plan.status == 'cancelled';
+
+  /// Money can be taken against it: not returned/cancelled/settled and something is still owed.
+  bool get collectable => isCollectablePlan(status: plan.status, outstandingPoisha: plan.outstandingPoisha);
+
+  List<PlanItem> get items => decodePlanItems(plan.itemsJson);
+  Guarantor? get guarantor => Guarantor.parse(plan.guarantorJson);
 }
 
 /// Local reads for the customers feature (all from SQLite, offline).
@@ -189,6 +224,13 @@ class CustomerRepository {
       return out;
     });
   }
+
+  /// Plans (invoices) that already have an ERP payment on [day] (not removed, not an
+  /// advance). The ERP takes one payment per installment invoice per day (OD-27).
+  Stream<Set<String>> watchPlansPaidOn(String customerId, String day) => (_db.select(_db.erpPayments)
+        ..where((t) => t.customerId.equals(customerId) & t.date.equals(day) & t.reversed.equals(false) & t.advance.equals(false) & t.planId.isNotNull()))
+      .watch()
+      .map((rows) => {for (final r in rows) r.planId!});
 
   Stream<List<ErpPaymentRow>> watchPayments(String customerId) => (_db.select(_db.erpPayments)
         ..where((t) => t.customerId.equals(customerId))
