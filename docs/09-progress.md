@@ -7,7 +7,8 @@ Phases match `field-api/docs/09-progress.md`. Start each phase against the Prism
 ## Phase 0 — Foundations
 | Item | Status |
 |---|---|
-| Project, flavors, CI (analyze, fos_lints, tests, goldens, APK build), signing via CI secrets | ◐ project, env flavours, CI workflow written; APK build not yet run (no Android SDK in build sandbox); fos_lints not written |
+| Project, flavors, CI (analyze, fos_lints, tests, goldens, APK build), signing via CI secrets | ◐ project, env flavours, CI builds demo and live APKs (artifacts `staff-app-demo-apk`, `staff-app-live-apk`); fos_lints not written |
+| Live test server build without flags: `config/live.env` + Android Studio run configurations (ADR-M16) | ✅ 0.10.1, guard test; first login on a real phone against the live server pending |
 | Theme: tokens, ColorScheme, StatusColors, typography with bundled fonts, high-contrast mode | ✅ |
 | Core: drift + SQLCipher, dio + interceptors, clock with server offset, format (money/digits/words) | ✅ (sqlite3mc, see ADR-M02 amendment) |
 | Auth: login, refresh, change password, PIN/biometric, app lock, version gate | ◐ biometric not yet |

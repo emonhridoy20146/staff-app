@@ -83,6 +83,8 @@ Future features land in `lib/features/<new-feature>/` and register in `lib/app/f
 staff-app/
 ├── CLAUDE.md · README.md · pubspec.yaml · analysis_options.yaml · l10n.yaml · Makefile
 ├── .env.example                      # names only (used by --dart-define-from-file)
+├── config/live.env                   # committed, public values only: live test server (ADR-M16)
+├── .run/                             # Android Studio run configurations: Live API, Live API (release), Demo
 ├── android/                          # app id, flavors (dev, staging, prod), foreground service config, network security config
 ├── assets/ fonts/ (Inter, NotoSansBengali, HindSiliguri, JetBrainsMono) · images/ · lottie/ (success, optional)
 ├── docs/ 01…09 · CHANGELOG.md · design-tokens.json

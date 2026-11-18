@@ -55,3 +55,14 @@ jobs:
         with:
           name: staff-app-demo-apk
           path: build/app/outputs/flutter-apk/app-release.apk
+      # Same APK against the live test server (config/live.env: public values only, ADR-M16).
+      - name: Build live APK
+        env:
+          STAFF_KEYSTORE_PASSWORD: ${{ secrets.STAFF_KEYSTORE_PASSWORD }}
+          STAFF_KEY_ALIAS: ${{ secrets.STAFF_KEY_ALIAS }}
+          STAFF_KEY_PASSWORD: ${{ secrets.STAFF_KEY_PASSWORD }}
+        run: flutter build apk --release --dart-define-from-file=config/live.env
+      - uses: actions/upload-artifact@v4
+        with:
+          name: staff-app-live-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
