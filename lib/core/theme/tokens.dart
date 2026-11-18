@@ -1,7 +1,7 @@
 import 'package:flutter/animation.dart';
 import 'package:flutter/painting.dart';
 
-/// Shared design tokens v1.0.
+/// Shared design tokens v1.1 (v1.1 adds pay-state colours, not used in the app yet).
 ///
 /// Canonical source: admin-web/docs/03-design-guide.md §2 and
 /// docs/design-tokens.json. Values here MUST stay identical; the token test
