@@ -67,6 +67,17 @@ class OutboxReader {
     return q.map((r) => r.read(c) ?? 0).watchSingle();
   }
 
+  /// Unsent (held, pending or sending) mutations of one entity.
+  Stream<int> watchUnsentOf(String entity) {
+    final c = _db.outbox.mutationId.count();
+    final q = _db.selectOnly(_db.outbox)
+      ..addColumns([c])
+      ..where(_db.outbox.entity.equals(entity) & _db.outbox.state.isIn(['held', 'pending', 'sending']));
+    return q.map((r) => r.read(c) ?? 0).watchSingle();
+  }
+
+  Future<bool> hasUnsentOf(String entity) async => (await watchUnsentOf(entity).first) > 0;
+
   Stream<int> watchFailedCount() {
     final c = _db.outbox.mutationId.count();
     final q = _db.selectOnly(_db.outbox)

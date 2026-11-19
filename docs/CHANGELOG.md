@@ -1,5 +1,10 @@
 # Changelog — staff-app
 
+## [0.10.2] — 2026-11-18
+### Fixed
+- **Live location lost while the work-in was still unsent** (owner report 2026-11-18: staff online and on duty, but nobody on the admin live map; attendance stuck on "sync pending"). The server keeps location points only while it knows the person is on duty (FR-LOC-001), and it learns that from the work-in. The app sent points even when the work-in was still waiting for its photo, so every point was refused as `OFF_DUTY` and then deleted from the phone. Points now wait in the phone's queue while an `attendance_event` is held, pending or sending (`LocationTracker.uploadPending`), and go out as soon as it reaches the server (`locationBackgroundProvider` watches `OutboxReader.watchUnsentOf`). The queue cap still applies. The photo itself could not upload because the test server had no file storage; that is fixed on the server side (field-api contract 1.18.0, ADR-039): no app change is needed for it, the app retries the stuck photos on its own.
+- Test `points wait on the phone until the work-in is on the server, then go out` in `test/flows/location_flow_test.dart`.
+
 ## [Unreleased]
 ### Changed
 - Shared design tokens v1.1 (docs only, mirrors admin-web `docs/03-design-guide.md §2.3a`, admin ADR-W18): pay-state colours (`payState.bad`, `missedMany`, `missedOne`, `dueToday`, `onTrack`, `paidOff`, each pin / fg / bg, light and dark) and the pin shadow, from field-api contract 1.14.0 `PayState` (ADR-035). `docs/design-tokens.json` is the same file as admin-web's again. Nothing in the app changes yet; its map keeps the `status.*` markers.
