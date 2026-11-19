@@ -96,14 +96,14 @@ class FakeFieldApi implements HttpClientAdapter {
     'branch.view', 'customer.view', 'customer.location.propose', 'tag.view', 'tag.set', //
     'collection.record', 'collection.view', 'cash.view', 'cash.deposit.record', 'assignment.view',
     'visit.record', 'visit.view', 'note.create', 'note.view', 'promise.create', 'promise.view',
-    'attendance.record', 'leave.request', 'cowork.use',
+    'attendance.record', 'leave.request', 'cowork.use', 'task.work',
   ];
 
   static const flags = {
     'module.customers': true, 'module.tags': true, 'module.collections': true, 'module.cash': true, //
     'module.visits': true, 'module.notes': true, 'module.promises': true, 'module.attendance': true,
     'module.handovers': true, 'module.location': true, 'module.notifications': true, 'module.sync': true,
-    'module.cowork': true, 'module.targets': true, 'module.reports': true, 'module.microfinance': false,
+    'module.cowork': true, 'module.targets': true, 'module.reports': true, 'module.tasks': true, 'module.microfinance': false,
   };
 
   Json get _settings => {
@@ -185,6 +185,68 @@ class FakeFieldApi implements HttpClientAdapter {
     };
     _notices[id] = b;
     serverChange('broadcast', id, b);
+  }
+
+  // ── tasks from the office (contract 1.20.0) ─────────────────────────────
+
+  final _tasks = <String, Json>{};
+
+  /// Tests / demo: the office gives me a task (free-form, not tied to a customer).
+  void addTask(String id, {required String title, String? note, String? dueDate, DateTime? at}) {
+    final when = (at ?? clock.nowUtc()).toIso8601String();
+    final by = {'id': 'u-bm-001', 'name': 'মোস্তফা কামাল'};
+    final t = {
+      'id': id, 'branchId': 'br-01', 'assignee': {'id': user['id'], 'name': user['name'], 'employeeCode': 'FS-001'}, 'createdBy': by,
+      'title': title, 'note': note, 'dueDate': dueDate, 'status': 'open', 'overdue': false, 'resolveNote': null, 'resolveRequestedAt': null,
+      'decisionNote': null, 'decidedBy': null, 'decidedAt': null,
+      'events': [{'type': 'created', 'by': by, 'at': when, 'note': null}],
+      'createdAt': when, 'updatedAt': when,
+    };
+    _tasks[id] = t;
+    serverChange('task', id, t);
+  }
+
+  /// Tests / demo: the office decides on a task: `verified`, `rejected` (with a reason) or `cancelled`.
+  void decideTask(String id, {required String decision, String? note}) {
+    final t = _tasks[id]!;
+    final at = clock.nowUtc().toIso8601String();
+    final by = {'id': 'u-bm-001', 'name': 'মোস্তফা কামাল'};
+    final status = switch (decision) {
+      'verified' => 'resolved',
+      'cancelled' => 'cancelled',
+      _ => 'open',
+    };
+    final next = {
+      ...t,
+      'status': status,
+      'decisionNote': note,
+      'decidedBy': by,
+      'decidedAt': at,
+      'updatedAt': at,
+      'events': [...(t['events'] as List), {'type': decision, 'by': by, 'at': at, 'note': note}],
+    };
+    _tasks[id] = next;
+    serverChange('task', id, next);
+  }
+
+  /// The staff member says the task is done: open → resolve_requested (a repeat is a replay).
+  Json? _taskResolveRequest(Json payload) {
+    final id = payload['taskId'] as String?;
+    final t = id == null ? null : _tasks[id];
+    if (t == null) return null;
+    if (t['status'] != 'open') return t;
+    final at = (payload['requestedAt'] as String?) ?? clock.nowUtc().toIso8601String();
+    final next = {
+      ...t,
+      'status': 'resolve_requested',
+      'resolveNote': payload['note'],
+      'resolveRequestedAt': at,
+      'updatedAt': clock.nowUtc().toIso8601String(),
+      'events': [...(t['events'] as List), {'type': 'resolve_requested', 'by': {'id': user['id'], 'name': user['name']}, 'at': at, 'note': payload['note']}],
+    };
+    _tasks[id!] = next;
+    serverChange('task', id, next);
+    return next;
   }
 
   /// Tests / demo: the manager decides a leave request.
@@ -726,6 +788,10 @@ class FakeFieldApi implements HttpClientAdapter {
         };
       } else if (entity == 'broadcast_ack' && !_notices.containsKey(payload['broadcastId'])) {
         r = {'mutationId': id, 'result': 'rejected', 'error': _problem(404, 'NOT_FOUND', 'No such broadcast')};
+      } else if (entity == 'task_resolve_request' && !_tasks.containsKey(payload['taskId'])) {
+        r = {'mutationId': id, 'result': 'rejected', 'error': _problem(404, 'NOT_FOUND', 'No such task')};
+      } else if (entity == 'task_resolve_request' && ['resolved', 'cancelled'].contains(_tasks[payload['taskId']]!['status'])) {
+        r = {'mutationId': id, 'result': 'rejected', 'error': _problem(409, 'INVALID_STATE', 'TASK_${(_tasks[payload['taskId']]!['status'] as String).toUpperCase()}')};
       } else if (entity == 'collection' && (payload['amountPoisha'] as int? ?? 0) <= 0) {
         r = {
           'mutationId': id,
@@ -745,6 +811,10 @@ class FakeFieldApi implements HttpClientAdapter {
           _notices[bid] = b;
           serverChange('broadcast', bid, b);
           r = {...r, 'entityId': bid};
+        }
+        if (entity == 'task_resolve_request') {
+          _taskResolveRequest(payload);
+          r = {...r, 'entityId': payload['taskId']};
         }
         if (entity == 'visit' && m['op'] == 'create' && payload['coWorkSessionId'] != null) {
           // Server works out who took part (1.9.0): accepted members at check-in.

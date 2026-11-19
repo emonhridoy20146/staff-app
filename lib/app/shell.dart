@@ -6,6 +6,7 @@ import '../core/providers.dart';
 import '../core/settings/ui_prefs.dart';
 import '../core/theme/app_theme.dart';
 import '../core/ui/brand.dart';
+import '../core/ui/exit_confirm.dart';
 import '../features/handovers/handovers.dart';
 import '../l10n/app_localizations.dart';
 
@@ -21,7 +22,7 @@ class AppShell extends ConsumerWidget {
     final problems = (ref.watch(failedCountProvider).value ?? 0) + (ref.watch(openConflictCountProvider).value ?? 0);
     final handovers = ref.watch(pendingHandoversProvider).length;
     final meBadge = problems + handovers;
-    return Scaffold(
+    final scaffold = Scaffold(
       body: shell,
       bottomNavigationBar: NavigationBar(
         selectedIndex: shell.currentIndex,
@@ -38,6 +39,8 @@ class AppShell extends ConsumerWidget {
         ],
       ),
     );
+    // Back from the root of the signed-in app asks before closing it.
+    return ExitConfirmScope(child: scaffold);
   }
 }
 

@@ -2252,4 +2252,173 @@ class AppLocalizationsEn extends AppLocalizations {
   String customerBranch(String branch) {
     return '$branch branch';
   }
+
+  @override
+  String get tasksTitle => 'My tasks';
+
+  @override
+  String get taskTitle => 'Task';
+
+  @override
+  String get tasksEmpty => 'No tasks';
+
+  @override
+  String get tasksEmptyBody => 'Tasks the office gives you show here';
+
+  @override
+  String get tasksSectionActive => 'To do';
+
+  @override
+  String get tasksSectionWaiting => 'Waiting for the office';
+
+  @override
+  String get tasksSectionClosed => 'Finished';
+
+  @override
+  String get taskStatusOpen => 'To do';
+
+  @override
+  String get taskStatusQueued => 'Will be sent';
+
+  @override
+  String get taskStatusWaiting => 'Office is checking';
+
+  @override
+  String get taskStatusResolved => 'Done';
+
+  @override
+  String get taskStatusCancelled => 'Cancelled';
+
+  @override
+  String get taskStatusOverdue => 'Overdue';
+
+  @override
+  String get taskNew => 'New';
+
+  @override
+  String taskDue(String date) {
+    return 'Due $date';
+  }
+
+  @override
+  String get taskNoDue => 'No due date';
+
+  @override
+  String taskFrom(String name) {
+    return 'From $name';
+  }
+
+  @override
+  String get taskNoteNone => 'No note';
+
+  @override
+  String get taskMarkDone => 'The work is done';
+
+  @override
+  String get taskDoneTitle => 'Tell the office it is done';
+
+  @override
+  String get taskDoneBody => 'The office checks it and then marks it resolved.';
+
+  @override
+  String get taskDoneNoteHint => 'What did you do? (optional)';
+
+  @override
+  String get taskDoneSend => 'Send to the office';
+
+  @override
+  String get taskDoneSent => 'Saved. The office will check it';
+
+  @override
+  String taskQueuedBanner(String time) {
+    return 'Saved on this phone at $time. It goes to the office when there is a network.';
+  }
+
+  @override
+  String taskWaitingBanner(String time) {
+    return 'Sent at $time. The office will check it.';
+  }
+
+  @override
+  String taskResolvedBanner(String time) {
+    return 'The office marked it done at $time';
+  }
+
+  @override
+  String get taskCancelledBanner => 'The office cancelled this task';
+
+  @override
+  String taskRejectedBanner(String reason) {
+    return 'The office sent it back: $reason';
+  }
+
+  @override
+  String get taskFailedBanner =>
+      'Your last request was not accepted. You can send it again.';
+
+  @override
+  String get taskMyNote => 'Your note';
+
+  @override
+  String get taskOfficeNote => 'Office note';
+
+  @override
+  String get taskDetails => 'Details';
+
+  @override
+  String get taskHistory => 'History';
+
+  @override
+  String get taskEventCreated => 'Task given';
+
+  @override
+  String get taskEventEdited => 'Changed';
+
+  @override
+  String get taskEventResolveRequested => 'Marked as done';
+
+  @override
+  String get taskEventVerified => 'Office verified';
+
+  @override
+  String get taskEventRejected => 'Sent back';
+
+  @override
+  String get taskEventCancelled => 'Cancelled';
+
+  @override
+  String todayTasksOverdue(String n) {
+    return 'Overdue tasks: $n';
+  }
+
+  @override
+  String todayTasksNew(String n) {
+    return 'New tasks from the office: $n';
+  }
+
+  @override
+  String todayTasksOpen(String n) {
+    return 'Tasks to do: $n';
+  }
+
+  @override
+  String tasksOpenCount(String n) {
+    return '$n to do';
+  }
+
+  @override
+  String get tasksNothingOpen => 'Nothing to do';
+
+  @override
+  String get exitAppTitle => 'Close the app?';
+
+  @override
+  String get exitAppBody =>
+      'Work that is not sent yet stays safe on this phone.';
+
+  @override
+  String get exitAppStay => 'Stay';
+
+  @override
+  String get exitAppConfirm => 'Close the app';
 }

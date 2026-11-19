@@ -39,6 +39,7 @@ part 'app_database.g.dart';
     ContactAttempts,
     CoworkSessions,
     Broadcasts,
+    Tasks,
     Notifications,
     KvSettings,
   ],
@@ -47,7 +48,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 8;
+  int get schemaVersion => 9;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -125,6 +126,12 @@ class AppDatabase extends _$AppDatabase {
               await m.addColumn(customers, c);
             }
             await customStatement('UPDATE sync_state SET bootstrap_done = 0');
+          }
+          // v9 (0.12.0, contract 1.20.0): tasks from the office. A new table only, nothing existing is
+          // touched. No new snapshot is forced: tasks come on the change feed from the moment the
+          // super admin turns `module.tasks` on, and a fresh install or v7 update already takes one.
+          if (from < 9) {
+            await m.createTable(tasks);
           }
         },
         beforeOpen: (details) async {

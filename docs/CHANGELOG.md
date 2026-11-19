@@ -1,5 +1,17 @@
 # Changelog — staff-app
 
+## [0.12.0] — 2026-11-19
+Contract pinned: field-api `openapi.yaml` **1.20.0** (field-api PR #17, ADR-037; `docs/contract/openapi.yaml`).
+### Added (owner request 2026-11-18: the office gives a staff member a free-form task with a note; FR-M-033)
+- **Tasks from the office** (new feature `tasks`, flag `module.tasks`, permission `task.work`; master FR-TASK-001..005): a job with a title, a note and an optional due date, not tied to a customer. It arrives as the `task` sync entity (the snapshot holds open tasks and the ones closed in the last 30 days), shows on **Today** (overdue first, then "new", then "to do") and as **Me → আমার কাজ** with the number still to do, and opens in a list (to do · waiting for the office · finished) and a detail page with the office's note, history and, when it was sent back, the reason.
+- **"কাজ হয়েছে"** (the work is done): an optional note, saved on the phone at once and sent as the `task_resolve_request` mutation, so it works without a network. The task then reads "will be sent" until the server has it and "office is checking" after. Only the office makes it resolved; if the office sends it back, the reason shows and the button returns. A task the office cancelled while the tap was waiting just shows as cancelled.
+- Opening a task clears its "new" marker (local only).
+- The phone shows a new task on the next sync. A lock-screen push needs FCM, which is not built yet; the server already creates the `task.assigned` notification for it.
+- **Close-the-app question** (FR-M-034): pressing back at the root of the signed-in app (any of the four tabs) asks "অ্যাপ বন্ধ করবেন?" with "থাকুন" (focused) and "অ্যাপ বন্ধ করুন"; the second back while it is open only closes the question. Screens opened above the tabs go back one step as before.
+- DB schema **9**: new table `tasks` (nothing else touched; no new snapshot is forced). `task_resolve_request` added to the known mutation types.
+- Tests: `test/flows/tasks_flow_test.dart` (arrival, "new", offline "done" as one mutation then confirmed, sent back, cancelled while waiting, never dropped while queued, ordering and Dhaka overdue), `test/flows/tasks_screens_test.dart` (Today → Me → list → detail → "done" with a note offline → sent back; back at the root), `test/app/exit_confirm_test.dart`, `test/core/migration_test.dart` (schema 8 → 9, `_dropV9`).
+- The fake API (demo and tests) knows tasks: `addTask`, `decideTask`, the `task_resolve_request` mutation with the real rejection codes, permission `task.work` and flag `module.tasks`.
+
 ## [0.11.0] — 2026-11-19
 Contract pinned: field-api `openapi.yaml` **1.19.0** (field-api PR #18, ADR-038; `docs/contract/openapi.yaml`).
 ### Added (owner request 2026-11-18: staff see every customer of their branch, staff in several branches; FR-M-032)
