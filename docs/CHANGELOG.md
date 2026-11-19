@@ -1,5 +1,17 @@
 # Changelog — staff-app
 
+## [0.12.3] — 2026-11-19
+Contract pinned: field-api `openapi.yaml` **1.22.0** (unchanged from 0.12.2). Works best with field-api PR #23, which sends a whole branch in small, fast pages.
+### Fixed (owner report 2026-11-19: the customer list was blank after login, with no way to load it)
+- **Customer list: pull down or tap the reload button** (top bar) to load now (FR-M-032). It runs the same sync as "Sync now".
+- **No more blank screen:** when no customer is on the phone the list says whether the first load is running (with progress), failed (with the error code) or has not happened, with a Reload button. "No customers match" stays for an empty filter.
+- The customer count row no longer overflows at large font sizes.
+- **"Still loading" banner:** while customers are downloading, a banner above the rows says "গ্রাহক লোড হচ্ছে… (N জন)" with a spinner and progress bar, so a half-filled list is not mistaken for the whole branch.
+- **Customers tab loads by itself:** opening it with no customer on the phone starts a sync at once (the first load after login already runs in the background; the app still opens on Today).
+### Added (owner request 2026-11-19)
+- **Online / offline line on every screen**, just above the tabs: green dot + "অনলাইন" while the server answers, grey dot + "অফলাইন" when the phone has no network or the last sync could not reach the server (`OnlineStrip`, core/ui/chips.dart). Losing the network turns it grey at once; getting it back starts a sync, and the dot turns green when the server answers.
+- Tests `test/flows/customer_list_reload_test.dart`: empty phone shows Reload, offline reload shows the failure, a reload that gets a fresh snapshot fills the list; opening the tab empty loads by itself; the online/offline line on every tab.
+
 ## [0.12.2] — 2026-11-19
 Contract pinned: field-api `openapi.yaml` **1.22.0** (field-api PR #22, ADR-041; `docs/contract/openapi.yaml`).
 ### Fixed (owner report 2026-11-19: work-in saved, but the live map stayed empty)
