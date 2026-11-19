@@ -461,6 +461,31 @@ class AppLocalizationsBn extends AppLocalizations {
   String get customersEmptyBody => 'অন্য ফিল্টার বা খোঁজ দিয়ে চেষ্টা করুন।';
 
   @override
+  String get customersReload => 'গ্রাহক আবার লোড করুন';
+
+  @override
+  String get customersLoading => 'আপনার ব্রাঞ্চের গ্রাহক লোড হচ্ছে…';
+
+  @override
+  String get customersLoadingBody =>
+      'প্রথমবার এক মিনিট লাগতে পারে। ইন্টারনেট চালু রাখুন।';
+
+  @override
+  String get customersNone => 'এই ফোনে এখনও কোনো গ্রাহক নেই';
+
+  @override
+  String get customersNoneBody =>
+      'ব্রাঞ্চের গ্রাহক আনতে নিচে টানুন বা আবার লোড চাপুন।';
+
+  @override
+  String get customersLoadFailed => 'গ্রাহক লোড করা যায়নি';
+
+  @override
+  String customersLoadFailedBody(String code) {
+    return 'ইন্টারনেট দেখে নিচে টানুন বা আবার লোড চাপুন। কোড: $code';
+  }
+
+  @override
   String customersCount(String count) {
     return '$count জন গ্রাহক';
   }

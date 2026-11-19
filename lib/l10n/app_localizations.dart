@@ -908,6 +908,48 @@ abstract class AppLocalizations {
   /// **'Try another filter or search.'**
   String get customersEmptyBody;
 
+  /// No description provided for @customersReload.
+  ///
+  /// In en, this message translates to:
+  /// **'Reload customers'**
+  String get customersReload;
+
+  /// No description provided for @customersLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading your branch\'s customers…'**
+  String get customersLoading;
+
+  /// No description provided for @customersLoadingBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The first load can take a minute. Keep the internet on.'**
+  String get customersLoadingBody;
+
+  /// No description provided for @customersNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No customers on this phone yet'**
+  String get customersNone;
+
+  /// No description provided for @customersNoneBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Pull down or tap Reload to load your branch\'s customers.'**
+  String get customersNoneBody;
+
+  /// No description provided for @customersLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load customers'**
+  String get customersLoadFailed;
+
+  /// No description provided for @customersLoadFailedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Check the internet, then pull down or tap Reload. Code: {code}'**
+  String customersLoadFailedBody(String code);
+
   /// No description provided for @customersCount.
   ///
   /// In en, this message translates to:

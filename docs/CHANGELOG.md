@@ -1,5 +1,13 @@
 # Changelog — staff-app
 
+## [0.12.3] — 2026-11-19
+Contract unchanged (works with field-api 1.19.0 and later; field-api PR #23 makes the server send a whole branch in small, fast pages).
+### Fixed (owner report 2026-11-19: the customer list was blank after login, with no way to load it)
+- **Customer list: pull down or tap the reload button** (top bar) to load now (FR-M-032). It runs the same sync as "Sync now".
+- **No more blank screen:** when no customer is on the phone the list says whether the first load is running (with progress), failed (with the error code) or has not happened, with a Reload button. "No customers match" stays for an empty filter.
+- The customer count row no longer overflows at large font sizes.
+- Test `test/flows/customer_list_reload_test.dart`: empty phone shows Reload, offline reload shows the failure, a reload that gets a fresh snapshot fills the list.
+
 ## [0.12.1] — 2026-11-19
 Contract pinned: field-api `openapi.yaml` **1.21.0** (field-api PR #20, ADR-040; `docs/contract/openapi.yaml`).
 ### Fixed (owner report 2026-11-19: attendance always "1 waiting", so no location reaches the live map)

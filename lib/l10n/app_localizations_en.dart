@@ -461,6 +461,31 @@ class AppLocalizationsEn extends AppLocalizations {
   String get customersEmptyBody => 'Try another filter or search.';
 
   @override
+  String get customersReload => 'Reload customers';
+
+  @override
+  String get customersLoading => 'Loading your branch\'s customers…';
+
+  @override
+  String get customersLoadingBody =>
+      'The first load can take a minute. Keep the internet on.';
+
+  @override
+  String get customersNone => 'No customers on this phone yet';
+
+  @override
+  String get customersNoneBody =>
+      'Pull down or tap Reload to load your branch\'s customers.';
+
+  @override
+  String get customersLoadFailed => 'Couldn\'t load customers';
+
+  @override
+  String customersLoadFailedBody(String code) {
+    return 'Check the internet, then pull down or tap Reload. Code: $code';
+  }
+
+  @override
   String customersCount(String count) {
     return '$count customers';
   }
