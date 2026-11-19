@@ -154,6 +154,8 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
               ],
             ),
           ),
+          // While the branch is still downloading, say so above the rows that have arrived (owner request 2026-11-19).
+          if (sync.phase == SyncPhase.bootstrapping && all.isNotEmpty) _StillLoading(count: f.num(all.length), progress: sync.bootstrapProgress),
           Expanded(
             child: RefreshIndicator(
               onRefresh: reload,
@@ -218,5 +220,37 @@ class _NothingYet extends StatelessWidget {
     return code != null
         ? EmptyState(icon: Icons.cloud_off_rounded, title: l.customersLoadFailed, body: l.customersLoadFailedBody(code), action: button)
         : EmptyState(icon: Icons.person_search_rounded, title: l.customersNone, body: l.customersNoneBody, action: button);
+  }
+}
+
+/// Thin banner while the first load (or a reload) is still bringing customers in.
+class _StillLoading extends StatelessWidget {
+  const _StillLoading({required this.count, required this.progress});
+  final String count;
+  final double? progress;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final cs = Theme.of(context).colorScheme;
+    return Semantics(
+      liveRegion: true,
+      child: Container(
+        color: cs.secondaryContainer,
+        padding: const EdgeInsets.fromLTRB(Space.screen, Space.s8, Space.screen, Space.s8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(children: [
+              SizedBox.square(dimension: 16, child: CircularProgressIndicator(strokeWidth: 2, color: cs.onSecondaryContainer)),
+              const SizedBox(width: Space.s8),
+              Expanded(child: Text(l.customersLoadingCount(count), style: Theme.of(context).textTheme.bodyMedium!.copyWith(color: cs.onSecondaryContainer))),
+            ]),
+            const SizedBox(height: Space.s8),
+            LinearProgressIndicator(value: progress),
+          ],
+        ),
+      ),
+    );
   }
 }

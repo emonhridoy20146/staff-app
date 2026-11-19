@@ -242,6 +242,14 @@
   "customersEmpty": "No customers match",
   "customersEmptyBody": "Try another filter or search.",
   "customersReload": "Reload customers",
+  "customersLoadingCount": "Loading customers… ({count} so far)",
+  "@customersLoadingCount": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
   "customersLoading": "Loading your branch's customers…",
   "customersLoadingBody": "The first load can take a minute. Keep the internet on.",
   "customersNone": "No customers on this phone yet",

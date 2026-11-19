@@ -137,6 +137,7 @@
   "customersEmpty": "কোনো গ্রাহক মেলেনি",
   "customersEmptyBody": "অন্য ফিল্টার বা খোঁজ দিয়ে চেষ্টা করুন।",
   "customersReload": "গ্রাহক আবার লোড করুন",
+  "customersLoadingCount": "গ্রাহক লোড হচ্ছে… ({count} জন)",
   "customersLoading": "আপনার ব্রাঞ্চের গ্রাহক লোড হচ্ছে…",
   "customersLoadingBody": "প্রথমবার এক মিনিট লাগতে পারে। ইন্টারনেট চালু রাখুন।",
   "customersNone": "এই ফোনে এখনও কোনো গ্রাহক নেই",

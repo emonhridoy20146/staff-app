@@ -920,6 +920,12 @@ abstract class AppLocalizations {
   /// **'Reload customers'**
   String get customersReload;
 
+  /// No description provided for @customersLoadingCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading customers… ({count} so far)'**
+  String customersLoadingCount(String count);
+
   /// No description provided for @customersLoading.
   ///
   /// In en, this message translates to:

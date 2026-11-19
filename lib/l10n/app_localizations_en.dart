@@ -467,6 +467,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get customersReload => 'Reload customers';
 
   @override
+  String customersLoadingCount(String count) {
+    return 'Loading customers… ($count so far)';
+  }
+
+  @override
   String get customersLoading => 'Loading your branch\'s customers…';
 
   @override

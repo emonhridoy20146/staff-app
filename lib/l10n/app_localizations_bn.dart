@@ -467,6 +467,11 @@ class AppLocalizationsBn extends AppLocalizations {
   String get customersReload => 'গ্রাহক আবার লোড করুন';
 
   @override
+  String customersLoadingCount(String count) {
+    return 'গ্রাহক লোড হচ্ছে… ($count জন)';
+  }
+
+  @override
   String get customersLoading => 'আপনার ব্রাঞ্চের গ্রাহক লোড হচ্ছে…';
 
   @override

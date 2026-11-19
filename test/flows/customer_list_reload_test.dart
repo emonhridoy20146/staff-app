@@ -89,4 +89,32 @@ void main() {
     expect(await t.runAsync(() => db.select(db.customers).get()), isNotEmpty);
     expect(find.text('এই ফোনে এখনও কোনো গ্রাহক নেই'), findsNothing);
   });
+
+  testWidgets('while a load is running the list says customers are still coming, with the count so far', (t) async {
+    final h = Harness();
+    await t.runAsync(h.signIn);
+    t.view.physicalSize = const Size(412, 892) * 2;
+    t.view.devicePixelRatio = 2;
+    addTearDown(t.view.reset);
+    await t.pumpWidget(UncontrolledProviderScope(container: h.container, child: const FieldApp(watchConnectivity: false)));
+    await settle(t);
+    await t.tap(find.text('গ্রাহক').last);
+    await settle(t);
+    expect(find.textContaining('গ্রাহক লোড হচ্ছে…'), findsNothing);
+
+    h.api.latency = const Duration(milliseconds: 600);
+    h.api.expireCursor = true;
+    await t.tap(find.byTooltip('গ্রাহক আবার লোড করুন'));
+    // the pull answers "take a fresh snapshot" after one round trip; the snapshot is then on its way
+    var seen = false;
+    for (var i = 0; i < 30 && !seen; i++) {
+      await settle(t, rounds: 1);
+      seen = find.textContaining('গ্রাহক লোড হচ্ছে…').evaluate().isNotEmpty;
+    }
+    expect(seen, isTrue);
+    h.api.expireCursor = false;
+    h.api.latency = Duration.zero;
+    await settle(t, rounds: 20);
+    expect(find.textContaining('গ্রাহক লোড হচ্ছে…'), findsNothing);
+  });
 }
