@@ -17,6 +17,7 @@ import '../features/reports/reports.dart';
 import '../features/settings/settings.dart';
 import '../features/sync/sync.dart';
 import '../features/tags/tags.dart';
+import '../features/tasks/tasks.dart';
 import '../features/today/today.dart';
 import '../features/visits/visits.dart';
 
@@ -27,6 +28,7 @@ List<FeatureManifest> buildFeatureManifests(SyncHandlerRegistry Function() regis
       onboardingManifest,
       todayManifest,
       noticesManifest,
+      tasksManifest,
       customersManifest(registry),
       collectionsManifest,
       cashManifest,

@@ -18469,6 +18469,1007 @@ class BroadcastsCompanion extends UpdateCompanion<BroadcastRow> {
   }
 }
 
+class $TasksTable extends Tasks with TableInfo<$TasksTable, TaskRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $TasksTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _serverIdMeta = const VerificationMeta(
+    'serverId',
+  );
+  @override
+  late final GeneratedColumn<String> serverId = GeneratedColumn<String>(
+    'server_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
+  @override
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+    'title',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _noteMeta = const VerificationMeta('note');
+  @override
+  late final GeneratedColumn<String> note = GeneratedColumn<String>(
+    'note',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _dueDateMeta = const VerificationMeta(
+    'dueDate',
+  );
+  @override
+  late final GeneratedColumn<String> dueDate = GeneratedColumn<String>(
+    'due_date',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('open'),
+  );
+  static const VerificationMeta _createdByNameMeta = const VerificationMeta(
+    'createdByName',
+  );
+  @override
+  late final GeneratedColumn<String> createdByName = GeneratedColumn<String>(
+    'created_by_name',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _branchIdMeta = const VerificationMeta(
+    'branchId',
+  );
+  @override
+  late final GeneratedColumn<String> branchId = GeneratedColumn<String>(
+    'branch_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _decisionNoteMeta = const VerificationMeta(
+    'decisionNote',
+  );
+  @override
+  late final GeneratedColumn<String> decisionNote = GeneratedColumn<String>(
+    'decision_note',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _decidedAtMeta = const VerificationMeta(
+    'decidedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> decidedAt = GeneratedColumn<DateTime>(
+    'decided_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _eventsJsonMeta = const VerificationMeta(
+    'eventsJson',
+  );
+  @override
+  late final GeneratedColumn<String> eventsJson = GeneratedColumn<String>(
+    'events_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('[]'),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _seenAtMeta = const VerificationMeta('seenAt');
+  @override
+  late final GeneratedColumn<DateTime> seenAt = GeneratedColumn<DateTime>(
+    'seen_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _resolveNoteMeta = const VerificationMeta(
+    'resolveNote',
+  );
+  @override
+  late final GeneratedColumn<String> resolveNote = GeneratedColumn<String>(
+    'resolve_note',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _resolveRequestedAtMeta =
+      const VerificationMeta('resolveRequestedAt');
+  @override
+  late final GeneratedColumn<DateTime> resolveRequestedAt =
+      GeneratedColumn<DateTime>(
+        'resolve_requested_at',
+        aliasedName,
+        true,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _resolveStateMeta = const VerificationMeta(
+    'resolveState',
+  );
+  @override
+  late final GeneratedColumn<String> resolveState = GeneratedColumn<String>(
+    'resolve_state',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('none'),
+  );
+  static const VerificationMeta _resolveMutationIdMeta = const VerificationMeta(
+    'resolveMutationId',
+  );
+  @override
+  late final GeneratedColumn<String> resolveMutationId =
+      GeneratedColumn<String>(
+        'resolve_mutation_id',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  @override
+  List<GeneratedColumn> get $columns => [
+    serverId,
+    title,
+    note,
+    dueDate,
+    status,
+    createdByName,
+    branchId,
+    decisionNote,
+    decidedAt,
+    eventsJson,
+    createdAt,
+    updatedAt,
+    seenAt,
+    resolveNote,
+    resolveRequestedAt,
+    resolveState,
+    resolveMutationId,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'tasks';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<TaskRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('server_id')) {
+      context.handle(
+        _serverIdMeta,
+        serverId.isAcceptableOrUnknown(data['server_id']!, _serverIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_serverIdMeta);
+    }
+    if (data.containsKey('title')) {
+      context.handle(
+        _titleMeta,
+        title.isAcceptableOrUnknown(data['title']!, _titleMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_titleMeta);
+    }
+    if (data.containsKey('note')) {
+      context.handle(
+        _noteMeta,
+        note.isAcceptableOrUnknown(data['note']!, _noteMeta),
+      );
+    }
+    if (data.containsKey('due_date')) {
+      context.handle(
+        _dueDateMeta,
+        dueDate.isAcceptableOrUnknown(data['due_date']!, _dueDateMeta),
+      );
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    }
+    if (data.containsKey('created_by_name')) {
+      context.handle(
+        _createdByNameMeta,
+        createdByName.isAcceptableOrUnknown(
+          data['created_by_name']!,
+          _createdByNameMeta,
+        ),
+      );
+    }
+    if (data.containsKey('branch_id')) {
+      context.handle(
+        _branchIdMeta,
+        branchId.isAcceptableOrUnknown(data['branch_id']!, _branchIdMeta),
+      );
+    }
+    if (data.containsKey('decision_note')) {
+      context.handle(
+        _decisionNoteMeta,
+        decisionNote.isAcceptableOrUnknown(
+          data['decision_note']!,
+          _decisionNoteMeta,
+        ),
+      );
+    }
+    if (data.containsKey('decided_at')) {
+      context.handle(
+        _decidedAtMeta,
+        decidedAt.isAcceptableOrUnknown(data['decided_at']!, _decidedAtMeta),
+      );
+    }
+    if (data.containsKey('events_json')) {
+      context.handle(
+        _eventsJsonMeta,
+        eventsJson.isAcceptableOrUnknown(data['events_json']!, _eventsJsonMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    if (data.containsKey('seen_at')) {
+      context.handle(
+        _seenAtMeta,
+        seenAt.isAcceptableOrUnknown(data['seen_at']!, _seenAtMeta),
+      );
+    }
+    if (data.containsKey('resolve_note')) {
+      context.handle(
+        _resolveNoteMeta,
+        resolveNote.isAcceptableOrUnknown(
+          data['resolve_note']!,
+          _resolveNoteMeta,
+        ),
+      );
+    }
+    if (data.containsKey('resolve_requested_at')) {
+      context.handle(
+        _resolveRequestedAtMeta,
+        resolveRequestedAt.isAcceptableOrUnknown(
+          data['resolve_requested_at']!,
+          _resolveRequestedAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('resolve_state')) {
+      context.handle(
+        _resolveStateMeta,
+        resolveState.isAcceptableOrUnknown(
+          data['resolve_state']!,
+          _resolveStateMeta,
+        ),
+      );
+    }
+    if (data.containsKey('resolve_mutation_id')) {
+      context.handle(
+        _resolveMutationIdMeta,
+        resolveMutationId.isAcceptableOrUnknown(
+          data['resolve_mutation_id']!,
+          _resolveMutationIdMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {serverId};
+  @override
+  TaskRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return TaskRow(
+      serverId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}server_id'],
+      )!,
+      title: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}title'],
+      )!,
+      note: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}note'],
+      ),
+      dueDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}due_date'],
+      ),
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status'],
+      )!,
+      createdByName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}created_by_name'],
+      ),
+      branchId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}branch_id'],
+      ),
+      decisionNote: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}decision_note'],
+      ),
+      decidedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}decided_at'],
+      ),
+      eventsJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}events_json'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      ),
+      seenAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}seen_at'],
+      ),
+      resolveNote: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}resolve_note'],
+      ),
+      resolveRequestedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}resolve_requested_at'],
+      ),
+      resolveState: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}resolve_state'],
+      )!,
+      resolveMutationId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}resolve_mutation_id'],
+      ),
+    );
+  }
+
+  @override
+  $TasksTable createAlias(String alias) {
+    return $TasksTable(attachedDatabase, alias);
+  }
+}
+
+class TaskRow extends DataClass implements Insertable<TaskRow> {
+  final String serverId;
+  final String title;
+  final String? note;
+
+  /// Dhaka business date (YYYY-MM-DD) or null.
+  final String? dueDate;
+
+  /// open | resolve_requested | resolved | cancelled (the server's word).
+  final String status;
+  final String? createdByName;
+  final String? branchId;
+  final String? decisionNote;
+  final DateTime? decidedAt;
+
+  /// History as the server sent it (JSON list of {type, by, at, note}).
+  final String eventsJson;
+  final DateTime createdAt;
+  final DateTime? updatedAt;
+
+  /// When I first opened it (drives the "new" marker).
+  final DateTime? seenAt;
+
+  /// What I wrote with my "done" request, and when. Local until the server confirms.
+  final String? resolveNote;
+  final DateTime? resolveRequestedAt;
+
+  /// none | queued | synced | failed
+  final String resolveState;
+  final String? resolveMutationId;
+  const TaskRow({
+    required this.serverId,
+    required this.title,
+    this.note,
+    this.dueDate,
+    required this.status,
+    this.createdByName,
+    this.branchId,
+    this.decisionNote,
+    this.decidedAt,
+    required this.eventsJson,
+    required this.createdAt,
+    this.updatedAt,
+    this.seenAt,
+    this.resolveNote,
+    this.resolveRequestedAt,
+    required this.resolveState,
+    this.resolveMutationId,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['server_id'] = Variable<String>(serverId);
+    map['title'] = Variable<String>(title);
+    if (!nullToAbsent || note != null) {
+      map['note'] = Variable<String>(note);
+    }
+    if (!nullToAbsent || dueDate != null) {
+      map['due_date'] = Variable<String>(dueDate);
+    }
+    map['status'] = Variable<String>(status);
+    if (!nullToAbsent || createdByName != null) {
+      map['created_by_name'] = Variable<String>(createdByName);
+    }
+    if (!nullToAbsent || branchId != null) {
+      map['branch_id'] = Variable<String>(branchId);
+    }
+    if (!nullToAbsent || decisionNote != null) {
+      map['decision_note'] = Variable<String>(decisionNote);
+    }
+    if (!nullToAbsent || decidedAt != null) {
+      map['decided_at'] = Variable<DateTime>(decidedAt);
+    }
+    map['events_json'] = Variable<String>(eventsJson);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    if (!nullToAbsent || updatedAt != null) {
+      map['updated_at'] = Variable<DateTime>(updatedAt);
+    }
+    if (!nullToAbsent || seenAt != null) {
+      map['seen_at'] = Variable<DateTime>(seenAt);
+    }
+    if (!nullToAbsent || resolveNote != null) {
+      map['resolve_note'] = Variable<String>(resolveNote);
+    }
+    if (!nullToAbsent || resolveRequestedAt != null) {
+      map['resolve_requested_at'] = Variable<DateTime>(resolveRequestedAt);
+    }
+    map['resolve_state'] = Variable<String>(resolveState);
+    if (!nullToAbsent || resolveMutationId != null) {
+      map['resolve_mutation_id'] = Variable<String>(resolveMutationId);
+    }
+    return map;
+  }
+
+  TasksCompanion toCompanion(bool nullToAbsent) {
+    return TasksCompanion(
+      serverId: Value(serverId),
+      title: Value(title),
+      note: note == null && nullToAbsent ? const Value.absent() : Value(note),
+      dueDate: dueDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(dueDate),
+      status: Value(status),
+      createdByName: createdByName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(createdByName),
+      branchId: branchId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(branchId),
+      decisionNote: decisionNote == null && nullToAbsent
+          ? const Value.absent()
+          : Value(decisionNote),
+      decidedAt: decidedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(decidedAt),
+      eventsJson: Value(eventsJson),
+      createdAt: Value(createdAt),
+      updatedAt: updatedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(updatedAt),
+      seenAt: seenAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(seenAt),
+      resolveNote: resolveNote == null && nullToAbsent
+          ? const Value.absent()
+          : Value(resolveNote),
+      resolveRequestedAt: resolveRequestedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(resolveRequestedAt),
+      resolveState: Value(resolveState),
+      resolveMutationId: resolveMutationId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(resolveMutationId),
+    );
+  }
+
+  factory TaskRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return TaskRow(
+      serverId: serializer.fromJson<String>(json['serverId']),
+      title: serializer.fromJson<String>(json['title']),
+      note: serializer.fromJson<String?>(json['note']),
+      dueDate: serializer.fromJson<String?>(json['dueDate']),
+      status: serializer.fromJson<String>(json['status']),
+      createdByName: serializer.fromJson<String?>(json['createdByName']),
+      branchId: serializer.fromJson<String?>(json['branchId']),
+      decisionNote: serializer.fromJson<String?>(json['decisionNote']),
+      decidedAt: serializer.fromJson<DateTime?>(json['decidedAt']),
+      eventsJson: serializer.fromJson<String>(json['eventsJson']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime?>(json['updatedAt']),
+      seenAt: serializer.fromJson<DateTime?>(json['seenAt']),
+      resolveNote: serializer.fromJson<String?>(json['resolveNote']),
+      resolveRequestedAt: serializer.fromJson<DateTime?>(
+        json['resolveRequestedAt'],
+      ),
+      resolveState: serializer.fromJson<String>(json['resolveState']),
+      resolveMutationId: serializer.fromJson<String?>(
+        json['resolveMutationId'],
+      ),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'serverId': serializer.toJson<String>(serverId),
+      'title': serializer.toJson<String>(title),
+      'note': serializer.toJson<String?>(note),
+      'dueDate': serializer.toJson<String?>(dueDate),
+      'status': serializer.toJson<String>(status),
+      'createdByName': serializer.toJson<String?>(createdByName),
+      'branchId': serializer.toJson<String?>(branchId),
+      'decisionNote': serializer.toJson<String?>(decisionNote),
+      'decidedAt': serializer.toJson<DateTime?>(decidedAt),
+      'eventsJson': serializer.toJson<String>(eventsJson),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime?>(updatedAt),
+      'seenAt': serializer.toJson<DateTime?>(seenAt),
+      'resolveNote': serializer.toJson<String?>(resolveNote),
+      'resolveRequestedAt': serializer.toJson<DateTime?>(resolveRequestedAt),
+      'resolveState': serializer.toJson<String>(resolveState),
+      'resolveMutationId': serializer.toJson<String?>(resolveMutationId),
+    };
+  }
+
+  TaskRow copyWith({
+    String? serverId,
+    String? title,
+    Value<String?> note = const Value.absent(),
+    Value<String?> dueDate = const Value.absent(),
+    String? status,
+    Value<String?> createdByName = const Value.absent(),
+    Value<String?> branchId = const Value.absent(),
+    Value<String?> decisionNote = const Value.absent(),
+    Value<DateTime?> decidedAt = const Value.absent(),
+    String? eventsJson,
+    DateTime? createdAt,
+    Value<DateTime?> updatedAt = const Value.absent(),
+    Value<DateTime?> seenAt = const Value.absent(),
+    Value<String?> resolveNote = const Value.absent(),
+    Value<DateTime?> resolveRequestedAt = const Value.absent(),
+    String? resolveState,
+    Value<String?> resolveMutationId = const Value.absent(),
+  }) => TaskRow(
+    serverId: serverId ?? this.serverId,
+    title: title ?? this.title,
+    note: note.present ? note.value : this.note,
+    dueDate: dueDate.present ? dueDate.value : this.dueDate,
+    status: status ?? this.status,
+    createdByName: createdByName.present
+        ? createdByName.value
+        : this.createdByName,
+    branchId: branchId.present ? branchId.value : this.branchId,
+    decisionNote: decisionNote.present ? decisionNote.value : this.decisionNote,
+    decidedAt: decidedAt.present ? decidedAt.value : this.decidedAt,
+    eventsJson: eventsJson ?? this.eventsJson,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
+    seenAt: seenAt.present ? seenAt.value : this.seenAt,
+    resolveNote: resolveNote.present ? resolveNote.value : this.resolveNote,
+    resolveRequestedAt: resolveRequestedAt.present
+        ? resolveRequestedAt.value
+        : this.resolveRequestedAt,
+    resolveState: resolveState ?? this.resolveState,
+    resolveMutationId: resolveMutationId.present
+        ? resolveMutationId.value
+        : this.resolveMutationId,
+  );
+  TaskRow copyWithCompanion(TasksCompanion data) {
+    return TaskRow(
+      serverId: data.serverId.present ? data.serverId.value : this.serverId,
+      title: data.title.present ? data.title.value : this.title,
+      note: data.note.present ? data.note.value : this.note,
+      dueDate: data.dueDate.present ? data.dueDate.value : this.dueDate,
+      status: data.status.present ? data.status.value : this.status,
+      createdByName: data.createdByName.present
+          ? data.createdByName.value
+          : this.createdByName,
+      branchId: data.branchId.present ? data.branchId.value : this.branchId,
+      decisionNote: data.decisionNote.present
+          ? data.decisionNote.value
+          : this.decisionNote,
+      decidedAt: data.decidedAt.present ? data.decidedAt.value : this.decidedAt,
+      eventsJson: data.eventsJson.present
+          ? data.eventsJson.value
+          : this.eventsJson,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      seenAt: data.seenAt.present ? data.seenAt.value : this.seenAt,
+      resolveNote: data.resolveNote.present
+          ? data.resolveNote.value
+          : this.resolveNote,
+      resolveRequestedAt: data.resolveRequestedAt.present
+          ? data.resolveRequestedAt.value
+          : this.resolveRequestedAt,
+      resolveState: data.resolveState.present
+          ? data.resolveState.value
+          : this.resolveState,
+      resolveMutationId: data.resolveMutationId.present
+          ? data.resolveMutationId.value
+          : this.resolveMutationId,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TaskRow(')
+          ..write('serverId: $serverId, ')
+          ..write('title: $title, ')
+          ..write('note: $note, ')
+          ..write('dueDate: $dueDate, ')
+          ..write('status: $status, ')
+          ..write('createdByName: $createdByName, ')
+          ..write('branchId: $branchId, ')
+          ..write('decisionNote: $decisionNote, ')
+          ..write('decidedAt: $decidedAt, ')
+          ..write('eventsJson: $eventsJson, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('seenAt: $seenAt, ')
+          ..write('resolveNote: $resolveNote, ')
+          ..write('resolveRequestedAt: $resolveRequestedAt, ')
+          ..write('resolveState: $resolveState, ')
+          ..write('resolveMutationId: $resolveMutationId')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    serverId,
+    title,
+    note,
+    dueDate,
+    status,
+    createdByName,
+    branchId,
+    decisionNote,
+    decidedAt,
+    eventsJson,
+    createdAt,
+    updatedAt,
+    seenAt,
+    resolveNote,
+    resolveRequestedAt,
+    resolveState,
+    resolveMutationId,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is TaskRow &&
+          other.serverId == this.serverId &&
+          other.title == this.title &&
+          other.note == this.note &&
+          other.dueDate == this.dueDate &&
+          other.status == this.status &&
+          other.createdByName == this.createdByName &&
+          other.branchId == this.branchId &&
+          other.decisionNote == this.decisionNote &&
+          other.decidedAt == this.decidedAt &&
+          other.eventsJson == this.eventsJson &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt &&
+          other.seenAt == this.seenAt &&
+          other.resolveNote == this.resolveNote &&
+          other.resolveRequestedAt == this.resolveRequestedAt &&
+          other.resolveState == this.resolveState &&
+          other.resolveMutationId == this.resolveMutationId);
+}
+
+class TasksCompanion extends UpdateCompanion<TaskRow> {
+  final Value<String> serverId;
+  final Value<String> title;
+  final Value<String?> note;
+  final Value<String?> dueDate;
+  final Value<String> status;
+  final Value<String?> createdByName;
+  final Value<String?> branchId;
+  final Value<String?> decisionNote;
+  final Value<DateTime?> decidedAt;
+  final Value<String> eventsJson;
+  final Value<DateTime> createdAt;
+  final Value<DateTime?> updatedAt;
+  final Value<DateTime?> seenAt;
+  final Value<String?> resolveNote;
+  final Value<DateTime?> resolveRequestedAt;
+  final Value<String> resolveState;
+  final Value<String?> resolveMutationId;
+  final Value<int> rowid;
+  const TasksCompanion({
+    this.serverId = const Value.absent(),
+    this.title = const Value.absent(),
+    this.note = const Value.absent(),
+    this.dueDate = const Value.absent(),
+    this.status = const Value.absent(),
+    this.createdByName = const Value.absent(),
+    this.branchId = const Value.absent(),
+    this.decisionNote = const Value.absent(),
+    this.decidedAt = const Value.absent(),
+    this.eventsJson = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.seenAt = const Value.absent(),
+    this.resolveNote = const Value.absent(),
+    this.resolveRequestedAt = const Value.absent(),
+    this.resolveState = const Value.absent(),
+    this.resolveMutationId = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  TasksCompanion.insert({
+    required String serverId,
+    required String title,
+    this.note = const Value.absent(),
+    this.dueDate = const Value.absent(),
+    this.status = const Value.absent(),
+    this.createdByName = const Value.absent(),
+    this.branchId = const Value.absent(),
+    this.decisionNote = const Value.absent(),
+    this.decidedAt = const Value.absent(),
+    this.eventsJson = const Value.absent(),
+    required DateTime createdAt,
+    this.updatedAt = const Value.absent(),
+    this.seenAt = const Value.absent(),
+    this.resolveNote = const Value.absent(),
+    this.resolveRequestedAt = const Value.absent(),
+    this.resolveState = const Value.absent(),
+    this.resolveMutationId = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : serverId = Value(serverId),
+       title = Value(title),
+       createdAt = Value(createdAt);
+  static Insertable<TaskRow> custom({
+    Expression<String>? serverId,
+    Expression<String>? title,
+    Expression<String>? note,
+    Expression<String>? dueDate,
+    Expression<String>? status,
+    Expression<String>? createdByName,
+    Expression<String>? branchId,
+    Expression<String>? decisionNote,
+    Expression<DateTime>? decidedAt,
+    Expression<String>? eventsJson,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<DateTime>? seenAt,
+    Expression<String>? resolveNote,
+    Expression<DateTime>? resolveRequestedAt,
+    Expression<String>? resolveState,
+    Expression<String>? resolveMutationId,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (serverId != null) 'server_id': serverId,
+      if (title != null) 'title': title,
+      if (note != null) 'note': note,
+      if (dueDate != null) 'due_date': dueDate,
+      if (status != null) 'status': status,
+      if (createdByName != null) 'created_by_name': createdByName,
+      if (branchId != null) 'branch_id': branchId,
+      if (decisionNote != null) 'decision_note': decisionNote,
+      if (decidedAt != null) 'decided_at': decidedAt,
+      if (eventsJson != null) 'events_json': eventsJson,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (seenAt != null) 'seen_at': seenAt,
+      if (resolveNote != null) 'resolve_note': resolveNote,
+      if (resolveRequestedAt != null)
+        'resolve_requested_at': resolveRequestedAt,
+      if (resolveState != null) 'resolve_state': resolveState,
+      if (resolveMutationId != null) 'resolve_mutation_id': resolveMutationId,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  TasksCompanion copyWith({
+    Value<String>? serverId,
+    Value<String>? title,
+    Value<String?>? note,
+    Value<String?>? dueDate,
+    Value<String>? status,
+    Value<String?>? createdByName,
+    Value<String?>? branchId,
+    Value<String?>? decisionNote,
+    Value<DateTime?>? decidedAt,
+    Value<String>? eventsJson,
+    Value<DateTime>? createdAt,
+    Value<DateTime?>? updatedAt,
+    Value<DateTime?>? seenAt,
+    Value<String?>? resolveNote,
+    Value<DateTime?>? resolveRequestedAt,
+    Value<String>? resolveState,
+    Value<String?>? resolveMutationId,
+    Value<int>? rowid,
+  }) {
+    return TasksCompanion(
+      serverId: serverId ?? this.serverId,
+      title: title ?? this.title,
+      note: note ?? this.note,
+      dueDate: dueDate ?? this.dueDate,
+      status: status ?? this.status,
+      createdByName: createdByName ?? this.createdByName,
+      branchId: branchId ?? this.branchId,
+      decisionNote: decisionNote ?? this.decisionNote,
+      decidedAt: decidedAt ?? this.decidedAt,
+      eventsJson: eventsJson ?? this.eventsJson,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      seenAt: seenAt ?? this.seenAt,
+      resolveNote: resolveNote ?? this.resolveNote,
+      resolveRequestedAt: resolveRequestedAt ?? this.resolveRequestedAt,
+      resolveState: resolveState ?? this.resolveState,
+      resolveMutationId: resolveMutationId ?? this.resolveMutationId,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (serverId.present) {
+      map['server_id'] = Variable<String>(serverId.value);
+    }
+    if (title.present) {
+      map['title'] = Variable<String>(title.value);
+    }
+    if (note.present) {
+      map['note'] = Variable<String>(note.value);
+    }
+    if (dueDate.present) {
+      map['due_date'] = Variable<String>(dueDate.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (createdByName.present) {
+      map['created_by_name'] = Variable<String>(createdByName.value);
+    }
+    if (branchId.present) {
+      map['branch_id'] = Variable<String>(branchId.value);
+    }
+    if (decisionNote.present) {
+      map['decision_note'] = Variable<String>(decisionNote.value);
+    }
+    if (decidedAt.present) {
+      map['decided_at'] = Variable<DateTime>(decidedAt.value);
+    }
+    if (eventsJson.present) {
+      map['events_json'] = Variable<String>(eventsJson.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (seenAt.present) {
+      map['seen_at'] = Variable<DateTime>(seenAt.value);
+    }
+    if (resolveNote.present) {
+      map['resolve_note'] = Variable<String>(resolveNote.value);
+    }
+    if (resolveRequestedAt.present) {
+      map['resolve_requested_at'] = Variable<DateTime>(
+        resolveRequestedAt.value,
+      );
+    }
+    if (resolveState.present) {
+      map['resolve_state'] = Variable<String>(resolveState.value);
+    }
+    if (resolveMutationId.present) {
+      map['resolve_mutation_id'] = Variable<String>(resolveMutationId.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TasksCompanion(')
+          ..write('serverId: $serverId, ')
+          ..write('title: $title, ')
+          ..write('note: $note, ')
+          ..write('dueDate: $dueDate, ')
+          ..write('status: $status, ')
+          ..write('createdByName: $createdByName, ')
+          ..write('branchId: $branchId, ')
+          ..write('decisionNote: $decisionNote, ')
+          ..write('decidedAt: $decidedAt, ')
+          ..write('eventsJson: $eventsJson, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('seenAt: $seenAt, ')
+          ..write('resolveNote: $resolveNote, ')
+          ..write('resolveRequestedAt: $resolveRequestedAt, ')
+          ..write('resolveState: $resolveState, ')
+          ..write('resolveMutationId: $resolveMutationId, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $NotificationsTable extends Notifications
     with TableInfo<$NotificationsTable, NotificationRow> {
   @override
@@ -19165,6 +20166,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   );
   late final $CoworkSessionsTable coworkSessions = $CoworkSessionsTable(this);
   late final $BroadcastsTable broadcasts = $BroadcastsTable(this);
+  late final $TasksTable tasks = $TasksTable(this);
   late final $NotificationsTable notifications = $NotificationsTable(this);
   late final $KvSettingsTable kvSettings = $KvSettingsTable(this);
   @override
@@ -19197,6 +20199,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     contactAttempts,
     coworkSessions,
     broadcasts,
+    tasks,
     notifications,
     kvSettings,
   ];
@@ -28079,6 +29082,448 @@ typedef $$BroadcastsTableProcessedTableManager =
       BroadcastRow,
       PrefetchHooks Function()
     >;
+typedef $$TasksTableCreateCompanionBuilder = TasksCompanion Function({
+  required String serverId,
+  required String title,
+  Value<String?> note,
+  Value<String?> dueDate,
+  Value<String> status,
+  Value<String?> createdByName,
+  Value<String?> branchId,
+  Value<String?> decisionNote,
+  Value<DateTime?> decidedAt,
+  Value<String> eventsJson,
+  required DateTime createdAt,
+  Value<DateTime?> updatedAt,
+  Value<DateTime?> seenAt,
+  Value<String?> resolveNote,
+  Value<DateTime?> resolveRequestedAt,
+  Value<String> resolveState,
+  Value<String?> resolveMutationId,
+  Value<int> rowid,
+});
+typedef $$TasksTableUpdateCompanionBuilder = TasksCompanion Function({
+  Value<String> serverId,
+  Value<String> title,
+  Value<String?> note,
+  Value<String?> dueDate,
+  Value<String> status,
+  Value<String?> createdByName,
+  Value<String?> branchId,
+  Value<String?> decisionNote,
+  Value<DateTime?> decidedAt,
+  Value<String> eventsJson,
+  Value<DateTime> createdAt,
+  Value<DateTime?> updatedAt,
+  Value<DateTime?> seenAt,
+  Value<String?> resolveNote,
+  Value<DateTime?> resolveRequestedAt,
+  Value<String> resolveState,
+  Value<String?> resolveMutationId,
+  Value<int> rowid,
+});
+
+class $$TasksTableFilterComposer extends Composer<_$AppDatabase, $TasksTable> {
+  $$TasksTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get serverId => $composableBuilder(
+    column: $table.serverId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get dueDate => $composableBuilder(
+    column: $table.dueDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get createdByName => $composableBuilder(
+    column: $table.createdByName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get branchId => $composableBuilder(
+    column: $table.branchId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get decisionNote => $composableBuilder(
+    column: $table.decisionNote,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get decidedAt => $composableBuilder(
+    column: $table.decidedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get eventsJson => $composableBuilder(
+    column: $table.eventsJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get seenAt => $composableBuilder(
+    column: $table.seenAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get resolveNote => $composableBuilder(
+    column: $table.resolveNote,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get resolveRequestedAt => $composableBuilder(
+    column: $table.resolveRequestedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get resolveState => $composableBuilder(
+    column: $table.resolveState,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get resolveMutationId => $composableBuilder(
+    column: $table.resolveMutationId,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$TasksTableOrderingComposer
+    extends Composer<_$AppDatabase, $TasksTable> {
+  $$TasksTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get serverId => $composableBuilder(
+    column: $table.serverId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get dueDate => $composableBuilder(
+    column: $table.dueDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get createdByName => $composableBuilder(
+    column: $table.createdByName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get branchId => $composableBuilder(
+    column: $table.branchId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get decisionNote => $composableBuilder(
+    column: $table.decisionNote,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get decidedAt => $composableBuilder(
+    column: $table.decidedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get eventsJson => $composableBuilder(
+    column: $table.eventsJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get seenAt => $composableBuilder(
+    column: $table.seenAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get resolveNote => $composableBuilder(
+    column: $table.resolveNote,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get resolveRequestedAt => $composableBuilder(
+    column: $table.resolveRequestedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get resolveState => $composableBuilder(
+    column: $table.resolveState,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get resolveMutationId => $composableBuilder(
+    column: $table.resolveMutationId,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$TasksTableAnnotationComposer
+    extends Composer<_$AppDatabase, $TasksTable> {
+  $$TasksTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get serverId =>
+      $composableBuilder(column: $table.serverId, builder: (column) => column);
+
+  GeneratedColumn<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => column);
+
+  GeneratedColumn<String> get note =>
+      $composableBuilder(column: $table.note, builder: (column) => column);
+
+  GeneratedColumn<String> get dueDate =>
+      $composableBuilder(column: $table.dueDate, builder: (column) => column);
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<String> get createdByName => $composableBuilder(
+    column: $table.createdByName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get branchId =>
+      $composableBuilder(column: $table.branchId, builder: (column) => column);
+
+  GeneratedColumn<String> get decisionNote => $composableBuilder(
+    column: $table.decisionNote,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get decidedAt =>
+      $composableBuilder(column: $table.decidedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get eventsJson => $composableBuilder(
+    column: $table.eventsJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get seenAt =>
+      $composableBuilder(column: $table.seenAt, builder: (column) => column);
+
+  GeneratedColumn<String> get resolveNote => $composableBuilder(
+    column: $table.resolveNote,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get resolveRequestedAt => $composableBuilder(
+    column: $table.resolveRequestedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get resolveState => $composableBuilder(
+    column: $table.resolveState,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get resolveMutationId => $composableBuilder(
+    column: $table.resolveMutationId,
+    builder: (column) => column,
+  );
+}
+
+class $$TasksTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $TasksTable,
+          TaskRow,
+          $$TasksTableFilterComposer,
+          $$TasksTableOrderingComposer,
+          $$TasksTableAnnotationComposer,
+          $$TasksTableCreateCompanionBuilder,
+          $$TasksTableUpdateCompanionBuilder,
+          (TaskRow, BaseReferences<_$AppDatabase, $TasksTable, TaskRow>),
+          TaskRow,
+          PrefetchHooks Function()
+        > {
+  $$TasksTableTableManager(_$AppDatabase db, $TasksTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$TasksTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$TasksTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$TasksTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> serverId = const Value.absent(),
+                Value<String> title = const Value.absent(),
+                Value<String?> note = const Value.absent(),
+                Value<String?> dueDate = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<String?> createdByName = const Value.absent(),
+                Value<String?> branchId = const Value.absent(),
+                Value<String?> decisionNote = const Value.absent(),
+                Value<DateTime?> decidedAt = const Value.absent(),
+                Value<String> eventsJson = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime?> updatedAt = const Value.absent(),
+                Value<DateTime?> seenAt = const Value.absent(),
+                Value<String?> resolveNote = const Value.absent(),
+                Value<DateTime?> resolveRequestedAt = const Value.absent(),
+                Value<String> resolveState = const Value.absent(),
+                Value<String?> resolveMutationId = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => TasksCompanion(
+                serverId: serverId,
+                title: title,
+                note: note,
+                dueDate: dueDate,
+                status: status,
+                createdByName: createdByName,
+                branchId: branchId,
+                decisionNote: decisionNote,
+                decidedAt: decidedAt,
+                eventsJson: eventsJson,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                seenAt: seenAt,
+                resolveNote: resolveNote,
+                resolveRequestedAt: resolveRequestedAt,
+                resolveState: resolveState,
+                resolveMutationId: resolveMutationId,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String serverId,
+                required String title,
+                Value<String?> note = const Value.absent(),
+                Value<String?> dueDate = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<String?> createdByName = const Value.absent(),
+                Value<String?> branchId = const Value.absent(),
+                Value<String?> decisionNote = const Value.absent(),
+                Value<DateTime?> decidedAt = const Value.absent(),
+                Value<String> eventsJson = const Value.absent(),
+                required DateTime createdAt,
+                Value<DateTime?> updatedAt = const Value.absent(),
+                Value<DateTime?> seenAt = const Value.absent(),
+                Value<String?> resolveNote = const Value.absent(),
+                Value<DateTime?> resolveRequestedAt = const Value.absent(),
+                Value<String> resolveState = const Value.absent(),
+                Value<String?> resolveMutationId = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => TasksCompanion.insert(
+                serverId: serverId,
+                title: title,
+                note: note,
+                dueDate: dueDate,
+                status: status,
+                createdByName: createdByName,
+                branchId: branchId,
+                decisionNote: decisionNote,
+                decidedAt: decidedAt,
+                eventsJson: eventsJson,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                seenAt: seenAt,
+                resolveNote: resolveNote,
+                resolveRequestedAt: resolveRequestedAt,
+                resolveState: resolveState,
+                resolveMutationId: resolveMutationId,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$TasksTable, TaskRow>(table),
+                  BaseReferences<_$AppDatabase, $TasksTable, TaskRow>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$TasksTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $TasksTable,
+      TaskRow,
+      $$TasksTableFilterComposer,
+      $$TasksTableOrderingComposer,
+      $$TasksTableAnnotationComposer,
+      $$TasksTableCreateCompanionBuilder,
+      $$TasksTableUpdateCompanionBuilder,
+      (TaskRow, BaseReferences<_$AppDatabase, $TasksTable, TaskRow>),
+      TaskRow,
+      PrefetchHooks Function()
+    >;
 typedef $$NotificationsTableCreateCompanionBuilder =
     NotificationsCompanion Function({
       required String serverId,
@@ -28524,6 +29969,8 @@ class $AppDatabaseManager {
       $$CoworkSessionsTableTableManager(_db, _db.coworkSessions);
   $$BroadcastsTableTableManager get broadcasts =>
       $$BroadcastsTableTableManager(_db, _db.broadcasts);
+  $$TasksTableTableManager get tasks =>
+      $$TasksTableTableManager(_db, _db.tasks);
   $$NotificationsTableTableManager get notifications =>
       $$NotificationsTableTableManager(_db, _db.notifications);
   $$KvSettingsTableTableManager get kvSettings =>

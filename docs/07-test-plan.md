@@ -61,6 +61,9 @@ Devices (minimum set): **Xiaomi Redmi (MIUI/HyperOS, 2–3 GB)**, **Samsung Gala
 - [ ] Admin sets `location.trackingProvider = paid` on this build → Me tab shows the fallback note, heartbeat reports it; tracking continues
 - [ ] Visit suggestion appears after 5 min at a customer pin; "Not now" hides it for that customer
 - [ ] Android 14+: foreground service type `location` accepted (no crash at work-in)
+**Tasks & exit (0.12.0)**
+- [ ] Back at Today / Customers / Map / Me asks "অ্যাপ বন্ধ করবেন?"; "থাকুন" stays, "অ্যাপ বন্ধ করুন" leaves; back from a customer or task page goes one step back with no question; Android 13+ predictive-back gesture behaves the same
+- [ ] Admin gives a task: it shows on Today and Me → আমার কাজ after the next sync; "কাজ হয়েছে" in flight mode says "will be sent", goes out when online, and the admin sees the request; sent back with a reason shows the reason
 **Usability & accessibility**
 - [ ] Sunlight readability outdoors (high-contrast mode on/off)
 - [ ] TalkBack reads Bangla labels and amounts in words

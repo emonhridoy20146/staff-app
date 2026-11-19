@@ -2246,4 +2246,173 @@ class AppLocalizationsBn extends AppLocalizations {
   String customerBranch(String branch) {
     return '$branch শাখা';
   }
+
+  @override
+  String get tasksTitle => 'আমার কাজ';
+
+  @override
+  String get taskTitle => 'কাজ';
+
+  @override
+  String get tasksEmpty => 'কোনো কাজ নেই';
+
+  @override
+  String get tasksEmptyBody => 'অফিস আপনাকে কাজ দিলে এখানে দেখা যাবে';
+
+  @override
+  String get tasksSectionActive => 'করতে হবে';
+
+  @override
+  String get tasksSectionWaiting => 'অফিসের যাচাইয়ের অপেক্ষায়';
+
+  @override
+  String get tasksSectionClosed => 'শেষ হয়েছে';
+
+  @override
+  String get taskStatusOpen => 'করতে হবে';
+
+  @override
+  String get taskStatusQueued => 'পাঠানো বাকি';
+
+  @override
+  String get taskStatusWaiting => 'অফিস দেখছে';
+
+  @override
+  String get taskStatusResolved => 'সম্পন্ন';
+
+  @override
+  String get taskStatusCancelled => 'বাতিল';
+
+  @override
+  String get taskStatusOverdue => 'সময় পেরিয়েছে';
+
+  @override
+  String get taskNew => 'নতুন';
+
+  @override
+  String taskDue(String date) {
+    return 'শেষ তারিখ $date';
+  }
+
+  @override
+  String get taskNoDue => 'শেষ তারিখ নেই';
+
+  @override
+  String taskFrom(String name) {
+    return 'পাঠিয়েছেন $name';
+  }
+
+  @override
+  String get taskNoteNone => 'কোনো নোট নেই';
+
+  @override
+  String get taskMarkDone => 'কাজ হয়েছে';
+
+  @override
+  String get taskDoneTitle => 'অফিসকে জানান কাজ হয়েছে';
+
+  @override
+  String get taskDoneBody => 'অফিস যাচাই করে তারপর কাজটি সম্পন্ন করবে।';
+
+  @override
+  String get taskDoneNoteHint => 'কী করেছেন? (ঐচ্ছিক)';
+
+  @override
+  String get taskDoneSend => 'অফিসকে পাঠান';
+
+  @override
+  String get taskDoneSent => 'সেভ হয়েছে, অফিস যাচাই করবে';
+
+  @override
+  String taskQueuedBanner(String time) {
+    return '$time এ ফোনে সেভ হয়েছে। নেটওয়ার্ক পেলে অফিসে যাবে।';
+  }
+
+  @override
+  String taskWaitingBanner(String time) {
+    return '$time এ পাঠানো হয়েছে। অফিস যাচাই করবে।';
+  }
+
+  @override
+  String taskResolvedBanner(String time) {
+    return 'অফিস $time এ সম্পন্ন করেছে';
+  }
+
+  @override
+  String get taskCancelledBanner => 'অফিস কাজটি বাতিল করেছে';
+
+  @override
+  String taskRejectedBanner(String reason) {
+    return 'অফিস ফেরত দিয়েছে: $reason';
+  }
+
+  @override
+  String get taskFailedBanner =>
+      'আপনার আগের অনুরোধ নেওয়া হয়নি। আবার পাঠাতে পারেন।';
+
+  @override
+  String get taskMyNote => 'আপনার নোট';
+
+  @override
+  String get taskOfficeNote => 'অফিসের নোট';
+
+  @override
+  String get taskDetails => 'বিবরণ';
+
+  @override
+  String get taskHistory => 'ইতিহাস';
+
+  @override
+  String get taskEventCreated => 'কাজ দেওয়া হয়েছে';
+
+  @override
+  String get taskEventEdited => 'পরিবর্তন করা হয়েছে';
+
+  @override
+  String get taskEventResolveRequested => 'কাজ হয়েছে জানানো হয়েছে';
+
+  @override
+  String get taskEventVerified => 'অফিস যাচাই করেছে';
+
+  @override
+  String get taskEventRejected => 'ফেরত দেওয়া হয়েছে';
+
+  @override
+  String get taskEventCancelled => 'বাতিল করা হয়েছে';
+
+  @override
+  String todayTasksOverdue(String n) {
+    return 'সময় পেরিয়ে যাওয়া কাজ: $nটি';
+  }
+
+  @override
+  String todayTasksNew(String n) {
+    return 'অফিস থেকে নতুন কাজ: $nটি';
+  }
+
+  @override
+  String todayTasksOpen(String n) {
+    return 'করতে হবে এমন কাজ: $nটি';
+  }
+
+  @override
+  String tasksOpenCount(String n) {
+    return '$nটি বাকি';
+  }
+
+  @override
+  String get tasksNothingOpen => 'কোনো কাজ বাকি নেই';
+
+  @override
+  String get exitAppTitle => 'অ্যাপ বন্ধ করবেন?';
+
+  @override
+  String get exitAppBody =>
+      'যে কাজ এখনো পাঠানো হয়নি তা এই ফোনে নিরাপদে থাকবে।';
+
+  @override
+  String get exitAppStay => 'থাকুন';
+
+  @override
+  String get exitAppConfirm => 'অ্যাপ বন্ধ করুন';
 }

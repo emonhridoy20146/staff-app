@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Howlader Field Operations API
-  version: 1.19.0
+  version: 1.20.0
   description: |
     Contract owned by field-api. Consumers (admin-web, staff-app) generate types from this file.
     Conventions (auth, pagination, idempotency, errors) are described in docs/05-api-contract.md.
@@ -35,6 +35,7 @@ tags:
   - name: inbox
   - name: reports
   - name: targets
+  - name: tasks
   - name: audit
 
 paths:
@@ -994,6 +995,119 @@ paths:
       parameters: [ { $ref: '#/components/parameters/Id' } ]
       responses:
         '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/CoworkSession' } } } }
+  /tasks/mine:
+    get:
+      tags: [tasks]
+      operationId: myTasks
+      description: |
+        The caller's own tasks (1.20.0, FR-TASK-003): everything still going plus what was closed in the last 30 days, newest first.
+        Permission task.work. The app mostly gets the same tasks as sync entity `task`; this call is for refreshing online.
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: object, required: [items], properties: { items: { type: array, items: { $ref: '#/components/schemas/Task' } } } } } } }
+  /tasks/{id}/resolve-request:
+    post:
+      tags: [tasks]
+      operationId: requestTaskResolve
+      description: |
+        The assignee says the work is done (1.20.0, FR-TASK-002). open → resolve_requested and every manager with task.manage in the task's
+        branch is notified. Idempotent: a repeat answers 200 with the task as it is. Offline phones use the sync mutation `task_resolve_request`.
+        Permission task.work; a task of someone else is 404. 409 INVALID_STATE: TASK_RESOLVED, TASK_CANCELLED.
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      requestBody:
+        content:
+          application/json:
+            schema: { type: object, properties: { note: { type: string, maxLength: 1000 }, requestedAt: { type: string, format: date-time, description: 'When the staff member tapped the button (offline). Never later than the server time.' } } }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Task' } } } }
+  /tasks:
+    get:
+      tags: [tasks]
+      operationId: listTasks
+      description: |
+        Tasks in scope, newest first (1.20.0, FR-TASK-004). Permission task.view. `counts` are for the same branch, person and search whatever
+        `status` is, so tab badges stay right; `counts.overdue` = still going and past the due date.
+      parameters:
+        - { name: status, in: query, schema: { $ref: '#/components/schemas/TaskStatus' } }
+        - { name: assigneeId, in: query, schema: { type: string } }
+        - { $ref: '#/components/parameters/BranchId' }
+        - { name: overdue, in: query, schema: { type: boolean }, description: 'Only unfinished tasks past their due date' }
+        - { name: q, in: query, schema: { type: string, maxLength: 100 }, description: 'Words in the title' }
+        - { $ref: '#/components/parameters/Limit' }
+        - { $ref: '#/components/parameters/Cursor' }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: object, required: [items, counts], properties: { items: { type: array, items: { $ref: '#/components/schemas/Task' } }, nextCursor: { type: [string, 'null'] }, counts: { $ref: '#/components/schemas/TaskCounts' } } } } } }
+    post:
+      tags: [tasks]
+      operationId: createTask
+      description: |
+        Give a task to one field staff member, with a note (1.20.0, FR-TASK-001). Not tied to a customer. The assignee is notified. Idempotent by clientId
+        (a repeat answers 200). Permission task.manage. `branchId` must be one of the assignee's branches that the caller can see; default: the first such branch.
+        422 BUSINESS_RULE: TASK_INVALID_ASSIGNEE (unknown, inactive, not field staff, or out of the caller's scope), TASK_DUE_IN_PAST.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TaskCreate' }
+      responses:
+        '201': { description: Created, content: { application/json: { schema: { $ref: '#/components/schemas/Task' } } } }
+        '200': { description: Replay of the same clientId, content: { application/json: { schema: { $ref: '#/components/schemas/Task' } } } }
+  /tasks/{id}:
+    get:
+      tags: [tasks]
+      operationId: getTask
+      description: 'One task with its history (1.20.0). Permission task.view; out of scope is 404.'
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Task' } } } }
+    patch:
+      tags: [tasks]
+      operationId: editTask
+      description: 'Change title, note or due date while the task is open (1.20.0). Permission task.manage. 409 INVALID_STATE: TASK_RESOLVE_REQUESTED, TASK_RESOLVED, TASK_CANCELLED, TASK_CHANGED. 422 TASK_DUE_IN_PAST.'
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, minProperties: 1, properties: { title: { type: string, minLength: 1, maxLength: 120 }, note: { type: [string, 'null'], maxLength: 2000 }, dueDate: { type: [string, 'null'], format: date } } }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Task' } } } }
+  /tasks/{id}/verify:
+    post:
+      tags: [tasks]
+      operationId: verifyTask
+      description: 'The admin agrees the work is done: resolve_requested → resolved; the assignee is notified (1.20.0, FR-TASK-003). Idempotent. Permission task.manage. 409 INVALID_STATE: TASK_OPEN (no resolve request yet), TASK_CANCELLED, TASK_CHANGED.'
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      requestBody:
+        content:
+          application/json:
+            schema: { type: object, properties: { note: { type: string, maxLength: 1000 } } }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Task' } } } }
+  /tasks/{id}/reject:
+    post:
+      tags: [tasks]
+      operationId: rejectTask
+      description: 'The admin says the work is not done: resolve_requested → open, with a reason (at least 5 characters) the assignee sees (1.20.0, FR-TASK-003). Permission task.manage. 422 REASON_REQUIRED. 409 INVALID_STATE: TASK_OPEN, TASK_RESOLVED, TASK_CANCELLED, TASK_CHANGED.'
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, properties: { reason: { type: string, maxLength: 500 } } }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Task' } } } }
+  /tasks/{id}/cancel:
+    post:
+      tags: [tasks]
+      operationId: cancelTask
+      description: 'The admin withdraws a task that is open or waiting for verification (1.20.0). Idempotent; the assignee is notified. Permission task.manage. 409 INVALID_STATE: TASK_RESOLVED, TASK_CHANGED.'
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      requestBody:
+        content:
+          application/json:
+            schema: { type: object, properties: { note: { type: string, maxLength: 1000 } } }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Task' } } } }
   /targets:
     get:
       tags: [targets]
@@ -1442,7 +1556,7 @@ paths:
       operationId: syncBootstrap
       parameters: [ { $ref: '#/components/parameters/Cursor' }, { name: limit, in: query, schema: { type: integer, default: 100, minimum: 1, maximum: 200 } } ]
       responses:
-        '200': { description: "Paged snapshot for a fresh device; the final page has nextCursor null and returns pullCursor (schema declared in 1.5.0). Entities, in this order (1.9.1): attendance_day (today, id userId:date), cowork_session (today's), customer (whole scope), location_proposal (own pending), promise (own open), visit (today's, own and joint). Older history is not included; it is read online.", content: { application/json: { schema: { $ref: '#/components/schemas/SyncBootstrapResponse' } } } }
+        '200': { description: "Paged snapshot for a fresh device; the final page has nextCursor null and returns pullCursor (schema declared in 1.5.0). Entities, in this order (1.9.1): attendance_day (today, id userId:date), cowork_session (today's), customer (whole scope), location_proposal (own pending), promise (own open), visit (today's, own and joint). Since 1.20.0 also task (open ones and those closed in the last 30 days). Older history is not included; it is read online.", content: { application/json: { schema: { $ref: '#/components/schemas/SyncBootstrapResponse' } } } }
   /sync/pull:
     get:
       tags: [sync]
@@ -2225,6 +2339,55 @@ components:
         createdAt: { type: string, format: date-time }
         endedAt: { type: [string, 'null'] }
         visitsCount: { type: integer, description: 'Co-work visits recorded in this session (manager list and detail only)' }
+    TaskStatus: { type: string, enum: [open, resolve_requested, resolved, cancelled], description: '1.20.0. open → resolve_requested (staff) → resolved (admin verifies) or back to open (admin rejects with a reason); cancelled by an admin.' }
+    TaskCounts:
+      type: object
+      required: [open, resolve_requested, resolved, cancelled, overdue]
+      properties: { open: { type: integer }, resolve_requested: { type: integer }, resolved: { type: integer }, cancelled: { type: integer }, overdue: { type: integer } }
+    TaskPerson:
+      type: object
+      required: [id, name]
+      properties: { id: { type: string }, name: { type: string } }
+    TaskCreate:
+      type: object
+      required: [assigneeId, title]
+      properties:
+        clientId: { type: string, format: uuid }
+        assigneeId: { type: string }
+        branchId: { type: string }
+        title: { type: string, minLength: 1, maxLength: 120 }
+        note: { type: string, minLength: 1, maxLength: 2000 }
+        dueDate: { type: string, format: date, description: 'Dhaka date, today or later' }
+    TaskEvent:
+      type: object
+      required: [type, by, at]
+      properties:
+        type: { type: string, enum: [created, edited, resolve_requested, verified, rejected, cancelled] }
+        by: { $ref: '#/components/schemas/TaskPerson' }
+        at: { type: string, format: date-time }
+        note: { type: [string, 'null'] }
+    Task:
+      type: object
+      description: 'A free-form job an admin gave to one field staff member (1.20.0). Sync entity `task`, sent only to the assignee.'
+      required: [id, branchId, assignee, createdBy, title, status, overdue, events, createdAt, updatedAt]
+      properties:
+        id: { type: string }
+        branchId: { type: string }
+        assignee: { type: object, required: [id, name, employeeCode], properties: { id: { type: string }, name: { type: string }, employeeCode: { type: string } } }
+        createdBy: { $ref: '#/components/schemas/TaskPerson' }
+        title: { type: string }
+        note: { type: [string, 'null'] }
+        dueDate: { type: [string, 'null'], format: date }
+        status: { $ref: '#/components/schemas/TaskStatus' }
+        overdue: { type: boolean, description: 'Unfinished and the due date has passed' }
+        resolveNote: { type: [string, 'null'], description: 'What the staff member wrote with the latest resolve request' }
+        resolveRequestedAt: { type: [string, 'null'], format: date-time }
+        decisionNote: { type: [string, 'null'], description: 'The admin note or reason of the latest verify, reject or cancel' }
+        decidedBy: { oneOf: [ { $ref: '#/components/schemas/TaskPerson' }, { type: 'null' } ] }
+        decidedAt: { type: [string, 'null'], format: date-time }
+        events: { type: array, items: { $ref: '#/components/schemas/TaskEvent' } }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
     Note:
       type: object
       properties: { id: { type: string }, clientId: { type: string }, customerId: { type: string }, author: { type: object, properties: { id: { type: string }, name: { type: string } } }, category: { type: string }, text: { type: string }, voiceMediaId: { type: [string, 'null'] }, createdAt: { type: string, format: date-time }, editableUntil: { type: string, format: date-time } }
@@ -2413,7 +2576,7 @@ components:
       required: [mutationId, entity, op, payload]
       properties:
         mutationId: { type: string, format: uuid }
-        entity: { type: string, enum: [visit, collection, note, promise, promise_cancel, deposit, attendance_event, tag, location_proposal, visit_checkout, handover_decision, cash_closing, contact_attempt, broadcast_ack] }
+        entity: { type: string, enum: [visit, collection, note, promise, promise_cancel, deposit, attendance_event, tag, location_proposal, visit_checkout, handover_decision, cash_closing, contact_attempt, broadcast_ack, task_resolve_request] }
         op: { type: string, enum: [create, update] }
         payload:
           type: object
@@ -2429,6 +2592,7 @@ components:
             cash_closing → { businessDate, note? } · handover_decision → { handoverId, decision: accept|reject, reason? (required to reject) } ·
             tag payload may carry `ifMatch` (customer version).
             1.12.0: broadcast_ack → { broadcastId, at? } (when the staff tapped "read"; kept between sending and now).
+            1.20.0: task_resolve_request → { taskId, note?, requestedAt? } (the staff member says the task is done; idempotent, a repeat is a replay). Needs permission task.work.
             Every mutation is idempotent by mutationId; the same id with a different payload is rejected with IDEMPOTENCY_MISMATCH.
         createdAt: { type: string, format: date-time }
     SyncPushRequest:
@@ -2461,7 +2625,7 @@ components:
       type: object
       properties:
         seq: { type: integer }
-        entity: { type: string, enum: [customer, collection, visit, note, promise, tag, handover, assignment, area, deposit, attendance_day, notification, broadcast, setting, contact_attempt, location_proposal, cowork_session] }
+        entity: { type: string, enum: [customer, collection, visit, note, promise, tag, handover, assignment, area, deposit, attendance_day, notification, broadcast, setting, contact_attempt, location_proposal, cowork_session, task] }
         op: { type: string, enum: [upsert, delete] }
         id: { type: string }
         data:
@@ -2474,6 +2638,7 @@ components:
             attendance_day → AttendanceDay · notification → Notification · broadcast → Broadcast · setting → { key, value } ·
             contact_attempt → ContactAttempt · location_proposal → OwnLocationProposal (1.7.0; sent only to the staff member who proposed, on create and on the manager's decision) ·
             cowork_session → CoworkSession (1.9.0; sent to every invited or member user on each change)
+            task → Task (1.20.0; sent to the assignee on every change; the bootstrap snapshot holds open tasks and those closed in the last 30 days)
         reason: { type: string }
     ContactAttemptCreate:
       type: object

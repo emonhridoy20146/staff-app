@@ -1479,5 +1479,124 @@
         "type": "String"
       }
     }
-  }
+  },
+  "tasksTitle": "My tasks",
+  "taskTitle": "Task",
+  "tasksEmpty": "No tasks",
+  "tasksEmptyBody": "Tasks the office gives you show here",
+  "tasksSectionActive": "To do",
+  "tasksSectionWaiting": "Waiting for the office",
+  "tasksSectionClosed": "Finished",
+  "taskStatusOpen": "To do",
+  "taskStatusQueued": "Will be sent",
+  "taskStatusWaiting": "Office is checking",
+  "taskStatusResolved": "Done",
+  "taskStatusCancelled": "Cancelled",
+  "taskStatusOverdue": "Overdue",
+  "taskNew": "New",
+  "taskDue": "Due {date}",
+  "@taskDue": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "taskNoDue": "No due date",
+  "taskFrom": "From {name}",
+  "@taskFrom": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "taskNoteNone": "No note",
+  "taskMarkDone": "The work is done",
+  "taskDoneTitle": "Tell the office it is done",
+  "taskDoneBody": "The office checks it and then marks it resolved.",
+  "taskDoneNoteHint": "What did you do? (optional)",
+  "taskDoneSend": "Send to the office",
+  "taskDoneSent": "Saved. The office will check it",
+  "taskQueuedBanner": "Saved on this phone at {time}. It goes to the office when there is a network.",
+  "@taskQueuedBanner": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "taskWaitingBanner": "Sent at {time}. The office will check it.",
+  "@taskWaitingBanner": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "taskResolvedBanner": "The office marked it done at {time}",
+  "@taskResolvedBanner": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "taskCancelledBanner": "The office cancelled this task",
+  "taskRejectedBanner": "The office sent it back: {reason}",
+  "@taskRejectedBanner": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "taskFailedBanner": "Your last request was not accepted. You can send it again.",
+  "taskMyNote": "Your note",
+  "taskOfficeNote": "Office note",
+  "taskDetails": "Details",
+  "taskHistory": "History",
+  "taskEventCreated": "Task given",
+  "taskEventEdited": "Changed",
+  "taskEventResolveRequested": "Marked as done",
+  "taskEventVerified": "Office verified",
+  "taskEventRejected": "Sent back",
+  "taskEventCancelled": "Cancelled",
+  "todayTasksOverdue": "Overdue tasks: {n}",
+  "@todayTasksOverdue": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "todayTasksNew": "New tasks from the office: {n}",
+  "@todayTasksNew": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "todayTasksOpen": "Tasks to do: {n}",
+  "@todayTasksOpen": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "tasksOpenCount": "{n} to do",
+  "@tasksOpenCount": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "tasksNothingOpen": "Nothing to do",
+  "exitAppTitle": "Close the app?",
+  "exitAppBody": "Work that is not sent yet stays safe on this phone.",
+  "exitAppStay": "Stay",
+  "exitAppConfirm": "Close the app"
 }

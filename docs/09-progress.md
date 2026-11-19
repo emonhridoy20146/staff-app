@@ -32,6 +32,8 @@ Phases match `field-api/docs/09-progress.md`. Start each phase against the Prism
 | Attendance photo at every event (setting `attendance.selfieEvents`) | ✅ 0.4.0, flow tests + screenshot; device camera check pending |
 | Handovers incoming/outgoing | ◐ incoming done; outgoing (P4 staff-initiated) not yet |
 | Notices from the office: list, detail, offline "পড়েছি" (`broadcast_ack`), Today banner, Me count (contract 1.12.0) | ✅ 0.9.0, flow tests + screenshots |
+| Tasks from the office: list, detail with history, offline "কাজ হয়েছে" (`task_resolve_request`), Today card, Me count, sent-back reason (contract 1.20.0, flag `module.tasks`) | ✅ 0.12.0, flow + screen tests; lock-screen alert waits for FCM |
+| Back at the root asks "close the app?" | ✅ 0.12.0, widget + app tests; device check in the manual list |
 | Leave requests (ask, withdraw, status with reason), holidays of my branch, my shift; cached offline | ✅ 0.9.0, flow tests + screenshots |
 | Guarantor on the customer page with one-tap call, logged offline as a guarantor call | ✅ 0.9.0, flow test + screenshot; device call check pending |
 | Real ERP shape (contract 1.13.0): invoice numbers, products and serials, credit sales, frequency, late fees, rolled lines hidden, returned invoices not collectable, directions and risk grade, ERP method and collector on payments; database schema 7 | ✅ 0.10.0, unit + migration tests, screenshots 29-31; check with real ERP data once field-api runs in `live` mode |

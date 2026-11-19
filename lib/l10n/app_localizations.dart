@@ -4045,6 +4045,300 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{branch} branch'**
   String customerBranch(String branch);
+
+  /// No description provided for @tasksTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'My tasks'**
+  String get tasksTitle;
+
+  /// No description provided for @taskTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Task'**
+  String get taskTitle;
+
+  /// No description provided for @tasksEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No tasks'**
+  String get tasksEmpty;
+
+  /// No description provided for @tasksEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Tasks the office gives you show here'**
+  String get tasksEmptyBody;
+
+  /// No description provided for @tasksSectionActive.
+  ///
+  /// In en, this message translates to:
+  /// **'To do'**
+  String get tasksSectionActive;
+
+  /// No description provided for @tasksSectionWaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for the office'**
+  String get tasksSectionWaiting;
+
+  /// No description provided for @tasksSectionClosed.
+  ///
+  /// In en, this message translates to:
+  /// **'Finished'**
+  String get tasksSectionClosed;
+
+  /// No description provided for @taskStatusOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'To do'**
+  String get taskStatusOpen;
+
+  /// No description provided for @taskStatusQueued.
+  ///
+  /// In en, this message translates to:
+  /// **'Will be sent'**
+  String get taskStatusQueued;
+
+  /// No description provided for @taskStatusWaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'Office is checking'**
+  String get taskStatusWaiting;
+
+  /// No description provided for @taskStatusResolved.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get taskStatusResolved;
+
+  /// No description provided for @taskStatusCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled'**
+  String get taskStatusCancelled;
+
+  /// No description provided for @taskStatusOverdue.
+  ///
+  /// In en, this message translates to:
+  /// **'Overdue'**
+  String get taskStatusOverdue;
+
+  /// No description provided for @taskNew.
+  ///
+  /// In en, this message translates to:
+  /// **'New'**
+  String get taskNew;
+
+  /// No description provided for @taskDue.
+  ///
+  /// In en, this message translates to:
+  /// **'Due {date}'**
+  String taskDue(String date);
+
+  /// No description provided for @taskNoDue.
+  ///
+  /// In en, this message translates to:
+  /// **'No due date'**
+  String get taskNoDue;
+
+  /// No description provided for @taskFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'From {name}'**
+  String taskFrom(String name);
+
+  /// No description provided for @taskNoteNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No note'**
+  String get taskNoteNone;
+
+  /// No description provided for @taskMarkDone.
+  ///
+  /// In en, this message translates to:
+  /// **'The work is done'**
+  String get taskMarkDone;
+
+  /// No description provided for @taskDoneTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell the office it is done'**
+  String get taskDoneTitle;
+
+  /// No description provided for @taskDoneBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The office checks it and then marks it resolved.'**
+  String get taskDoneBody;
+
+  /// No description provided for @taskDoneNoteHint.
+  ///
+  /// In en, this message translates to:
+  /// **'What did you do? (optional)'**
+  String get taskDoneNoteHint;
+
+  /// No description provided for @taskDoneSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Send to the office'**
+  String get taskDoneSend;
+
+  /// No description provided for @taskDoneSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved. The office will check it'**
+  String get taskDoneSent;
+
+  /// No description provided for @taskQueuedBanner.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved on this phone at {time}. It goes to the office when there is a network.'**
+  String taskQueuedBanner(String time);
+
+  /// No description provided for @taskWaitingBanner.
+  ///
+  /// In en, this message translates to:
+  /// **'Sent at {time}. The office will check it.'**
+  String taskWaitingBanner(String time);
+
+  /// No description provided for @taskResolvedBanner.
+  ///
+  /// In en, this message translates to:
+  /// **'The office marked it done at {time}'**
+  String taskResolvedBanner(String time);
+
+  /// No description provided for @taskCancelledBanner.
+  ///
+  /// In en, this message translates to:
+  /// **'The office cancelled this task'**
+  String get taskCancelledBanner;
+
+  /// No description provided for @taskRejectedBanner.
+  ///
+  /// In en, this message translates to:
+  /// **'The office sent it back: {reason}'**
+  String taskRejectedBanner(String reason);
+
+  /// No description provided for @taskFailedBanner.
+  ///
+  /// In en, this message translates to:
+  /// **'Your last request was not accepted. You can send it again.'**
+  String get taskFailedBanner;
+
+  /// No description provided for @taskMyNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Your note'**
+  String get taskMyNote;
+
+  /// No description provided for @taskOfficeNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Office note'**
+  String get taskOfficeNote;
+
+  /// No description provided for @taskDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Details'**
+  String get taskDetails;
+
+  /// No description provided for @taskHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'History'**
+  String get taskHistory;
+
+  /// No description provided for @taskEventCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Task given'**
+  String get taskEventCreated;
+
+  /// No description provided for @taskEventEdited.
+  ///
+  /// In en, this message translates to:
+  /// **'Changed'**
+  String get taskEventEdited;
+
+  /// No description provided for @taskEventResolveRequested.
+  ///
+  /// In en, this message translates to:
+  /// **'Marked as done'**
+  String get taskEventResolveRequested;
+
+  /// No description provided for @taskEventVerified.
+  ///
+  /// In en, this message translates to:
+  /// **'Office verified'**
+  String get taskEventVerified;
+
+  /// No description provided for @taskEventRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Sent back'**
+  String get taskEventRejected;
+
+  /// No description provided for @taskEventCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled'**
+  String get taskEventCancelled;
+
+  /// No description provided for @todayTasksOverdue.
+  ///
+  /// In en, this message translates to:
+  /// **'Overdue tasks: {n}'**
+  String todayTasksOverdue(String n);
+
+  /// No description provided for @todayTasksNew.
+  ///
+  /// In en, this message translates to:
+  /// **'New tasks from the office: {n}'**
+  String todayTasksNew(String n);
+
+  /// No description provided for @todayTasksOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Tasks to do: {n}'**
+  String todayTasksOpen(String n);
+
+  /// No description provided for @tasksOpenCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} to do'**
+  String tasksOpenCount(String n);
+
+  /// No description provided for @tasksNothingOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing to do'**
+  String get tasksNothingOpen;
+
+  /// No description provided for @exitAppTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Close the app?'**
+  String get exitAppTitle;
+
+  /// No description provided for @exitAppBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Work that is not sent yet stays safe on this phone.'**
+  String get exitAppBody;
+
+  /// No description provided for @exitAppStay.
+  ///
+  /// In en, this message translates to:
+  /// **'Stay'**
+  String get exitAppStay;
+
+  /// No description provided for @exitAppConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Close the app'**
+  String get exitAppConfirm;
 }
 
 class _AppLocalizationsDelegate

@@ -565,6 +565,45 @@ class Broadcasts extends Table {
   Set<Column> get primaryKey => {serverId};
 }
 
+/// A free-form job the office gave me (master FR-TASK-001..005, contract 1.20.0).
+/// Arrives as the `task` sync entity; "the work is done" is stored here at
+/// once and sent as the `task_resolve_request` mutation.
+@DataClassName('TaskRow')
+class Tasks extends Table {
+  TextColumn get serverId => text()();
+  TextColumn get title => text()();
+  TextColumn get note => text().nullable()();
+
+  /// Dhaka business date (YYYY-MM-DD) or null.
+  TextColumn get dueDate => text().nullable()();
+
+  /// open | resolve_requested | resolved | cancelled (the server's word).
+  TextColumn get status => text().withDefault(const Constant('open'))();
+  TextColumn get createdByName => text().nullable()();
+  TextColumn get branchId => text().nullable()();
+  TextColumn get decisionNote => text().nullable()();
+  DateTimeColumn get decidedAt => dateTime().nullable()();
+
+  /// History as the server sent it (JSON list of {type, by, at, note}).
+  TextColumn get eventsJson => text().withDefault(const Constant('[]'))();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get updatedAt => dateTime().nullable()();
+
+  /// When I first opened it (drives the "new" marker).
+  DateTimeColumn get seenAt => dateTime().nullable()();
+
+  /// What I wrote with my "done" request, and when. Local until the server confirms.
+  TextColumn get resolveNote => text().nullable()();
+  DateTimeColumn get resolveRequestedAt => dateTime().nullable()();
+
+  /// none | queued | synced | failed
+  TextColumn get resolveState => text().withDefault(const Constant('none'))();
+  TextColumn get resolveMutationId => text().nullable()();
+
+  @override
+  Set<Column> get primaryKey => {serverId};
+}
+
 // ── notifications / settings ─────────────────────────────────────────────────
 @DataClassName('NotificationRow')
 class Notifications extends Table {

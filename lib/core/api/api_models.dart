@@ -205,6 +205,7 @@ class SyncMutation {
     'visit', 'collection', 'note', 'promise', 'promise_cancel', 'deposit', //
     'attendance_event', 'tag', 'location_proposal', 'visit_checkout', 'handover_decision', 'cash_closing', 'contact_attempt',
     'broadcast_ack', // 1.12.0
+    'task_resolve_request', // 1.20.0
   };
 }
 
