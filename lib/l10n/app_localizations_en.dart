@@ -2454,4 +2454,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get exitAppConfirm => 'Close the app';
+
+  @override
+  String visitAlreadyToday(String time, String count) {
+    return 'This customer was already visited $count time(s) today (last at $time). You can still record another visit.';
+  }
 }

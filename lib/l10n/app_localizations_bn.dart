@@ -2448,4 +2448,9 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get exitAppConfirm => 'অ্যাপ বন্ধ করুন';
+
+  @override
+  String visitAlreadyToday(String time, String count) {
+    return 'এই গ্রাহককে আজ আগেই $count বার ভিজিট করা হয়েছে (শেষ $time)। আবার ভিজিট রাখা যাবে।';
+  }
 }

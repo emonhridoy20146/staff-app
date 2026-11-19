@@ -524,13 +524,24 @@ class FakeFieldApi implements HttpClientAdapter {
         _tokens.remove(auth?.replaceFirst('Bearer ', ''));
         return _json(204, null);
       case ('GET', '/sync/bootstrap'):
-        return _json(200, _page(0, bootstrap: true));
+        // The real shape (contract SyncBootstrapResponse): `items`, a paging `nextCursor` (null on the last page)
+        // and `pullCursor` on the last page only. Before 0.12.4 the fake answered like /sync/pull and hid a bug.
+        final from = int.tryParse((o.queryParameters['cursor'] ?? '').toString().replaceFirst('b', '')) ?? 0;
+        final page = _page(from, bootstrap: true);
+        final end = int.parse(page.remove('nextCursor') as String);
+        final more = page.remove('hasMore') as bool;
+        page['items'] = page.remove('changes');
+        page['nextCursor'] = more ? 'b$end' : null;
+        if (!more) page['pullCursor'] = '$end';
+        return _json(200, page);
       case ('GET', '/sync/pull'):
         if (expireCursor) {
           expireCursor = false;
           return _json(410, _problem(410, 'CURSOR_EXPIRED', 'Cursor expired'));
         }
-        final cursor = int.tryParse(o.queryParameters['cursor'].toString()) ?? 0;
+        final cursor = int.tryParse(o.queryParameters['cursor'].toString());
+        // Like the server: a snapshot cursor (or anything else) is not a pull cursor.
+        if (cursor == null) return _json(400, _problem(400, 'VALIDATION_FAILED', 'Bad cursor'));
         return _json(200, _page(cursor));
       case ('POST', '/sync/push'):
         pushCalls++;
@@ -634,9 +645,12 @@ class FakeFieldApi implements HttpClientAdapter {
     };
   }
 
+  /// Page size of a fake bootstrap (tests make it small to page).
+  int bootstrapPageSize = 500;
+
   Json _page(int cursor, {bool bootstrap = false}) {
-    const pageSize = 500;
-    final start = bootstrap ? 0 : cursor;
+    final pageSize = bootstrap ? bootstrapPageSize : 500;
+    final start = cursor;
     final end = (start + pageSize).clamp(0, _log.length);
     final changes = [
       for (var i = start; i < end; i++)

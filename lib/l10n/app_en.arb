@@ -1621,5 +1621,7 @@
   "exitAppTitle": "Close the app?",
   "exitAppBody": "Work that is not sent yet stays safe on this phone.",
   "exitAppStay": "Stay",
-  "exitAppConfirm": "Close the app"
+  "exitAppConfirm": "Close the app",
+  "visitAlreadyToday": "This customer was already visited {count} time(s) today (last at {time}). You can still record another visit.",
+  "@visitAlreadyToday": {"placeholders": {"time": {"type": "String"}, "count": {"type": "String"}}}
 }

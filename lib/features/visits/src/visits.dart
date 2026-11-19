@@ -199,6 +199,14 @@ VisitSplit splitVisits(Iterable<VisitRow> rows, {required String? me}) {
 
 List<String> _ids(String? json) => json == null ? const [] : (jsonDecode(json) as List).cast<String>();
 
+/// Visits already on this phone for the customer since [dayStartUtc]: how many, and the latest check-in; null when none.
+({int count, DateTime checkInAt})? sameDayVisits(List<VisitRow> rows, DateTime dayStartUtc) {
+  final today = rows.where((v) => !v.checkInAt.isBefore(dayStartUtc)).toList();
+  if (today.isEmpty) return null;
+  final last = today.map((v) => v.checkInAt).reduce((a, b) => a.isAfter(b) ? a : b);
+  return (count: today.length, checkInAt: last);
+}
+
 final todayVisitSplitProvider = StreamProvider<VisitSplit>((ref) {
   final db = ref.watch(databaseProvider);
   final me = ref.watch(myUserIdProvider);
@@ -282,6 +290,11 @@ class _VisitScreenState extends ConsumerState<VisitScreen> {
               return InfoBanner(icon: Icons.gps_fixed_rounded, text: l.collectGpsAccurate(f.num(g.accuracyM.round())), tone: BannerTone.success);
             },
           ),
+          // FR-M-035: going back the same day is allowed (customer not home earlier) but said, so a second visit by mistake is noticed.
+          if (sameDayVisits(ref.watch(visitsForCustomerProvider(widget.customerId)).value ?? const [], parseBusinessDateUtcStart(ref.watch(clockProvider).businessDate())) case final earlier?) ...[
+            const SizedBox(height: Space.s12),
+            InfoBanner(icon: Icons.event_repeat_rounded, text: l.visitAlreadyToday(f.time(earlier.checkInAt), f.num(earlier.count)), tone: BannerTone.warning),
+          ],
           if (ref.watch(coworkForVisitProvider) != null) ...[
             const SizedBox(height: Space.s12),
             CoworkVisitSwitch(value: _joint, onChanged: (v) => setState(() => _joint = v)),
