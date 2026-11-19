@@ -34,6 +34,7 @@ class FakeFieldApi implements HttpClientAdapter {
   bool offline = false;
   bool expireCursor = false;
   bool upgradeRequired = false;
+  bool uploadsFail = false; // the storage host refuses photos (e.g. a misconfigured server)
   String trackingProvider = 'free'; // admin setting location.trackingProvider
   bool selfieRequired = true; // attendance.selfieRequired (master switch)
   List<String> selfieEvents = const ['work_in', 'break_start', 'break_end', 'work_out']; // attendance.selfieEvents
@@ -561,6 +562,7 @@ class FakeFieldApi implements HttpClientAdapter {
         });
       default:
         if (o.method == 'PUT' && path.startsWith('/upload/')) {
+          if (uploadsFail) return _json(503, {'code': 'UNAVAILABLE'});
           uploadedMedia.add(path.substring('/upload/'.length));
           return _json(200, null);
         }

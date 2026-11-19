@@ -44,13 +44,15 @@ class OutboxWriter {
   }
 
   /// Moves a held mutation to pending, merging [extra] into its payload.
-  Future<void> release(String mutationId, Json extra) async {
+  /// False when there was no held mutation with that id.
+  Future<bool> release(String mutationId, Json extra) async {
     final row = await (_db.select(_db.outbox)..where((t) => t.mutationId.equals(mutationId) & t.state.equals('held'))).getSingleOrNull();
-    if (row == null) return;
+    if (row == null) return false;
     final payload = {...(jsonDecode(row.payloadJson) as Json), ...extra};
     await (_db.update(_db.outbox)..where((t) => t.mutationId.equals(mutationId))).write(
       OutboxCompanion(state: const Value('pending'), payloadJson: Value(jsonEncode(payload))),
     );
+    return true;
   }
 }
 

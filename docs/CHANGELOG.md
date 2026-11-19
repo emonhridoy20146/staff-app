@@ -1,5 +1,15 @@
 # Changelog — staff-app
 
+## [0.12.1] — 2026-11-19
+Contract pinned: field-api `openapi.yaml` **1.21.0** (field-api PR #20, ADR-040; `docs/contract/openapi.yaml`).
+### Fixed (owner report 2026-11-19: attendance always "1 waiting", so no location reaches the live map)
+- **Attendance never waits for its photo** (ADR-M19). Since 0.4.0 the app held each attendance event until its photo was uploaded. When the upload failed (server not redeployed, wrong `PUBLIC_BASE_URL`, weak network) the work-in never reached the server, the server treated the staff member as off duty and refused every location point. Now the event is sent at once, like a visit; the photo uploads on its own and is linked afterwards with the new `attendance_selfie` mutation (after its event, via `dependsOn`, once per event). The server flags an event without a photo `no_selfie` until the photo is linked.
+- **Phones already stuck recover by themselves:** at start-up the app sends any attendance event an older version held for its photo (`releaseHeldAttendance`). Nothing is deleted; the photo is linked when it uploads.
+- The camera is still required where the office asks for a photo; only the upload no longer blocks anything.
+### Added
+- `attendance_selfie` in the known mutation types; `OutboxWriter.release` returns whether a held row was released.
+- Test hook `FakeFieldApi.uploadsFail`. Tests in `test/flows/attendance_selfie_flow_test.dart`: events go at once while uploads fail, location is not blocked, photos linked later exactly once each; a held work-in from an older app is sent at start-up and then gets its photo.
+
 ## [0.12.0] — 2026-11-19
 Contract pinned: field-api `openapi.yaml` **1.20.0** (field-api PR #17, ADR-037; `docs/contract/openapi.yaml`).
 ### Added (owner request 2026-11-18: the office gives a staff member a free-form task with a note; FR-M-033)

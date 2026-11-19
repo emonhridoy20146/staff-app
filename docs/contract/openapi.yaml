@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Howlader Field Operations API
-  version: 1.20.0
+  version: 1.21.0
   description: |
     Contract owned by field-api. Consumers (admin-web, staff-app) generate types from this file.
     Conventions (auth, pagination, idempotency, errors) are described in docs/05-api-contract.md.
@@ -152,7 +152,7 @@ paths:
       security: []
       operationId: health
       responses:
-        '200': { description: OK, content: { application/json: { schema: { type: object, properties: { status: { type: string, enum: [ok, degraded] }, version: { type: string }, mongo: { type: string }, erp: { type: string } } } } } }
+        '200': { description: OK, content: { application/json: { schema: { type: object, properties: { status: { type: string, enum: [ok, degraded] }, version: { type: string }, contract: { type: string, description: 'API contract version this build implements; use it to check a deploy (added in 1.20.1)' }, mongo: { type: string }, erp: { type: string }, storage: { type: string, enum: [s3, db, memory], description: 'Added in 1.21.0. Where photos and exports are kept (ADR-039); memory = this instance only, phone uploads fail.' } } } } } }
   /system/erp-status:
     get:
       tags: [system]
@@ -1564,7 +1564,7 @@ paths:
       parameters: [ { name: cursor, in: query, required: true, schema: { type: string } }, { name: limit, in: query, schema: { type: integer, default: 500, maximum: 500 } } ]
       responses:
         '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/SyncPullResponse' } } } }
-        '410': { $ref: '#/components/responses/Problem' }
+        '410': { description: 'CURSOR_EXPIRED: the cursor cannot be continued (ahead of the feed, older than 30 days, or taken before the server widened what the device may hold, e.g. ADR-038 in 1.20.1). Call GET /sync/bootstrap; keep the outbox.', content: { application/problem+json: { schema: { $ref: '#/components/schemas/Problem' } } } }
   /sync/push:
     post:
       tags: [sync]
@@ -2576,7 +2576,7 @@ components:
       required: [mutationId, entity, op, payload]
       properties:
         mutationId: { type: string, format: uuid }
-        entity: { type: string, enum: [visit, collection, note, promise, promise_cancel, deposit, attendance_event, tag, location_proposal, visit_checkout, handover_decision, cash_closing, contact_attempt, broadcast_ack, task_resolve_request] }
+        entity: { type: string, enum: [visit, collection, note, promise, promise_cancel, deposit, attendance_event, tag, location_proposal, visit_checkout, handover_decision, cash_closing, contact_attempt, broadcast_ack, task_resolve_request, attendance_selfie], description: 'attendance_selfie (1.21.0) payload { eventClientId, selfieMediaId }: adds the photo to an attendance event that was sent before its photo uploaded; send it after that event (dependsOn).' }
         op: { type: string, enum: [create, update] }
         payload:
           type: object
