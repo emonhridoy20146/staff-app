@@ -715,5 +715,6 @@
   "exitAppTitle": "অ্যাপ বন্ধ করবেন?",
   "exitAppBody": "যে কাজ এখনো পাঠানো হয়নি তা এই ফোনে নিরাপদে থাকবে।",
   "exitAppStay": "থাকুন",
-  "exitAppConfirm": "অ্যাপ বন্ধ করুন"
+  "exitAppConfirm": "অ্যাপ বন্ধ করুন",
+  "visitAlreadyToday": "এই গ্রাহককে আজ আগেই {count} বার ভিজিট করা হয়েছে (শেষ {time})। আবার ভিজিট রাখা যাবে।"
 }

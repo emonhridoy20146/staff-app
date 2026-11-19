@@ -73,10 +73,10 @@ class FieldApi {
   Future<void> registerPushToken(String token) =>
       _call(() => _dio.post<dynamic>('/devices/push-token', data: {'token': token}), (_) {});
 
-  /// Bootstrap page (same shape as pull; the final page carries the cursor).
+  /// Bootstrap page: `items` + a snapshot `nextCursor`; the final page carries `pullCursor`.
   Future<SyncPullResponse> syncBootstrap({String? cursor}) => _call(
         () => _dio.get<dynamic>('/sync/bootstrap', queryParameters: {'cursor': ?cursor}),
-        (d) => SyncPullResponse.fromJson(d as Json),
+        (d) => SyncPullResponse.fromBootstrapJson(d as Json),
       );
 
   Future<SyncPullResponse> syncPull(String cursor, {int limit = 500}) => _call(

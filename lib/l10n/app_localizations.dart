@@ -4393,6 +4393,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Close the app'**
   String get exitAppConfirm;
+
+  /// No description provided for @visitAlreadyToday.
+  ///
+  /// In en, this message translates to:
+  /// **'This customer was already visited {count} time(s) today (last at {time}). You can still record another visit.'**
+  String visitAlreadyToday(String time, String count);
 }
 
 class _AppLocalizationsDelegate

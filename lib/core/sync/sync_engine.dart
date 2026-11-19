@@ -115,7 +115,7 @@ class SyncEngine {
       _again = false;
       try {
         final meta = await _meta();
-        if (!meta.bootstrapDone) await bootstrap();
+        if (!meta.bootstrapDone || await _db.kvGet(_snapshotKey) != _snapshotFormat) await bootstrap();
         _emit(_current.copyWith(phase: SyncPhase.pushing));
         await pushAll();
         _emit(_current.copyWith(phase: SyncPhase.pulling));
@@ -333,11 +333,18 @@ class SyncEngine {
       pages++;
       await _applyPage(page, bootstrap: true);
       _emit(_current.copyWith(phase: SyncPhase.bootstrapping, bootstrapProgress: page.hasMore ? (1 - 1 / (pages + 1)) : 1));
-      cursor = page.nextCursor;
-      if (!page.hasMore) break;
+      cursor = page.bootstrapCursor;
+      if (!page.hasMore || cursor == null) break;
     }
     await _updateMeta(const SyncMetaCompanion(bootstrapDone: Value(true)));
+    await _db.kvSet(_snapshotKey, _snapshotFormat);
   }
+
+  /// Until 0.12.4 a snapshot page was read like a pull page and its customers were never stored, so a phone
+  /// held only customers that changed later (an assignment, a pin). A phone without this mark takes one fresh
+  /// snapshot; bootstrap only upserts, so the outbox and everything unsynced stay as they are.
+  static const _snapshotKey = 'sync.snapshotFormat';
+  static const _snapshotFormat = '"2"';
 
   Future<void> _applyPage(SyncPullResponse page, {bool bootstrap = false}) async {
     if (page.serverTime != null) _clock.syncWithServer(page.serverTime!);

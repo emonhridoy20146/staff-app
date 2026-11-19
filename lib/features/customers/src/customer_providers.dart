@@ -1,17 +1,52 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 
 import '../../../core/db/app_database.dart';
 import '../../../core/location/location_engine.dart';
 import '../../../core/providers.dart';
+import '../../attendance/attendance.dart';
 import '../../auth/auth.dart';
 import 'data/customer_repository.dart';
 import 'domain/customer.dart';
 
 final customerRepositoryProvider = Provider<CustomerRepository>((ref) => CustomerRepository(ref.watch(databaseProvider)));
 
-/// Last known fix, refreshed on demand (distance sorting, Today).
-final currentFixProvider = FutureProvider<GeoFix?>((ref) => ref.watch(locationEngineProvider).lastKnown());
+/// Where the phone is, for distances (sorting, Today, map). The phone's last known position first; while the
+/// user is on duty (CLAUDE.md §2.6) a fresh foreground fix, then again every [fixRefresh]. Only shown on this
+/// phone, never stored or sent. Before 0.12.4 it was read once from the last known position, which Android
+/// often does not have, so Today showed no distance (FR-M-005).
+final currentFixProvider = StreamProvider<GeoFix?>((ref) {
+  final engine = ref.watch(locationEngineProvider);
+  final onDuty = ref.watch(todayAttendanceProvider.select((a) {
+    final s = a.value?.status;
+    return s == DayStatus.onDuty || s == DayStatus.onBreak;
+  }));
+  final out = StreamController<GeoFix?>();
+  Timer? timer;
+  var alive = true;
+  Future<void> fresh() async {
+    final now = await engine.currentFix(timeout: const Duration(seconds: 15));
+    if (alive && now != null) out.add(now);
+  }
+
+  ref.onDispose(() {
+    alive = false;
+    timer?.cancel();
+    out.close();
+  });
+  engine.lastKnown().then((f) {
+    if (!alive) return;
+    out.add(f);
+    if (!onDuty) return;
+    fresh();
+    timer = Timer.periodic(fixRefresh, (_) => fresh());
+  });
+  return out.stream;
+});
+
+const fixRefresh = Duration(minutes: 2);
 
 /// Business date "today" in Dhaka, server-corrected.
 final todayProvider = Provider<String>((ref) => ref.watch(clockProvider).businessDate());

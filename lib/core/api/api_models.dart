@@ -288,6 +288,7 @@ class SyncPullResponse {
     required this.changes,
     required this.nextCursor,
     required this.hasMore,
+    this.bootstrapCursor,
     this.permissions,
     this.flags,
     this.settings,
@@ -295,12 +296,34 @@ class SyncPullResponse {
     this.target,
     this.serverTime,
   });
-  factory SyncPullResponse.fromJson(Json j) {
+  factory SyncPullResponse.fromJson(Json j) => SyncPullResponse._from(
+        j,
+        changes: (j['changes'] as List?) ?? const [],
+        nextCursor: (j['nextCursor'] ?? j['pullCursor'] ?? '') as String,
+        hasMore: (j['hasMore'] as bool?) ?? false,
+      );
+
+  /// GET /sync/bootstrap (contract SyncBootstrapResponse): the snapshot is in `items`, `nextCursor` pages the
+  /// snapshot itself (null on the last page) and `pullCursor`, on the last page only, is where /sync/pull starts.
+  /// Until 0.12.4 the app read it like a pull page and stored nothing of the snapshot (FR-M-032).
+  factory SyncPullResponse.fromBootstrapJson(Json j) {
+    final page = j['nextCursor'] as String?;
+    return SyncPullResponse._from(
+      j,
+      changes: (j['items'] as List?) ?? (j['changes'] as List?) ?? const [],
+      nextCursor: (j['pullCursor'] as String?) ?? '',
+      hasMore: page != null && page.isNotEmpty,
+      bootstrapCursor: page,
+    );
+  }
+
+  factory SyncPullResponse._from(Json j, {required List<dynamic> changes, required String nextCursor, required bool hasMore, String? bootstrapCursor}) {
     final perms = j['permissions'] as Json?;
     return SyncPullResponse(
-      changes: ((j['changes'] as List?) ?? const []).map((e) => SyncChange.fromJson(e as Json)).toList(),
-      nextCursor: (j['nextCursor'] ?? j['pullCursor'] ?? '') as String,
-      hasMore: (j['hasMore'] as bool?) ?? false,
+      changes: changes.map((e) => SyncChange.fromJson(e as Json)).toList(),
+      nextCursor: nextCursor,
+      hasMore: hasMore,
+      bootstrapCursor: bootstrapCursor,
       permissions: perms == null ? null : ((perms['keys'] as List?) ?? const []).cast<String>(),
       flags: (j['flags'] as Json?)?.map((k, v) => MapEntry(k, v as bool)),
       settings: _opt<Json>(j, 'settings'),
@@ -312,6 +335,9 @@ class SyncPullResponse {
   final List<SyncChange> changes;
   final String nextCursor;
   final bool hasMore;
+
+  /// Bootstrap only: the cursor of the next snapshot page (not a pull cursor).
+  final String? bootstrapCursor;
   final List<String>? permissions;
   final Map<String, bool>? flags;
   final Json? settings;

@@ -1,5 +1,15 @@
 # Changelog — staff-app
 
+## [0.12.4] — 2026-11-19
+Contract pinned: field-api `openapi.yaml` **1.22.0** (unchanged). No server change needed.
+### Fixed (owner report 2026-11-19: staff saw only their assigned customers; a customer vanished after a pin; no distance on Home)
+- **The whole branch now reaches the phone** (FR-M-032). Root cause, checked against the live server with a real staff login: `GET /sync/bootstrap` answers `items` + a snapshot `nextCursor` + `pullCursor` (contract `SyncBootstrapResponse` since 1.5.0), but the app read it like a pull page (`changes`), so it stored **none** of the snapshot. A phone only got customers that changed later on the change feed (an assignment, a pin), which looked like "only assigned customers". The server was sending all of them (32 of the test branch, 28 unassigned). The fake API answered bootstrap like a pull, which is why tests never caught it; it now uses the real shape, pages the snapshot, and refuses a snapshot cursor on /sync/pull like the server.
+- **One fresh snapshot after the update:** a phone without the new mark (`kv sync.snapshotFormat`) takes the snapshot again on its next sync. Bootstrap only upserts: the outbox, collections and anything unsynced are untouched. No schema change.
+- **Distance on Home and the customer list** (FR-M-005): the phone's position was read once from Android's last known position, which is often empty, so no distance showed. While on duty the app now takes a fresh foreground fix and refreshes it every 2 minutes (only shown on the phone, never stored or sent; off duty it uses the last known position only).
+### Added
+- **Same-day repeat visit warning** (FR-M-035): the visit screen says when the customer was already visited today (how many times, last check-in time). Saving is still allowed (the customer may not have been home earlier).
+- Tests `test/features/sync_bootstrap_test.dart`: the bootstrap shape, a paged first login, an older phone taking one fresh snapshot with its outbox kept, the same-day visit rule across Dhaka midnight.
+
 ## [0.12.3] — 2026-11-19
 Contract pinned: field-api `openapi.yaml` **1.22.0** (unchanged from 0.12.2). Works best with field-api PR #23, which sends a whole branch in small, fast pages.
 ### Fixed (owner report 2026-11-19: the customer list was blank after login, with no way to load it)
