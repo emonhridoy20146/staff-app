@@ -91,10 +91,11 @@ class AttendanceService {
 
   bool needsSelfie(AttendanceEventType type) => selfieEvents().contains(type);
 
-  /// Records an event offline-first (FR-ATT-001/002). With a [selfie] the
-  /// mutation is held until the photo is uploaded, then sent with
-  /// `selfieMediaId` (see [releaseWithSelfie]). Each event depends on the
-  /// previous one of the day, so they always reach the server in order.
+  /// Records an event offline-first (FR-ATT-001/002). The event is sent at
+  /// once, never held for its [selfie] (ADR-M19, contract 1.21.0): duty and
+  /// location must not wait for an upload. The photo uploads on its own and
+  /// is linked afterwards (see [linkAttendanceSelfie]). Each event depends on
+  /// the previous one of the day, so they always reach the server in order.
   Future<void> record(AttendanceEventType type, {GeoFix? fix, Uint8List? selfie}) async {
     if (selfie == null && needsSelfie(type)) throw SelfieRequired();
     final date = _clock.businessDate();
@@ -123,7 +124,6 @@ class AttendanceService {
       await _ref.read(outboxWriterProvider).enqueue(
         mutationId: id,
         entity: 'attendance_event',
-        held: selfie != null,
         dependsOn: [?previous],
         payload: {
           'clientId': id,
@@ -153,9 +153,32 @@ final attendanceServiceProvider = Provider<AttendanceService>(AttendanceService.
 
 class SelfieRequired implements Exception {}
 
-/// Media hook: the selfie is on the server → send the held event.
-Future<void> releaseWithSelfie(OutboxWriter outbox, AppDatabase db, String eventClientId, List<String> mediaIds) =>
-    outbox.release(eventClientId, {if (mediaIds.isNotEmpty) 'selfieMediaId': mediaIds.first});
+/// Media hook: the selfie is on the server → link it to its event.
+///
+/// An event saved by an app before 0.12.1 may still be held for its photo:
+/// it is sent now with `selfieMediaId`. Otherwise the event went without the
+/// photo and `attendance_selfie` links it (after the event, via `dependsOn`).
+Future<void> linkAttendanceSelfie(OutboxWriter outbox, AppDatabase db, String eventClientId, List<String> mediaIds) async {
+  if (mediaIds.isEmpty) return;
+  if (await outbox.release(eventClientId, {'selfieMediaId': mediaIds.first})) return;
+  final already = await (db.select(db.outbox)
+        ..where((t) => t.entity.equals('attendance_selfie') & t.payloadJson.like('%"eventClientId":"$eventClientId"%')))
+      .get();
+  if (already.isNotEmpty) return;
+  await outbox.enqueue(
+    mutationId: const Uuid().v7(),
+    entity: 'attendance_selfie',
+    dependsOn: [eventClientId],
+    payload: {'eventClientId': eventClientId, 'selfieMediaId': mediaIds.first},
+  );
+}
+
+/// Sends attendance events that an app before 0.12.1 held for their photo,
+/// so a phone already stuck on "waiting" recovers without losing anything.
+/// Their photos are linked by [linkAttendanceSelfie] once they upload.
+Future<int> releaseHeldAttendance(AppDatabase db) =>
+    (db.update(db.outbox)..where((t) => t.entity.equals('attendance_event') & t.state.equals('held')))
+        .write(const OutboxCompanion(state: Value('pending')));
 
 final todayAttendanceProvider = StreamProvider<AttendanceDay>((ref) {
   final s = ref.watch(attendanceServiceProvider);

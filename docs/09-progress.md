@@ -29,7 +29,7 @@ Phases match `field-api/docs/09-progress.md`. Start each phase against the Prism
 | Notes, promises, local reminders | ✅ |
 | Tags (with reason), pin correction proposals | ✅ tags; pin correction in 0.3.0 (flow test + screenshots); map pin screen in 0.8.0 (contract 1.11.0: map moves under a fixed pin, typed coordinates, optional photo, set at once for customers without a location; flow + widget tests, screenshot) |
 | Attendance: work-in/out, breaks, summary | ✅ |
-| Attendance photo at every event (setting `attendance.selfieEvents`) | ✅ 0.4.0, flow tests + screenshot; device camera check pending |
+| Attendance photo at every event (setting `attendance.selfieEvents`) | ✅ 0.4.0, flow tests + screenshot; device camera check pending. 0.12.1: the event no longer waits for its photo (ADR-M19) |
 | Handovers incoming/outgoing | ◐ incoming done; outgoing (P4 staff-initiated) not yet |
 | Notices from the office: list, detail, offline "পড়েছি" (`broadcast_ack`), Today banner, Me count (contract 1.12.0) | ✅ 0.9.0, flow tests + screenshots |
 | Tasks from the office: list, detail with history, offline "কাজ হয়েছে" (`task_resolve_request`), Today card, Me count, sent-back reason (contract 1.20.0, flag `module.tasks`) | ✅ 0.12.0, flow + screen tests; lock-screen alert waits for FCM |
