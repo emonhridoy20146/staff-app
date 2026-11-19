@@ -6,6 +6,7 @@ import '../core/providers.dart';
 import '../core/settings/ui_prefs.dart';
 import '../core/theme/app_theme.dart';
 import '../core/ui/brand.dart';
+import '../core/ui/chips.dart';
 import '../core/ui/exit_confirm.dart';
 import '../features/handovers/handovers.dart';
 import '../l10n/app_localizations.dart';
@@ -24,7 +25,10 @@ class AppShell extends ConsumerWidget {
     final meBadge = problems + handovers;
     final scaffold = Scaffold(
       body: shell,
-      bottomNavigationBar: NavigationBar(
+      // Owner request 2026-11-19: online / offline is visible on every screen, just above the tabs.
+      bottomNavigationBar: Column(mainAxisSize: MainAxisSize.min, children: [
+        const OnlineStrip(),
+        NavigationBar(
         selectedIndex: shell.currentIndex,
         onDestinationSelected: (i) => shell.goBranch(i, initialLocation: i == shell.currentIndex),
         destinations: [
@@ -38,6 +42,7 @@ class AppShell extends ConsumerWidget {
           ),
         ],
       ),
+      ]),
     );
     // Back from the root of the signed-in app asks before closing it.
     return ExitConfirmScope(child: scaffold);

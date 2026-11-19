@@ -41,9 +41,8 @@ class _FieldAppState extends ConsumerState<FieldApp> with WidgetsBindingObserver
     WidgetsBinding.instance.addObserver(this);
     _timer = Timer.periodic(foregroundSyncEvery, (_) => _kick('timer'));
     if (widget.watchConnectivity) {
-      _net = Connectivity().onConnectivityChanged.listen((r) {
-        if (r.any((x) => x != ConnectivityResult.none)) _kick('online');
-      });
+      _net = Connectivity().onConnectivityChanged.listen(_onNetwork);
+      unawaited(Connectivity().checkConnectivity().then(_onNetwork).catchError((Object _) {}));
     }
     // After each successful sync: upload photos (independent of data
     // sync) and purge old confirmed media / done outbox rows.
@@ -51,6 +50,15 @@ class _FieldAppState extends ConsumerState<FieldApp> with WidgetsBindingObserver
       if (s.running || s.lastErrorCode != null || s.lastSuccessAt == null) return;
       unawaited(ref.read(mediaServiceProvider).uploadPending().catchError((Object _) {}));
     });
+  }
+
+  /// Network back → sync now (the dot turns green once the server answers); no network → grey dot at once.
+  void _onNetwork(List<ConnectivityResult> r) {
+    if (r.any((x) => x != ConnectivityResult.none)) {
+      _kick('online');
+    } else {
+      ref.read(syncEngineProvider).markOffline();
+    }
   }
 
   void _kick(String reason) {

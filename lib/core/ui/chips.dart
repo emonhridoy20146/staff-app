@@ -92,6 +92,40 @@ class SyncChip extends ConsumerWidget {
   }
 }
 
+/// Always-visible connection line (owner request 2026-11-19): green dot + "অনলাইন" while the server can be
+/// reached, grey dot + "অফলাইন" when the phone has no network or the last sync could not reach the server.
+class OnlineStrip extends ConsumerWidget {
+  const OnlineStrip({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context);
+    final cs = Theme.of(context).colorScheme;
+    final online = (ref.watch(syncStatusProvider).value ?? ref.read(syncEngineProvider).current).online;
+    final label = online ? l.networkOnline : l.syncOffline;
+    final dot = online ? context.semanticColors.success.fg : cs.outline;
+    return Semantics(
+      liveRegion: true,
+      label: label,
+      excludeSemantics: true,
+      child: ColoredBox(
+        color: cs.surfaceContainer,
+        child: SizedBox(
+          height: 28,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(width: 10, height: 10, decoration: BoxDecoration(color: dot, shape: BoxShape.circle)),
+              const SizedBox(width: Space.s8),
+              Text(label, style: Theme.of(context).textTheme.labelMedium!.copyWith(color: online ? cs.onSurface : cs.onSurfaceVariant)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 enum DutyState { off, on, onBreak }
 
 /// Duty chip: off duty (neutral) · on duty (success dot) · on break (warning).

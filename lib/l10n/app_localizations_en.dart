@@ -318,6 +318,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get syncOffline => 'Offline';
 
   @override
+  String get networkOnline => 'Online';
+
+  @override
   String get savedOnPhone => 'Saved on phone · will sync';
 
   @override

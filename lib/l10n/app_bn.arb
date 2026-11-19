@@ -92,6 +92,7 @@
   "syncQueued": "{count}টি অপেক্ষমাণ",
   "syncProblems": "{count}টি সমস্যা",
   "syncOffline": "অফলাইন",
+  "networkOnline": "অনলাইন",
   "savedOnPhone": "ফোনে সংরক্ষিত · সিঙ্ক হবে",
   "reachedServer": "সার্ভারে পৌঁছেছে",
   "dutyOff": "ডিউটির বাইরে",

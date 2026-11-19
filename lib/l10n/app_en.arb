@@ -148,6 +148,7 @@
     }
   },
   "syncOffline": "Offline",
+  "networkOnline": "Online",
   "savedOnPhone": "Saved on phone · will sync",
   "reachedServer": "Reached the server",
   "dutyOff": "Off duty",

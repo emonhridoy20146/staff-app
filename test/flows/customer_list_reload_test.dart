@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:staff_app/app/app.dart';
 import 'package:staff_app/core/providers.dart';
+import 'package:staff_app/core/ui/chips.dart';
 
 import 'helpers.dart';
 
@@ -47,5 +48,45 @@ void main() {
     expect(find.text('গ্রাহক লোড করা যায়নি'), findsNothing);
     expect(find.text('এই ফোনে এখনও কোনো গ্রাহক নেই'), findsNothing);
     expect(await t.runAsync(() => db.select(db.customers).get()), isNotEmpty);
+  });
+
+  testWidgets('online / offline line on every screen: green "অনলাইন", grey "অফলাইন" when the server cannot be reached', (t) async {
+    final h = Harness();
+    await t.runAsync(h.signIn);
+    t.view.physicalSize = const Size(412, 892) * 2;
+    t.view.devicePixelRatio = 2;
+    addTearDown(t.view.reset);
+    await t.pumpWidget(UncontrolledProviderScope(container: h.container, child: const FieldApp(watchConnectivity: false)));
+    await settle(t);
+    Finder strip(String text) => find.descendant(of: find.byType(OnlineStrip), matching: find.text(text));
+    expect(strip('অনলাইন'), findsOneWidget);
+
+    h.read(syncEngineProvider).markOffline();
+    await settle(t, rounds: 2);
+    expect(strip('অফলাইন'), findsOneWidget);
+    expect(strip('অনলাইন'), findsNothing);
+
+    // Another tab: still shown.
+    await t.tap(find.text('গ্রাহক').last);
+    await settle(t, rounds: 2);
+    expect(strip('অফলাইন'), findsOneWidget);
+  });
+
+  testWidgets('opening the Customers tab with nothing on the phone loads the branch by itself', (t) async {
+    final h = Harness();
+    await t.runAsync(h.signIn);
+    t.view.physicalSize = const Size(412, 892) * 2;
+    t.view.devicePixelRatio = 2;
+    addTearDown(t.view.reset);
+    await t.pumpWidget(UncontrolledProviderScope(container: h.container, child: const FieldApp(watchConnectivity: false)));
+    await settle(t);
+    final db = h.read(databaseProvider);
+    await t.runAsync(() => db.delete(db.customers).go());
+    h.api.expireCursor = true; // the server asks for a fresh snapshot, as after the 1.20.1 resync floor
+    await t.tap(find.text('গ্রাহক').last);
+    await settle(t, rounds: 12);
+    h.api.expireCursor = false;
+    expect(await t.runAsync(() => db.select(db.customers).get()), isNotEmpty);
+    expect(find.text('এই ফোনে এখনও কোনো গ্রাহক নেই'), findsNothing);
   });
 }

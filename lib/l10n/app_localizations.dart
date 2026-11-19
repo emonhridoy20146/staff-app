@@ -650,6 +650,12 @@ abstract class AppLocalizations {
   /// **'Offline'**
   String get syncOffline;
 
+  /// No description provided for @networkOnline.
+  ///
+  /// In en, this message translates to:
+  /// **'Online'**
+  String get networkOnline;
+
   /// No description provided for @savedOnPhone.
   ///
   /// In en, this message translates to:

@@ -318,6 +318,9 @@ class AppLocalizationsBn extends AppLocalizations {
   String get syncOffline => 'অফলাইন';
 
   @override
+  String get networkOnline => 'অনলাইন';
+
+  @override
   String get savedOnPhone => 'ফোনে সংরক্ষিত · সিঙ্ক হবে';
 
   @override

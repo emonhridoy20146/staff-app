@@ -39,7 +39,7 @@ Phases match `field-api/docs/09-progress.md`. Start each phase against the Prism
 | Real ERP shape (contract 1.13.0): invoice numbers, products and serials, credit sales, frequency, late fees, rolled lines hidden, returned invoices not collectable, directions and risk grade, ERP method and collector on payments; database schema 7 | ✅ 0.10.0, unit + migration tests, screenshots 29-31; check with real ERP data once field-api runs in `live` mode |
 | Same-day warning in the collect flow (one payment per installment invoice per day, OD-27) | ✅ 0.10.0, unit test + screenshot; device check pending |
 | Whole branch on the phone, staff in several branches, branch on rows, whose customer it is, Today = own + unassigned (contract 1.19.0, schema 8) | ✅ 0.11.0, unit + migration tests; device check pending |
-| Customer list reload (pull-down + top-bar button) and loading/failed empty states (FR-M-032) | ✅ 0.12.3, flow test |
+| Customer list reload (pull-down + top-bar button), auto-load when the tab opens empty, loading/failed empty states (FR-M-032); online/offline line on every screen | ✅ 0.12.3, flow tests |
 | Notifications (FCM + centre), Sync centre & Problems | ◐ sync centre done; FCM not yet (needs Firebase project) |
 | Onboarding: consent, permissions primer | ✅ |
 **Acceptance:** M-E2…M-E7, M-E9, M-E10 green; manual device checklist (non-location sections) signed off on 4 OEM devices; pilot 5 staff × 2 weeks with zero lost/duplicate collections.
