@@ -1,5 +1,15 @@
 # Changelog — staff-app
 
+## [0.12.2] — 2026-11-19
+Contract pinned: field-api `openapi.yaml` **1.22.0** (field-api PR #22, ADR-041; `docs/contract/openapi.yaml`).
+### Fixed (owner report 2026-11-19: work-in saved, but the live map stayed empty)
+- **Indoor fixes are no longer thrown away** (ADR-M20). The phone dropped every point worse than `maxAccuracyM` (50 m); indoors it reports 100–500 m, so nothing was ever sent. Points up to 5 km are now sent; the server keeps the rough ones for the live map only. A rough fix never becomes the reference for the speed check or the visit suggestion. The speed check allows for both fixes' accuracy (GPS error is not movement).
+- **A position every few minutes even when standing still:** with no point from the stream for 2 minutes (a distance filter sends nothing while still), the tracker takes a one-off fix. Tracking also takes one right at the work-in and uploads the first point at once.
+- Heartbeat every 5 minutes (was 15), so the office sees sooner that the phone is alive.
+- **Times show in Bangladesh time with AM/PM** (owner request): `formatTimeDhaka` is 12-hour, e.g. `৯:০৮ AM`, the same as admin-web.
+### Added
+- Tests: rough fix kept, noise beyond 5 km dropped, jitter within accuracy not "impossible speed"; a quiet stream still sends a point at work-in and again after 3 minutes, rough fixes included.
+
 ## [0.12.1] — 2026-11-19
 Contract pinned: field-api `openapi.yaml` **1.21.0** (field-api PR #20, ADR-040; `docs/contract/openapi.yaml`).
 ### Fixed (owner report 2026-11-19: attendance always "1 waiting", so no location reaches the live map)

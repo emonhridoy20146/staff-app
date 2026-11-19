@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:staff_app/core/db/app_database.dart';
+import 'package:staff_app/core/location/location_engine.dart';
 import 'package:staff_app/core/location/tracking/tracking_provider.dart';
 import 'package:staff_app/core/media/media.dart';
 import 'package:staff_app/core/permissions/permission_service.dart';
@@ -16,11 +17,14 @@ void main() {
   late FakeTrackingProvider free;
   late FakeTrackingProvider paid;
 
+  FakeLocationEngine engineOf() => h.read(locationEngineProvider) as FakeLocationEngine;
+
   void build({bool paidCompiled = false}) {
     h = Harness();
     final all = h.read(trackingProvidersProvider);
     free = all.firstWhere((p) => p.id == 'free') as FakeTrackingProvider;
     paid = all.firstWhere((p) => p.id == 'paid') as FakeTrackingProvider..isAvailable = paidCompiled;
+    engineOf().noFix = true; // only the points a test emits, unless it asks for one-off fixes
   }
 
   tearDown(() async {
@@ -98,6 +102,29 @@ void main() {
     await tracker().uploadPending();
     expect(h.api.locationPoints, hasLength(2));
     expect(await queued(), 0);
+  });
+
+  test('a quiet stream still sends a position every few minutes, rough indoor fixes included (ADR-M20)', () async {
+    // Owner report 2026-11-19: indoors the phone reported 200 m; every point was dropped and the live map stayed empty.
+    build();
+    await h.signIn();
+    engineOf()
+      ..noFix = false
+      ..fix = GeoFix(lat: 22.1684, lng: 90.4130, accuracyM: 200, fixAt: h.clock.nowUtc());
+    await workIn(); // tracking starts and takes a first fix at once
+    await syncAttendance();
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+    await tracker().ensureRecentPoint(); // a point was just taken: no second fix
+    await tracker().uploadPending();
+    expect(h.api.locationPoints, hasLength(1));
+    expect(h.api.locationPoints.single['acc'], 200);
+
+    h.clock.advance(const Duration(minutes: 3)); // nothing from the stream meanwhile
+    engineOf().fix = GeoFix(lat: 22.1690, lng: 90.4131, accuracyM: 300, fixAt: h.clock.nowUtc());
+    await tracker().ensureRecentPoint();
+    await tracker().uploadPending();
+    expect(h.api.locationPoints, hasLength(2));
+    expect(h.api.locationPoints.last['lat'], 22.1690);
   });
 
   test('stops at work-out', () async {

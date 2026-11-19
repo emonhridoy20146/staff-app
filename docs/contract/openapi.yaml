@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Howlader Field Operations API
-  version: 1.21.0
+  version: 1.22.0
   description: |
     Contract owned by field-api. Consumers (admin-web, staff-app) generate types from this file.
     Conventions (auth, pagination, idempotency, errors) are described in docs/05-api-contract.md.
@@ -2564,7 +2564,7 @@ components:
       properties: { fastSec: { type: integer, default: 15 }, slowSec: { type: integer, default: 45 }, stillSec: { type: integer, default: 180 }, distanceFilterM: { type: integer, default: 25 }, maxAccuracyM: { type: integer, default: 50 } }
     LatestLocation:
       type: object
-      properties: { userId: { type: string }, name: { type: string }, lat: { type: number }, lng: { type: number }, accuracyM: { type: number }, recordedAt: { type: string }, freshness: { type: string, enum: [fresh, stale, lost] }, battery: { type: number }, onBreak: { type: boolean }, mock: { type: boolean }, activity: { type: string }, todayVisits: { type: integer }, todayCollectedPoisha: { type: integer }, trackingProvider: { type: string, enum: [free, paid], description: 'From the last heartbeat (1.5.0)' }, trackingProviderFallback: { type: boolean } }
+      properties: { userId: { type: string }, name: { type: string }, lat: { type: number }, lng: { type: number }, accuracyM: { type: number }, recordedAt: { type: string }, freshness: { type: string, enum: [fresh, stale, lost] }, battery: { type: number }, onBreak: { type: boolean }, mock: { type: boolean }, activity: { type: string }, todayVisits: { type: integer }, todayCollectedPoisha: { type: integer }, trackingProvider: { type: string, enum: [free, paid], description: 'From the last heartbeat (1.5.0)' }, trackingProviderFallback: { type: boolean }, source: { type: string, enum: [track, attendance], description: 'Added in 1.22.0. attendance = no tracked point yet today: the position of the last attendance event (work-in), ADR-041' }, lowAccuracy: { type: boolean, description: 'Added in 1.22.0. Less accurate than location.maxAccuracyM (indoors); draw as approximate' } }
     Stop:
       type: object
       properties: { start: { type: string }, end: { type: string }, dwellMin: { type: integer }, lat: { type: number }, lng: { type: number }, customerId: { type: [string, 'null'] }, customerName: { type: [string, 'null'] }, distanceToPinM: { type: [integer, 'null'] }, visitId: { type: [string, 'null'] } }
