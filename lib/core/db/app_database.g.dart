@@ -399,6 +399,61 @@ class $CustomersTable extends Customers
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _branchIdMeta = const VerificationMeta(
+    'branchId',
+  );
+  @override
+  late final GeneratedColumn<String> branchId = GeneratedColumn<String>(
+    'branch_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _branchCodeMeta = const VerificationMeta(
+    'branchCode',
+  );
+  @override
+  late final GeneratedColumn<String> branchCode = GeneratedColumn<String>(
+    'branch_code',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _branchNameBnMeta = const VerificationMeta(
+    'branchNameBn',
+  );
+  @override
+  late final GeneratedColumn<String> branchNameBn = GeneratedColumn<String>(
+    'branch_name_bn',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _branchNameEnMeta = const VerificationMeta(
+    'branchNameEn',
+  );
+  @override
+  late final GeneratedColumn<String> branchNameEn = GeneratedColumn<String>(
+    'branch_name_en',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _assigneeNameMeta = const VerificationMeta(
+    'assigneeName',
+  );
+  @override
+  late final GeneratedColumn<String> assigneeName = GeneratedColumn<String>(
+    'assignee_name',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _searchTextMeta = const VerificationMeta(
     'searchText',
   );
@@ -460,6 +515,11 @@ class $CustomersTable extends Customers
     detailedAddress,
     directions,
     erpRiskJson,
+    branchId,
+    branchCode,
+    branchNameBn,
+    branchNameEn,
+    assigneeName,
     searchText,
     version,
   ];
@@ -748,6 +808,45 @@ class $CustomersTable extends Customers
         ),
       );
     }
+    if (data.containsKey('branch_id')) {
+      context.handle(
+        _branchIdMeta,
+        branchId.isAcceptableOrUnknown(data['branch_id']!, _branchIdMeta),
+      );
+    }
+    if (data.containsKey('branch_code')) {
+      context.handle(
+        _branchCodeMeta,
+        branchCode.isAcceptableOrUnknown(data['branch_code']!, _branchCodeMeta),
+      );
+    }
+    if (data.containsKey('branch_name_bn')) {
+      context.handle(
+        _branchNameBnMeta,
+        branchNameBn.isAcceptableOrUnknown(
+          data['branch_name_bn']!,
+          _branchNameBnMeta,
+        ),
+      );
+    }
+    if (data.containsKey('branch_name_en')) {
+      context.handle(
+        _branchNameEnMeta,
+        branchNameEn.isAcceptableOrUnknown(
+          data['branch_name_en']!,
+          _branchNameEnMeta,
+        ),
+      );
+    }
+    if (data.containsKey('assignee_name')) {
+      context.handle(
+        _assigneeNameMeta,
+        assigneeName.isAcceptableOrUnknown(
+          data['assignee_name']!,
+          _assigneeNameMeta,
+        ),
+      );
+    }
     if (data.containsKey('search_text')) {
       context.handle(
         _searchTextMeta,
@@ -909,6 +1008,26 @@ class $CustomersTable extends Customers
         DriftSqlType.string,
         data['${effectivePrefix}erp_risk_json'],
       ),
+      branchId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}branch_id'],
+      ),
+      branchCode: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}branch_code'],
+      ),
+      branchNameBn: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}branch_name_bn'],
+      ),
+      branchNameEn: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}branch_name_en'],
+      ),
+      assigneeName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}assignee_name'],
+      ),
       searchText: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}search_text'],
@@ -962,6 +1081,11 @@ class CustomerRow extends DataClass implements Insertable<CustomerRow> {
   final String? detailedAddress;
   final String? directions;
   final String? erpRiskJson;
+  final String? branchId;
+  final String? branchCode;
+  final String? branchNameBn;
+  final String? branchNameEn;
+  final String? assigneeName;
   final String searchText;
   final int version;
   const CustomerRow({
@@ -1000,6 +1124,11 @@ class CustomerRow extends DataClass implements Insertable<CustomerRow> {
     this.detailedAddress,
     this.directions,
     this.erpRiskJson,
+    this.branchId,
+    this.branchCode,
+    this.branchNameBn,
+    this.branchNameEn,
+    this.assigneeName,
     required this.searchText,
     required this.version,
   });
@@ -1085,6 +1214,21 @@ class CustomerRow extends DataClass implements Insertable<CustomerRow> {
     if (!nullToAbsent || erpRiskJson != null) {
       map['erp_risk_json'] = Variable<String>(erpRiskJson);
     }
+    if (!nullToAbsent || branchId != null) {
+      map['branch_id'] = Variable<String>(branchId);
+    }
+    if (!nullToAbsent || branchCode != null) {
+      map['branch_code'] = Variable<String>(branchCode);
+    }
+    if (!nullToAbsent || branchNameBn != null) {
+      map['branch_name_bn'] = Variable<String>(branchNameBn);
+    }
+    if (!nullToAbsent || branchNameEn != null) {
+      map['branch_name_en'] = Variable<String>(branchNameEn);
+    }
+    if (!nullToAbsent || assigneeName != null) {
+      map['assignee_name'] = Variable<String>(assigneeName);
+    }
     map['search_text'] = Variable<String>(searchText);
     map['version'] = Variable<int>(version);
     return map;
@@ -1167,6 +1311,21 @@ class CustomerRow extends DataClass implements Insertable<CustomerRow> {
       erpRiskJson: erpRiskJson == null && nullToAbsent
           ? const Value.absent()
           : Value(erpRiskJson),
+      branchId: branchId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(branchId),
+      branchCode: branchCode == null && nullToAbsent
+          ? const Value.absent()
+          : Value(branchCode),
+      branchNameBn: branchNameBn == null && nullToAbsent
+          ? const Value.absent()
+          : Value(branchNameBn),
+      branchNameEn: branchNameEn == null && nullToAbsent
+          ? const Value.absent()
+          : Value(branchNameEn),
+      assigneeName: assigneeName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(assigneeName),
       searchText: Value(searchText),
       version: Value(version),
     );
@@ -1215,6 +1374,11 @@ class CustomerRow extends DataClass implements Insertable<CustomerRow> {
       detailedAddress: serializer.fromJson<String?>(json['detailedAddress']),
       directions: serializer.fromJson<String?>(json['directions']),
       erpRiskJson: serializer.fromJson<String?>(json['erpRiskJson']),
+      branchId: serializer.fromJson<String?>(json['branchId']),
+      branchCode: serializer.fromJson<String?>(json['branchCode']),
+      branchNameBn: serializer.fromJson<String?>(json['branchNameBn']),
+      branchNameEn: serializer.fromJson<String?>(json['branchNameEn']),
+      assigneeName: serializer.fromJson<String?>(json['assigneeName']),
       searchText: serializer.fromJson<String>(json['searchText']),
       version: serializer.fromJson<int>(json['version']),
     );
@@ -1258,6 +1422,11 @@ class CustomerRow extends DataClass implements Insertable<CustomerRow> {
       'detailedAddress': serializer.toJson<String?>(detailedAddress),
       'directions': serializer.toJson<String?>(directions),
       'erpRiskJson': serializer.toJson<String?>(erpRiskJson),
+      'branchId': serializer.toJson<String?>(branchId),
+      'branchCode': serializer.toJson<String?>(branchCode),
+      'branchNameBn': serializer.toJson<String?>(branchNameBn),
+      'branchNameEn': serializer.toJson<String?>(branchNameEn),
+      'assigneeName': serializer.toJson<String?>(assigneeName),
       'searchText': serializer.toJson<String>(searchText),
       'version': serializer.toJson<int>(version),
     };
@@ -1299,6 +1468,11 @@ class CustomerRow extends DataClass implements Insertable<CustomerRow> {
     Value<String?> detailedAddress = const Value.absent(),
     Value<String?> directions = const Value.absent(),
     Value<String?> erpRiskJson = const Value.absent(),
+    Value<String?> branchId = const Value.absent(),
+    Value<String?> branchCode = const Value.absent(),
+    Value<String?> branchNameBn = const Value.absent(),
+    Value<String?> branchNameEn = const Value.absent(),
+    Value<String?> assigneeName = const Value.absent(),
     String? searchText,
     int? version,
   }) => CustomerRow(
@@ -1354,6 +1528,11 @@ class CustomerRow extends DataClass implements Insertable<CustomerRow> {
         : this.detailedAddress,
     directions: directions.present ? directions.value : this.directions,
     erpRiskJson: erpRiskJson.present ? erpRiskJson.value : this.erpRiskJson,
+    branchId: branchId.present ? branchId.value : this.branchId,
+    branchCode: branchCode.present ? branchCode.value : this.branchCode,
+    branchNameBn: branchNameBn.present ? branchNameBn.value : this.branchNameBn,
+    branchNameEn: branchNameEn.present ? branchNameEn.value : this.branchNameEn,
+    assigneeName: assigneeName.present ? assigneeName.value : this.assigneeName,
     searchText: searchText ?? this.searchText,
     version: version ?? this.version,
   );
@@ -1438,6 +1617,19 @@ class CustomerRow extends DataClass implements Insertable<CustomerRow> {
       erpRiskJson: data.erpRiskJson.present
           ? data.erpRiskJson.value
           : this.erpRiskJson,
+      branchId: data.branchId.present ? data.branchId.value : this.branchId,
+      branchCode: data.branchCode.present
+          ? data.branchCode.value
+          : this.branchCode,
+      branchNameBn: data.branchNameBn.present
+          ? data.branchNameBn.value
+          : this.branchNameBn,
+      branchNameEn: data.branchNameEn.present
+          ? data.branchNameEn.value
+          : this.branchNameEn,
+      assigneeName: data.assigneeName.present
+          ? data.assigneeName.value
+          : this.assigneeName,
       searchText: data.searchText.present
           ? data.searchText.value
           : this.searchText,
@@ -1483,6 +1675,11 @@ class CustomerRow extends DataClass implements Insertable<CustomerRow> {
           ..write('detailedAddress: $detailedAddress, ')
           ..write('directions: $directions, ')
           ..write('erpRiskJson: $erpRiskJson, ')
+          ..write('branchId: $branchId, ')
+          ..write('branchCode: $branchCode, ')
+          ..write('branchNameBn: $branchNameBn, ')
+          ..write('branchNameEn: $branchNameEn, ')
+          ..write('assigneeName: $assigneeName, ')
           ..write('searchText: $searchText, ')
           ..write('version: $version')
           ..write(')'))
@@ -1526,6 +1723,11 @@ class CustomerRow extends DataClass implements Insertable<CustomerRow> {
     detailedAddress,
     directions,
     erpRiskJson,
+    branchId,
+    branchCode,
+    branchNameBn,
+    branchNameEn,
+    assigneeName,
     searchText,
     version,
   ]);
@@ -1568,6 +1770,11 @@ class CustomerRow extends DataClass implements Insertable<CustomerRow> {
           other.detailedAddress == this.detailedAddress &&
           other.directions == this.directions &&
           other.erpRiskJson == this.erpRiskJson &&
+          other.branchId == this.branchId &&
+          other.branchCode == this.branchCode &&
+          other.branchNameBn == this.branchNameBn &&
+          other.branchNameEn == this.branchNameEn &&
+          other.assigneeName == this.assigneeName &&
           other.searchText == this.searchText &&
           other.version == this.version);
 }
@@ -1608,6 +1815,11 @@ class CustomersCompanion extends UpdateCompanion<CustomerRow> {
   final Value<String?> detailedAddress;
   final Value<String?> directions;
   final Value<String?> erpRiskJson;
+  final Value<String?> branchId;
+  final Value<String?> branchCode;
+  final Value<String?> branchNameBn;
+  final Value<String?> branchNameEn;
+  final Value<String?> assigneeName;
   final Value<String> searchText;
   final Value<int> version;
   final Value<int> rowid;
@@ -1647,6 +1859,11 @@ class CustomersCompanion extends UpdateCompanion<CustomerRow> {
     this.detailedAddress = const Value.absent(),
     this.directions = const Value.absent(),
     this.erpRiskJson = const Value.absent(),
+    this.branchId = const Value.absent(),
+    this.branchCode = const Value.absent(),
+    this.branchNameBn = const Value.absent(),
+    this.branchNameEn = const Value.absent(),
+    this.assigneeName = const Value.absent(),
     this.searchText = const Value.absent(),
     this.version = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -1687,6 +1904,11 @@ class CustomersCompanion extends UpdateCompanion<CustomerRow> {
     this.detailedAddress = const Value.absent(),
     this.directions = const Value.absent(),
     this.erpRiskJson = const Value.absent(),
+    this.branchId = const Value.absent(),
+    this.branchCode = const Value.absent(),
+    this.branchNameBn = const Value.absent(),
+    this.branchNameEn = const Value.absent(),
+    this.assigneeName = const Value.absent(),
     this.searchText = const Value.absent(),
     this.version = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -1729,6 +1951,11 @@ class CustomersCompanion extends UpdateCompanion<CustomerRow> {
     Expression<String>? detailedAddress,
     Expression<String>? directions,
     Expression<String>? erpRiskJson,
+    Expression<String>? branchId,
+    Expression<String>? branchCode,
+    Expression<String>? branchNameBn,
+    Expression<String>? branchNameEn,
+    Expression<String>? assigneeName,
     Expression<String>? searchText,
     Expression<int>? version,
     Expression<int>? rowid,
@@ -1771,6 +1998,11 @@ class CustomersCompanion extends UpdateCompanion<CustomerRow> {
       if (detailedAddress != null) 'detailed_address': detailedAddress,
       if (directions != null) 'directions': directions,
       if (erpRiskJson != null) 'erp_risk_json': erpRiskJson,
+      if (branchId != null) 'branch_id': branchId,
+      if (branchCode != null) 'branch_code': branchCode,
+      if (branchNameBn != null) 'branch_name_bn': branchNameBn,
+      if (branchNameEn != null) 'branch_name_en': branchNameEn,
+      if (assigneeName != null) 'assignee_name': assigneeName,
       if (searchText != null) 'search_text': searchText,
       if (version != null) 'version': version,
       if (rowid != null) 'rowid': rowid,
@@ -1813,6 +2045,11 @@ class CustomersCompanion extends UpdateCompanion<CustomerRow> {
     Value<String?>? detailedAddress,
     Value<String?>? directions,
     Value<String?>? erpRiskJson,
+    Value<String?>? branchId,
+    Value<String?>? branchCode,
+    Value<String?>? branchNameBn,
+    Value<String?>? branchNameEn,
+    Value<String?>? assigneeName,
     Value<String>? searchText,
     Value<int>? version,
     Value<int>? rowid,
@@ -1854,6 +2091,11 @@ class CustomersCompanion extends UpdateCompanion<CustomerRow> {
       detailedAddress: detailedAddress ?? this.detailedAddress,
       directions: directions ?? this.directions,
       erpRiskJson: erpRiskJson ?? this.erpRiskJson,
+      branchId: branchId ?? this.branchId,
+      branchCode: branchCode ?? this.branchCode,
+      branchNameBn: branchNameBn ?? this.branchNameBn,
+      branchNameEn: branchNameEn ?? this.branchNameEn,
+      assigneeName: assigneeName ?? this.assigneeName,
       searchText: searchText ?? this.searchText,
       version: version ?? this.version,
       rowid: rowid ?? this.rowid,
@@ -1970,6 +2212,21 @@ class CustomersCompanion extends UpdateCompanion<CustomerRow> {
     if (erpRiskJson.present) {
       map['erp_risk_json'] = Variable<String>(erpRiskJson.value);
     }
+    if (branchId.present) {
+      map['branch_id'] = Variable<String>(branchId.value);
+    }
+    if (branchCode.present) {
+      map['branch_code'] = Variable<String>(branchCode.value);
+    }
+    if (branchNameBn.present) {
+      map['branch_name_bn'] = Variable<String>(branchNameBn.value);
+    }
+    if (branchNameEn.present) {
+      map['branch_name_en'] = Variable<String>(branchNameEn.value);
+    }
+    if (assigneeName.present) {
+      map['assignee_name'] = Variable<String>(assigneeName.value);
+    }
     if (searchText.present) {
       map['search_text'] = Variable<String>(searchText.value);
     }
@@ -2020,6 +2277,11 @@ class CustomersCompanion extends UpdateCompanion<CustomerRow> {
           ..write('detailedAddress: $detailedAddress, ')
           ..write('directions: $directions, ')
           ..write('erpRiskJson: $erpRiskJson, ')
+          ..write('branchId: $branchId, ')
+          ..write('branchCode: $branchCode, ')
+          ..write('branchNameBn: $branchNameBn, ')
+          ..write('branchNameEn: $branchNameEn, ')
+          ..write('assigneeName: $assigneeName, ')
           ..write('searchText: $searchText, ')
           ..write('version: $version, ')
           ..write('rowid: $rowid')
@@ -18976,6 +19238,11 @@ typedef $$CustomersTableCreateCompanionBuilder = CustomersCompanion Function({
   Value<String?> detailedAddress,
   Value<String?> directions,
   Value<String?> erpRiskJson,
+  Value<String?> branchId,
+  Value<String?> branchCode,
+  Value<String?> branchNameBn,
+  Value<String?> branchNameEn,
+  Value<String?> assigneeName,
   Value<String> searchText,
   Value<int> version,
   Value<int> rowid,
@@ -19016,6 +19283,11 @@ typedef $$CustomersTableUpdateCompanionBuilder = CustomersCompanion Function({
   Value<String?> detailedAddress,
   Value<String?> directions,
   Value<String?> erpRiskJson,
+  Value<String?> branchId,
+  Value<String?> branchCode,
+  Value<String?> branchNameBn,
+  Value<String?> branchNameEn,
+  Value<String?> assigneeName,
   Value<String> searchText,
   Value<int> version,
   Value<int> rowid,
@@ -19202,6 +19474,31 @@ class $$CustomersTableFilterComposer
 
   ColumnFilters<String> get erpRiskJson => $composableBuilder(
     column: $table.erpRiskJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get branchId => $composableBuilder(
+    column: $table.branchId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get branchCode => $composableBuilder(
+    column: $table.branchCode,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get branchNameBn => $composableBuilder(
+    column: $table.branchNameBn,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get branchNameEn => $composableBuilder(
+    column: $table.branchNameEn,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get assigneeName => $composableBuilder(
+    column: $table.assigneeName,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -19400,6 +19697,31 @@ class $$CustomersTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get branchId => $composableBuilder(
+    column: $table.branchId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get branchCode => $composableBuilder(
+    column: $table.branchCode,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get branchNameBn => $composableBuilder(
+    column: $table.branchNameBn,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get branchNameEn => $composableBuilder(
+    column: $table.branchNameEn,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get assigneeName => $composableBuilder(
+    column: $table.assigneeName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get searchText => $composableBuilder(
     column: $table.searchText,
     builder: (column) => ColumnOrderings(column),
@@ -19569,6 +19891,29 @@ class $$CustomersTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<String> get branchId =>
+      $composableBuilder(column: $table.branchId, builder: (column) => column);
+
+  GeneratedColumn<String> get branchCode => $composableBuilder(
+    column: $table.branchCode,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get branchNameBn => $composableBuilder(
+    column: $table.branchNameBn,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get branchNameEn => $composableBuilder(
+    column: $table.branchNameEn,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get assigneeName => $composableBuilder(
+    column: $table.assigneeName,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<String> get searchText => $composableBuilder(
     column: $table.searchText,
     builder: (column) => column,
@@ -19644,6 +19989,11 @@ class $$CustomersTableTableManager
                 Value<String?> detailedAddress = const Value.absent(),
                 Value<String?> directions = const Value.absent(),
                 Value<String?> erpRiskJson = const Value.absent(),
+                Value<String?> branchId = const Value.absent(),
+                Value<String?> branchCode = const Value.absent(),
+                Value<String?> branchNameBn = const Value.absent(),
+                Value<String?> branchNameEn = const Value.absent(),
+                Value<String?> assigneeName = const Value.absent(),
                 Value<String> searchText = const Value.absent(),
                 Value<int> version = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -19683,6 +20033,11 @@ class $$CustomersTableTableManager
                 detailedAddress: detailedAddress,
                 directions: directions,
                 erpRiskJson: erpRiskJson,
+                branchId: branchId,
+                branchCode: branchCode,
+                branchNameBn: branchNameBn,
+                branchNameEn: branchNameEn,
+                assigneeName: assigneeName,
                 searchText: searchText,
                 version: version,
                 rowid: rowid,
@@ -19724,6 +20079,11 @@ class $$CustomersTableTableManager
                 Value<String?> detailedAddress = const Value.absent(),
                 Value<String?> directions = const Value.absent(),
                 Value<String?> erpRiskJson = const Value.absent(),
+                Value<String?> branchId = const Value.absent(),
+                Value<String?> branchCode = const Value.absent(),
+                Value<String?> branchNameBn = const Value.absent(),
+                Value<String?> branchNameEn = const Value.absent(),
+                Value<String?> assigneeName = const Value.absent(),
                 Value<String> searchText = const Value.absent(),
                 Value<int> version = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -19763,6 +20123,11 @@ class $$CustomersTableTableManager
                 detailedAddress: detailedAddress,
                 directions: directions,
                 erpRiskJson: erpRiskJson,
+                branchId: branchId,
+                branchCode: branchCode,
+                branchNameBn: branchNameBn,
+                branchNameEn: branchNameEn,
+                assigneeName: assigneeName,
                 searchText: searchText,
                 version: version,
                 rowid: rowid,

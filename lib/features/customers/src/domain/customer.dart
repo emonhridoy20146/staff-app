@@ -42,6 +42,21 @@ class Customer {
 
   bool promisedOn(String today) => row.openPromiseDate == today;
 
+  /// Contract 1.19.0: the customer's branch (staff may work in several).
+  String? get branchId => row.branchId;
+  String? branchName(String lang) {
+    final n = lang == 'en' ? (row.branchNameEn ?? row.branchNameBn) : (row.branchNameBn ?? row.branchNameEn);
+    return (n == null || n.trim().isEmpty) ? row.branchCode : n;
+  }
+
+  String? get assigneeName => row.assigneeName;
+
+  /// Assigned to this user. Without a known user everything counts as theirs.
+  bool isMine(String? myUserId) => myUserId == null || row.assigneeId == myUserId;
+
+  /// Someone else's customer in the same branch (staff see the whole branch since 1.19.0).
+  bool isOthers(String? myUserId) => myUserId != null && row.assigneeId != null && row.assigneeId != myUserId;
+
   Customer withDistance(int? d) => Customer(row, distanceM: d);
 
   /// Badges in display order (max 2 shown in a tile).
@@ -168,7 +183,7 @@ bool matchesFilter(Customer c, CustomerFilter f, {required String today, String?
       CustomerFilter.dueToday => c.row.dueToday,
       CustomerFilter.overdue => c.row.daysOverdue > 0,
       CustomerFilter.promisedToday => c.promisedOn(today),
-      CustomerFilter.mine => myUserId == null || c.row.assigneeId == myUserId,
+      CustomerFilter.mine => c.isMine(myUserId),
       CustomerFilter.badSuggested => c.row.badSuggested && !c.tagged,
       CustomerFilter.tagged => c.tagged,
       CustomerFilter.noPin => !c.hasPin,
@@ -203,6 +218,8 @@ List<Customer> applyQuery(
 
 /// Today priorities (FR-M-005): promised today → due today → overdue by
 /// distance → others. Each customer appears once, in its first group.
+/// Since 1.19.0 the phone holds the whole branch; Today lists the user's own
+/// customers and the ones nobody is assigned to, never a colleague's.
 class TodayPriorities {
   const TodayPriorities({required this.promised, required this.due, required this.overdue});
   final List<Customer> promised;
@@ -212,7 +229,8 @@ class TodayPriorities {
   bool get isEmpty => promised.isEmpty && due.isEmpty && overdue.isEmpty;
 }
 
-TodayPriorities prioritize(List<Customer> all, String today) {
+TodayPriorities prioritize(List<Customer> everyone, String today, {String? myUserId}) {
+  final all = everyone.where((c) => !c.isOthers(myUserId)).toList();
   int dist(Customer c) => c.distanceM ?? 1 << 30;
   final promised = all.where((c) => c.promisedOn(today)).toList()..sort((a, b) => dist(a).compareTo(dist(b)));
   final seen = promised.map((c) => c.id).toSet();

@@ -21,7 +21,7 @@ class _CustomerPickerScreenState extends ConsumerState<CustomerPickerScreen> {
     final l = AppLocalizations.of(context);
     final all = ref.watch(allCustomersProvider).value ?? const <Customer>[];
     final today = ref.watch(todayProvider);
-    final p = prioritize(all, today);
+    final p = prioritize(all, today, myUserId: ref.watch(myCustomerUserIdProvider));
     final ordered = [...p.promised, ...p.due, ...p.overdue, ...all.where((c) => !p.promised.contains(c) && !p.due.contains(c) && !p.overdue.contains(c))];
     final q = _q.trim().toLowerCase();
     final items = q.isEmpty ? ordered : ordered.where((c) => c.row.searchText.contains(q)).toList();

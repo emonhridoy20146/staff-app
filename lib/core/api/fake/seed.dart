@@ -225,6 +225,8 @@ class DemoSeed {
         'lastVisitAt': i % 4 == 0 ? '${_date(-(i % 9) - 1)}T07:15:00Z' : null,
         'pendingFieldPoisha': 0,
         'assignee': {'id': assigneeId, 'name': assigneeName},
+        'branchId': 'br-01',
+        'branch': {'id': 'br-01', 'code': 'BRL01', 'name': {'bn': 'বরিশাল সদর', 'en': 'Barishal Sadar'}},
         'erpFetchedAt': '${today}T04:42:00Z',
         'guarantor': {'name': _people[(i + 7) % _people.length][0], 'phone': '018${(10000000 + _r.nextInt(89999999))}'},
         'plans': [

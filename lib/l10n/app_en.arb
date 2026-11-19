@@ -1461,5 +1461,23 @@
   },
   "timelineAdvance": "advance",
   "timelineRemoved": "removed in the ERP",
-  "collectSameDayWarning": "This invoice already has a payment today. The ERP takes one a day, so the office may need to decide on this one."
+  "collectSameDayWarning": "This invoice already has a payment today. The ERP takes one a day, so the office may need to decide on this one.",
+  "customerAssignedToMe": "Your customer",
+  "customerUnassigned": "Not assigned to anyone",
+  "customerAssignedTo": "{name}'s customer",
+  "@customerAssignedTo": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "customerBranch": "{branch} branch",
+  "@customerBranch": {
+    "placeholders": {
+      "branch": {
+        "type": "String"
+      }
+    }
+  }
 }

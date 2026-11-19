@@ -2230,4 +2230,20 @@ class AppLocalizationsBn extends AppLocalizations {
   @override
   String get collectSameDayWarning =>
       'এই ইনভয়েসে আজ আগেই একটি পেমেন্ট আছে। ইআরপি দিনে একটিই নেয়, তাই অফিসকে সিদ্ধান্ত নিতে হতে পারে।';
+
+  @override
+  String get customerAssignedToMe => 'আপনার গ্রাহক';
+
+  @override
+  String get customerUnassigned => 'কাউকে বরাদ্দ নেই';
+
+  @override
+  String customerAssignedTo(String name) {
+    return '$name-এর গ্রাহক';
+  }
+
+  @override
+  String customerBranch(String branch) {
+    return '$branch শাখা';
+  }
 }
