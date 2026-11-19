@@ -31,10 +31,13 @@ String formatMonth(String ym, String lang) {
   return lang == 'bn' ? toBanglaDigits('${_bnMonths[p[1] - 1]} ${p[0]}') : '${_enMonths[p[1] - 1]} ${p[0]}';
 }
 
-/// `০৯:০৮` (24 h, Dhaka) from a UTC instant.
+/// `৯:০৮ AM` (12 h with AM/PM, Bangladesh time) from a UTC instant. The
+/// owner asked for Bangladesh time with AM/PM everywhere (2026-11-19), the
+/// same as admin-web.
 String formatTimeDhaka(DateTime utc, DigitStyle digits) {
   final d = toDhaka(utc);
-  return localizeDigits('${_two(d.hour)}:${_two(d.minute)}', digits);
+  final h = d.hour % 12 == 0 ? 12 : d.hour % 12;
+  return '${localizeDigits('$h:${_two(d.minute)}', digits)} ${d.hour < 12 ? 'AM' : 'PM'}';
 }
 
 /// `১৫ নভেম্বর, ১০:৪২` from a UTC instant.

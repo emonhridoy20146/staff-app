@@ -1,7 +1,7 @@
 # Changelog — staff-app
 
 ## [0.12.3] — 2026-11-19
-Contract unchanged (works with field-api 1.19.0 and later; field-api PR #23 makes the server send a whole branch in small, fast pages).
+Contract pinned: field-api `openapi.yaml` **1.22.0** (unchanged from 0.12.2). Works best with field-api PR #23, which sends a whole branch in small, fast pages.
 ### Fixed (owner report 2026-11-19: the customer list was blank after login, with no way to load it)
 - **Customer list: pull down or tap the reload button** (top bar) to load now (FR-M-032). It runs the same sync as "Sync now".
 - **No more blank screen:** when no customer is on the phone the list says whether the first load is running (with progress), failed (with the error code) or has not happened, with a Reload button. "No customers match" stays for an empty filter.
@@ -10,6 +10,16 @@ Contract unchanged (works with field-api 1.19.0 and later; field-api PR #23 make
 ### Added (owner request 2026-11-19)
 - **Online / offline line on every screen**, just above the tabs: green dot + "অনলাইন" while the server answers, grey dot + "অফলাইন" when the phone has no network or the last sync could not reach the server (`OnlineStrip`, core/ui/chips.dart). Losing the network turns it grey at once; getting it back starts a sync, and the dot turns green when the server answers.
 - Tests `test/flows/customer_list_reload_test.dart`: empty phone shows Reload, offline reload shows the failure, a reload that gets a fresh snapshot fills the list; opening the tab empty loads by itself; the online/offline line on every tab.
+
+## [0.12.2] — 2026-11-19
+Contract pinned: field-api `openapi.yaml` **1.22.0** (field-api PR #22, ADR-041; `docs/contract/openapi.yaml`).
+### Fixed (owner report 2026-11-19: work-in saved, but the live map stayed empty)
+- **Indoor fixes are no longer thrown away** (ADR-M20). The phone dropped every point worse than `maxAccuracyM` (50 m); indoors it reports 100–500 m, so nothing was ever sent. Points up to 5 km are now sent; the server keeps the rough ones for the live map only. A rough fix never becomes the reference for the speed check or the visit suggestion. The speed check allows for both fixes' accuracy (GPS error is not movement).
+- **A position every few minutes even when standing still:** with no point from the stream for 2 minutes (a distance filter sends nothing while still), the tracker takes a one-off fix. Tracking also takes one right at the work-in and uploads the first point at once.
+- Heartbeat every 5 minutes (was 15), so the office sees sooner that the phone is alive.
+- **Times show in Bangladesh time with AM/PM** (owner request): `formatTimeDhaka` is 12-hour, e.g. `৯:০৮ AM`, the same as admin-web.
+### Added
+- Tests: rough fix kept, noise beyond 5 km dropped, jitter within accuracy not "impossible speed"; a quiet stream still sends a point at work-in and again after 3 minutes, rough fixes included.
 
 ## [0.12.1] — 2026-11-19
 Contract pinned: field-api `openapi.yaml` **1.21.0** (field-api PR #20, ADR-040; `docs/contract/openapi.yaml`).

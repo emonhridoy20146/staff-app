@@ -12,8 +12,10 @@ void main() {
 
   group('point filters', () {
     test('keeps a good point', () => expect(checkPoint(at(0), null, now: now), isNull));
-    test('drops low accuracy', () => expect(checkPoint(at(0, acc: 80), null, now: now), DropReason.lowAccuracy));
-    test('accuracy limit follows the setting', () => expect(checkPoint(at(0, acc: 80), null, now: now, maxAccuracyM: 100), isNull));
+    test('keeps a rough indoor fix for the live map (ADR-M20), drops only noise beyond 5 km', () {
+      expect(checkPoint(at(0, acc: 300), null, now: now), isNull);
+      expect(checkPoint(at(0, acc: 6000), null, now: now), DropReason.lowAccuracy);
+    });
     test('drops points more than 2 min in the future', () {
       expect(checkPoint(at(3600 + 180), null, now: now), DropReason.futureTime);
       expect(checkPoint(at(3600 + 60), null, now: now), isNull);
@@ -27,6 +29,8 @@ void main() {
       expect(checkPoint(at(10, lat: 22.711), at(0), now: now), DropReason.impossibleSpeed);
       // ~110 m in 10 s ≈ 40 km/h.
       expect(checkPoint(at(10, lat: 22.702), at(0), now: now), isNull);
+      // GPS error is not movement: a 200 m fix 300 m away 10 s later is jitter.
+      expect(checkPoint(at(10, lat: 22.7037, acc: 200), at(0), now: now), isNull);
     });
   });
 

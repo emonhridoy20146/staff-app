@@ -26,7 +26,12 @@ const locationQueueCap = 20000;
 /// Upload when this many points are waiting, or every [uploadEvery].
 const uploadBatchTrigger = 100;
 const uploadEvery = Duration(minutes: 2);
-const heartbeatEvery = Duration(minutes: 15);
+const heartbeatEvery = Duration(minutes: 5);
+
+/// A standing phone may report nothing (distance filter) or only rough
+/// fixes; with no point for this long a one-off fix is taken, so the live
+/// map gets a position every few minutes on duty (ADR-M20).
+const pointAtLeastEvery = Duration(minutes: 2);
 
 /// Tracking keeps running at most this long after the shift end (then it
 /// stops even if the staff forgot to end work).
@@ -129,10 +134,29 @@ class LocationTracker {
       _provider = null;
       return;
     }
-    _uploadTimer = Timer.periodic(uploadEvery, (_) => unawaited(uploadPending()));
+    _uploadTimer = Timer.periodic(uploadEvery, (_) => unawaited(_everyFewMinutes()));
     _heartbeatTimer = Timer.periodic(heartbeatEvery, (_) => unawaited(_tick()));
     _ref.read(trackingStatusProvider.notifier).state = TrackingStatus(running: true, providerId: provider.id, fellBack: fellBack);
     unawaited(sendHeartbeat());
+    // First position right away, so the office sees the staff member within seconds of the work-in.
+    unawaited(_everyFewMinutes());
+  }
+
+  /// Takes a one-off fix when the stream has been quiet, then uploads.
+  Future<void> ensureRecentPoint() async {
+    if (!_wantRunning || !isRunning) return;
+    final last = _ref.read(trackingStatusProvider).lastPointAt;
+    if (last != null && _clock.nowUtc().difference(last) < pointAtLeastEvery) return;
+    final fix = await _ref.read(locationEngineProvider).currentFix();
+    if (fix == null) return;
+    await handle(RawLocation(t: fix.fixAt.toUtc(), lat: fix.lat, lng: fix.lng, acc: fix.accuracyM, mock: fix.mock));
+  }
+
+  Future<void> _everyFewMinutes() async {
+    try {
+      await ensureRecentPoint();
+    } catch (_) {}
+    await uploadPending();
   }
 
   Future<void> stop() async {
@@ -167,15 +191,18 @@ class LocationTracker {
   /// One point from the provider → guard, filter, queue, adapt sampling.
   Future<void> handle(RawLocation p) async {
     if (!_wantRunning || !isRunning) return; // never store off-duty points
-    final drop = checkPoint(p, _prev, now: _clock.nowUtc(), maxAccuracyM: _config.maxAccuracyM);
+    final drop = checkPoint(p, _prev, now: _clock.nowUtc());
     if (drop != null) {
       final s = _ref.read(trackingStatusProvider);
       _ref.read(trackingStatusProvider.notifier).state = s.copyWith(dropped: s.dropped + 1);
       return;
     }
-    final speed = p.spd ?? (_prev == null ? null : _speedBetween(_prev!, p));
+    final rough = p.acc > _config.maxAccuracyM;
+    final speed = p.spd ?? (_prev == null || rough ? null : _speedBetween(_prev!, p));
     final act = activityFromSpeed(speed);
-    _prev = p;
+    // A rough fix is sent (live map) but never becomes the reference for speed or dwell.
+    final firstPoint = _ref.read(trackingStatusProvider).lastPointAt == null;
+    if (!rough) _prev = p;
     await _db.into(_db.locationQueue).insert(LocationQueueCompanion.insert(
           t: p.t,
           lat: p.lat,
@@ -195,8 +222,8 @@ class LocationTracker {
       _profile = next;
       await _provider?.updateProfile(next);
     }
-    await _checkDwell(p);
-    if (await pendingCount() >= uploadBatchTrigger) unawaited(uploadPending());
+    if (!rough) await _checkDwell(p);
+    if (firstPoint || await pendingCount() >= uploadBatchTrigger) unawaited(uploadPending());
   }
 
   double _speedBetween(RawLocation a, RawLocation b) {
