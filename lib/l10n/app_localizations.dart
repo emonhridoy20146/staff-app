@@ -4021,6 +4021,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This invoice already has a payment today. The ERP takes one a day, so the office may need to decide on this one.'**
   String get collectSameDayWarning;
+
+  /// No description provided for @customerAssignedToMe.
+  ///
+  /// In en, this message translates to:
+  /// **'Your customer'**
+  String get customerAssignedToMe;
+
+  /// No description provided for @customerUnassigned.
+  ///
+  /// In en, this message translates to:
+  /// **'Not assigned to anyone'**
+  String get customerUnassigned;
+
+  /// No description provided for @customerAssignedTo.
+  ///
+  /// In en, this message translates to:
+  /// **'{name}\'s customer'**
+  String customerAssignedTo(String name);
+
+  /// No description provided for @customerBranch.
+  ///
+  /// In en, this message translates to:
+  /// **'{branch} branch'**
+  String customerBranch(String branch);
 }
 
 class _AppLocalizationsDelegate

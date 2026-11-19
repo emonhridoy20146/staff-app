@@ -4,7 +4,7 @@ import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:staff_app/core/db/app_database.dart';
 
-/// Every released schema upgrades to the current one (v7, 0.10.0) and
+/// Every released schema upgrades to the current one (v8, 0.11.0) and
 /// existing rows survive.
 void main() {
   test('migrates a 0.1.0 database to the current schema without losing outbox rows', () async {
@@ -14,6 +14,7 @@ void main() {
     // Build a v1-shaped file: current schema minus what v2 added.
     final v1 = AppDatabase(NativeDatabase(file));
     await v1.customStatement('SELECT 1');
+    await _dropV8(v1);
     await _dropV7(v1);
     await v1.customStatement('DROP TABLE broadcasts');
     await v1.customStatement('ALTER TABLE location_proposals DROP COLUMN method');
@@ -33,7 +34,7 @@ void main() {
     await v1.close();
 
     final v2 = AppDatabase(NativeDatabase(file));
-    expect(v2.schemaVersion, 7);
+    expect(v2.schemaVersion, 8);
     expect(await v2.select(v2.coworkSessions).get(), isEmpty);
     final props = await v2.select(v2.locationProposals).get();
     expect(props.single.decisionReason, isNull);
@@ -52,6 +53,7 @@ void main() {
     final file = File('${dir.path}/app.db');
     final v2 = AppDatabase(NativeDatabase(file));
     await v2.customStatement('SELECT 1');
+    await _dropV8(v2);
     await _dropV7(v2);
     await v2.customStatement('DROP TABLE broadcasts');
     await v2.customStatement('ALTER TABLE contact_attempts DROP COLUMN target');
@@ -80,6 +82,7 @@ void main() {
     final file = File('${dir.path}/app.db');
     final v3 = AppDatabase(NativeDatabase(file));
     await v3.customStatement('SELECT 1');
+    await _dropV8(v3);
     await _dropV7(v3);
     await v3.customStatement('DROP TABLE broadcasts');
     await v3.customStatement('ALTER TABLE contact_attempts DROP COLUMN target');
@@ -112,6 +115,7 @@ void main() {
     final file = File('${dir.path}/app.db');
     final v4 = AppDatabase(NativeDatabase(file));
     await v4.customStatement('SELECT 1');
+    await _dropV8(v4);
     await _dropV7(v4);
     await v4.customStatement('DROP TABLE broadcasts');
     await v4.customStatement('ALTER TABLE contact_attempts DROP COLUMN target');
@@ -140,6 +144,7 @@ void main() {
     final file = File('${dir.path}/app.db');
     final v5 = AppDatabase(NativeDatabase(file));
     await v5.customStatement('SELECT 1');
+    await _dropV8(v5);
     await _dropV7(v5);
     await v5.customStatement('DROP TABLE broadcasts');
     await v5.customStatement('ALTER TABLE contact_attempts DROP COLUMN target');
@@ -166,6 +171,7 @@ void main() {
     final file = File('${dir.path}/app.db');
     final v6 = AppDatabase(NativeDatabase(file));
     await v6.customStatement('SELECT 1');
+    await _dropV8(v6);
     await _dropV7(v6);
     await v6.customStatement("INSERT INTO customers (server_id, code, name_bn) VALUES ('c-6', 'C-6', 'গ্রাহক')");
     await v6.customStatement(
@@ -202,6 +208,33 @@ void main() {
     await v7.close();
     await dir.delete(recursive: true);
   });
+
+  test('migrates a 0.10.x (schema 7) database: branch and assignee columns, a fresh snapshot is asked for, the outbox stays', () async {
+    final dir = await Directory.systemTemp.createTemp('mig7');
+    final file = File('${dir.path}/app.db');
+    final v7 = AppDatabase(NativeDatabase(file));
+    await v7.customStatement('SELECT 1');
+    await _dropV8(v7);
+    await v7.customStatement("INSERT INTO customers (server_id, code, name_bn, assignee_id) VALUES ('c-7', 'C-7', 'গ্রাহক', 'u-1')");
+    await v7.customStatement("INSERT INTO sync_state (id, pull_cursor, bootstrap_done) VALUES (1, 's_42', 1)");
+    await v7.customStatement(
+        "INSERT INTO outbox (mutation_id, entity, op, payload_json, created_at) VALUES ('col-7', 'collection', 'create', '{}', 0)");
+    await v7.customStatement('PRAGMA user_version = 7');
+    await v7.close();
+
+    final v8 = AppDatabase(NativeDatabase(file));
+    final c = (await v8.select(v8.customers).get()).single;
+    expect(c.serverId, 'c-7');
+    expect(c.assigneeId, 'u-1');
+    expect(c.branchId, isNull);
+    expect(c.assigneeName, isNull);
+    final meta = (await v8.select(v8.syncMeta).get()).single;
+    expect(meta.bootstrapDone, isFalse); // the next sync bootstraps the whole branch
+    expect(meta.pullCursor, 's_42');
+    expect((await v8.select(v8.outbox).get()).single.mutationId, 'col-7');
+    await v8.close();
+    await dir.delete(recursive: true);
+  });
 }
 
 /// What schema 7 (0.10.0, contract 1.13.0) added: the real ERP shape on the cached tables.
@@ -217,5 +250,12 @@ Future<void> _dropV7(AppDatabase db) async {
   }
   for (final c in ['method_label', 'collector_name', 'advance', 'discount_poisha']) {
     await db.customStatement('ALTER TABLE erp_payments DROP COLUMN $c');
+  }
+}
+
+/// What schema 8 (0.11.0, contract 1.19.0) added: a customer's branch and assignee name.
+Future<void> _dropV8(AppDatabase db) async {
+  for (final c in ['branch_id', 'branch_code', 'branch_name_bn', 'branch_name_en', 'assignee_name']) {
+    await db.customStatement('ALTER TABLE customers DROP COLUMN $c');
   }
 }

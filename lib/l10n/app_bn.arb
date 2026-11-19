@@ -653,5 +653,9 @@
   "timelineCollector": "আদায়: {name}",
   "timelineAdvance": "অগ্রিম",
   "timelineRemoved": "ইআরপি থেকে মুছে ফেলা",
-  "collectSameDayWarning": "এই ইনভয়েসে আজ আগেই একটি পেমেন্ট আছে। ইআরপি দিনে একটিই নেয়, তাই অফিসকে সিদ্ধান্ত নিতে হতে পারে।"
+  "collectSameDayWarning": "এই ইনভয়েসে আজ আগেই একটি পেমেন্ট আছে। ইআরপি দিনে একটিই নেয়, তাই অফিসকে সিদ্ধান্ত নিতে হতে পারে।",
+  "customerAssignedToMe": "আপনার গ্রাহক",
+  "customerUnassigned": "কাউকে বরাদ্দ নেই",
+  "customerAssignedTo": "{name}-এর গ্রাহক",
+  "customerBranch": "{branch} শাখা"
 }

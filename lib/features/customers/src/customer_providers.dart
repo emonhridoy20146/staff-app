@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/legacy.dart';
 import '../../../core/db/app_database.dart';
 import '../../../core/location/location_engine.dart';
 import '../../../core/providers.dart';
+import '../../auth/auth.dart';
 import 'data/customer_repository.dart';
 import 'domain/customer.dart';
 
@@ -14,6 +15,9 @@ final currentFixProvider = FutureProvider<GeoFix?>((ref) => ref.watch(locationEn
 
 /// Business date "today" in Dhaka, server-corrected.
 final todayProvider = Provider<String>((ref) => ref.watch(clockProvider).businessDate());
+
+/// The signed-in user's id (whose customers are "mine").
+final myCustomerUserIdProvider = Provider<String?>((ref) => ref.watch(sessionProvider.select((s) => s.user?.id)));
 
 final allCustomersProvider = StreamProvider<List<Customer>>((ref) {
   final fix = ref.watch(currentFixProvider).value;
@@ -55,11 +59,19 @@ final filteredCustomersProvider = Provider<AsyncValue<List<Customer>>>((ref) {
       search: ref.watch(customerSearchProvider),
       filter: ref.watch(customerFilterProvider),
       sort: ref.watch(customerSortProvider),
+      myUserId: ref.watch(myCustomerUserIdProvider),
     ),
   );
 });
 
+/// The phone holds customers of more than one branch: rows then show the branch.
+final multiBranchProvider = Provider<bool>((ref) {
+  final all = ref.watch(allCustomersProvider).value ?? const <Customer>[];
+  return all.map((c) => c.branchId).whereType<String>().toSet().length > 1;
+});
+
 final todayPrioritiesProvider = Provider<AsyncValue<TodayPriorities>>((ref) {
   final today = ref.watch(todayProvider);
-  return ref.watch(allCustomersProvider).whenData((l) => prioritize(l, today));
+  final me = ref.watch(myCustomerUserIdProvider);
+  return ref.watch(allCustomersProvider).whenData((l) => prioritize(l, today, myUserId: me));
 });

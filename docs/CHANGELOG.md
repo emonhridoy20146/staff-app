@@ -1,5 +1,17 @@
 # Changelog — staff-app
 
+## [0.11.0] — 2026-11-19
+Contract pinned: field-api `openapi.yaml` **1.19.0** (field-api PR #18, ADR-038; `docs/contract/openapi.yaml`).
+### Added (owner request 2026-11-18: staff see every customer of their branch, staff in several branches; FR-M-032)
+- The phone now holds **every customer of the staff member's branches**, assigned or not (server setting `customers.staffVisibility`, default whole branch). Staff can open, visit, call and collect from any of them.
+- **Several branches:** when the phone holds customers of more than one branch, every customer row says which branch it is in, and the customer page shows the branch.
+- Customer page: for someone else's or an unassigned customer, a line says whose customer it is ("রাকিবের গ্রাহক" / "কাউকে বরাদ্দ নেই").
+- Customer list: the **আমার (Mine)** filter chip appears once colleagues' customers are on the phone.
+### Changed
+- **Today** lists the user's own customers and the ones nobody is assigned to, never a colleague's (before, everything on the phone was the user's own). The collect picker suggests the same first; search still finds everyone.
+- DB schema **8**: `customers.branch_id`, `branch_code`, `branch_name_bn`, `branch_name_en`, `assignee_name`. The v8 step resets `bootstrap_done`, so the first sync after the update takes a fresh snapshot of the whole branch (it only upserts: outbox, collections and everything unsynced stay). Migration test from every released schema.
+- A reassigned customer is no longer removed from the old assignee's phone while it is still in their branch (field-api now sends an upsert).
+
 ## [0.10.2] — 2026-11-18
 ### Fixed
 - **Live location lost while the work-in was still unsent** (owner report 2026-11-18: staff online and on duty, but nobody on the admin live map; attendance stuck on "sync pending"). The server keeps location points only while it knows the person is on duty (FR-LOC-001), and it learns that from the work-in. The app sent points even when the work-in was still waiting for its photo, so every point was refused as `OFF_DUTY` and then deleted from the phone. Points now wait in the phone's queue while an `attendance_event` is held, pending or sending (`LocationTracker.uploadPending`), and go out as soon as it reaches the server (`locationBackgroundProvider` watches `OutboxReader.watchUnsentOf`). The queue cap still applies. The photo itself could not upload because the test server had no file storage; that is fixed on the server side (field-api contract 1.18.0, ADR-039): no app change is needed for it, the app retries the stuck photos on its own.

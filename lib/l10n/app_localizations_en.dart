@@ -2236,4 +2236,20 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get collectSameDayWarning =>
       'This invoice already has a payment today. The ERP takes one a day, so the office may need to decide on this one.';
+
+  @override
+  String get customerAssignedToMe => 'Your customer';
+
+  @override
+  String get customerUnassigned => 'Not assigned to anyone';
+
+  @override
+  String customerAssignedTo(String name) {
+    return '$name\'s customer';
+  }
+
+  @override
+  String customerBranch(String branch) {
+    return '$branch branch';
+  }
 }

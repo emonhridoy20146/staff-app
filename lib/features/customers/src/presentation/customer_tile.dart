@@ -35,6 +35,8 @@ class CustomerTile extends ConsumerWidget {
     final st = context.statusColors.of(primary);
     final badges = customer.badges(today).where((b) => b != AppStatus.current).take(2).toList();
     final name = customer.nameOf(lang);
+    // Staff in several branches (1.19.0): each row says which branch it is in.
+    final branch = ref.watch(multiBranchProvider) ? customer.branchName(lang) : null;
 
     return InkWell(
       onTap: onTap,
@@ -61,7 +63,12 @@ class CustomerTile extends ConsumerWidget {
                     Text(name, style: t.titleMedium, maxLines: 1, overflow: TextOverflow.ellipsis),
                     const SizedBox(height: 2),
                     Text(
-                      [customer.code, if (customer.areaName != null) customer.areaName!, if (customer.distanceM != null) f.distance(customer.distanceM!)].join(' · '),
+                      [
+                        customer.code,
+                        ?branch,
+                        if (customer.areaName != null) customer.areaName!,
+                        if (customer.distanceM != null) f.distance(customer.distanceM!),
+                      ].join(' · '),
                       style: t.bodySmall!.copyWith(color: cs.onSurfaceVariant),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,

@@ -198,6 +198,36 @@ class _SecondaryAction extends StatelessWidget {
   }
 }
 
+/// Branch and assignee (contract 1.19.0): staff see the whole branch, so a
+/// colleague's or an unassigned customer says whose it is.
+class _OwnerRow extends ConsumerWidget {
+  const _OwnerRow({required this.customer});
+  final Customer customer;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context);
+    final t = Theme.of(context).textTheme;
+    final cs = Theme.of(context).colorScheme;
+    final lang = Localizations.localeOf(context).languageCode;
+    final me = ref.watch(myCustomerUserIdProvider);
+    final branch = customer.branchName(lang);
+    final owner = customer.isMine(me)
+        ? l.customerAssignedToMe
+        : customer.row.assigneeId == null
+            ? l.customerUnassigned
+            : l.customerAssignedTo(customer.assigneeName ?? '—');
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(padding: const EdgeInsets.only(top: 2), child: Icon(Icons.storefront_rounded, size: 20, color: cs.onSurfaceVariant)),
+        const SizedBox(width: Space.s8),
+        Expanded(child: Text([if (branch != null) l.customerBranch(branch), owner].join(' · '), style: t.bodyMedium)),
+      ],
+    );
+  }
+}
+
 class _Header extends ConsumerWidget {
   const _Header({required this.customer});
   final Customer customer;
@@ -247,6 +277,10 @@ class _Header extends ConsumerWidget {
                 if (customer.distanceM != null) Text(f.distance(customer.distanceM!), style: t.labelMedium!.copyWith(color: cs.onSurfaceVariant)),
               ],
             ),
+          if (ref.watch(multiBranchProvider) || !customer.isMine(ref.watch(myCustomerUserIdProvider))) ...[
+            const SizedBox(height: Space.s8),
+            _OwnerRow(customer: customer),
+          ],
           if (customer.directions != null) ...[
             const SizedBox(height: Space.s8),
             Row(

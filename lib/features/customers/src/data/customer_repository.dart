@@ -25,6 +25,9 @@ class CustomerPullHandler implements PullHandler {
     final loc = (d['location'] as Json?) ?? const {};
     final tag = (d['tag'] as Json?) ?? const {};
     final promise = d['openPromise'] as Json?;
+    final branch = (d['branch'] as Json?) ?? const {};
+    final branchName = branch['name'] == null ? null : I18nText.fromJson(branch['name']);
+    final assignee = d['assignee'] as Json?;
     final phones = <String>{if (d['phone'] != null) d['phone'] as String, ...((d['phones'] as List?) ?? const []).cast<String>()}.toList();
     final badges = ((d['badges'] as List?) ?? const []).cast<String>();
     final search = normalizeSearch([name.bn, name.en ?? '', d['code'] ?? '', ...phones, d['address'] ?? ''].join(' '));
@@ -64,7 +67,12 @@ class CustomerPullHandler implements PullHandler {
             openPromiseDate: Value(promise?['promisedDate'] as String?),
             openPromisePoisha: Value((promise?['promisedAmountPoisha'] as num?)?.toInt()),
             pendingFieldPoisha: Value(serverPending > (existing?.pendingFieldPoisha ?? 0) ? serverPending : (existing?.pendingFieldPoisha ?? serverPending)),
-            assigneeId: Value((d['assignee'] as Json?)?['id'] as String?),
+            assigneeId: Value(assignee?['id'] as String?),
+            assigneeName: Value(assignee?['name'] as String?),
+            branchId: Value((branch['id'] ?? d['branchId']) as String?),
+            branchCode: Value(branch['code'] as String?),
+            branchNameBn: Value(branchName?.bn),
+            branchNameEn: Value(branchName?.en),
             erpFetchedAt: Value(d['erpFetchedAt'] == null ? null : DateTime.parse(d['erpFetchedAt'] as String).toUtc()),
             guarantorJson: Value(d['guarantor'] == null ? null : jsonEncode(d['guarantor'])),
             detailedAddress: Value(d['detailedAddress'] as String?),

@@ -46,6 +46,12 @@ class Customers extends Table {
   TextColumn get detailedAddress => text().nullable()();
   TextColumn get directions => text().nullable()();
   TextColumn get erpRiskJson => text().nullable()();
+  // v8 (0.11.0, contract 1.19.0): staff see the whole branch and may work in several branches.
+  TextColumn get branchId => text().nullable()();
+  TextColumn get branchCode => text().nullable()();
+  TextColumn get branchNameBn => text().nullable()();
+  TextColumn get branchNameEn => text().nullable()();
+  TextColumn get assigneeName => text().nullable()();
   TextColumn get searchText => text().withDefault(const Constant(''))();
   IntColumn get version => integer().withDefault(const Constant(0))();
 

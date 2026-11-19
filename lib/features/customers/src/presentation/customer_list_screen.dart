@@ -55,7 +55,10 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
     final list = ref.watch(filteredCustomersProvider);
     final all = ref.watch(allCustomersProvider).value ?? const [];
     final today = ref.watch(todayProvider);
-    int countFor(CustomerFilter x) => all.where((c) => matchesFilter(c, x, today: today)).length;
+    final me = ref.watch(myCustomerUserIdProvider);
+    int countFor(CustomerFilter x) => all.where((c) => matchesFilter(c, x, today: today, myUserId: me)).length;
+    // Since 1.19.0 the list holds the whole branch: "Mine" appears once someone else's customers are on the phone.
+    final showMine = all.any((c) => c.isOthers(me));
 
     return Scaffold(
       appBar: AppBar(
@@ -96,7 +99,7 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: Space.screen, vertical: Space.s4),
               children: [
-                for (final x in CustomerFilter.values.where((x) => x != CustomerFilter.mine))
+                for (final x in CustomerFilter.values.where((x) => x != CustomerFilter.mine || showMine))
                   Padding(
                     padding: const EdgeInsets.only(right: Space.s8),
                     child: FilterChip(

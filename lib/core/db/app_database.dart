@@ -47,7 +47,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 7;
+  int get schemaVersion => 8;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -116,6 +116,15 @@ class AppDatabase extends _$AppDatabase {
             for (final c in [erpPayments.methodLabel, erpPayments.collectorName, erpPayments.advance, erpPayments.discountPoisha]) {
               await m.addColumn(erpPayments, c);
             }
+          }
+          // v8 (0.11.0, contract 1.19.0): a customer's branch and assignee name. Staff now see
+          // every customer of their branches, so the next sync takes a fresh snapshot (bootstrap
+          // only upserts: the outbox, collections and everything unsynced stay as they are).
+          if (from < 8) {
+            for (final c in [customers.branchId, customers.branchCode, customers.branchNameBn, customers.branchNameEn, customers.assigneeName]) {
+              await m.addColumn(customers, c);
+            }
+            await customStatement('UPDATE sync_state SET bootstrap_done = 0');
           }
         },
         beforeOpen: (details) async {
