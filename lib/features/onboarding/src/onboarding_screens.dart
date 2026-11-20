@@ -1,4 +1,6 @@
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/providers.dart';
@@ -87,20 +89,80 @@ class ConsentScreen extends ConsumerWidget {
   }
 }
 
-/// Permissions primer: explain before the system dialog appears.
+/// Permissions primer: ALL permissions are mandatory before the user can
+/// proceed. No "Later" button — field staff must grant every permission.
 class PermissionsPrimerScreen extends ConsumerStatefulWidget {
   const PermissionsPrimerScreen({super.key});
   @override
   ConsumerState<PermissionsPrimerScreen> createState() => _PermissionsPrimerScreenState();
 }
 
-class _PermissionsPrimerScreenState extends ConsumerState<PermissionsPrimerScreen> {
+class _PermissionsPrimerScreenState extends ConsumerState<PermissionsPrimerScreen> with WidgetsBindingObserver {
   final _granted = <String>{};
+  final _permanentlyDenied = <String>{};
+  static const _ids = ['location', 'camera', 'notifications', 'battery'];
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _checkAll();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) _checkAll();
+  }
+
+  Future<void> _checkAll() async {
+    final req = ref.read(permissionRequesterProvider);
+    for (final id in _ids) {
+      final ok = await req.isGranted(id);
+      if (ok && mounted) {
+        setState(() {
+          _granted.add(id);
+          _permanentlyDenied.remove(id);
+        });
+      }
+    }
+  }
 
   Future<void> _ask(String id) async {
-    final ok = await ref.read(permissionRequesterProvider).request(id);
-    if (ok) setState(() => _granted.add(id));
+    if (_permanentlyDenied.contains(id)) {
+      await _openAppSettings();
+      return;
+    }
+    final r = await ref.read(permissionRequesterProvider).request(id);
+    if (!mounted) return;
+    switch (r) {
+      case PermissionResult.granted:
+        setState(() {
+          _granted.add(id);
+          _permanentlyDenied.remove(id);
+        });
+      case PermissionResult.permanentlyDenied:
+        setState(() => _permanentlyDenied.add(id));
+      case PermissionResult.denied:
+        break;
+    }
   }
+
+  Future<void> _openAppSettings() async {
+    try {
+      const channel = MethodChannel('com.howlader.staff/permissions');
+      await channel.invokeMethod('openAppSettings');
+    } catch (_) {
+      await Geolocator.openAppSettings();
+    }
+  }
+
+  bool get _allGranted => _ids.every(_granted.contains);
 
   @override
   Widget build(BuildContext context) {
@@ -108,6 +170,12 @@ class _PermissionsPrimerScreenState extends ConsumerState<PermissionsPrimerScree
     final t = Theme.of(context).textTheme;
     final cs = Theme.of(context).colorScheme;
     final sem = context.semanticColors;
+    final deniedHints = {
+      'location': l.primerDeniedLocation,
+      'camera': l.primerDeniedCamera,
+      'notifications': l.primerDeniedNotifications,
+      'battery': l.primerDeniedBattery,
+    };
     final items = [
       ('location', Icons.location_on_rounded, l.primerLocation, l.primerLocationBody),
       ('camera', Icons.photo_camera_rounded, l.primerCamera, l.primerCameraBody),
@@ -125,7 +193,7 @@ class _PermissionsPrimerScreenState extends ConsumerState<PermissionsPrimerScree
                 children: [
                   Text(l.primerTitle, style: t.headlineSmall),
                   const SizedBox(height: Space.s8),
-                  Text(l.primerBody, style: t.bodyLarge!.copyWith(color: cs.onSurfaceVariant)),
+                  Text(l.primerRequired, style: t.bodyLarge!.copyWith(color: cs.onSurfaceVariant)),
                   const SizedBox(height: Space.s24),
                   for (final (id, icon, title, body) in items) ...[
                     AppCard(
@@ -138,7 +206,7 @@ class _PermissionsPrimerScreenState extends ConsumerState<PermissionsPrimerScree
                               const SizedBox(width: Space.s12),
                               Expanded(child: Text(title, style: t.titleMedium)),
                               if (_granted.contains(id))
-                                Row(children: [
+                                Row(mainAxisSize: MainAxisSize.min, children: [
                                   Icon(Icons.check_circle_rounded, color: sem.success.fg, size: 20),
                                   const SizedBox(width: Space.s4),
                                   Text(l.primerAllowed, style: t.labelMedium!.copyWith(color: sem.success.fg)),
@@ -147,12 +215,19 @@ class _PermissionsPrimerScreenState extends ConsumerState<PermissionsPrimerScree
                                 FilledButton.tonal(
                                   style: FilledButton.styleFrom(minimumSize: const Size(96, Sizes.minTarget)),
                                   onPressed: () => _ask(id),
-                                  child: Text(l.primerAllow),
+                                  child: Text(_permanentlyDenied.contains(id) ? l.primerOpenSettings : l.primerAllow),
                                 ),
                             ],
                           ),
                           const SizedBox(height: Space.s8),
                           Text(body, style: t.bodyMedium!.copyWith(color: cs.onSurfaceVariant)),
+                          if (!_granted.contains(id) && _permanentlyDenied.contains(id)) ...[
+                            const SizedBox(height: Space.s8),
+                            Text(l.primerDeniedForever, style: t.bodySmall!.copyWith(color: sem.warning.fg)),
+                          ] else if (!_granted.contains(id)) ...[
+                            const SizedBox(height: Space.s8),
+                            Text(deniedHints[id] ?? '', style: t.bodySmall!.copyWith(color: cs.error)),
+                          ],
                         ],
                       ),
                     ),
@@ -163,12 +238,12 @@ class _PermissionsPrimerScreenState extends ConsumerState<PermissionsPrimerScree
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(Space.s24, Space.s8, Space.s24, Space.s24),
-              child: Row(
-                children: [
-                  TextButton(onPressed: () => ref.read(sessionProvider.notifier).finishPrimer(), child: Text(l.primerLater)),
-                  const SizedBox(width: Space.s12),
-                  Expanded(child: FilledButton(onPressed: () => ref.read(sessionProvider.notifier).finishPrimer(), child: Text(l.actionContinue))),
-                ],
+              child: SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  onPressed: _allGranted ? () => ref.read(sessionProvider.notifier).finishPrimer() : null,
+                  child: Text(l.actionContinue),
+                ),
               ),
             ),
           ],

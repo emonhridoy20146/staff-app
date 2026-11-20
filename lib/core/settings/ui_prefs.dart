@@ -12,7 +12,7 @@ import '../providers.dart';
 /// Per-device UI preferences (Settings screen). Persisted in `kv_settings`.
 @immutable
 class UiPrefs {
-  const UiPrefs({this.language = 'bn', this.digits = DigitStyle.bangla, this.themeMode = ThemeMode.light, this.highContrast = false});
+  const UiPrefs({this.language = 'en', this.digits = DigitStyle.latin, this.themeMode = ThemeMode.light, this.highContrast = false});
 
   final String language;
   final DigitStyle digits;
@@ -29,8 +29,8 @@ class UiPrefs {
   Map<String, dynamic> toJson() => {'language': language, 'digits': digits.name, 'themeMode': themeMode.name, 'highContrast': highContrast};
 
   factory UiPrefs.fromJson(Map<String, dynamic> j) => UiPrefs(
-        language: (j['language'] as String?) ?? 'bn',
-        digits: DigitStyle.values.firstWhere((d) => d.name == j['digits'], orElse: () => DigitStyle.bangla),
+        language: (j['language'] as String?) ?? 'en',
+        digits: DigitStyle.values.firstWhere((d) => d.name == j['digits'], orElse: () => DigitStyle.latin),
         themeMode: ThemeMode.values.firstWhere((d) => d.name == j['themeMode'], orElse: () => ThemeMode.light),
         highContrast: (j['highContrast'] as bool?) ?? false,
       );

@@ -10,7 +10,7 @@ class AppLocalizationsBn extends AppLocalizations {
   AppLocalizationsBn([String locale = 'bn']) : super(locale);
 
   @override
-  String get appName => 'হাওলাদার ফিল্ড';
+  String get appName => 'হাওলাদার ইলেকট্রনিক্স';
 
   @override
   String get appTagline => 'মাঠের আদায় ও ভিজিট';
@@ -2453,4 +2453,86 @@ class AppLocalizationsBn extends AppLocalizations {
   String visitAlreadyToday(String time, String count) {
     return 'এই গ্রাহককে আজ আগেই $count বার ভিজিট করা হয়েছে (শেষ $time)। আবার ভিজিট রাখা যাবে।';
   }
+
+  @override
+  String get primerRequired => 'এই অ্যাপ ব্যবহার করতে সব অনুমতি দেওয়া আবশ্যক';
+
+  @override
+  String get primerDeniedLocation =>
+      'আপনার ম্যানেজার মাঠের কাজ ট্র্যাক করতে লোকেশন দরকার। অনুমতি দিন।';
+
+  @override
+  String get primerDeniedCamera =>
+      'ভিজিটের ছবি ও সেলফির জন্য ক্যামেরা অনুমতি দরকার। অনুমতি দিন।';
+
+  @override
+  String get primerDeniedNotifications =>
+      'রিমাইন্ডার ও বার্তার জন্য নোটিফিকেশন অনুমতি দরকার। অনুমতি দিন।';
+
+  @override
+  String get primerDeniedBattery =>
+      'ট্র্যাকিং চালু রাখতে ব্যাটারি অপটিমাইজেশন বন্ধ করতে হবে। অনুমতি দিন।';
+
+  @override
+  String get primerOpenSettings => 'সেটিংস খুলুন';
+
+  @override
+  String get primerDeniedForever =>
+      'আপনি এই অনুমতি ব্লক করেছেন। ফোনের সেটিংস থেকে অনুমতি দিন।';
+
+  @override
+  String get locationGateTitle => 'লোকেশন চালু করুন';
+
+  @override
+  String get locationGateBody =>
+      'এই অ্যাপ ব্যবহার করতে লোকেশন চালু থাকতে হবে। কাজের সময় আপনার ম্যানেজারের দেখা দরকার আপনি কোথায়।';
+
+  @override
+  String get locationGatePermission => 'লোকেশন অনুমতি দিন';
+
+  @override
+  String get locationGateService => 'GPS / লোকেশন চালু করুন';
+
+  @override
+  String get locationGateOpenSettings => 'লোকেশন সেটিংস খুলুন';
+
+  @override
+  String get locationGateRetry => 'আবার দেখুন';
+
+  @override
+  String get attendanceNeedsLocation =>
+      'হাজিরার জন্য লোকেশন আবশ্যক। GPS চালু করে আবার চেষ্টা করুন।';
+
+  @override
+  String get locationGateBackground =>
+      'ট্র্যাকিং স্ক্রিন বন্ধ থাকলেও চলতে \"সবসময়\" লোকেশন অনুমতি দিন।';
+
+  @override
+  String get locationGateBackgroundSettings => 'অনুমতি সেটিংস খুলুন';
+
+  @override
+  String get gpsStatusOn => 'GPS চালু আছে';
+
+  @override
+  String get gpsStatusOff => 'GPS বন্ধ আছে';
+
+  @override
+  String get gpsStatusMock => 'ভুয়া GPS শনাক্ত হয়েছে!';
+
+  @override
+  String get gpsTurnOn => 'GPS চালু করুন';
+
+  @override
+  String get gpsMockWarning =>
+      'ভুয়া/মক লোকেশন অনুমোদিত নয়। মক লোকেশন বন্ধ করে আবার চেষ্টা করুন।';
+
+  @override
+  String get gpsRequiredForAttendance => 'হাজিরা দিতে GPS চালু থাকতে হবে।';
+
+  @override
+  String get gpsRequiredForBreak =>
+      'বিরতি শুরু বা শেষ করতে GPS চালু থাকতে হবে।';
+
+  @override
+  String get gpsRequiredForWorkOut => 'কাজ শেষ করতে GPS চালু থাকতে হবে।';
 }

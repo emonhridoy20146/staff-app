@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -31,6 +32,14 @@ Future<bool> recordAttendance(BuildContext context, WidgetRef ref, AttendanceEve
   unawaited(HapticFeedback.mediumImpact());
   final service = ref.read(attendanceServiceProvider);
   final l = AppLocalizations.of(context);
+
+  // Check GPS is on before anything else.
+  if (!await Geolocator.isLocationServiceEnabled()) {
+    if (context.mounted) showAppSnack(context, l.attendanceNeedsLocation, icon: Icons.location_off_rounded);
+    return false;
+  }
+
+  if (!context.mounted) return false;
   final fixFuture = ref.read(locationEngineProvider).currentFix(timeout: const Duration(seconds: 10));
   Uint8List? selfie;
   if (service.needsSelfie(type)) {
@@ -41,6 +50,15 @@ Future<bool> recordAttendance(BuildContext context, WidgetRef ref, AttendanceEve
     }
   }
   final fix = await fixFuture;
+  if (fix == null) {
+    if (context.mounted) showAppSnack(context, l.attendanceNeedsLocation, icon: Icons.location_off_rounded);
+    return false;
+  }
+  // Block fake/mock GPS.
+  if (fix.mock) {
+    if (context.mounted) showAppSnack(context, l.gpsMockWarning, icon: Icons.gps_off_rounded);
+    return false;
+  }
   try {
     await service.record(type, fix: fix, selfie: selfie);
     return true;
@@ -51,11 +69,41 @@ Future<bool> recordAttendance(BuildContext context, WidgetRef ref, AttendanceEve
 }
 
 /// Duty card on Today (tap → break / work-out).
-class DutyCard extends ConsumerWidget {
+class DutyCard extends ConsumerStatefulWidget {
   const DutyCard({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<DutyCard> createState() => _DutyCardState();
+}
+
+class _DutyCardState extends ConsumerState<DutyCard> with WidgetsBindingObserver {
+  bool _gpsOn = true;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _checkGps();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) _checkGps();
+  }
+
+  Future<void> _checkGps() async {
+    final on = await Geolocator.isLocationServiceEnabled();
+    if (mounted && on != _gpsOn) setState(() => _gpsOn = on);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
     final f = ref.watch(fmtProvider);
     final t = Theme.of(context).textTheme;
@@ -99,37 +147,59 @@ class DutyCard extends ConsumerWidget {
     final br = day.openBreak;
     final overBreak = onBreak && br != null && day.breakTotal(now).inMinutes > maxBreak;
     final tone = onBreak ? sem.warning : sem.success;
-    return Container(
-      decoration: BoxDecoration(color: tone.bg, borderRadius: Radii.brXl),
-      padding: const EdgeInsets.fromLTRB(Space.s16, Space.s12, Space.s12, Space.s12),
-      child: Row(
-        children: [
-          _PulseDot(color: tone.fg, animate: !onBreak),
-          const SizedBox(width: Space.s12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+    return Column(
+      children: [
+        if (!_gpsOn) ...[
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: Space.s12, vertical: Space.s8),
+            decoration: BoxDecoration(color: sem.danger.bg, borderRadius: Radii.brLg),
+            child: Row(
               children: [
-                Text(
-                  onBreak ? l.dutyBreakSince(f.duration(br!.length(now))) : l.dutyOnSince(f.time(day.firstIn!)),
-                  style: t.titleSmall!.copyWith(color: tone.fg),
-                ),
-                Text(
-                  overBreak ? l.meBreakTotal(f.duration(day.breakTotal(now))) : (onBreak ? l.dutyOnBreak : l.dutyTracking),
-                  style: t.bodySmall!.copyWith(color: tone.fg),
+                Icon(Icons.location_off_rounded, size: 18, color: sem.danger.fg),
+                const SizedBox(width: Space.s8),
+                Expanded(child: Text(l.gpsStatusOff, style: t.bodySmall!.copyWith(color: sem.danger.fg, fontWeight: FontWeight.w600))),
+                TextButton(
+                  onPressed: () => Geolocator.openLocationSettings(),
+                  child: Text(l.gpsTurnOn, style: TextStyle(color: sem.danger.fg)),
                 ),
               ],
             ),
           ),
-          TextButton(
-            style: TextButton.styleFrom(foregroundColor: tone.fg),
-            onPressed: () => recordAttendance(context, ref, onBreak ? AttendanceEventType.breakEnd : AttendanceEventType.breakStart),
-            child: Text(onBreak ? l.dutyEndBreak : l.dutyStartBreak),
-          ),
-          if (!onBreak)
-            IconButton(tooltip: l.dutyEndWork, color: tone.fg, onPressed: () => context.push('/attendance/work-out'), icon: const Icon(Icons.logout_rounded)),
+          const SizedBox(height: Space.s8),
         ],
-      ),
+        Container(
+          decoration: BoxDecoration(color: tone.bg, borderRadius: Radii.brXl),
+          padding: const EdgeInsets.fromLTRB(Space.s16, Space.s12, Space.s12, Space.s12),
+          child: Row(
+            children: [
+              _PulseDot(color: tone.fg, animate: !onBreak),
+              const SizedBox(width: Space.s12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      onBreak ? l.dutyBreakSince(f.duration(br!.length(now))) : l.dutyOnSince(f.time(day.firstIn!)),
+                      style: t.titleSmall!.copyWith(color: tone.fg),
+                    ),
+                    Text(
+                      overBreak ? l.meBreakTotal(f.duration(day.breakTotal(now))) : (onBreak ? l.dutyOnBreak : l.dutyTracking),
+                      style: t.bodySmall!.copyWith(color: tone.fg),
+                    ),
+                  ],
+                ),
+              ),
+              TextButton(
+                style: TextButton.styleFrom(foregroundColor: tone.fg),
+                onPressed: _gpsOn ? () => recordAttendance(context, ref, onBreak ? AttendanceEventType.breakEnd : AttendanceEventType.breakStart) : null,
+                child: Text(onBreak ? l.dutyEndBreak : l.dutyStartBreak),
+              ),
+              if (!onBreak)
+                IconButton(tooltip: l.dutyEndWork, color: tone.fg, onPressed: _gpsOn ? () => context.push('/attendance/work-out') : null, icon: const Icon(Icons.logout_rounded)),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
@@ -287,6 +357,107 @@ class _Timeline extends ConsumerWidget {
   }
 }
 
+/// Live GPS status banner with green/red indicator and turn-on button.
+class _GpsStatusBanner extends StatefulWidget {
+  const _GpsStatusBanner({required this.onStatusChanged});
+  final ValueChanged<bool> onStatusChanged;
+  @override
+  State<_GpsStatusBanner> createState() => _GpsStatusBannerState();
+}
+
+class _GpsStatusBannerState extends State<_GpsStatusBanner> with WidgetsBindingObserver {
+  bool _gpsOn = true;
+  bool _mockDetected = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _check();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) _check();
+  }
+
+  Future<void> _check() async {
+    final on = await Geolocator.isLocationServiceEnabled();
+    bool mock = false;
+    if (on) {
+      try {
+        final pos = await Geolocator.getCurrentPosition(locationSettings: const LocationSettings(timeLimit: Duration(seconds: 5)));
+        mock = pos.isMocked;
+      } catch (_) {}
+    }
+    if (!mounted) return;
+    setState(() {
+      _gpsOn = on;
+      _mockDetected = mock;
+    });
+    widget.onStatusChanged(on && !mock);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final sem = context.semanticColors;
+
+    if (_mockDetected) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: Space.s16, vertical: Space.s12),
+        decoration: BoxDecoration(color: sem.danger.bg, borderRadius: Radii.brLg),
+        child: Row(
+          children: [
+            Icon(Icons.gps_off_rounded, color: sem.danger.fg),
+            const SizedBox(width: Space.s12),
+            Expanded(child: Text(l.gpsMockWarning, style: TextStyle(color: sem.danger.fg))),
+          ],
+        ),
+      );
+    }
+
+    if (!_gpsOn) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: Space.s16, vertical: Space.s12),
+        decoration: BoxDecoration(color: sem.danger.bg, borderRadius: Radii.brLg),
+        child: Row(
+          children: [
+            Icon(Icons.location_off_rounded, color: sem.danger.fg),
+            const SizedBox(width: Space.s12),
+            Expanded(child: Text(l.gpsStatusOff, style: TextStyle(color: sem.danger.fg, fontWeight: FontWeight.w600))),
+            const SizedBox(width: Space.s8),
+            FilledButton.tonal(
+              onPressed: () async {
+                await Geolocator.openLocationSettings();
+              },
+              child: Text(l.gpsTurnOn),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: Space.s16, vertical: Space.s12),
+      decoration: BoxDecoration(color: sem.success.bg, borderRadius: Radii.brLg),
+      child: Row(
+        children: [
+          Icon(Icons.location_on_rounded, color: sem.success.fg),
+          const SizedBox(width: Space.s12),
+          Text(l.gpsStatusOn, style: TextStyle(color: sem.success.fg, fontWeight: FontWeight.w600)),
+        ],
+      ),
+    );
+  }
+}
+
 /// Work-in: date, GPS status, big button (design guide §5.8).
 class WorkInScreen extends ConsumerStatefulWidget {
   const WorkInScreen({super.key});
@@ -296,6 +467,7 @@ class WorkInScreen extends ConsumerStatefulWidget {
 
 class _WorkInScreenState extends ConsumerState<WorkInScreen> {
   bool _busy = false;
+  bool _gpsReady = true;
 
   @override
   Widget build(BuildContext context) {
@@ -324,16 +496,17 @@ class _WorkInScreenState extends ConsumerState<WorkInScreen> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: Space.s24),
-              InfoBanner(icon: Icons.location_on_rounded, text: l.workInBody),
+              _GpsStatusBanner(onStatusChanged: (ok) => setState(() => _gpsReady = ok)),
+              const SizedBox(height: Space.s12),
               if (ref.read(attendanceServiceProvider).needsSelfie(AttendanceEventType.workIn)) ...[
-                const SizedBox(height: Space.s12),
                 InfoBanner(icon: Icons.photo_camera_front_rounded, text: l.attendanceSelfieHint),
+                const SizedBox(height: Space.s12),
               ],
               const Spacer(),
               SizedBox(
                 height: 64,
                 child: FilledButton.icon(
-                  onPressed: _busy
+                  onPressed: (_busy || !_gpsReady)
                       ? null
                       : () async {
                           setState(() => _busy = true);
@@ -366,6 +539,7 @@ class WorkOutScreen extends ConsumerStatefulWidget {
 
 class _WorkOutScreenState extends ConsumerState<WorkOutScreen> {
   bool _busy = false;
+  bool _gpsReady = true;
 
   @override
   Widget build(BuildContext context) {
@@ -382,6 +556,8 @@ class _WorkOutScreenState extends ConsumerState<WorkOutScreen> {
       body: ListView(
         padding: const EdgeInsets.all(Space.screen),
         children: [
+          _GpsStatusBanner(onStatusChanged: (ok) => setState(() => _gpsReady = ok)),
+          const SizedBox(height: Space.cardGap),
           AppCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -421,7 +597,7 @@ class _WorkOutScreenState extends ConsumerState<WorkOutScreen> {
             height: 64,
             child: FilledButton.icon(
               style: FilledButton.styleFrom(backgroundColor: cs.inverseSurface, foregroundColor: cs.onInverseSurface),
-              onPressed: _busy
+              onPressed: (_busy || !_gpsReady)
                   ? null
                   : () async {
                       setState(() => _busy = true);

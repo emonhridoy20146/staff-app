@@ -4,6 +4,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../core/location/location_gate.dart';
 import '../core/media/media.dart';
 import '../core/providers.dart';
 import '../core/settings/ui_prefs.dart';
@@ -104,13 +105,21 @@ class _FieldAppState extends ConsumerState<FieldApp> with WidgetsBindingObserver
       theme: AppTheme.light(highContrast: prefs.highContrast),
       darkTheme: AppTheme.dark(highContrast: prefs.highContrast),
       themeMode: prefs.themeMode,
-      builder: (context, child) => DemoRibbon(
-        child: MediaQuery(
-          // Respect the user's font size but cap it so layouts stay usable.
-          data: MediaQuery.of(context).copyWith(textScaler: MediaQuery.textScalerOf(context).clamp(maxScaleFactor: 1.3)),
-          child: child ?? const SizedBox.shrink(),
-        ),
-      ),
+      builder: (context, child) {
+        Widget inner = child ?? const SizedBox.shrink();
+        // Location gate: block the app when location permission or GPS is off
+        // (only once the user is fully signed in and past onboarding).
+        final stage = ref.watch(sessionProvider.select((s) => s.stage));
+        if (stage == SessionStage.ready) {
+          inner = LocationGateScreen(child: inner);
+        }
+        return DemoRibbon(
+          child: MediaQuery(
+            data: MediaQuery.of(context).copyWith(textScaler: MediaQuery.textScalerOf(context).clamp(maxScaleFactor: 1.3)),
+            child: inner,
+          ),
+        );
+      },
     );
   }
 }

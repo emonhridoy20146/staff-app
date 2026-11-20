@@ -31,9 +31,7 @@ String formatMonth(String ym, String lang) {
   return lang == 'bn' ? toBanglaDigits('${_bnMonths[p[1] - 1]} ${p[0]}') : '${_enMonths[p[1] - 1]} ${p[0]}';
 }
 
-/// `৯:০৮ AM` (12 h with AM/PM, Bangladesh time) from a UTC instant. The
-/// owner asked for Bangladesh time with AM/PM everywhere (2026-11-19), the
-/// same as admin-web.
+/// `9:08 AM` (12 h, Dhaka) from a UTC instant.
 String formatTimeDhaka(DateTime utc, DigitStyle digits) {
   final d = toDhaka(utc);
   final h = d.hour % 12 == 0 ? 12 : d.hour % 12;

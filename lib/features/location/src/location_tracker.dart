@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:drift/drift.dart' hide Column;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:material_ui/material_ui.dart' show Locale;
 
 import '../../../core/api/api_models.dart';
@@ -10,6 +11,7 @@ import '../../../core/db/app_database.dart';
 import '../../../core/location/location_engine.dart';
 import '../../../core/location/tracking/filters.dart';
 import '../../../core/location/tracking/free_tracking_provider.dart';
+import '../../../core/location/tracking/native_tracking_service.dart';
 import '../../../core/location/tracking/paid_tracking_provider.dart';
 import '../../../core/location/tracking/sampling.dart';
 import '../../../core/location/tracking/tracking_provider.dart';
@@ -123,6 +125,14 @@ class LocationTracker {
 
   Future<void> _start(TrackingProvider provider, {required bool fellBack}) async {
     final l = lookupAppLocalizations(Locale(_ref.read(languageCodeProvider)));
+    // Request "Always" (background) location if only "while in use" is granted,
+    // so the foreground service survives when the app is backgrounded.
+    try {
+      final perm = await Geolocator.checkPermission();
+      if (perm == LocationPermission.whileInUse) {
+        await Geolocator.requestPermission();
+      }
+    } catch (_) {}
     _provider = provider;
     _profile = profileFor(Activity.unknown, _config);
     _sub = provider.points.listen((p) => unawaited(handle(p)));
@@ -137,6 +147,21 @@ class LocationTracker {
     _uploadTimer = Timer.periodic(uploadEvery, (_) => unawaited(_everyFewMinutes()));
     _heartbeatTimer = Timer.periodic(heartbeatEvery, (_) => unawaited(_tick()));
     _ref.read(trackingStatusProvider.notifier).state = TrackingStatus(running: true, providerId: provider.id, fellBack: fellBack);
+    // Pass API credentials to native service for real-time upload.
+    final env = _ref.read(envProvider);
+    final tokens = _ref.read(tokenStoreProvider);
+    final device = _ref.read(deviceIdentityProvider);
+    if (tokens.accessToken != null) {
+      unawaited(NativeTrackingService.storeCredentials(
+        apiBaseUrl: env.apiBaseUrl,
+        accessToken: tokens.accessToken!,
+        deviceId: device.deviceId,
+      ));
+    }
+    // Start the native service so tracking survives app kill / recents clear.
+    unawaited(NativeTrackingService.start(title: l.trackingNotificationTitle, text: l.trackingNotificationText));
+    // Import any points buffered by the native service while Flutter was dead.
+    unawaited(_importBufferedPoints());
     unawaited(sendHeartbeat());
     // First position right away, so the office sees the staff member within seconds of the work-in.
     unawaited(_everyFewMinutes());
@@ -171,12 +196,35 @@ class LocationTracker {
     _prev = null;
     _anchor = null;
     if (p != null && p.isRunning) await p.stop();
+    // Stop the native service too.
+    unawaited(NativeTrackingService.stop());
     final s = _ref.read(trackingStatusProvider);
     if (s.running) {
       _ref.read(trackingStatusProvider.notifier).state = TrackingStatus(providerId: s.providerId, fellBack: s.fellBack, lastPointAt: s.lastPointAt);
-      // Flush what is left (best effort).
-      unawaited(uploadPending());
+      // Import any native-buffered points before flushing.
+      unawaited(_importBufferedPoints().then((_) => uploadPending()));
     }
+  }
+
+  /// Reads location points that the native Android service collected while
+  /// Flutter was not running, and inserts them into the drift location queue.
+  Future<void> _importBufferedPoints() async {
+    try {
+      final points = await NativeTrackingService.readBufferedPoints();
+      if (points.isEmpty) return;
+      for (final p in points) {
+        await _db.into(_db.locationQueue).insert(LocationQueueCompanion.insert(
+              t: DateTime.parse(p['t'] as String),
+              lat: (p['lat'] as num).toDouble(),
+              lng: (p['lng'] as num).toDouble(),
+              acc: (p['acc'] as num).toDouble(),
+              spd: Value((p['spd'] as num?)?.toDouble()),
+              hdg: Value((p['hdg'] as num?)?.toDouble()),
+              alt: Value((p['alt'] as num?)?.toDouble()),
+              mock: Value(p['mock'] as bool? ?? false),
+            ));
+      }
+    } catch (_) {}
   }
 
   Future<void> _tick() async {

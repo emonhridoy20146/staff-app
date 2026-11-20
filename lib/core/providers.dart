@@ -39,7 +39,7 @@ final fakeApiProvider = Provider<FakeFieldApi?>((ref) => null);
 final syncHandlerRegistryProvider = Provider<SyncHandlerRegistry>((ref) => SyncHandlerRegistry());
 
 /// Current UI language code ('bn' | 'en') for Accept-Language.
-final languageCodeProvider = StateProvider<String>((ref) => 'bn');
+final languageCodeProvider = StateProvider<String>((ref) => 'en');
 
 /// Tokens held in memory and mirrored to secure storage.
 class TokenStore implements TokenProvider {

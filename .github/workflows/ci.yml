@@ -30,7 +30,7 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '21' # AGP lint uses Java 21 APIs (List.removeLast)
+          java-version: '21'
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
@@ -45,17 +45,6 @@ jobs:
             echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/staff.jks"
             echo "STAFF_KEYSTORE_PATH=$RUNNER_TEMP/staff.jks" >> "$GITHUB_ENV"
           fi
-      - name: Build demo APK
-        env:
-          STAFF_KEYSTORE_PASSWORD: ${{ secrets.STAFF_KEYSTORE_PASSWORD }}
-          STAFF_KEY_ALIAS: ${{ secrets.STAFF_KEY_ALIAS }}
-          STAFF_KEY_PASSWORD: ${{ secrets.STAFF_KEY_PASSWORD }}
-        run: flutter build apk --release --dart-define=APP_ENV=demo
-      - uses: actions/upload-artifact@v4
-        with:
-          name: staff-app-demo-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
-      # Same APK against the live test server (config/live.env: public values only, ADR-M16).
       - name: Build live APK
         env:
           STAFF_KEYSTORE_PASSWORD: ${{ secrets.STAFF_KEYSTORE_PASSWORD }}

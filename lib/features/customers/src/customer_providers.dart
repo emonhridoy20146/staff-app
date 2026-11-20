@@ -87,15 +87,19 @@ final customerSortProvider = StateProvider<CustomerSort>((ref) => CustomerSort.d
 final filteredCustomersProvider = Provider<AsyncValue<List<Customer>>>((ref) {
   final all = ref.watch(allCustomersProvider);
   final today = ref.watch(todayProvider);
+  final selectedBranch = ref.watch(selectedBranchIdProvider);
   return all.whenData(
-    (l) => applyQuery(
-      l,
-      today: today,
-      search: ref.watch(customerSearchProvider),
-      filter: ref.watch(customerFilterProvider),
-      sort: ref.watch(customerSortProvider),
-      myUserId: ref.watch(myCustomerUserIdProvider),
-    ),
+    (l) {
+      final branchFiltered = selectedBranch == null ? l : l.where((c) => c.branchId == selectedBranch).toList();
+      return applyQuery(
+        branchFiltered,
+        today: today,
+        search: ref.watch(customerSearchProvider),
+        filter: ref.watch(customerFilterProvider),
+        sort: ref.watch(customerSortProvider),
+        myUserId: ref.watch(myCustomerUserIdProvider),
+      );
+    },
   );
 });
 
@@ -103,6 +107,23 @@ final filteredCustomersProvider = Provider<AsyncValue<List<Customer>>>((ref) {
 final multiBranchProvider = Provider<bool>((ref) {
   final all = ref.watch(allCustomersProvider).value ?? const <Customer>[];
   return all.map((c) => c.branchId).whereType<String>().toSet().length > 1;
+});
+
+/// null = all branches (no filter).
+final selectedBranchIdProvider = StateProvider<String?>((ref) => null);
+
+/// Distinct branches from the customer list: {id: name}.
+final branchListProvider = Provider<Map<String, String>>((ref) {
+  final all = ref.watch(allCustomersProvider).value ?? const <Customer>[];
+  final lang = ref.watch(languageCodeProvider);
+  final map = <String, String>{};
+  for (final c in all) {
+    final bid = c.branchId;
+    if (bid != null && !map.containsKey(bid)) {
+      map[bid] = c.branchName(lang) ?? bid;
+    }
+  }
+  return map;
 });
 
 final todayPrioritiesProvider = Provider<AsyncValue<TodayPriorities>>((ref) {

@@ -101,7 +101,7 @@ abstract class AppLocalizations {
   /// No description provided for @appName.
   ///
   /// In en, this message translates to:
-  /// **'Howlader Field'**
+  /// **'Howlader Electronics'**
   String get appName;
 
   /// No description provided for @appTagline.
@@ -4399,6 +4399,150 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This customer was already visited {count} time(s) today (last at {time}). You can still record another visit.'**
   String visitAlreadyToday(String time, String count);
+
+  /// No description provided for @primerRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'All permissions are needed to use this app'**
+  String get primerRequired;
+
+  /// No description provided for @primerDeniedLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Location is required so your manager can track your field work. Tap to allow.'**
+  String get primerDeniedLocation;
+
+  /// No description provided for @primerDeniedCamera.
+  ///
+  /// In en, this message translates to:
+  /// **'Camera is required for visit photos and selfies. Tap to allow.'**
+  String get primerDeniedCamera;
+
+  /// No description provided for @primerDeniedNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications are needed for reminders and messages. Tap to allow.'**
+  String get primerDeniedNotifications;
+
+  /// No description provided for @primerDeniedBattery.
+  ///
+  /// In en, this message translates to:
+  /// **'Battery optimisation must be turned off so tracking keeps running. Tap to allow.'**
+  String get primerDeniedBattery;
+
+  /// No description provided for @primerOpenSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Open settings'**
+  String get primerOpenSettings;
+
+  /// No description provided for @primerDeniedForever.
+  ///
+  /// In en, this message translates to:
+  /// **'You blocked this permission. Open phone settings to allow it.'**
+  String get primerDeniedForever;
+
+  /// No description provided for @locationGateTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn on location'**
+  String get locationGateTitle;
+
+  /// No description provided for @locationGateBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Location must be on to use this app. Your manager needs to see where you are during work hours.'**
+  String get locationGateBody;
+
+  /// No description provided for @locationGatePermission.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow location permission'**
+  String get locationGatePermission;
+
+  /// No description provided for @locationGateService.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn on GPS / location'**
+  String get locationGateService;
+
+  /// No description provided for @locationGateOpenSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Open location settings'**
+  String get locationGateOpenSettings;
+
+  /// No description provided for @locationGateRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Check again'**
+  String get locationGateRetry;
+
+  /// No description provided for @attendanceNeedsLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Location is required to record attendance. Turn on GPS and try again.'**
+  String get attendanceNeedsLocation;
+
+  /// No description provided for @locationGateBackground.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow \"All the time\" location so tracking works even when the screen is off.'**
+  String get locationGateBackground;
+
+  /// No description provided for @locationGateBackgroundSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Open permission settings'**
+  String get locationGateBackgroundSettings;
+
+  /// No description provided for @gpsStatusOn.
+  ///
+  /// In en, this message translates to:
+  /// **'GPS is on'**
+  String get gpsStatusOn;
+
+  /// No description provided for @gpsStatusOff.
+  ///
+  /// In en, this message translates to:
+  /// **'GPS is off'**
+  String get gpsStatusOff;
+
+  /// No description provided for @gpsStatusMock.
+  ///
+  /// In en, this message translates to:
+  /// **'Fake GPS detected!'**
+  String get gpsStatusMock;
+
+  /// No description provided for @gpsTurnOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn on GPS'**
+  String get gpsTurnOn;
+
+  /// No description provided for @gpsMockWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Fake/mock location is not allowed. Disable mock locations to continue.'**
+  String get gpsMockWarning;
+
+  /// No description provided for @gpsRequiredForAttendance.
+  ///
+  /// In en, this message translates to:
+  /// **'GPS must be turned on to record attendance.'**
+  String get gpsRequiredForAttendance;
+
+  /// No description provided for @gpsRequiredForBreak.
+  ///
+  /// In en, this message translates to:
+  /// **'GPS must be turned on to start or end break.'**
+  String get gpsRequiredForBreak;
+
+  /// No description provided for @gpsRequiredForWorkOut.
+  ///
+  /// In en, this message translates to:
+  /// **'GPS must be turned on to end work.'**
+  String get gpsRequiredForWorkOut;
 }
 
 class _AppLocalizationsDelegate

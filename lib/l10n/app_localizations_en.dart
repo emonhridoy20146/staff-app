@@ -10,7 +10,7 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get appName => 'Howlader Field';
+  String get appName => 'Howlader Electronics';
 
   @override
   String get appTagline => 'Field collection & visits';
@@ -2459,4 +2459,87 @@ class AppLocalizationsEn extends AppLocalizations {
   String visitAlreadyToday(String time, String count) {
     return 'This customer was already visited $count time(s) today (last at $time). You can still record another visit.';
   }
+
+  @override
+  String get primerRequired => 'All permissions are needed to use this app';
+
+  @override
+  String get primerDeniedLocation =>
+      'Location is required so your manager can track your field work. Tap to allow.';
+
+  @override
+  String get primerDeniedCamera =>
+      'Camera is required for visit photos and selfies. Tap to allow.';
+
+  @override
+  String get primerDeniedNotifications =>
+      'Notifications are needed for reminders and messages. Tap to allow.';
+
+  @override
+  String get primerDeniedBattery =>
+      'Battery optimisation must be turned off so tracking keeps running. Tap to allow.';
+
+  @override
+  String get primerOpenSettings => 'Open settings';
+
+  @override
+  String get primerDeniedForever =>
+      'You blocked this permission. Open phone settings to allow it.';
+
+  @override
+  String get locationGateTitle => 'Turn on location';
+
+  @override
+  String get locationGateBody =>
+      'Location must be on to use this app. Your manager needs to see where you are during work hours.';
+
+  @override
+  String get locationGatePermission => 'Allow location permission';
+
+  @override
+  String get locationGateService => 'Turn on GPS / location';
+
+  @override
+  String get locationGateOpenSettings => 'Open location settings';
+
+  @override
+  String get locationGateRetry => 'Check again';
+
+  @override
+  String get attendanceNeedsLocation =>
+      'Location is required to record attendance. Turn on GPS and try again.';
+
+  @override
+  String get locationGateBackground =>
+      'Allow \"All the time\" location so tracking works even when the screen is off.';
+
+  @override
+  String get locationGateBackgroundSettings => 'Open permission settings';
+
+  @override
+  String get gpsStatusOn => 'GPS is on';
+
+  @override
+  String get gpsStatusOff => 'GPS is off';
+
+  @override
+  String get gpsStatusMock => 'Fake GPS detected!';
+
+  @override
+  String get gpsTurnOn => 'Turn on GPS';
+
+  @override
+  String get gpsMockWarning =>
+      'Fake/mock location is not allowed. Disable mock locations to continue.';
+
+  @override
+  String get gpsRequiredForAttendance =>
+      'GPS must be turned on to record attendance.';
+
+  @override
+  String get gpsRequiredForBreak =>
+      'GPS must be turned on to start or end break.';
+
+  @override
+  String get gpsRequiredForWorkOut => 'GPS must be turned on to end work.';
 }
