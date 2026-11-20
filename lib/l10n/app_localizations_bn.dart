@@ -1202,7 +1202,13 @@ class AppLocalizationsBn extends AppLocalizations {
   }
 
   @override
-  String get attHubAbsenceStreak => 'অনুপস্থিতি হিসেবে গণ্য (টানা ২ দিন দেরি)';
+  String get attHubAbsenceStreak =>
+      'অনুপস্থিতি হিসেবে গণ্য (প্রতি ২ দিন দেরিতে ১ দিন)';
+
+  @override
+  String attHubLateMonth(String late, String absent) {
+    return 'এ মাসে দেরি $late দিন · অনুপস্থিতি ধরা হবে $absent দিন';
+  }
 
   @override
   String get attHubNoHistory => 'এখনো কোনো ইতিহাস নেই';

@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 Contract pinned: field-api `openapi.yaml` **1.24.0** (1.22.0 → 1.24.0, additive: 1.23.0 extra phone numbers, 1.24.0 this month on a customer and invoice counts; `docs/contract/openapi.yaml`). Needs field-api 1.23.0 on the server for adding numbers; everything else works with 1.22.0.
+### Fixed (owner rule 2026-11-21: two late days = one absent day; FR-M-040)
+- The attendance hub marked a late day red only when the day before or after was late too. The owner's rule is by count, not by neighbours: **every two late days in a month are one absent day**. The 2nd, 4th, … late day of a month is now the one marked "অনুপস্থিতি হিসেবে গণ্য"; other late days stay amber.
+- A line above the history says "এ মাসে দেরি N দিন · অনুপস্থিতি ধরা হবে M দিন" (amber, red once an absent day is counted).
+- Rule in `attendance_domain.dart` (`lateTally`), unit tests in `test/features/late_tally_test.dart`. The pair size is 2 on the phone until the server sends it as a setting (open decision OD-M07).
 ### Changed (owner request 2026-11-21: hours and minutes, years / months / days; FR-M-039)
 - A count of days is shown as its two largest units (`Fmt.daySpan`): the overdue badge says "১ বছর ৭ মাস বকেয়া" for 584 days, "১ মাস ১৫ দিন বকেয়া" for 45, "২০ দিন বকেয়া" for 20 (a month is 30 days, a year 365; never used to work out a date).
 - Minutes are shown as hours and minutes (`Fmt.minutes`): late time on Me and in the attendance hub ("১ ঘ ২০ মি দেরি"), the visit suggestion, and the shift's late grace and break limit.

@@ -86,3 +86,29 @@ AttendanceDay computeDay(List<AttendanceEventIn> events, {required DateTime dhak
   }
   return AttendanceDay(status: status, firstIn: firstIn, lastOut: lastOut, breaks: breaks, lateMin: late);
 }
+
+/// Late days of one month and the absent days they count as.
+///
+/// Owner rule (2026-11-21): every two late days in a month are counted as one
+/// absent day. The days need not be next to each other. [absenceDates] are
+/// the days that complete a pair (the 2nd, 4th, … late day of the month), so
+/// the screen can mark exactly those.
+class LateTally {
+  const LateTally({required this.lateDays, required this.absenceDates});
+  final int lateDays;
+  final Set<String> absenceDates;
+  int get absences => absenceDates.length;
+}
+
+/// [days] in any order; only days of [month] (`YYYY-MM`) with `lateMin > 0`
+/// count. [latePerAbsence] is 2 until the server sends its own setting.
+LateTally lateTally(Iterable<({String date, int lateMin})> days, {required String month, int latePerAbsence = 2}) {
+  final late = [for (final d in days) if (d.lateMin > 0 && d.date.startsWith(month)) d.date]..sort();
+  final dates = <String>{};
+  if (latePerAbsence > 0) {
+    for (var i = latePerAbsence - 1; i < late.length; i += latePerAbsence) {
+      dates.add(late[i]);
+    }
+  }
+  return LateTally(lateDays: late.length, absenceDates: dates);
+}

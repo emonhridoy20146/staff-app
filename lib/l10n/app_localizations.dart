@@ -2252,6 +2252,12 @@ abstract class AppLocalizations {
   /// **'Counts as absence (2 consecutive late days)'**
   String get attHubAbsenceStreak;
 
+  /// No description provided for @attHubLateMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Late on {late} days this month · counted as {absent} absent'**
+  String attHubLateMonth(String late, String absent);
+
   /// No description provided for @attHubNoHistory.
   ///
   /// In en, this message translates to:

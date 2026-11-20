@@ -1203,7 +1203,13 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get attHubAbsenceStreak => 'Counts as absence (2 consecutive late days)';
+  String get attHubAbsenceStreak =>
+      'Counts as an absent day (every 2 late days = 1)';
+
+  @override
+  String attHubLateMonth(String late, String absent) {
+    return 'Late on $late days this month · counted as $absent absent';
+  }
 
   @override
   String get attHubNoHistory => 'No attendance history yet';

@@ -76,6 +76,13 @@ class _AttendanceHubState extends ConsumerState<AttendanceHubScreen> with Widget
     final isLate = (day?.lateMin ?? 0) > 0;
     final overBreak = onBreak && day != null && day.breakTotal(now).inMinutes > maxBreak;
 
+    // Late days per month and the absent days they count as (two late days = one absent day).
+    final lateRows = [for (final r in history) (date: r.businessDate, lateMin: r.lateMin)];
+    final months = {for (final r in history) r.businessDate.substring(0, 7)};
+    final absenceDates = {for (final m in months) ...lateTally(lateRows, month: m).absenceDates};
+    final thisMonth = lateTally(lateRows, month: ref.watch(clockProvider).businessDate().substring(0, 7));
+    final f = ref.watch(fmtProvider);
+
     final bgColor = onDuty ? sem.success.bg : (onBreak ? sem.warning.bg : cs.surfaceContainer);
     final fgColor = onDuty ? sem.success.fg : (onBreak ? sem.warning.fg : cs.onSurface);
 
@@ -111,6 +118,23 @@ class _AttendanceHubState extends ConsumerState<AttendanceHubScreen> with Widget
             sliver: SliverList.list(children: [
               Text(l.attHubHistory, style: t.titleSmall),
               const SizedBox(height: Space.s8),
+              if (thisMonth.lateDays > 0) ...[
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: Space.s12, vertical: Space.s8),
+                  decoration: BoxDecoration(color: thisMonth.absences > 0 ? sem.danger.bg : sem.warning.bg, borderRadius: Radii.brMd),
+                  child: Row(children: [
+                    Icon(Icons.warning_amber_rounded, size: 20, color: thisMonth.absences > 0 ? sem.danger.fg : sem.warning.fg),
+                    const SizedBox(width: Space.s8),
+                    Expanded(
+                      child: Text(
+                        l.attHubLateMonth(f.num(thisMonth.lateDays), f.num(thisMonth.absences)),
+                        style: t.bodyMedium!.copyWith(color: thisMonth.absences > 0 ? sem.danger.fg : sem.warning.fg, fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                  ]),
+                ),
+                const SizedBox(height: Space.s8),
+              ],
               if (history.isEmpty)
                 EmptyState(icon: Icons.event_busy_rounded, title: l.attHubNoHistory, body: '')
               else
@@ -121,11 +145,8 @@ class _AttendanceHubState extends ConsumerState<AttendanceHubScreen> with Widget
                       if (i > 0) const Divider(height: 1, indent: Space.s16, endIndent: Space.s16),
                       _AttendanceDayTile(
                         row: history[i],
-                        // Two adjacent late days (consecutive calendar days in
-                        // DESC list) form an absence streak — mark both red.
-                        absenceStreak: history[i].lateMin > 0 &&
-                            ((i > 0 && history[i - 1].lateMin > 0) ||
-                             (i < history.length - 1 && history[i + 1].lateMin > 0)),
+                        // Every second late day of a month counts as one absent day (owner rule).
+                        absenceStreak: absenceDates.contains(history[i].businessDate),
                       ),
                     ],
                   ]),
@@ -303,7 +324,7 @@ class _AttendanceDayTile extends ConsumerWidget {
         ? row.lastOut!.difference(row.firstIn!) - Duration(minutes: row.breakMin)
         : null;
 
-    // Absence streak: two consecutive late days = 1 absence (red); single late = warning (amber).
+    // A late day that completes a pair in its month counts as an absent day (red); other late days are amber.
     final badgeBg = absenceStreak ? sem.danger.bg : sem.warning.bg;
     final badgeFg = absenceStreak ? sem.danger.fg : sem.warning.fg;
 
