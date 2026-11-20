@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../../core/db/app_database.dart';
+import '../../../../core/location/geofence.dart';
 import '../../../../core/location/location_engine.dart';
 import '../../../../core/providers.dart';
 import '../../../../core/settings/ui_prefs.dart';
@@ -14,6 +15,7 @@ import '../../../../core/theme/status_colors.dart';
 import '../../../../core/theme/tokens.dart';
 import '../../../../core/ui/amount_keypad.dart';
 import '../../../../core/ui/common.dart';
+import '../../../../core/ui/far_confirm.dart';
 import '../../../../core/ui/hold_to_confirm.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../customers/customers.dart';
@@ -63,6 +65,15 @@ class _CollectFlowScreenState extends ConsumerState<CollectFlowScreen> {
     if (_saving) return;
     setState(() => _saving = true);
     final fix = await (_fix ?? Future.value(null));
+    // FR-M-043: far from the customer's pin → ask once, never block (money taken at the shop must still be recorded).
+    final far = farFromPinM(fix: fix, pinLat: c.hasPin ? c.row.lat : null, pinLng: c.hasPin ? c.row.lng : null, radiusM: geofenceRadiusM(ref.read(serverSettingsProvider)));
+    if (far != null) {
+      if (!mounted) return;
+      if (!await confirmFarFromPin(context, distance: ref.read(fmtProvider).distance(far))) {
+        if (mounted) setState(() => _saving = false);
+        return;
+      }
+    }
     try {
       final r = await ref.read(recordCollectionProvider)(
         CollectionInput(
