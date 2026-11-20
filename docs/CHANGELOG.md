@@ -74,6 +74,8 @@ Contract pinned: field-api `openapi.yaml` **1.19.0** (field-api PR #18, ADR-038;
 ## [Unreleased]
 ### Changed
 - Shared design tokens v1.1 (docs only, mirrors admin-web `docs/03-design-guide.md §2.3a`, admin ADR-W18): pay-state colours (`payState.bad`, `missedMany`, `missedOne`, `dueToday`, `onTrack`, `paidOff`, each pin / fg / bg, light and dark) and the pin shadow, from field-api contract 1.14.0 `PayState` (ADR-035). `docs/design-tokens.json` is the same file as admin-web's again. Nothing in the app changes yet; its map keeps the `status.*` markers.
+### Fixed
+- Widget-flow tests now set Bangla explicitly for Bangla assertions and mock the enabled GPS service/permission checks, so they remain deterministic with the app's English default and do not call a platform channel.
 
 ## [0.10.1] — 2026-11-18
 ### Added
