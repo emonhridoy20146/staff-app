@@ -22,7 +22,12 @@ class WorkMarksRow extends ConsumerWidget {
     final m = workMarksFor(ref, customer);
     final sc = context.statusColors;
     final sem = context.semanticColors;
-    return Row(mainAxisSize: MainAxisSize.min, children: [
+    // On a narrow row (Today, with its action button) the four marks shrink
+    // a little instead of running over the edge.
+    return FittedBox(
+      fit: BoxFit.scaleDown,
+      alignment: AlignmentDirectional.centerStart,
+      child: Row(mainAxisSize: MainAxisSize.min, children: [
       _Mark(
         on: m.visit != VisitMark.none,
         style: m.visit == VisitMark.today ? sem.success : sem.info,
@@ -47,7 +52,8 @@ class WorkMarksRow extends ConsumerWidget {
         icon: m.pin ? Icons.location_on_rounded : Icons.location_off_rounded,
         label: m.pin ? l.marksPinSet : l.marksPinMissing,
       ),
-    ]);
+    ]),
+    );
   }
 }
 
