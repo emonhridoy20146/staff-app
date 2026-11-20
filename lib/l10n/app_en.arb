@@ -272,7 +272,7 @@
     }
   },
   "statusOverdue": "Overdue",
-  "statusOverdueDays": "{days} days overdue",
+  "statusOverdueDays": "{days} overdue",
   "@statusOverdueDays": {
     "placeholders": {
       "days": {
@@ -561,7 +561,7 @@
       }
     }
   },
-  "meLate": "Late {minutes} min",
+  "meLate": "Late {minutes}",
   "@meLate": {
     "placeholders": {
       "minutes": {
@@ -697,7 +697,7 @@
   "attHubTitle": "Attendance",
   "attHubHistory": "Attendance history",
   "attHubWorkTime": "Work time",
-  "attHubLateWarning": "Late by {minutes} min",
+  "attHubLateWarning": "Late by {minutes}",
   "@attHubLateWarning": {
     "placeholders": { "minutes": { "type": "String" } }
   },
@@ -967,7 +967,7 @@
       }
     }
   },
-  "visitSuggestBody": "You have been here {minutes} min. Record a visit?",
+  "visitSuggestBody": "You have been here {minutes}. Record a visit?",
   "@visitSuggestBody": {
     "placeholders": {
       "minutes": {
@@ -1418,7 +1418,7 @@
     }
   },
   "calendarNoWeeklyOff": "No weekly off",
-  "calendarLateGrace": "Late after {grace} min · break {brk} min",
+  "calendarLateGrace": "Late after {grace} · break {brk}",
   "@calendarLateGrace": {
     "placeholders": {
       "grace": {

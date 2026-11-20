@@ -503,7 +503,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String statusOverdueDays(String days) {
-    return '$days days overdue';
+    return '$days overdue';
   }
 
   @override
@@ -960,7 +960,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String meLate(String minutes) {
-    return 'Late $minutes min';
+    return 'Late $minutes';
   }
 
   @override
@@ -1199,7 +1199,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String attHubLateWarning(String minutes) {
-    return 'Late by $minutes min';
+    return 'Late by $minutes';
   }
 
   @override
@@ -1591,7 +1591,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String visitSuggestBody(String minutes) {
-    return 'You have been here $minutes min. Record a visit?';
+    return 'You have been here $minutes. Record a visit?';
   }
 
   @override
@@ -2226,7 +2226,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String calendarLateGrace(String grace, String brk) {
-    return 'Late after $grace min · break $brk min';
+    return 'Late after $grace · break $brk';
   }
 
   @override

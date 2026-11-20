@@ -219,7 +219,7 @@ class _HubHeader extends ConsumerWidget {
             Row(children: [
               Icon(Icons.schedule_rounded, size: 18, color: sem.warning.fg),
               const SizedBox(width: Space.s4),
-              Text(l.attHubLateWarning(f.num(day!.lateMin)), style: t.bodySmall!.copyWith(color: sem.warning.fg, fontWeight: FontWeight.w600)),
+              Text(l.attHubLateWarning(f.minutes(day!.lateMin)), style: t.bodySmall!.copyWith(color: sem.warning.fg, fontWeight: FontWeight.w600)),
             ]),
           ],
           if (overBreak) ...[
@@ -355,7 +355,7 @@ class _AttendanceDayTile extends ConsumerWidget {
               padding: const EdgeInsets.symmetric(horizontal: Space.s8, vertical: Space.s4),
               decoration: BoxDecoration(color: badgeBg, borderRadius: Radii.brSm),
               child: Text(
-                l.attHubLateWarning(f.num(row.lateMin)),
+                l.attHubLateWarning(f.minutes(row.lateMin)),
                 style: t.labelSmall!.copyWith(color: badgeFg, fontWeight: FontWeight.w600),
               ),
             )

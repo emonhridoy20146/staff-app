@@ -31,7 +31,7 @@ class VisitSuggestionCard extends ConsumerWidget {
             Expanded(child: Text(l.visitSuggestTitle(s.customerName), style: t.titleMedium)),
           ]),
           const SizedBox(height: Space.s8),
-          Text(l.visitSuggestBody(f.num(s.dwell.inMinutes)), style: t.bodyLarge),
+          Text(l.visitSuggestBody(f.duration(s.dwell)), style: t.bodyLarge),
           const SizedBox(height: Space.s12),
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
