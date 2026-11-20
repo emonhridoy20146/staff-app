@@ -1189,6 +1189,52 @@ class AppLocalizationsEn extends AppLocalizations {
   String get workOutPromises => 'Promises made';
 
   @override
+  String get attHubTitle => 'Attendance';
+
+  @override
+  String get attHubHistory => 'Attendance history';
+
+  @override
+  String get attHubWorkTime => 'Work time';
+
+  @override
+  String attHubLateWarning(String minutes) {
+    return 'Late by $minutes min';
+  }
+
+  @override
+  String get attHubAbsenceStreak => 'Counts as absence (2 consecutive late days)';
+
+  @override
+  String get attHubNoHistory => 'No attendance history yet';
+
+  @override
+  String get attHubStatusOnDuty => 'On duty';
+
+  @override
+  String get attHubStatusOnBreak => 'On break';
+
+  @override
+  String get attHubStatusOffDuty => 'Clocked out';
+
+  @override
+  String get attHubStatusNotStarted => 'Not started';
+
+  @override
+  String attHubOut(String time) {
+    return 'Out at $time';
+  }
+
+  @override
+  String get todayWorkBtn => 'Today\'s work';
+
+  @override
+  String get performanceBtn => 'Performance';
+
+  @override
+  String get attendanceBtn => 'Attendance';
+
+  @override
   String get updateTitle => 'Update required';
 
   @override
@@ -1478,6 +1524,65 @@ class AppLocalizationsEn extends AppLocalizations {
   String trackingPending(String count) {
     return '$count points waiting';
   }
+
+  @override
+  String get oemGuideTitle => 'Battery & Background Settings';
+  @override
+  String get oemGuideSubtitle => 'Some phones stop GPS when the screen turns off. Follow the steps for your phone brand to keep tracking on while on duty.';
+  @override
+  String get oemGuideDone => 'Got it';
+  @override
+  String get oemGuideXiaomiName => 'Xiaomi / Redmi / POCO (MIUI)';
+  @override
+  String get oemGuideXiaomiStep1 => 'Settings → Apps → Manage apps → [this app] → Battery saver → No restrictions';
+  @override
+  String get oemGuideXiaomiStep2 => 'Settings → Apps → Manage apps → [this app] → Autostart → turn ON';
+  @override
+  String get oemGuideXiaomiStep3 => 'Settings → Battery & performance → App battery saver → find this app → No restrictions';
+  @override
+  String get oemGuideSamsungName => 'Samsung (One UI)';
+  @override
+  String get oemGuideSamsungStep1 => 'Settings → Apps → [this app] → Battery → Unrestricted';
+  @override
+  String get oemGuideSamsungStep2 => 'Settings → Device care → Battery → App power management → Sleeping apps → remove this app';
+  @override
+  String get oemGuideSamsungStep3 => 'Settings → Apps → [this app] → Mobile data → Allow background data usage';
+  @override
+  String get oemGuideOppoName => 'Oppo / Realme (ColorOS)';
+  @override
+  String get oemGuideOppoStep1 => 'Settings → Battery → App power saving → find this app → turn OFF';
+  @override
+  String get oemGuideOppoStep2 => 'Settings → Apps → [this app] → Battery usage → Allow background activity';
+  @override
+  String get oemGuideOppoStep3 => 'Settings → Battery → More → App quick freeze → exclude this app';
+  @override
+  String get oemGuideVivoName => 'Vivo (Funtouch OS)';
+  @override
+  String get oemGuideVivoStep1 => 'Settings → Battery → Background app power management → turn OFF for this app';
+  @override
+  String get oemGuideVivoStep2 => 'iManager → App Management → [this app] → Background run → Allow';
+  @override
+  String get oemGuideVivoStep3 => 'Settings → Apps → [this app] → Battery → Unrestricted';
+  @override
+  String get oemGuideHuaweiName => 'Huawei / Honor (EMUI / MagicUI)';
+  @override
+  String get oemGuideHuaweiStep1 => 'Phone Manager → Launch manager → find this app → Manage manually';
+  @override
+  String get oemGuideHuaweiStep2 => 'Turn on Auto-launch, Secondary launch, and Run in background';
+  @override
+  String get oemGuideHuaweiStep3 => 'Settings → Battery → App launch → find this app → Manage manually → allow all three';
+  @override
+  String get oemGuideOneplusName => 'OnePlus / Nothing (OxygenOS)';
+  @override
+  String get oemGuideOneplusStep1 => 'Settings → Apps → [this app] → Battery → Allow background activity';
+  @override
+  String get oemGuideOneplusStep2 => 'Settings → Battery → Battery optimization → All apps → [this app] → Don\'t optimize';
+  @override
+  String get oemGuideOtherName => 'Other Android phones';
+  @override
+  String get oemGuideOtherStep1 => 'Settings → Apps → [this app] → Battery → Unrestricted (or Don\'t optimize)';
+  @override
+  String get oemGuideOtherStep2 => 'Settings → Battery → Battery optimization → find this app → Don\'t optimize';
 
   @override
   String visitSuggestTitle(String name) {
@@ -2232,6 +2337,34 @@ class AppLocalizationsEn extends AppLocalizations {
   String scheduleLateFee(String amount) {
     return 'incl. late fee $amount';
   }
+
+  @override
+  String schedulePaidOf(String paid, String left) {
+    return 'Paid $paid · left $left';
+  }
+
+  @override
+  String get planTotal => 'Invoice total';
+
+  @override
+  String get planPaidSoFar => 'Paid so far';
+
+  @override
+  String get planLeft => 'Outstanding';
+
+  @override
+  String planRemainingInstallments(String n) {
+    return '$n remaining';
+  }
+
+  @override
+  String get phoneErpPrimary => 'ERP';
+
+  @override
+  String get phoneAdded => 'Added';
+
+  @override
+  String get phoneAddNumber => 'Add number';
 
   @override
   String planRolledHidden(String n) {

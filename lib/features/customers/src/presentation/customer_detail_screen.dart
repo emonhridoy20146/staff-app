@@ -298,31 +298,75 @@ class _Header extends ConsumerWidget {
             ),
           ],
           const SizedBox(height: Space.s16),
-          Row(
-            children: [
-              if (phones.isNotEmpty)
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: () => callAndLog(context, ref, customerId: customer.id, phones: phones),
-                    icon: const Icon(Icons.call_rounded),
-                    label: Text(f.num(phones.first)),
-                  ),
-                ),
-              if (phones.isNotEmpty) const SizedBox(width: Space.s8),
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: customer.hasPin
-                      ? () => launchNavigate(customer.row.lat!, customer.row.lng!, customer.row.nameBn)
-                      : (canPropose ? () => openPinCorrection(context, customer.id) : null),
-                  icon: Icon(customer.hasPin ? Icons.directions_rounded : Icons.add_location_alt_rounded),
-                  label: Text(customer.hasPin ? l.actionNavigate : (canPropose ? l.actionSetLocation : l.filterNoPin)),
-                ),
-              ),
-            ],
+          if (phones.isNotEmpty) ...[
+            _PhonesRow(customer: customer, phones: phones),
+            const SizedBox(height: Space.s8),
+          ],
+          OutlinedButton.icon(
+            onPressed: customer.hasPin
+                ? () => launchNavigate(customer.row.lat!, customer.row.lng!, customer.row.nameBn)
+                : (canPropose ? () => openPinCorrection(context, customer.id) : null),
+            icon: Icon(customer.hasPin ? Icons.directions_rounded : Icons.add_location_alt_rounded),
+            label: Text(customer.hasPin ? l.actionNavigate : (canPropose ? l.actionSetLocation : l.filterNoPin)),
+            style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(Sizes.primaryButton)),
           ),
           PinProposalStatus(customerId: customer.id),
         ],
       ),
+    );
+  }
+}
+
+/// All phone numbers for this customer. The first is the ERP primary (shown with
+/// a chip); any additional numbers are field-added (shown with "Added" chip).
+/// Each number is a tappable call button that logs the contact attempt.
+class _PhonesRow extends ConsumerWidget {
+  const _PhonesRow({required this.customer, required this.phones});
+  final Customer customer;
+  final List<String> phones;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context);
+    final t = Theme.of(context).textTheme;
+    final cs = Theme.of(context).colorScheme;
+    final f = ref.watch(fmtProvider);
+    if (phones.length == 1) {
+      return OutlinedButton.icon(
+        onPressed: () => callAndLog(context, ref, customerId: customer.id, phones: phones),
+        icon: const Icon(Icons.call_rounded),
+        label: Text(f.num(phones.first)),
+        style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(Sizes.primaryButton)),
+      );
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        for (var i = 0; i < phones.length; i++)
+          Padding(
+            padding: EdgeInsets.only(bottom: i < phones.length - 1 ? Space.s8 : 0),
+            child: OutlinedButton(
+              onPressed: () => callAndLog(context, ref, customerId: customer.id, phones: phones, index: i),
+              style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(Sizes.primaryButton), padding: const EdgeInsets.symmetric(horizontal: Space.s12, vertical: Space.s8)),
+              child: Row(children: [
+                const Icon(Icons.call_rounded, size: 20),
+                const SizedBox(width: Space.s8),
+                Expanded(child: Text(f.num(phones[i]), style: t.bodyMedium)),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: Space.s4, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: i == 0 ? cs.primaryContainer : cs.secondaryContainer,
+                    borderRadius: Radii.brSm,
+                  ),
+                  child: Text(
+                    i == 0 ? l.phoneErpPrimary : l.phoneAdded,
+                    style: t.labelSmall!.copyWith(color: i == 0 ? cs.onPrimaryContainer : cs.onSecondaryContainer),
+                  ),
+                ),
+              ]),
+            ),
+          ),
+      ],
     );
   }
 }
@@ -585,6 +629,9 @@ class _Plans extends ConsumerWidget {
                       ].join(' · '),
                       style: t.bodySmall!.copyWith(color: cs.onSurfaceVariant),
                     ),
+                    const SizedBox(height: Space.s12),
+                    _InvoiceSummary(plan: p),
+                    const SizedBox(height: Space.s4),
                   ],
                 ),
                 children: [
@@ -604,6 +651,64 @@ class _Plans extends ConsumerWidget {
   }
 }
 
+/// Three-column invoice money summary: Total | Paid | Outstanding.
+class _InvoiceSummary extends ConsumerWidget {
+  const _InvoiceSummary({required this.plan});
+  final PlanWithSchedule plan;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context);
+    final t = Theme.of(context).textTheme;
+    final cs = Theme.of(context).colorScheme;
+    final f = ref.watch(fmtProvider);
+    return Container(
+      decoration: BoxDecoration(color: cs.surfaceContainerHigh, borderRadius: Radii.brMd),
+      child: IntrinsicHeight(
+        child: Row(
+          children: [
+            Expanded(child: _SummaryCell(label: l.planTotal, value: f.money(plan.plan.totalPayablePoisha))),
+            VerticalDivider(width: 1, color: cs.outlineVariant),
+            Expanded(child: _SummaryCell(label: l.planPaidSoFar, value: f.money(plan.plan.paidPoisha))),
+            VerticalDivider(width: 1, color: cs.outlineVariant),
+            Expanded(
+              child: _SummaryCell(
+                label: l.planLeft,
+                value: f.money(plan.plan.outstandingPoisha),
+                valueStyle: t.bodyMedium!.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: plan.plan.outstandingPoisha > 0 && !plan.closedInErp ? cs.error : cs.onSurface,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SummaryCell extends StatelessWidget {
+  const _SummaryCell({required this.label, required this.value, this.valueStyle});
+  final String label;
+  final String value;
+  final TextStyle? valueStyle;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = Theme.of(context).textTheme;
+    final cs = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: Space.s8, vertical: Space.s8),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(label, style: t.labelSmall!.copyWith(color: cs.onSurfaceVariant), maxLines: 1),
+        const SizedBox(height: 2),
+        Text(value, style: valueStyle ?? t.bodyMedium!.copyWith(fontWeight: FontWeight.w500), maxLines: 1, overflow: TextOverflow.ellipsis),
+      ]),
+    );
+  }
+}
+
 class _ScheduleRow extends ConsumerWidget {
   const _ScheduleRow({required this.line});
   final ScheduleLineRow line;
@@ -614,24 +719,43 @@ class _ScheduleRow extends ConsumerWidget {
     final t = Theme.of(context).textTheme;
     final cs = Theme.of(context).colorScheme;
     final sc = context.statusColors;
-    final (icon, color, label) = switch (line.status) {
+    // Treat as partial when partially paid, regardless of server status value.
+    final effectiveStatus = (line.paidPoisha > 0 && line.paidPoisha < line.amountPoisha + line.lateFeePoisha && line.status != 'paid')
+        ? 'partial'
+        : line.status;
+    final (icon, color, label) = switch (effectiveStatus) {
       'paid' => (Icons.check_circle_rounded, sc.of(AppStatus.paid).fg, l.schedulePaid),
       'overdue' => (Icons.error_rounded, sc.of(AppStatus.overdue).fg, l.scheduleOverdue),
       'due' => (Icons.event_rounded, sc.of(AppStatus.dueToday).fg, l.scheduleDue),
       'partial' => (Icons.timelapse_rounded, sc.of(AppStatus.dueToday).fg, l.schedulePartial),
       _ => (Icons.radio_button_unchecked_rounded, cs.outline, l.scheduleUpcoming),
     };
-    return SizedBox(
-      height: Sizes.minTarget,
-      child: Row(children: [
+    final isPartial = effectiveStatus == 'partial';
+    final leftPoisha = line.amountPoisha + line.lateFeePoisha - line.paidPoisha;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
         SizedBox(width: 28, child: Text(f.num(line.seq), style: t.bodySmall!.copyWith(color: cs.onSurfaceVariant))),
         Icon(icon, size: 18, color: color),
         const SizedBox(width: Space.s8),
-        Expanded(child: Text(f.date(line.dueDate, withYear: true), style: t.bodyMedium)),
+        Expanded(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(f.date(line.dueDate, withYear: true), style: t.bodyMedium),
+              if (isPartial)
+                Text(
+                  l.schedulePaidOf(f.money(line.paidPoisha), f.money(leftPoisha.clamp(0, leftPoisha))),
+                  style: t.labelSmall!.copyWith(color: color),
+                ),
+            ],
+          ),
+        ),
         Text(label, style: t.labelMedium!.copyWith(color: color)),
         const SizedBox(width: Space.s12),
         SizedBox(
-          width: 92,
+          width: 96,
           child: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.end, children: [
             MoneyText(line.amountPoisha, style: t.bodyMedium, textAlign: TextAlign.end),
             if (line.lateFeePoisha > 0)

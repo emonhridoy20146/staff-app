@@ -694,6 +694,26 @@
   "workOutMobile": "Mobile",
   "workOutVisits": "Visits",
   "workOutPromises": "Promises made",
+  "attHubTitle": "Attendance",
+  "attHubHistory": "Attendance history",
+  "attHubWorkTime": "Work time",
+  "attHubLateWarning": "Late by {minutes} min",
+  "@attHubLateWarning": {
+    "placeholders": { "minutes": { "type": "String" } }
+  },
+  "attHubAbsenceStreak": "Counts as absence (2 consecutive late days)",
+  "attHubNoHistory": "No attendance history yet",
+  "attHubStatusOnDuty": "On duty",
+  "attHubStatusOnBreak": "On break",
+  "attHubStatusOffDuty": "Clocked out",
+  "attHubStatusNotStarted": "Not started",
+  "attHubOut": "Out at {time}",
+  "@attHubOut": {
+    "placeholders": { "time": { "type": "String" } }
+  },
+  "todayWorkBtn": "Today's work",
+  "performanceBtn": "Performance",
+  "attendanceBtn": "Attendance",
   "updateTitle": "Update required",
   "updateBody": "A newer version is needed. Your saved work stays on the phone and will upload after the update.",
   "updateButton": "Update",
@@ -910,6 +930,35 @@
       }
     }
   },
+  "oemGuideTitle": "Battery & Background Settings",
+  "oemGuideSubtitle": "Some phones stop GPS when the screen turns off. Follow the steps for your phone brand to keep tracking on while on duty.",
+  "oemGuideDone": "Got it",
+  "oemGuideXiaomiName": "Xiaomi / Redmi / POCO (MIUI)",
+  "oemGuideXiaomiStep1": "Settings → Apps → Manage apps → [this app] → Battery saver → No restrictions",
+  "oemGuideXiaomiStep2": "Settings → Apps → Manage apps → [this app] → Autostart → turn ON",
+  "oemGuideXiaomiStep3": "Settings → Battery & performance → App battery saver → find this app → No restrictions",
+  "oemGuideSamsungName": "Samsung (One UI)",
+  "oemGuideSamsungStep1": "Settings → Apps → [this app] → Battery → Unrestricted",
+  "oemGuideSamsungStep2": "Settings → Device care → Battery → App power management → Sleeping apps → remove this app",
+  "oemGuideSamsungStep3": "Settings → Apps → [this app] → Mobile data → Allow background data usage",
+  "oemGuideOppoName": "Oppo / Realme (ColorOS)",
+  "oemGuideOppoStep1": "Settings → Battery → App power saving → find this app → turn OFF",
+  "oemGuideOppoStep2": "Settings → Apps → [this app] → Battery usage → Allow background activity",
+  "oemGuideOppoStep3": "Settings → Battery → More → App quick freeze → exclude this app",
+  "oemGuideVivoName": "Vivo (Funtouch OS)",
+  "oemGuideVivoStep1": "Settings → Battery → Background app power management → turn OFF for this app",
+  "oemGuideVivoStep2": "iManager → App Management → [this app] → Background run → Allow",
+  "oemGuideVivoStep3": "Settings → Apps → [this app] → Battery → Unrestricted",
+  "oemGuideHuaweiName": "Huawei / Honor (EMUI / MagicUI)",
+  "oemGuideHuaweiStep1": "Phone Manager → Launch manager → find this app → Manage manually",
+  "oemGuideHuaweiStep2": "Turn on Auto-launch, Secondary launch, and Run in background",
+  "oemGuideHuaweiStep3": "Settings → Battery → App launch → find this app → Manage manually → allow all three",
+  "oemGuideOneplusName": "OnePlus / Nothing (OxygenOS)",
+  "oemGuideOneplusStep1": "Settings → Apps → [this app] → Battery → Allow background activity",
+  "oemGuideOneplusStep2": "Settings → Battery → Battery optimization → All apps → [this app] → Don't optimize",
+  "oemGuideOtherName": "Other Android phones",
+  "oemGuideOtherStep1": "Settings → Apps → [this app] → Battery → Unrestricted (or Don't optimize)",
+  "oemGuideOtherStep2": "Settings → Battery → Battery optimization → find this app → Don't optimize",
   "visitSuggestTitle": "Near {name}?",
   "@visitSuggestTitle": {
     "placeholders": {
@@ -1454,6 +1503,25 @@
       }
     }
   },
+  "schedulePaidOf": "Paid {paid} · left {left}",
+  "@schedulePaidOf": {
+    "placeholders": {
+      "paid": { "type": "String" },
+      "left": { "type": "String" }
+    }
+  },
+  "planTotal": "Invoice total",
+  "planPaidSoFar": "Paid so far",
+  "planLeft": "Outstanding",
+  "planRemainingInstallments": "{n} remaining",
+  "@planRemainingInstallments": {
+    "placeholders": {
+      "n": { "type": "String" }
+    }
+  },
+  "phoneErpPrimary": "ERP",
+  "phoneAdded": "Added",
+  "phoneAddNumber": "Add number",
   "planRolledHidden": "{n} unpaid installments were moved to a later one in the ERP and are hidden",
   "@planRolledHidden": {
     "placeholders": {

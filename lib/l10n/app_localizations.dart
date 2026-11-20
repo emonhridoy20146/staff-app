@@ -2222,6 +2222,90 @@ abstract class AppLocalizations {
   /// **'Promises made'**
   String get workOutPromises;
 
+  /// No description provided for @attHubTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Attendance'**
+  String get attHubTitle;
+
+  /// No description provided for @attHubHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Attendance history'**
+  String get attHubHistory;
+
+  /// No description provided for @attHubWorkTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Work time'**
+  String get attHubWorkTime;
+
+  /// No description provided for @attHubLateWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Late by {minutes} min'**
+  String attHubLateWarning(String minutes);
+
+  /// No description provided for @attHubAbsenceStreak.
+  ///
+  /// In en, this message translates to:
+  /// **'Counts as absence (2 consecutive late days)'**
+  String get attHubAbsenceStreak;
+
+  /// No description provided for @attHubNoHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'No attendance history yet'**
+  String get attHubNoHistory;
+
+  /// No description provided for @attHubStatusOnDuty.
+  ///
+  /// In en, this message translates to:
+  /// **'On duty'**
+  String get attHubStatusOnDuty;
+
+  /// No description provided for @attHubStatusOnBreak.
+  ///
+  /// In en, this message translates to:
+  /// **'On break'**
+  String get attHubStatusOnBreak;
+
+  /// No description provided for @attHubStatusOffDuty.
+  ///
+  /// In en, this message translates to:
+  /// **'Clocked out'**
+  String get attHubStatusOffDuty;
+
+  /// No description provided for @attHubStatusNotStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Not started'**
+  String get attHubStatusNotStarted;
+
+  /// No description provided for @attHubOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Out at {time}'**
+  String attHubOut(String time);
+
+  /// No description provided for @todayWorkBtn.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s work'**
+  String get todayWorkBtn;
+
+  /// No description provided for @performanceBtn.
+  ///
+  /// In en, this message translates to:
+  /// **'Performance'**
+  String get performanceBtn;
+
+  /// No description provided for @attendanceBtn.
+  ///
+  /// In en, this message translates to:
+  /// **'Attendance'**
+  String get attendanceBtn;
+
   /// No description provided for @updateTitle.
   ///
   /// In en, this message translates to:
@@ -2725,6 +2809,45 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count} points waiting'**
   String trackingPending(String count);
+
+  /// No description provided for @oemGuideTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Battery & Background Settings'**
+  String get oemGuideTitle;
+
+  /// No description provided for @oemGuideSubtitle.
+  String get oemGuideSubtitle;
+
+  /// No description provided for @oemGuideDone.
+  String get oemGuideDone;
+
+  String get oemGuideXiaomiName;
+  String get oemGuideXiaomiStep1;
+  String get oemGuideXiaomiStep2;
+  String get oemGuideXiaomiStep3;
+  String get oemGuideSamsungName;
+  String get oemGuideSamsungStep1;
+  String get oemGuideSamsungStep2;
+  String get oemGuideSamsungStep3;
+  String get oemGuideOppoName;
+  String get oemGuideOppoStep1;
+  String get oemGuideOppoStep2;
+  String get oemGuideOppoStep3;
+  String get oemGuideVivoName;
+  String get oemGuideVivoStep1;
+  String get oemGuideVivoStep2;
+  String get oemGuideVivoStep3;
+  String get oemGuideHuaweiName;
+  String get oemGuideHuaweiStep1;
+  String get oemGuideHuaweiStep2;
+  String get oemGuideHuaweiStep3;
+  String get oemGuideOneplusName;
+  String get oemGuideOneplusStep1;
+  String get oemGuideOneplusStep2;
+  String get oemGuideOtherName;
+  String get oemGuideOtherStep1;
+  String get oemGuideOtherStep2;
 
   /// No description provided for @visitSuggestTitle.
   ///
@@ -4015,6 +4138,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'incl. late fee {amount}'**
   String scheduleLateFee(String amount);
+
+  /// No description provided for @schedulePaidOf.
+  ///
+  /// In en, this message translates to:
+  /// **'Paid {paid} · left {left}'**
+  String schedulePaidOf(String paid, String left);
+
+  /// No description provided for @planTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Invoice total'**
+  String get planTotal;
+
+  /// No description provided for @planPaidSoFar.
+  ///
+  /// In en, this message translates to:
+  /// **'Paid so far'**
+  String get planPaidSoFar;
+
+  /// No description provided for @planLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'Outstanding'**
+  String get planLeft;
+
+  /// No description provided for @planRemainingInstallments.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} remaining'**
+  String planRemainingInstallments(String n);
+
+  /// No description provided for @phoneErpPrimary.
+  ///
+  /// In en, this message translates to:
+  /// **'ERP'**
+  String get phoneErpPrimary;
+
+  /// No description provided for @phoneAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Added'**
+  String get phoneAdded;
+
+  /// No description provided for @phoneAddNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Add number'**
+  String get phoneAddNumber;
 
   /// No description provided for @planRolledHidden.
   ///

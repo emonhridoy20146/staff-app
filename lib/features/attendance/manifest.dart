@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/feature/feature_manifest.dart';
 import '../../core/permissions/permission_service.dart';
 import 'src/attendance_data.dart';
+import 'src/attendance_hub_screen.dart';
 import 'src/attendance_widgets.dart';
 import 'src/leave_screens.dart';
 
@@ -13,6 +14,7 @@ final attendanceManifest = FeatureManifest(
   flag: 'module.attendance',
   permissions: const [Perm.attendanceRecord, Perm.leaveRequest],
   routes: [
+    GoRoute(path: '/attendance', builder: (_, _) => const AttendanceHubScreen()),
     GoRoute(path: '/attendance/work-in', builder: (_, _) => const WorkInScreen()),
     GoRoute(path: '/attendance/work-out', builder: (_, _) => const WorkOutScreen()),
     GoRoute(path: '/attendance/leave', builder: (_, _) => const LeaveScreen()),

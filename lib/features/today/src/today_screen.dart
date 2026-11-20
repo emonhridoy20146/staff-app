@@ -84,6 +84,8 @@ class TodayScreen extends ConsumerWidget {
             padding: const EdgeInsets.fromLTRB(Space.screen, Space.s16, Space.screen, 0),
             sliver: SliverList.list(children: [
               if (access.flag('module.attendance') && access.can(Perm.attendanceRecord)) ...[const DutyCard(), const SizedBox(height: Space.cardGap)],
+              _QuickActions(access: access),
+              const SizedBox(height: Space.cardGap),
               const _ProgressCard(),
               for (final c in cards) _Gap(child: c.builder(context)),
               const _CashWarning(),
@@ -186,6 +188,60 @@ class _QuickCollect extends StatelessWidget {
       constraints: const BoxConstraints.tightFor(width: Sizes.minTarget, height: Sizes.minTarget),
       onPressed: () => context.push('/collect/$customerId'),
       icon: const Icon(Icons.payments_rounded),
+    );
+  }
+}
+
+/// Three quick-access tiles: Attendance hub, Today's Work log, Performance.
+class _QuickActions extends StatelessWidget {
+  const _QuickActions({required this.access});
+  final AccessSnapshot access;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final showAttendance = access.flag('module.attendance') && access.can(Perm.attendanceRecord);
+    final showReports = access.flag('module.reports');
+    if (!showAttendance && !showReports) return const SizedBox.shrink();
+    return Row(children: [
+      if (showAttendance) ...[
+        Expanded(child: _QuickTile(icon: Icons.work_history_rounded, label: l.attendanceBtn, onTap: () => context.push('/attendance'))),
+        const SizedBox(width: Space.s8),
+      ],
+      Expanded(child: _QuickTile(icon: Icons.list_alt_rounded, label: l.todayWorkBtn, onTap: () => context.push('/today-work'))),
+      if (showReports) ...[
+        const SizedBox(width: Space.s8),
+        Expanded(child: _QuickTile(icon: Icons.insights_rounded, label: l.performanceBtn, onTap: () => context.push('/performance'))),
+      ],
+    ]);
+  }
+}
+
+class _QuickTile extends StatelessWidget {
+  const _QuickTile({required this.icon, required this.label, required this.onTap});
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = Theme.of(context).textTheme;
+    final cs = Theme.of(context).colorScheme;
+    return Material(
+      color: cs.secondaryContainer,
+      borderRadius: Radii.brMd,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: Radii.brMd,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: Space.s12, horizontal: Space.s8),
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            Icon(icon, size: 24, color: cs.onSecondaryContainer),
+            const SizedBox(height: Space.s4),
+            Text(label, style: t.labelSmall!.copyWith(color: cs.onSecondaryContainer), textAlign: TextAlign.center, maxLines: 2),
+          ]),
+        ),
+      ),
     );
   }
 }

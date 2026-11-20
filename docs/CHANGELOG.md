@@ -1,5 +1,20 @@
 # Changelog — staff-app
 
+## [0.12.5] — 2026-11-20
+Contract pinned: field-api `openapi.yaml` **1.22.0** (unchanged). No server change needed.
+### Added (owner request 2026-11-20)
+- **Attendance hub screen** (`/attendance`): middle screen before work-in showing today's duty status (color-coded header), in/out times, work duration, break total, late warning, GPS-off banner, Break / End Break / End Work action buttons, and a full 60-day attendance history list from the server snapshot.
+- **3 quick-action tiles on Today**: Attendance (→ hub), Today's Work (→ `/today-work`), Performance (→ `/performance`), shown when the user has access.
+- **Today's Work screen** (`/today-work`): chronological log of today's visits (with outcome icon) and collections (receipt + amount), merged and sorted by time, with visit count + collected total chips at the top.
+- **Colored branch top bar** in the shell: `primaryContainer` background, store icon, 2/3-width branch dropdown ("All" for all-branches), notification bell with badge count on the right (navigates to Me tab).
+- **Customer list visit/promise dots**: small colored dot overlay on the customer avatar — green when visited today (`lastVisitAt` date = today), primary-blue when the customer has an open promise today.
+- **Consecutive-late absence indicator**: in the attendance hub history list, any day that is part of a 2+ consecutive late streak is highlighted red with an "অনুপস্থিতি হিসেবে গণ্য" label; a single late day stays amber.
+- **Invoice summary row on customer detail**: 3-column Total / Paid / Outstanding row under each plan header.
+- **Partial installment display**: installments that are partially paid now show "Paid X · left Y" regardless of server status (overdue partial lines are correctly identified on the client).
+- **Multiple phones on customer detail**: all phone numbers shown with ERP-primary chip; each taps to call.
+### Admin-web (2026-11-20)
+- **Sidebar reorganized into 4 groups**: Field Work (customers, map, collections, visits, tasks…), People (staff, attendance, leave, targets, areas), Insights (live map, routes, reports, leaderboard, data-quality), Admin (unchanged).
+
 ## [0.12.4] — 2026-11-19
 Contract pinned: field-api `openapi.yaml` **1.22.0** (unchanged). No server change needed.
 ### Fixed (owner report 2026-11-19: staff saw only their assigned customers; a customer vanished after a pin; no distance on Home)

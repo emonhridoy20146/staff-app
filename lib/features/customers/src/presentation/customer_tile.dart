@@ -38,6 +38,10 @@ class CustomerTile extends ConsumerWidget {
     // Staff in several branches (1.19.0): each row says which branch it is in.
     final branch = ref.watch(multiBranchProvider) ? customer.branchName(lang) : null;
 
+    final visitedToday = customer.row.lastVisitAt != null &&
+        customer.row.lastVisitAt!.toLocal().toIso8601String().substring(0, 10) == today;
+    final promised = customer.promisedOn(today);
+
     return InkWell(
       onTap: onTap,
       child: ConstrainedBox(
@@ -47,12 +51,28 @@ class CustomerTile extends ConsumerWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Container(
+              SizedBox(
                 width: 48,
                 height: 48,
-                decoration: BoxDecoration(color: st.bg, shape: BoxShape.circle, border: Border.all(color: st.fg.withValues(alpha: 0.25))),
-                alignment: Alignment.center,
-                child: Text(_initial(name), style: t.titleMedium!.copyWith(color: st.fg, height: 1.1)),
+                child: Stack(children: [
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(color: st.bg, shape: BoxShape.circle, border: Border.all(color: st.fg.withValues(alpha: 0.25))),
+                    alignment: Alignment.center,
+                    child: Text(_initial(name), style: t.titleMedium!.copyWith(color: st.fg, height: 1.1)),
+                  ),
+                  // Small indicator dots bottom-right
+                  Positioned(
+                    right: 0, bottom: 0,
+                    child: Row(mainAxisSize: MainAxisSize.min, children: [
+                      if (visitedToday)
+                        _Dot(color: context.semanticColors.success.fg),
+                      if (promised)
+                        _Dot(color: cs.primary),
+                    ]),
+                  ),
+                ]),
               ),
               const SizedBox(width: Space.s12),
               Expanded(
@@ -113,4 +133,19 @@ class CustomerTile extends ConsumerWidget {
     if (cleaned.isEmpty) return '?';
     return cleaned.characters.first;
   }
+}
+
+class _Dot extends StatelessWidget {
+  const _Dot({required this.color});
+  final Color color;
+  @override
+  Widget build(BuildContext context) => Container(
+        width: 9, height: 9,
+        margin: const EdgeInsets.only(left: 1),
+        decoration: BoxDecoration(
+          color: color,
+          shape: BoxShape.circle,
+          border: Border.all(color: Theme.of(context).colorScheme.surface, width: 1.5),
+        ),
+      );
 }

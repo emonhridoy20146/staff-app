@@ -1188,6 +1188,52 @@ class AppLocalizationsBn extends AppLocalizations {
   String get workOutPromises => 'নতুন প্রতিশ্রুতি';
 
   @override
+  String get attHubTitle => 'উপস্থিতি';
+
+  @override
+  String get attHubHistory => 'উপস্থিতির ইতিহাস';
+
+  @override
+  String get attHubWorkTime => 'কাজের সময়';
+
+  @override
+  String attHubLateWarning(String minutes) {
+    return '$minutes মিনিট দেরি';
+  }
+
+  @override
+  String get attHubAbsenceStreak => 'অনুপস্থিতি হিসেবে গণ্য (টানা ২ দিন দেরি)';
+
+  @override
+  String get attHubNoHistory => 'এখনো কোনো ইতিহাস নেই';
+
+  @override
+  String get attHubStatusOnDuty => 'কর্মরত';
+
+  @override
+  String get attHubStatusOnBreak => 'বিরতিতে';
+
+  @override
+  String get attHubStatusOffDuty => 'কাজ শেষ';
+
+  @override
+  String get attHubStatusNotStarted => 'শুরু হয়নি';
+
+  @override
+  String attHubOut(String time) {
+    return '$time-এ শেষ';
+  }
+
+  @override
+  String get todayWorkBtn => 'আজকের কাজ';
+
+  @override
+  String get performanceBtn => 'পারফরম্যান্স';
+
+  @override
+  String get attendanceBtn => 'উপস্থিতি';
+
+  @override
   String get updateTitle => 'আপডেট প্রয়োজন';
 
   @override
@@ -1478,6 +1524,65 @@ class AppLocalizationsBn extends AppLocalizations {
   String trackingPending(String count) {
     return '$countটি অবস্থান অপেক্ষায়';
   }
+
+  @override
+  String get oemGuideTitle => 'ব্যাটারি ও ব্যাকগ্রাউন্ড সেটিংস';
+  @override
+  String get oemGuideSubtitle => 'কিছু ফোন স্ক্রিন বন্ধ হলে GPS বন্ধ করে দেয়। ডিউটিতে ট্র্যাকিং চালু রাখতে আপনার ফোন ব্র্যান্ড অনুযায়ী নিচের ধাপগুলো অনুসরণ করুন।';
+  @override
+  String get oemGuideDone => 'বুঝেছি';
+  @override
+  String get oemGuideXiaomiName => 'Xiaomi / Redmi / POCO (MIUI)';
+  @override
+  String get oemGuideXiaomiStep1 => 'সেটিংস → Apps → Manage apps → [এই অ্যাপ] → Battery saver → No restrictions';
+  @override
+  String get oemGuideXiaomiStep2 => 'সেটিংস → Apps → Manage apps → [এই অ্যাপ] → Autostart → চালু করুন';
+  @override
+  String get oemGuideXiaomiStep3 => 'সেটিংস → Battery & performance → App battery saver → এই অ্যাপ খুঁজুন → No restrictions';
+  @override
+  String get oemGuideSamsungName => 'Samsung (One UI)';
+  @override
+  String get oemGuideSamsungStep1 => 'সেটিংস → Apps → [এই অ্যাপ] → Battery → Unrestricted';
+  @override
+  String get oemGuideSamsungStep2 => 'সেটিংস → Device care → Battery → App power management → Sleeping apps → এই অ্যাপ সরান';
+  @override
+  String get oemGuideSamsungStep3 => 'সেটিংস → Apps → [এই অ্যাপ] → Mobile data → Allow background data usage';
+  @override
+  String get oemGuideOppoName => 'Oppo / Realme (ColorOS)';
+  @override
+  String get oemGuideOppoStep1 => 'সেটিংস → Battery → App power saving → এই অ্যাপ → বন্ধ করুন';
+  @override
+  String get oemGuideOppoStep2 => 'সেটিংস → Apps → [এই অ্যাপ] → Battery usage → Allow background activity';
+  @override
+  String get oemGuideOppoStep3 => 'সেটিংস → Battery → More → App quick freeze → এই অ্যাপ বাদ দিন';
+  @override
+  String get oemGuideVivoName => 'Vivo (Funtouch OS)';
+  @override
+  String get oemGuideVivoStep1 => 'সেটিংস → Battery → Background app power management → এই অ্যাপ বন্ধ করুন';
+  @override
+  String get oemGuideVivoStep2 => 'iManager → App Management → [এই অ্যাপ] → Background run → Allow';
+  @override
+  String get oemGuideVivoStep3 => 'সেটিংস → Apps → [এই অ্যাপ] → Battery → Unrestricted';
+  @override
+  String get oemGuideHuaweiName => 'Huawei / Honor (EMUI / MagicUI)';
+  @override
+  String get oemGuideHuaweiStep1 => 'Phone Manager → Launch manager → এই অ্যাপ খুঁজুন → Manage manually';
+  @override
+  String get oemGuideHuaweiStep2 => 'Auto-launch, Secondary launch এবং Run in background চালু করুন';
+  @override
+  String get oemGuideHuaweiStep3 => 'সেটিংস → Battery → App launch → এই অ্যাপ → Manage manually → তিনটিই Allow করুন';
+  @override
+  String get oemGuideOneplusName => 'OnePlus / Nothing (OxygenOS)';
+  @override
+  String get oemGuideOneplusStep1 => 'সেটিংস → Apps → [এই অ্যাপ] → Battery → Allow background activity';
+  @override
+  String get oemGuideOneplusStep2 => 'সেটিংস → Battery → Battery optimization → All apps → [এই অ্যাপ] → Don\'t optimize';
+  @override
+  String get oemGuideOtherName => 'অন্যান্য Android ফোন';
+  @override
+  String get oemGuideOtherStep1 => 'সেটিংস → Apps → [এই অ্যাপ] → Battery → Unrestricted বা Don\'t optimize';
+  @override
+  String get oemGuideOtherStep2 => 'সেটিংস → Battery → Battery optimization → এই অ্যাপ খুঁজুন → Don\'t optimize';
 
   @override
   String visitSuggestTitle(String name) {
@@ -2226,6 +2331,34 @@ class AppLocalizationsBn extends AppLocalizations {
   String scheduleLateFee(String amount) {
     return 'বিলম্ব ফি $amount সহ';
   }
+
+  @override
+  String schedulePaidOf(String paid, String left) {
+    return 'পরিশোধ $paid · বাকি $left';
+  }
+
+  @override
+  String get planTotal => 'ইনভয়েস মোট';
+
+  @override
+  String get planPaidSoFar => 'মোট পরিশোধ';
+
+  @override
+  String get planLeft => 'বকেয়া';
+
+  @override
+  String planRemainingInstallments(String n) {
+    return '$nটি বাকি';
+  }
+
+  @override
+  String get phoneErpPrimary => 'ইআরপি';
+
+  @override
+  String get phoneAdded => 'যোগকৃত';
+
+  @override
+  String get phoneAddNumber => 'নম্বর যোগ করুন';
 
   @override
   String planRolledHidden(String n) {

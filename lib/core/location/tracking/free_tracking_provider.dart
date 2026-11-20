@@ -38,6 +38,10 @@ class FreeTrackingProvider implements TrackingProvider {
 
   Future<void> _listen(SamplingProfile profile) async {
     await _sub?.cancel();
+    // No separate foreground-service notification here: the native tracking
+    // service (NativeTrackingService.start) already shows the single
+    // persistent "On duty" notification. Adding a second geolocator foreground
+    // service would produce two duty notifications on Android (ADR-M20).
     final settings = AndroidSettings(
       accuracy: LocationAccuracy.high,
       distanceFilter: profile.distanceFilterM,

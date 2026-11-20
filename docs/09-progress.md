@@ -41,6 +41,7 @@ Phases match `field-api/docs/09-progress.md`. Start each phase against the Prism
 | Whole branch on the phone, staff in several branches, branch on rows, whose customer it is, Today = own + unassigned (contract 1.19.0, schema 8) | ✅ 0.11.0, unit + migration tests; device check pending |
 | Customer list reload (pull-down + top-bar button), auto-load when the tab opens empty, loading/failed empty states (FR-M-032); online/offline line on every screen | ✅ 0.12.3, flow tests |
 | Whole-branch first load fixed (bootstrap read in the contract shape; one fresh snapshot after update); distance on Home from a fresh on-duty fix; same-day repeat visit warning (FR-M-032/005/035) | ✅ 0.12.4, unit + flow tests |
+| Attendance hub screen (history, today status, break/end-work buttons, late warning, GPS banner); colored branch top bar + notification bell in shell; customer list visited/promised dot indicators; Today's Work history screen (visits + collections merged); quick-action tiles on Today screen (Attendance, Today's Work, Performance) | ◐ 0.12.5, widget tests pending; GPS double-notification known issue (ADR-M20, requires native fix) |
 | Notifications (FCM + centre), Sync centre & Problems | ◐ sync centre done; FCM not yet (needs Firebase project) |
 | Onboarding: consent, permissions primer | ✅ |
 **Acceptance:** M-E2…M-E7, M-E9, M-E10 green; manual device checklist (non-location sections) signed off on 4 OEM devices; pilot 5 staff × 2 weeks with zero lost/duplicate collections.

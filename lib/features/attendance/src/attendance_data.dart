@@ -191,6 +191,17 @@ final todayAttendanceProvider = StreamProvider<AttendanceDay>((ref) {
       ));
 });
 
+/// Recent attendance days from the server snapshot (most recent first, up to 60).
+final recentAttendanceDaysProvider = StreamProvider<List<AttendanceDayRow>>((ref) {
+  final db = ref.watch(databaseProvider);
+  final today = ref.watch(clockProvider).businessDate();
+  return (db.select(db.attendanceDays)
+        ..where((t) => t.businessDate.isSmallerOrEqualValue(today))
+        ..orderBy([(t) => OrderingTerm.desc(t.businessDate)])
+        ..limit(60))
+      .watch();
+});
+
 /// Ticks every 30 s so durations on screen stay fresh.
 final minuteTickerProvider = StreamProvider<DateTime>((ref) async* {
   final clock = ref.watch(clockProvider);

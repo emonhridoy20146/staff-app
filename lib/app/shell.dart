@@ -22,7 +22,6 @@ class AppShell extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l = AppLocalizations.of(context);
     final f = ref.watch(fmtProvider);
-    final cs = Theme.of(context).colorScheme;
     final problems = (ref.watch(failedCountProvider).value ?? 0) + (ref.watch(openConflictCountProvider).value ?? 0);
     final handovers = ref.watch(pendingHandoversProvider).length;
     final meBadge = problems + handovers;
@@ -34,34 +33,12 @@ class AppShell extends ConsumerWidget {
       body: Column(
         children: [
           if (showBranchBar)
-            Material(
-              elevation: 1,
-              child: SafeArea(
-                bottom: false,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: Space.s16, vertical: Space.s8),
-                  child: Row(
-                    children: [
-                      Icon(Icons.store_rounded, size: 20, color: cs.primary),
-                      const SizedBox(width: Space.s8),
-                      Expanded(
-                        child: DropdownButton<String?>(
-                          value: selectedBranch,
-                          isExpanded: true,
-                          underline: const SizedBox.shrink(),
-                          style: Theme.of(context).textTheme.titleSmall!.copyWith(color: cs.onSurface),
-                          items: [
-                            DropdownMenuItem<String?>(value: null, child: Text(l.filterAll)),
-                            for (final e in branches.entries)
-                              DropdownMenuItem<String?>(value: e.key, child: Text(e.value)),
-                          ],
-                          onChanged: (v) => ref.read(selectedBranchIdProvider.notifier).state = v,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+            _BranchBar(
+              branches: branches,
+              selectedBranch: selectedBranch,
+              notificationCount: meBadge,
+              onBranchChanged: (v) => ref.read(selectedBranchIdProvider.notifier).state = v,
+              onBellTap: () => context.go('/me'),
             ),
           Expanded(child: shell),
         ],
@@ -116,6 +93,74 @@ class DemoRibbon extends ConsumerWidget {
       color: const Color(0xFFB45309),
       textStyle: const TextStyle(fontFamily: AppTheme.fontFamily, fontFamilyFallback: AppTheme.fontFallback, fontSize: 10, fontWeight: FontWeight.w700, color: Colors.white),
       child: child,
+    );
+  }
+}
+
+/// Colored branch selector bar shown when the user has access to > 1 branch.
+/// Layout: store icon + 2/3-width dropdown | spacer | bell with badge.
+class _BranchBar extends StatelessWidget {
+  const _BranchBar({
+    required this.branches,
+    required this.selectedBranch,
+    required this.notificationCount,
+    required this.onBranchChanged,
+    required this.onBellTap,
+  });
+
+  final Map<String, String> branches;
+  final String? selectedBranch;
+  final int notificationCount;
+  final ValueChanged<String?> onBranchChanged;
+  final VoidCallback onBellTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final cs = Theme.of(context).colorScheme;
+    final t = Theme.of(context).textTheme;
+
+    return Material(
+      color: cs.primaryContainer,
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: Space.s12, vertical: Space.s4),
+          child: Row(children: [
+            Icon(Icons.store_rounded, size: 20, color: cs.onPrimaryContainer),
+            const SizedBox(width: Space.s8),
+            // 2/3 of remaining width
+            Expanded(
+              flex: 2,
+              child: DropdownButton<String?>(
+                value: selectedBranch,
+                isExpanded: true,
+                underline: const SizedBox.shrink(),
+                dropdownColor: cs.primaryContainer,
+                style: t.titleSmall!.copyWith(color: cs.onPrimaryContainer),
+                iconEnabledColor: cs.onPrimaryContainer,
+                items: [
+                  DropdownMenuItem<String?>(value: null, child: Text(l.filterAll)),
+                  for (final e in branches.entries)
+                    DropdownMenuItem<String?>(value: e.key, child: Text(e.value)),
+                ],
+                onChanged: onBranchChanged,
+              ),
+            ),
+            const Spacer(),
+            IconButton(
+              icon: Badge(
+                isLabelVisible: notificationCount > 0,
+                label: Text(notificationCount.toString()),
+                child: const Icon(Icons.notifications_rounded),
+              ),
+              color: cs.onPrimaryContainer,
+              onPressed: onBellTap,
+              tooltip: l.navMe,
+            ),
+          ]),
+        ),
+      ),
     );
   }
 }
