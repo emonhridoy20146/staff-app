@@ -6,6 +6,7 @@ import '../../../../core/api/api_models.dart';
 import '../../../../core/db/app_database.dart';
 import '../../../../core/sync/sync_handlers.dart';
 import '../domain/customer.dart';
+import '../domain/phones.dart';
 import '../domain/schedule.dart';
 
 /// Pull handler for `customer` changes. Payload = contract `CustomerDetail`.
@@ -29,12 +30,14 @@ class CustomerPullHandler implements PullHandler {
     final branch = (d['branch'] as Json?) ?? const {};
     final branchName = branch['name'] == null ? null : I18nText.fromJson(branch['name']);
     final assignee = d['assignee'] as Json?;
-    final phones = <String>{if (d['phone'] != null) d['phone'] as String, ...((d['phones'] as List?) ?? const []).cast<String>()}.toList();
     final badges = ((d['badges'] as List?) ?? const []).cast<String>();
-    final search = normalizeSearch([name.bn, name.en ?? '', d['code'] ?? '', ...phones, d['address'] ?? ''].join(' '));
 
     // Keep locally-recorded pending amounts until the server confirms them.
     final existing = await (db.select(db.customers)..where((t) => t.serverId.equals(id))).getSingleOrNull();
+    // 1.23.0 (FR-M-037): ERP numbers and added ones; a number typed on this phone and not yet sent stays in the list.
+    final phoneList = keepPending(phonesFromServer(d), existing == null ? const [] : decodePhones(existing.phonesJson));
+    final phones = [for (final p in phoneList) p.number];
+    final search = normalizeSearch([name.bn, name.en ?? '', d['code'] ?? '', ...phones, d['address'] ?? ''].join(' '));
     final serverPending = (d['pendingFieldPoisha'] as num?)?.toInt() ?? 0;
 
     await db.into(db.customers).insertOnConflictUpdate(
@@ -44,7 +47,7 @@ class CustomerPullHandler implements PullHandler {
             code: (d['code'] as String?) ?? id,
             nameBn: name.bn,
             nameEn: Value(name.en),
-            phonesJson: Value(jsonEncode(phones)),
+            phonesJson: Value(encodePhones(phoneList)),
             address: Value(d['address'] as String?),
             areaId: Value(d['areaId'] as String?),
             areaName: Value(d['areaName'] as String?),

@@ -94,7 +94,7 @@ class FakeFieldApi implements HttpClientAdapter {
   };
 
   static const permissions = [
-    'branch.view', 'customer.view', 'customer.location.propose', 'tag.view', 'tag.set', //
+    'branch.view', 'customer.view', 'customer.location.propose', 'customer.phone.manage', 'tag.view', 'tag.set', //
     'collection.record', 'collection.view', 'cash.view', 'cash.deposit.record', 'assignment.view',
     'visit.record', 'visit.view', 'note.create', 'note.view', 'promise.create', 'promise.view',
     'attendance.record', 'leave.request', 'cowork.use', 'task.work',
@@ -847,6 +847,26 @@ class FakeFieldApi implements HttpClientAdapter {
                 ? {'sessionId': sid, 'participantIds': [for (final x in _members(s)) if (x['status'] == 'accepted' && x['userId'] != me) x['userId']]}
                 : null,
           });
+        }
+        if (entity == 'customer_phone') {
+          // Server rules (1.23.0): added numbers follow the ERP ones; a number already there is skipped.
+          final cid = payload['customerId'] as String;
+          final c = _customer(cid);
+          if (c != null) {
+            final details = <Json>[
+              ...((c['phoneDetails'] as List?)?.cast<Json>() ??
+                  [
+                    for (final (i, n) in <String>{if (c['phone'] != null) c['phone'] as String, ...((c['phones'] as List?) ?? const []).cast<String>()}.indexed)
+                      {'number': n, 'source': 'erp', 'primary': i == 0},
+                  ]),
+            ];
+            for (final p in ((payload['phones'] as List?) ?? const []).cast<Json>()) {
+              if (details.any((d) => d['number'] == p['number'])) continue;
+              details.add({'number': p['number'], 'source': 'field', 'primary': false, 'label': ?p['label'], 'addedBy': {'id': user['id'], 'name': _nameOf(user['id']! as String)}, 'addedAt': clock.nowUtc().toIso8601String()});
+            }
+            serverChange('customer', cid, {...c, 'phones': [for (final d in details) d['number']], 'phoneDetails': details});
+          }
+          r = {...r, 'entityId': cid};
         }
         if (entity == 'location_proposal') {
           // Server rules (1.11.0): a pin for a customer without a usable pin

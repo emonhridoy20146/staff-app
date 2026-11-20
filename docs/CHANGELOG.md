@@ -1,6 +1,14 @@
 # Changelog — staff-app
 
 ## [Unreleased]
+Contract pinned: field-api `openapi.yaml` **1.23.0** (1.22.0 → 1.23.0, additive: extra phone numbers; `docs/contract/openapi.yaml`). Needs field-api 1.23.0 on the server for adding numbers; everything else works with 1.22.0.
+### Added (owner request 2026-11-21: several phone numbers for a customer; FR-M-037, master FR-CUS-016)
+- **"নম্বর যোগ করুন" on the customer page** (permission `customer.phone.manage`): a sheet with one row per number (number + whose number) and "আরেকটি নম্বর", up to five added numbers per customer. Bangla digits, spaces, dashes and `+880` are accepted; a wrong number, one the customer already has, or one typed twice is named under its field.
+- **Works offline**: the numbers show on the customer at once with a cloud icon, and go to the server as one `customer_phone` mutation (id made once, kept on every retry). A pull never removes a number that is still waiting. A refused mutation takes its numbers off the list again and stays visible in Problems.
+- **Marks**: every ERP number says "ইআরপি" (the main one in the primary colour), every added one "যোগকৃত" with whose number it is. Before, the second and later numbers were all shown as "added", also when they came from the ERP.
+- Added numbers are kept by field-api only; nothing is written to the ERP. Calls are still logged by the number's index, and ERP numbers keep their places at the front.
+- No database change: `customers.phones_json` keeps ERP numbers as plain strings and stores an added one as `{n, s, l, p}`; older rows read unchanged.
+- Tests: `test/features/customer_phones_test.dart` (stored list, server shapes, pending kept across a pull, typing rules), `test/flows/customer_phone_flow_test.dart` (offline add → push → pull; nothing queued for numbers already there).
 ### Fixed (owner report 2026-11-21: a partly paid installment looked unpaid and the overdue under the list was wrong; FR-M-036)
 - **Installment lines on the customer page.** The row added the late fee to the line amount a second time (`amountPoisha` already includes it, contract `Plan.schedule[]`), so "left" was too high on lines with a late fee, and a partly paid line past its date lost its **Overdue** state (it was relabelled "partly paid" in the due-today colour). Now: left = amount − paid; a line past its date stays Overdue and shows "পরিশোধ X · বাকি Y" under the date; a line with nothing left is Paid.
 - **"N of M paid"** counts only lines with nothing left (a stale stored status no longer counts).

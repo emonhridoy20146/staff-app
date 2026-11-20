@@ -1522,6 +1522,36 @@
   "phoneErpPrimary": "ERP",
   "phoneAdded": "Added",
   "phoneAddNumber": "Add number",
+  "phoneAddTitle": "Add phone numbers",
+  "phoneAddHint": "You can add several numbers at once. The ERP number stays as it is.",
+  "phoneNumberN": "Number {n}",
+  "@phoneNumberN": {
+    "placeholders": {
+      "n": { "type": "String" }
+    }
+  },
+  "phoneWhose": "Whose number",
+  "phoneWhoseHint": "wife, shop, son",
+  "phoneDropRow": "Drop number {n}",
+  "@phoneDropRow": {
+    "placeholders": {
+      "n": { "type": "String" }
+    }
+  },
+  "phoneAnother": "Another number",
+  "phoneErrInvalid": "Enter a Bangladesh mobile number (01XXXXXXXXX)",
+  "phoneErrDuplicate": "The customer already has this number",
+  "phoneErrRepeated": "This number is typed twice",
+  "phoneErrEmpty": "Type at least one number",
+  "phoneKeptHere": "These numbers stay in the field system. They are not sent to the ERP.",
+  "phoneSave": "Save numbers",
+  "phoneSavedN": "Numbers added: {n}",
+  "@phoneSavedN": {
+    "placeholders": {
+      "n": { "type": "String" }
+    }
+  },
+  "phonePending": "Waiting to be sent to the server",
   "planRolledHidden": "{n} unpaid installments were moved to a later one in the ERP and are hidden",
   "@planRolledHidden": {
     "placeholders": {

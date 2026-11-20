@@ -3,6 +3,7 @@ import 'dart:convert';
 import '../../../../core/db/app_database.dart';
 import '../../../../core/location/location_engine.dart';
 import '../../../../core/theme/status_colors.dart';
+import 'phones.dart';
 
 /// Read model of a customer for lists, map and Today.
 class Customer {
@@ -26,7 +27,9 @@ class Customer {
   int get outstanding => row.totalOutstandingPoisha;
   int get overdueAmount => row.overduePoisha;
   int? get installment => row.installmentPoisha;
-  List<String> get phones => (jsonDecode(row.phonesJson) as List).cast<String>();
+  /// ERP numbers first, then the ones added in the field (FR-M-037).
+  List<CustomerPhone> get phoneList => decodePhones(row.phonesJson);
+  List<String> get phones => [for (final p in phoneList) p.number];
   bool get tagged => row.tagState == 'tagged';
 
   /// The guarantor from the ERP (name and phone), or null when the ERP has
