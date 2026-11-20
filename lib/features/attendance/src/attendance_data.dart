@@ -10,6 +10,7 @@ import '../../../core/db/app_database.dart';
 import '../../../core/location/location_engine.dart';
 import '../../../core/media/media.dart';
 import '../../../core/settings/ui_prefs.dart';
+import '../../../core/settings/duty_settings.dart';
 import '../../../core/sync/outbox.dart';
 import '../../../core/providers.dart';
 import '../../../core/sync/sync_handlers.dart';
@@ -182,12 +183,13 @@ Future<int> releaseHeldAttendance(AppDatabase db) =>
 
 final todayAttendanceProvider = StreamProvider<AttendanceDay>((ref) {
   final s = ref.watch(attendanceServiceProvider);
-  final settings = ref.watch(serverSettingsProvider);
+  // The branch's duty hours as the office set them (FR-M-047).
+  final duty = DutySettings.of(ref.watch(serverSettingsProvider));
   return s.watchToday().map((ev) => computeDay(
         ev,
         dhakaMidnightUtc: s.dhakaMidnightUtc(),
-        dutyStart: (settings['dutyStart'] as String?) ?? '09:00',
-        graceMin: (settings['lateGraceMin'] as num?)?.toInt() ?? 15,
+        dutyStart: duty.start,
+        graceMin: duty.lateGraceMin,
       ));
 });
 

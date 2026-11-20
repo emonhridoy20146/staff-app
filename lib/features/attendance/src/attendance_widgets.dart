@@ -9,6 +9,8 @@ import 'package:material_ui/material_ui.dart';
 import '../../../core/media/media.dart';
 import '../../../core/providers.dart';
 import '../../../core/settings/ui_prefs.dart';
+import '../../../core/time/clock.dart';
+import '../../../core/settings/duty_settings.dart';
 import '../../../core/theme/status_colors.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/ui/chips.dart';
@@ -113,7 +115,8 @@ class _DutyCardState extends ConsumerState<DutyCard> with WidgetsBindingObserver
     final day = ref.watch(todayAttendanceProvider).value;
     if (day == null) return const SizedBox.shrink();
     final now = ref.read(clockProvider).nowUtc();
-    final maxBreak = (ref.watch(serverSettingsProvider)['maxBreakMin'] as num?)?.toInt() ?? 60;
+    final duty = DutySettings.of(ref.watch(serverSettingsProvider));
+    final businessDate = ref.watch(clockProvider).businessDate();
 
     if (day.status == DayStatus.notStarted || day.status == DayStatus.offDuty) {
       return AppCard(
@@ -145,7 +148,9 @@ class _DutyCardState extends ConsumerState<DutyCard> with WidgetsBindingObserver
 
     final onBreak = day.status == DayStatus.onBreak;
     final br = day.openBreak;
-    final overBreak = onBreak && br != null && day.breakTotal(now).inMinutes > maxBreak;
+    final overBreak = onBreak &&
+        br != null &&
+        duty.overBreakMin([for (final b in day.breaks) (start: b.start, end: b.end)], businessDate: businessDate, dhakaMidnightUtc: businessDayStartUtc(businessDate), now: now) > 0;
     final tone = onBreak ? sem.warning : sem.success;
     return Column(
       children: [
@@ -491,7 +496,7 @@ class _WorkInScreenState extends ConsumerState<WorkInScreen> {
               Text(l.workInTitle, style: t.headlineSmall, textAlign: TextAlign.center),
               const SizedBox(height: Space.s4),
               Text(
-                '${f.date(today, withYear: true)} · ${f.num((settings['dutyStart'] as String?) ?? '09:00')}–${f.num((settings['dutyEnd'] as String?) ?? '18:00')}',
+                '${f.date(today, withYear: true)} · ${f.num(DutySettings.of(settings).start)}–${f.num(DutySettings.of(settings).end)}',
                 style: t.bodyLarge!.copyWith(color: cs.onSurfaceVariant),
                 textAlign: TextAlign.center,
               ),
