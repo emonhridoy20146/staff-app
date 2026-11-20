@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 Contract pinned: field-api `openapi.yaml` **1.24.0** (1.22.0 → 1.24.0, additive: 1.23.0 extra phone numbers, 1.24.0 this month on a customer and invoice counts; `docs/contract/openapi.yaml`). Needs field-api 1.23.0 on the server for adding numbers; everything else works with 1.22.0.
+### Added (owner request 2026-11-21: the bell shows what waits for me; FR-M-044)
+- **Notifications screen behind the bell** (`/alerts`): promises due today (customer name + amount), new tasks, co-work requests, unread notices from the office and handovers waiting for an answer. A tap opens the customer or the page that deals with it. Built from the phone's own data, so it works offline; the bell's number is the count of these items.
+- **The coloured top bar is now on every main tab for everyone**; with one branch it shows the branch name instead of a dropdown. The dropdown's first entry reads "সব শাখা / All branches". The bell used to open Me and count sync problems; those stay on the Me tab's badge.
+- Fixed: the four work marks ran 6 px over the edge on Today's narrow customer rows; they now scale down to fit.
+- New extension point `alertSources` on `FeatureManifest` (promises, tasks, cowork, notices, handovers register one each); `alertsProvider` joins them. No schema or contract change.
+- These are in-app notifications. Notifications on the phone while the app is closed need the Firebase project (owner decision D-1).
+
 ### Added (owner request 2026-11-21: confirm work done far from the customer; FR-M-043)
 - **Collecting or recording a visit far from the customer's pin asks first**: "আপনি গ্রাহকের পিন থেকে X দূরে আছেন। তবুও রেকর্ড করা যাবে; অফিস দূরত্বটি দেখতে পাবে।" with "ফিরে যান" and "তবুও রেকর্ড করুন". It never blocks (money taken at the shop or on the road must still be recorded). The visit screen already showed a warning line; the collect flow had nothing.
 - "Far" = outside the server's `geofenceRadiusM` (150 m until the server says). No fix or no pin: no question. The distance goes to the server with the record as before; field-api flags collections `far_from_pin`.

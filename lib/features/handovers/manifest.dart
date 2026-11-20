@@ -17,6 +17,15 @@ final handoversManifest = FeatureManifest(
   permissions: const [Perm.handoverRequest],
   routes: [GoRoute(path: '/handovers', builder: (_, _) => const HandoversScreen())],
   pullHandlers: [HandoverPullHandler()],
+  alertSources: [
+    AlertSourceDef(
+      id: 'handovers-pending',
+      read: (ref) => [
+        for (final h in ref.watch(pendingHandoversProvider))
+          AppAlert(id: 'handover/${h.serverId}', kind: AlertKind.handover, icon: Icons.swap_horiz_rounded, title: (l, f) => l.handoverFrom(h.fromUserName), subtitle: (l, f) => l.alertHandoverWaiting, route: '/handovers'),
+      ],
+    ),
+  ],
   todayCards: [TodayCardDef(id: 'handover-banner', order: 5, builder: (_) => const _HandoverBanner())],
   meEntries: [MeEntryDef(id: 'handovers', order: 30, builder: (_) => const _HandoverMeEntry())],
 );

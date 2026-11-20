@@ -2,6 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../l10n/app_localizations.dart';
+import '../settings/ui_prefs.dart';
 import '../sync/sync_handlers.dart';
 
 /// Context passed to customer-action builders (extension point).
@@ -104,6 +106,35 @@ class WorkLogSourceDef {
   final Stream<List<WorkLogEntry>> Function(BuildContext context, WidgetRef ref, String businessDate) watch;
 }
 
+/// What an alert is about (its icon colour).
+enum AlertKind { promise, task, cowork, notice, handover }
+
+/// Something that waits for the signed-in user (FR-M-044): a promise due
+/// today, a new task, a co-work request, an unread notice, a handover.
+/// Shown on the alerts screen behind the bell; the bell counts them.
+class AppAlert {
+  const AppAlert({required this.id, required this.kind, required this.icon, required this.title, this.subtitle, this.route, this.customerId});
+  final String id;
+  final AlertKind kind;
+  final IconData icon;
+
+  /// Built when shown, so it follows the language and the digit style.
+  final String Function(AppLocalizations l, Fmt f) title;
+  final String Function(AppLocalizations l, Fmt f)? subtitle;
+
+  /// Where a tap goes; a [customerId] opens that customer instead.
+  final String? route;
+  final String? customerId;
+}
+
+/// Extension point: a feature lists what waits for the user, from its own
+/// providers (it may `watch` them through [ref], so the list stays live).
+class AlertSourceDef {
+  const AlertSourceDef({required this.id, required this.read});
+  final String id;
+  final List<AppAlert> Function(Ref ref) read;
+}
+
 /// Feature module manifest (04-architecture §3). Each feature folder
 /// `lib/features/<name>/` exports exactly one manifest from its barrel and
 /// is listed once in `lib/app/features.dart`.
@@ -120,6 +151,7 @@ class FeatureManifest {
     this.meEntries = const [],
     this.timelineSources = const [],
     this.workLogSources = const [],
+    this.alertSources = const [],
   });
 
   final String name;
@@ -137,9 +169,17 @@ class FeatureManifest {
   final List<MeEntryDef> meEntries;
   final List<TimelineSourceDef> timelineSources;
   final List<WorkLogSourceDef> workLogSources;
+  final List<AlertSourceDef> alertSources;
 }
 
 /// The registered manifests (overridden at bootstrap from
 /// `lib/app/features.dart`). Read by shells / screens that render
 /// extension points.
 final featureManifestsProvider = Provider<List<FeatureManifest>>((ref) => const []);
+
+/// Everything that waits for the user, from every feature (the bell's count
+/// and the alerts screen).
+final alertsProvider = Provider<List<AppAlert>>((ref) => [
+      for (final m in ref.watch(featureManifestsProvider))
+        for (final s in m.alertSources) ...s.read(ref),
+    ]);

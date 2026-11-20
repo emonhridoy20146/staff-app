@@ -1,4 +1,5 @@
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart' show Icons;
 
 import '../../core/feature/feature_manifest.dart';
 import 'src/notices_data.dart';
@@ -16,6 +17,15 @@ final noticesManifest = FeatureManifest(
   ],
   pullHandlers: [BroadcastPullHandler()],
   pushHandlers: [BroadcastAckPushHandler()],
+  alertSources: [
+    AlertSourceDef(
+      id: 'notices-unread',
+      read: (ref) => [
+        for (final n in ref.watch(unreadNoticesProvider))
+          AppAlert(id: 'notice/${n.id}', kind: AlertKind.notice, icon: Icons.campaign_rounded, title: (l, f) => n.title(l.localeName), subtitle: (l, f) => n.mustRead ? l.alertNoticeMustRead : l.alertNoticeUnread, route: '/notices/${n.id}'),
+      ],
+    ),
+  ],
   todayCards: [TodayCardDef(id: 'notices', order: 0, builder: (_) => const NoticesTodayBanner())],
   meEntries: [MeEntryDef(id: 'notices', order: 6, builder: (_) => const NoticesMeEntry())],
 );

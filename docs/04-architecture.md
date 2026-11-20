@@ -50,6 +50,7 @@ class FeatureManifest {
   final List<CustomerActionDef> customerActions; // extension point: buttons on customer detail
   final List<TodayCardDef> todayCards;            // extension point: cards on Today
   final List<WorkLogSourceDef> workLogSources;    // extension point: the user's own work of a day (Today's Work)
+  final List<AlertSourceDef> alertSources;        // extension point: what waits for the user (the bell, FR-M-044)
 }
 ```
 

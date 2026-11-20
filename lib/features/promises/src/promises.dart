@@ -68,6 +68,13 @@ Stream<List<PromiseRow>> watchPromisesFor(WidgetRef ref, String customerId) {
   return (db.select(db.promises)..where((t) => t.customerId.equals(customerId))..orderBy([(t) => OrderingTerm.desc(t.createdAt)])..limit(10)).watch();
 }
 
+/// Open promises that fall due today (FR-M-044): the bell lists them.
+final promisesDueTodayProvider = StreamProvider<List<PromiseRow>>((ref) {
+  final db = ref.watch(databaseProvider);
+  final today = ref.watch(clockProvider).businessDate();
+  return (db.select(db.promises)..where((t) => t.status.equals('open') & t.promisedDate.equals(today))).watch();
+});
+
 /// Promises created today by me (end-of-day summary).
 final todayPromiseCountProvider = StreamProvider<int>((ref) {
   final db = ref.watch(databaseProvider);

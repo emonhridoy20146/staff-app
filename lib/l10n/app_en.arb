@@ -1559,6 +1559,31 @@
     }
   },
   "phonePending": "Waiting to be sent to the server",
+  "alertsTitle": "Notifications",
+  "alertsEmptyTitle": "Nothing is waiting for you",
+  "alertsEmptyBody": "Promises due today, new tasks, co-work requests and notices from the office show here.",
+  "alertPromiseToday": "Promised {amount} for today",
+  "@alertPromiseToday": {
+    "placeholders": {
+      "amount": { "type": "String" }
+    }
+  },
+  "alertNewTask": "New task: {title}",
+  "@alertNewTask": {
+    "placeholders": {
+      "title": { "type": "String" }
+    }
+  },
+  "alertCoworkInvite": "{name} asks you to work together",
+  "@alertCoworkInvite": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "alertNoticeUnread": "Notice from the office, not read yet",
+  "alertNoticeMustRead": "Notice from the office: please confirm you read it",
+  "alertHandoverWaiting": "Handover waiting for your answer",
+  "filterAllBranches": "All branches",
   "farTitle": "Far from the customer's pin",
   "farBody": "You are {distance} from the customer's pin. You can still record it; the office will see the distance.",
   "@farBody": {

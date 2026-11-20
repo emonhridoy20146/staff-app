@@ -35,7 +35,10 @@ void main() {
   testWidgets('Today shows the new task, the list and the detail follow, and "done" with a note is saved for the office', (t) async {
     final h = await start(t, seed: (h) => h.api.addTask('tk-1', title: 'গুদাম থেকে ফ্রিজ আনুন', note: 'রসিদ সাথে রাখবেন', dueDate: '2026-11-20'));
 
-    // Today: one open and new task → the banner names the new ones.
+    // Today: one open and new task → the banner names the new ones. The top
+    // bar (FR-M-044) moved the cards down, so scroll to it first.
+    await t.dragUntilVisible(find.textContaining('অফিস থেকে নতুন কাজ'), find.byType(FieldApp), const Offset(0, -200));
+    await settle(t);
     expect(find.textContaining('অফিস থেকে নতুন কাজ'), findsOneWidget);
 
     // Me → tasks entry with the count.

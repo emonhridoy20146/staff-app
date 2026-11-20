@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../core/feature/feature_manifest.dart';
 import '../core/providers.dart';
 import '../core/settings/ui_prefs.dart';
 import '../core/theme/app_theme.dart';
@@ -28,19 +29,24 @@ class AppShell extends ConsumerWidget {
     final branches = ref.watch(branchListProvider);
     final selectedBranch = ref.watch(selectedBranchIdProvider);
     final showBranchBar = branches.length > 1;
+    // FR-M-044: what waits for me, counted on the bell (shown also with one branch).
+    final alertCount = ref.watch(alertsProvider).length;
 
     final scaffold = Scaffold(
       body: Column(
         children: [
-          if (showBranchBar)
-            _BranchBar(
-              branches: branches,
-              selectedBranch: selectedBranch,
-              notificationCount: meBadge,
-              onBranchChanged: (v) => ref.read(selectedBranchIdProvider.notifier).state = v,
-              onBellTap: () => context.go('/me'),
-            ),
-          Expanded(child: shell),
+          _BranchBar(
+            branches: branches,
+            selectedBranch: selectedBranch,
+            pickBranch: showBranchBar,
+            notificationCount: alertCount,
+            countLabel: f.num(alertCount),
+            onBranchChanged: (v) => ref.read(selectedBranchIdProvider.notifier).state = v,
+            onBellTap: () => context.push('/alerts'),
+          ),
+          // The bar above already sits below the status bar; without this the
+          // screens' own app bars would leave that gap a second time.
+          Expanded(child: MediaQuery.removePadding(context: context, removeTop: true, child: shell)),
         ],
       ),
       bottomNavigationBar: Column(mainAxisSize: MainAxisSize.min, children: [
@@ -103,14 +109,22 @@ class _BranchBar extends StatelessWidget {
   const _BranchBar({
     required this.branches,
     required this.selectedBranch,
+    required this.pickBranch,
     required this.notificationCount,
+    required this.countLabel,
     required this.onBranchChanged,
     required this.onBellTap,
   });
 
   final Map<String, String> branches;
   final String? selectedBranch;
+
+  /// More than one branch: the name is a dropdown. One branch: plain text.
+  final bool pickBranch;
   final int notificationCount;
+
+  /// The count in the user's digits.
+  final String countLabel;
   final ValueChanged<String?> onBranchChanged;
   final VoidCallback onBellTap;
 
@@ -132,31 +146,37 @@ class _BranchBar extends StatelessWidget {
             // 2/3 of remaining width
             Expanded(
               flex: 2,
-              child: DropdownButton<String?>(
-                value: selectedBranch,
-                isExpanded: true,
-                underline: const SizedBox.shrink(),
-                dropdownColor: cs.primaryContainer,
-                style: t.titleSmall!.copyWith(color: cs.onPrimaryContainer),
-                iconEnabledColor: cs.onPrimaryContainer,
-                items: [
-                  DropdownMenuItem<String?>(value: null, child: Text(l.filterAll)),
-                  for (final e in branches.entries)
-                    DropdownMenuItem<String?>(value: e.key, child: Text(e.value)),
-                ],
-                onChanged: onBranchChanged,
-              ),
+              child: pickBranch
+                  ? DropdownButton<String?>(
+                      value: selectedBranch,
+                      isExpanded: true,
+                      underline: const SizedBox.shrink(),
+                      dropdownColor: cs.primaryContainer,
+                      style: t.titleSmall!.copyWith(color: cs.onPrimaryContainer),
+                      iconEnabledColor: cs.onPrimaryContainer,
+                      items: [
+                        DropdownMenuItem<String?>(value: null, child: Text(l.filterAllBranches)),
+                        for (final e in branches.entries) DropdownMenuItem<String?>(value: e.key, child: Text(e.value)),
+                      ],
+                      onChanged: onBranchChanged,
+                    )
+                  : Text(
+                      branches.values.firstOrNull ?? '',
+                      style: t.titleSmall!.copyWith(color: cs.onPrimaryContainer),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
             ),
             const Spacer(),
             IconButton(
               icon: Badge(
                 isLabelVisible: notificationCount > 0,
-                label: Text(notificationCount.toString()),
+                label: Text(countLabel),
                 child: const Icon(Icons.notifications_rounded),
               ),
               color: cs.onPrimaryContainer,
               onPressed: onBellTap,
-              tooltip: l.navMe,
+              tooltip: l.alertsTitle,
             ),
           ]),
         ),

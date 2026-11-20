@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 
+import '../../core/db/app_database.dart' show PromiseRow;
 import '../../core/feature/feature_manifest.dart';
 import '../../core/permissions/permission_service.dart';
 import '../../core/settings/ui_prefs.dart';
@@ -22,6 +23,15 @@ final promisesManifest = FeatureManifest(
       icon: Icons.handshake_rounded,
       label: (c) => AppLocalizations.of(c).actionPromise,
       onTap: (c, ref, x) => showPromiseSheet(c, x.customerId),
+    ),
+  ],
+  alertSources: [
+    AlertSourceDef(
+      id: 'promises-today',
+      read: (ref) => [
+        for (final p in ref.watch(promisesDueTodayProvider).value ?? const <PromiseRow>[])
+          AppAlert(id: 'promise/${p.clientId}', kind: AlertKind.promise, icon: Icons.handshake_rounded, title: (l, f) => l.alertPromiseToday(f.money(p.promisedAmountPoisha)), customerId: p.customerId),
+      ],
     ),
   ],
   workLogSources: const [WorkLogSourceDef(id: 'promises', watch: watchPromiseWorkLog)],
