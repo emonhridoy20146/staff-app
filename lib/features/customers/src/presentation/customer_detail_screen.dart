@@ -264,7 +264,7 @@ class _Header extends ConsumerWidget {
             runSpacing: Space.s8,
             children: [
               for (final b in badges)
-                StatusBadge(b, label: b == AppStatus.overdue ? l.statusOverdueDays(f.num(customer.row.daysOverdue)) : null),
+                StatusBadge(b, label: b == AppStatus.overdue ? l.statusOverdueDays(f.daySpan(customer.row.daysOverdue)) : null),
               if (customer.erpRisk != null) _ErpRiskChip(risk: customer.erpRisk!),
             ],
           ),

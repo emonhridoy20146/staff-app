@@ -55,6 +55,26 @@ String formatDurationShort(Duration d, String lang, DigitStyle digits) {
   return localizeDigits(s, digits);
 }
 
+/// A count of days as a span people can read (FR-M-039): its two largest
+/// units of years, months and days. 20 → `২০ দিন` / `20 days`; 45 →
+/// `১ মাস ১৫ দিন`; 584 → `১ বছর ৭ মাস`. A month is 30 days and a year 365
+/// here (the count has no start date): it says how long, it is never used to
+/// work out a date.
+String formatDaySpan(int days, String lang, DigitStyle digits) {
+  final total = days < 0 ? 0 : days;
+  final y = total ~/ 365;
+  final m = (total % 365) ~/ 30;
+  final d = (total % 365) % 30;
+  final bn = lang == 'bn';
+  String unit(int n, String one, String many, String bnWord) => '$n ${bn ? bnWord : (n == 1 ? one : many)}';
+  final parts = [
+    if (y > 0) unit(y, 'year', 'years', 'বছর'),
+    if (m > 0) unit(m, 'month', 'months', 'মাস'),
+    if (d > 0) unit(d, 'day', 'days', 'দিন'),
+  ];
+  return localizeDigits(parts.isEmpty ? unit(0, 'day', 'days', 'দিন') : parts.take(2).join(' '), digits);
+}
+
 /// Distance like `৪৮০ মি` / `1.2 কিমি`.
 String formatDistance(int meters, String lang, DigitStyle digits) {
   final s = meters < 1000

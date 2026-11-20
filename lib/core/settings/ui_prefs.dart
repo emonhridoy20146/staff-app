@@ -88,6 +88,12 @@ class Fmt {
   }
 
   String duration(Duration d) => formatDurationShort(d, lang, digits);
+
+  /// Minutes as hours and minutes (`১ ঘ ২০ মি`).
+  String minutes(int min) => formatDurationShort(Duration(minutes: min < 0 ? 0 : min), lang, digits);
+
+  /// A count of days as years, months and days (`১ বছর ৭ মাস`).
+  String daySpan(int days) => formatDaySpan(days, lang, digits);
   String distance(int m) => formatDistance(m, lang, digits);
 }
 

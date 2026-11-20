@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 Contract pinned: field-api `openapi.yaml` **1.24.0** (1.22.0 → 1.24.0, additive: 1.23.0 extra phone numbers, 1.24.0 this month on a customer and invoice counts; `docs/contract/openapi.yaml`). Needs field-api 1.23.0 on the server for adding numbers; everything else works with 1.22.0.
+### Changed (owner request 2026-11-21: hours and minutes, years / months / days; FR-M-039)
+- A count of days is shown as its two largest units (`Fmt.daySpan`): the overdue badge says "১ বছর ৭ মাস বকেয়া" for 584 days, "১ মাস ১৫ দিন বকেয়া" for 45, "২০ দিন বকেয়া" for 20 (a month is 30 days, a year 365; never used to work out a date).
+- Minutes are shown as hours and minutes (`Fmt.minutes`): late time on Me and in the attendance hub ("১ ঘ ২০ মি দেরি"), the visit suggestion, and the shift's late grace and break limit.
+- Tests: `test/core/spans_test.dart`.
 ### Added (owner request 2026-11-21: who has been dealt with this month; FR-M-038, master FR-CUS-017)
 - **Four work marks on every customer row, in every filter**: visited (today / this month), money (in the ERP this month / collected and still waiting for the ERP), open promise, and map pin set or missing. On = status colour and icon, off = grey outline; each has its meaning in words for TalkBack. They replace the two small dots on the avatar (which only said "visited today" and "promise today").
 - **"এ মাসে" card on the customer page**: visited today or the last visit date, money in the ERP this month, money still pending in ERP on its own line (never one sum), the open promise, and "ইনভয়েস Nটি · বাকি আছে Mটি".

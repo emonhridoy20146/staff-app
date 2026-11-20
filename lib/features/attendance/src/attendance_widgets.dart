@@ -289,7 +289,7 @@ class AttendanceCard extends ConsumerWidget {
             children: [
               if (day.firstIn != null) _Fact(icon: Icons.login_rounded, text: l.meInToday(f.time(day.firstIn!))),
               _Fact(icon: Icons.coffee_rounded, text: l.meBreakTotal(f.duration(day.breakTotal(now)))),
-              if (day.lateMin > 0) _Fact(icon: Icons.schedule_rounded, text: l.meLate(f.num(day.lateMin)), color: context.semanticColors.warning.fg),
+              if (day.lateMin > 0) _Fact(icon: Icons.schedule_rounded, text: l.meLate(f.minutes(day.lateMin)), color: context.semanticColors.warning.fg),
             ],
           ),
           const SizedBox(height: Space.s12),

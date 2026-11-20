@@ -977,7 +977,7 @@ abstract class AppLocalizations {
   /// No description provided for @statusOverdueDays.
   ///
   /// In en, this message translates to:
-  /// **'{days} days overdue'**
+  /// **'{days} overdue'**
   String statusOverdueDays(String days);
 
   /// No description provided for @statusDueToday.
@@ -1805,7 +1805,7 @@ abstract class AppLocalizations {
   /// No description provided for @meLate.
   ///
   /// In en, this message translates to:
-  /// **'Late {minutes} min'**
+  /// **'Late {minutes}'**
   String meLate(String minutes);
 
   /// No description provided for @cashOnHand.
@@ -2243,7 +2243,7 @@ abstract class AppLocalizations {
   /// No description provided for @attHubLateWarning.
   ///
   /// In en, this message translates to:
-  /// **'Late by {minutes} min'**
+  /// **'Late by {minutes}'**
   String attHubLateWarning(String minutes);
 
   /// No description provided for @attHubAbsenceStreak.
@@ -2858,7 +2858,7 @@ abstract class AppLocalizations {
   /// No description provided for @visitSuggestBody.
   ///
   /// In en, this message translates to:
-  /// **'You have been here {minutes} min. Record a visit?'**
+  /// **'You have been here {minutes}. Record a visit?'**
   String visitSuggestBody(String minutes);
 
   /// No description provided for @visitSuggestNo.
@@ -3944,7 +3944,7 @@ abstract class AppLocalizations {
   /// No description provided for @calendarLateGrace.
   ///
   /// In en, this message translates to:
-  /// **'Late after {grace} min · break {brk} min'**
+  /// **'Late after {grace} · break {brk}'**
   String calendarLateGrace(String grace, String brk);
 
   /// No description provided for @calendarMyLeave.

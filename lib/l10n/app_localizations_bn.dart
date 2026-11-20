@@ -503,7 +503,7 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String statusOverdueDays(String days) {
-    return '$days দিন বকেয়া';
+    return '$days বকেয়া';
   }
 
   @override
@@ -960,7 +960,7 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String meLate(String minutes) {
-    return '$minutes মিনিট দেরি';
+    return '$minutes দেরি';
   }
 
   @override
@@ -1198,7 +1198,7 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String attHubLateWarning(String minutes) {
-    return '$minutes মিনিট দেরি';
+    return '$minutes দেরি';
   }
 
   @override
@@ -1591,7 +1591,7 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String visitSuggestBody(String minutes) {
-    return '$minutes মিনিট ধরে এখানে আছেন। ভিজিট রেকর্ড করবেন?';
+    return '$minutes ধরে এখানে আছেন। ভিজিট রেকর্ড করবেন?';
   }
 
   @override
@@ -2221,7 +2221,7 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String calendarLateGrace(String grace, String brk) {
-    return '$grace মিনিট পর্যন্ত দেরি ধরা হয় না · বিরতি $brk মিনিট';
+    return '$grace পর্যন্ত দেরি ধরা হয় না · বিরতি $brk';
   }
 
   @override

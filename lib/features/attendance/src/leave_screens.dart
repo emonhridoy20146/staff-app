@@ -449,7 +449,7 @@ class _WorkCalendarScreenState extends ConsumerState<WorkCalendarScreen> {
                     shift.weeklyOff.isEmpty ? l.calendarNoWeeklyOff : l.calendarWeeklyOff(shift.weeklyOff.map((d) => weekdayName(l, d)).join(', ')),
                     style: t.bodyMedium,
                   ),
-                  Text(l.calendarLateGrace(f.num(shift.lateGraceMin), f.num(shift.maxBreakMin)), style: t.bodySmall!.copyWith(color: cs.onSurfaceVariant)),
+                  Text(l.calendarLateGrace(f.minutes(shift.lateGraceMin), f.minutes(shift.maxBreakMin)), style: t.bodySmall!.copyWith(color: cs.onSurfaceVariant)),
                 ]),
               ),
             if (approved.isNotEmpty) ...[

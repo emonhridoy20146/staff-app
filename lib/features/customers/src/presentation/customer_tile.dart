@@ -87,7 +87,7 @@ class CustomerTile extends ConsumerWidget {
                             StatusBadge(
                               b,
                               dense: true,
-                              label: b == AppStatus.overdue ? l.statusOverdueDays(f.num(customer.row.daysOverdue)) : null,
+                              label: b == AppStatus.overdue ? l.statusOverdueDays(f.daySpan(customer.row.daysOverdue)) : null,
                             ),
                         ],
                       ),
