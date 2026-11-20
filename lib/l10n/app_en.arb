@@ -701,7 +701,14 @@
   "@attHubLateWarning": {
     "placeholders": { "minutes": { "type": "String" } }
   },
-  "attHubAbsenceStreak": "Counts as absence (2 consecutive late days)",
+  "attHubAbsenceStreak": "Counts as an absent day (every 2 late days = 1)",
+  "attHubLateMonth": "Late on {late} days this month · counted as {absent} absent",
+  "@attHubLateMonth": {
+    "placeholders": {
+      "late": { "type": "String" },
+      "absent": { "type": "String" }
+    }
+  },
   "attHubNoHistory": "No attendance history yet",
   "attHubStatusOnDuty": "On duty",
   "attHubStatusOnBreak": "On break",

@@ -63,3 +63,4 @@ System-wide ADRs and open decisions: `field-api/docs/08-decisions.md` (notably A
 | OD-M04 | Certificate pinning | Off at launch (rotation risk); revisit after 3 months |
 | OD-M05 | Allow managers to use the app | Yes, same app, role-based UI |
 | OD-M06 | Background location plugin (free geolocator + own foreground service vs. paid licence) | **Decided:** free now; paid switchable from admin settings once a build includes it (ADR-M11) |
+| OD-M07 | How many late days count as one absent day, and is it per calendar month? | **Default: 2 late days = 1 absent day, per Dhaka month** (owner rule 2026-11-21, FR-M-040). Fixed on the phone for now; to become a server setting with the payroll rules (field-api, work plan 7.2) |
