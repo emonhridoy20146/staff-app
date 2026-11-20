@@ -1,7 +1,14 @@
 # Changelog — staff-app
 
 ## [Unreleased]
-Contract pinned: field-api `openapi.yaml` **1.24.0** (1.22.0 → 1.24.0, additive: 1.23.0 extra phone numbers, 1.24.0 this month on a customer and invoice counts; `docs/contract/openapi.yaml`). Needs field-api 1.23.0 on the server for adding numbers; everything else works with 1.22.0.
+Contract pinned: field-api `openapi.yaml` **1.26.0** (1.22.0 → 1.26.0, additive: 1.23.0 extra phone numbers, 1.24.0 this month on a customer and invoice counts, 1.25.0 duty hours per branch with break windows, overtime and late absences, 1.26.0 the collection board; `docs/contract/openapi.yaml`). The collection board needs the server at 1.26.0; on an older server its tab says it could not be loaded and the branch ranking still works. Adding phone numbers needs 1.23.0; break windows and the late-days setting need 1.25.0; everything else works with 1.22.0.
+### Added (owner request 2026-11-21: one board for everyone, verified money, month and all time, a crown; FR-M-048, field-api FR-REP-007)
+- **"আদায় বোর্ড" is the first tab of the leaderboard**: everyone who collected, in every branch, ranked by the collections the ERP has accepted. "এই মাস" and "সর্বকালের" switch the period. Money still waiting for the ERP is not counted (said under the list).
+- **First place wears a crown** (people who are level share it). A manager or an admin who collects is on the board with their role named, ranked by collections alone.
+- My place and my verified amount are on top; my row is highlighted; people with nothing verified yet are listed below without a rank.
+- The earlier board (my branch, today / this month, four measures) is the second tab, "শাখার র‍্যাঙ্ক", unchanged.
+- Shown when the office turns on "Field staff can see the leaderboard" for the branch, as before. The office can narrow the board to the own branch (`reports.leaderboardScope`).
+- Online only. Tests in `test/flows/targets_reports_test.dart`; demo data in the fake API.
 ### Fixed (2026-11-21: the phone follows the office's duty settings; FR-M-047, field-api contract 1.25.0)
 - **The app read setting names the server never sends** (`dutyStart`, `dutyEnd`, `lateGraceMin`, `maxBreakMin`, `geofenceRadiusM`, `cashBlockOverLimit`), so with the live server it always used 09:00–18:00, 15 minutes grace, 60 minutes break, 150 m and "warn only", whatever the office had set. It now reads the server's own keys: `attendance.defaultShift` (per branch), `collections.geofenceM`, `cash.limitMode`, `attendance.lateDaysPerAbsent`. The old names are kept as a fallback.
 - **Friday break window**: break time inside the branch's window of the day (e.g. Friday 12:30–15:30) is not counted against the break limit; the "break too long" warning uses the same rule as the server.

@@ -147,6 +147,14 @@ class FieldApi {
         (d) => d as Json,
       );
 
+  /// The collection board (1.26.0, FR-REP-007): everyone who collected,
+  /// ranked by money the ERP has accepted, for a month or all time; 403
+  /// unless the leaderboard is visible to staff.
+  Future<Json> collectionBoard({required String period, String? month}) => _call(
+        () => _dio.get<dynamic>('/reports/collection-board', queryParameters: {'period': period, 'month': ?month}),
+        (d) => d as Json,
+      );
+
   // ── leave, holidays, my shift (1.12.0) — online (ADR-M08 exception):
   // the server checks overlaps and tells the manager; answers are cached.
 

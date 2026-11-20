@@ -70,6 +70,52 @@ void main() {
     expect(err2, ReportError.offline);
   });
 
+  test('collection board: verified money of everyone, a manager included, the crown on first place, month and all time (FR-M-048)', () async {
+    await h.signIn();
+    final svc = h.read(reportsServiceProvider);
+    final (board, err) = await svc.collectionBoard(allTime: false);
+    expect(err, isNull);
+    expect(board!.allBranches, isTrue);
+    expect(board.month, h.clock.businessDate().substring(0, 7));
+    // two people level on top share rank 1 and the crown; the next is third
+    expect(board.ranked.map((r) => r.rank), [1, 1, 3, 4]);
+    expect(board.ranked.where((r) => r.crowned).map((r) => r.employeeCode).toSet(), {'FS020', 'BM002'});
+    expect(board.ranked.firstWhere((r) => r.employeeCode == 'BM002').isFieldStaff, isFalse);
+    expect([board.myRank, board.of, board.myPostedPoisha], [3, 4, 4150000]);
+    final me = board.ranked.singleWhere((r) => r.me);
+    expect([me.employeeCode, me.postedPoisha, me.count, me.crowned], ['FS014', 4150000, 54, false]);
+    expect(board.unranked.single.employeeCode, 'FS023');
+    expect(board.ranked.first.nameOf('en'), isNot(board.ranked.first.nameOf('bn')));
+
+    final (all, _) = await svc.collectionBoard(allTime: true);
+    expect(all!.month, isNull);
+    expect(all.myPostedPoisha, 4150000 * 9);
+
+    h.api.leaderboardVisible = false;
+    final (hidden, err2) = await svc.collectionBoard(allTime: false);
+    expect(hidden, isNull);
+    expect(err2, ReportError.hidden);
+    h.api.offline = true;
+    expect((await svc.collectionBoard(allTime: false)).$2, ReportError.offline);
+  });
+
+  test('collection board: a server answer with missing parts still reads', () {
+    final b = CollectionBoard.fromJson(const {
+      'period': 'all',
+      'scope': 'branch',
+      'items': [
+        {'userId': 'u1', 'name': 'শুধু নাম', 'rank': 1, 'postedPoisha': 500},
+        {'userId': 'u2', 'name': {'bn': 'বাংলা'}, 'rank': null},
+      ],
+      'me': null,
+    });
+    expect(b.allBranches, isFalse);
+    expect([b.myRank, b.of, b.month], [null, null, null]);
+    expect(b.ranked.single.nameOf('en'), 'শুধু নাম');
+    expect(b.unranked.single.nameOf('en'), 'বাংলা');
+    expect([b.unranked.single.role, b.unranked.single.postedPoisha, b.unranked.single.count], ['field_staff', 0, 0]);
+  });
+
   test('leaderboard: ties share a rank, too few days present are not ranked, hidden unless the admin allows it', () async {
     await h.signIn();
     final svc = h.read(reportsServiceProvider);

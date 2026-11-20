@@ -4295,6 +4295,90 @@ abstract class AppLocalizations {
   /// **'Waiting to be sent to the server'**
   String get phonePending;
 
+  /// No description provided for @boardTabCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'Collection board'**
+  String get boardTabCollection;
+
+  /// No description provided for @boardTabBranch.
+  ///
+  /// In en, this message translates to:
+  /// **'Branch ranking'**
+  String get boardTabBranch;
+
+  /// No description provided for @boardAllTime.
+  ///
+  /// In en, this message translates to:
+  /// **'All time'**
+  String get boardAllTime;
+
+  /// No description provided for @boardMyRank.
+  ///
+  /// In en, this message translates to:
+  /// **'You are {rank} of {of} · verified {amount}'**
+  String boardMyRank(String rank, String of, String amount);
+
+  /// No description provided for @boardNotRankedMe.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing of yours is verified in this period yet.'**
+  String get boardNotRankedMe;
+
+  /// No description provided for @boardCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} collections'**
+  String boardCount(String n);
+
+  /// No description provided for @boardRoleManager.
+  ///
+  /// In en, this message translates to:
+  /// **'Manager'**
+  String get boardRoleManager;
+
+  /// No description provided for @boardRoleAdmin.
+  ///
+  /// In en, this message translates to:
+  /// **'Admin'**
+  String get boardRoleAdmin;
+
+  /// No description provided for @boardRoleOffice.
+  ///
+  /// In en, this message translates to:
+  /// **'Office'**
+  String get boardRoleOffice;
+
+  /// No description provided for @boardNoPosted.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing verified yet'**
+  String get boardNoPosted;
+
+  /// No description provided for @boardEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Nobody has a verified collection in this period yet.'**
+  String get boardEmpty;
+
+  /// No description provided for @boardFootnoteAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Only collections the ERP has accepted are counted; money still waiting for the ERP is not. Every branch is on this board.'**
+  String get boardFootnoteAll;
+
+  /// No description provided for @boardFootnoteBranch.
+  ///
+  /// In en, this message translates to:
+  /// **'Only collections the ERP has accepted are counted; money still waiting for the ERP is not. This board shows your branch.'**
+  String get boardFootnoteBranch;
+
+  /// No description provided for @boardCrown.
+  ///
+  /// In en, this message translates to:
+  /// **'First place'**
+  String get boardCrown;
+
   /// No description provided for @alertsTitle.
   ///
   /// In en, this message translates to:

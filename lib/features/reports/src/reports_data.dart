@@ -167,6 +167,70 @@ class Leaderboard {
   List<LeaderRow> get unranked => [for (final r in rows) if (r.rank == null) r];
 }
 
+/// One person on the collection board (contract 1.26.0, FR-M-048).
+class BoardRow {
+  const BoardRow({required this.userId, required this.name, required this.employeeCode, required this.role, required this.postedPoisha, required this.count, this.rank, this.me = false});
+  factory BoardRow.fromJson(Json j) => BoardRow(
+        userId: j['userId'] as String,
+        name: I18nText.fromJson(j['name'] ?? '—'),
+        employeeCode: (j['employeeCode'] as String?) ?? '',
+        role: (j['role'] as String?) ?? 'field_staff',
+        postedPoisha: (j['postedPoisha'] as num?)?.toInt() ?? 0,
+        count: (j['count'] as num?)?.toInt() ?? 0,
+        rank: (j['rank'] as num?)?.toInt(),
+        me: (j['me'] as bool?) ?? false,
+      );
+  final String userId;
+  final I18nText name;
+  final String employeeCode;
+
+  /// `field_staff`, `branch_manager`, `super_admin`, …: a manager or an
+  /// admin who collects is ranked by collections alone.
+  final String role;
+
+  /// Field collections of the person that the ERP has accepted in the
+  /// period. Money still pending in the ERP is not in it.
+  final int postedPoisha;
+  final int count;
+
+  /// null = nothing posted in the period; equal amounts share a rank.
+  final int? rank;
+  final bool me;
+
+  /// The crown goes to rank 1 (several people when they are level).
+  bool get crowned => rank == 1;
+  bool get isFieldStaff => role == 'field_staff';
+  String nameOf(String lang) => lang == 'en' && (name.en?.isNotEmpty ?? false) ? name.en! : name.bn;
+}
+
+/// The collection board: verified money per collector, for a month or for
+/// all time, across every branch unless the office narrowed it.
+class CollectionBoard {
+  const CollectionBoard({required this.rows, required this.allBranches, this.month, this.myRank, this.of, this.myPostedPoisha});
+  factory CollectionBoard.fromJson(Json j) {
+    final me = j['me'] as Json?;
+    return CollectionBoard(
+      rows: [for (final r in (j['items'] as List?) ?? const []) BoardRow.fromJson(r as Json)],
+      allBranches: j['scope'] != 'branch',
+      month: j['month'] as String?,
+      myRank: (me?['rank'] as num?)?.toInt(),
+      of: (me?['of'] as num?)?.toInt(),
+      myPostedPoisha: (me?['postedPoisha'] as num?)?.toInt(),
+    );
+  }
+  final List<BoardRow> rows;
+  final bool allBranches;
+
+  /// `YYYY-MM`; null for all time.
+  final String? month;
+  final int? myRank;
+  final int? of;
+  final int? myPostedPoisha;
+
+  List<BoardRow> get ranked => [for (final r in rows) if (r.rank != null) r]..sort((a, b) => a.rank!.compareTo(b.rank!));
+  List<BoardRow> get unranked => [for (final r in rows) if (r.rank == null) r];
+}
+
 enum ReportError { offline, hidden, failed }
 
 ReportError _err(ApiException e) => e.isNetwork ? ReportError.offline : (e.statusCode == 403 ? ReportError.hidden : ReportError.failed);
@@ -204,6 +268,17 @@ class ReportsService {
       return (Leaderboard.fromJson(await _ref.read(fieldApiProvider).leaderboard(period: period, metric: metric.wire)), null);
     } on ApiException catch (e) {
       return (null, _err(e));
+    }
+  }
+
+  /// [allTime] false = the current month. Online only: a board from
+  /// yesterday would be misleading.
+  Future<(CollectionBoard?, ReportError?)> collectionBoard({required bool allTime}) async {
+    try {
+      return (CollectionBoard.fromJson(await _ref.read(fieldApiProvider).collectionBoard(period: allTime ? 'all' : 'month')), null);
+    } on ApiException catch (e) {
+      // an older server has no such board yet
+      return (null, e.statusCode == 404 ? ReportError.failed : _err(e));
     }
   }
 }

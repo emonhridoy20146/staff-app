@@ -597,6 +597,11 @@ class FakeFieldApi implements HttpClientAdapter {
         if (o.method == 'GET' && path == '/reports/me/performance') {
           return _json(200, _performance(o.queryParameters['month'] as String));
         }
+        if (o.method == 'GET' && path == '/reports/collection-board') {
+          final r = _collectionBoard((o.queryParameters['period'] as String?) ?? 'month');
+          if (r is (int, Json)) return _json(r.$1, r.$2);
+          return _json(200, r);
+        }
         if (o.method == 'GET' && path == '/reports/leaderboard') {
           final r = _leaderboard((o.queryParameters['period'] as String?) ?? 'month', (o.queryParameters['metric'] as String?) ?? 'collected');
           if (r is (int, Json)) return _json(r.$1, r.$2);
@@ -765,6 +770,35 @@ class FakeFieldApi implements HttpClientAdapter {
     }
     final me = rows.firstWhere((r) => r['me'] == true);
     return {'period': period, 'metric': metric, 'minPresentDays': 1, 'items': rows, 'me': {'rank': me['rank'], 'of': eligible.length}};
+  }
+
+  /// Contract 1.26.0: money the ERP has accepted, every branch, any role.
+  Object _collectionBoard(String period) {
+    if (!leaderboardVisible) return (403, _problem(403, 'FORBIDDEN', 'Leaderboard not visible to staff'));
+    final scale = period == 'all' ? 9 : 1;
+    final people = <Json>[
+      {'userId': 'u-fs-020', 'name': {'bn': 'সজীব আহমেদ', 'en': 'Sajib Ahmed'}, 'employeeCode': 'FS020', 'role': 'field_staff', 'posted': 4980000, 'count': 61},
+      {'userId': 'u-bm-002', 'name': {'bn': 'নাসরিন সুলতানা', 'en': 'Nasrin Sultana'}, 'employeeCode': 'BM002', 'role': 'branch_manager', 'posted': 4980000, 'count': 18},
+      {'userId': user['id'], 'name': user['name'], 'employeeCode': 'FS014', 'role': 'field_staff', 'posted': 4150000, 'count': 54},
+      {'userId': 'u-fs-101', 'name': {'bn': 'কামরুল হাসান', 'en': 'Kamrul Hasan'}, 'employeeCode': 'FS101', 'role': 'field_staff', 'posted': 3900000, 'count': 47},
+      {'userId': 'u-fs-023', 'name': {'bn': 'রুবেল মিয়া', 'en': 'Rubel Mia'}, 'employeeCode': 'FS023', 'role': 'field_staff', 'posted': 0, 'count': 0},
+    ]..sort((a, b) => (b['posted'] as int).compareTo(a['posted'] as int));
+    final rows = <Json>[];
+    for (var i = 0; i < people.length; i++) {
+      final r = people[i];
+      final posted = (r['posted'] as int) * scale;
+      final int? rank = posted == 0 ? null : (i > 0 && people[i - 1]['posted'] == r['posted'] ? rows[i - 1]['rank'] as int? : i + 1);
+      rows.add({
+        'rank': rank, 'userId': r['userId'], 'name': r['name'], 'employeeCode': r['employeeCode'], 'role': r['role'], 'branchId': 'br-1',
+        'postedPoisha': posted, 'count': (r['count'] as int) * scale, 'me': r['userId'] == user['id'],
+      });
+    }
+    final me = rows.firstWhere((r) => r['me'] == true);
+    return {
+      'period': period, 'month': period == 'all' ? null : clock.businessDate().substring(0, 7), 'scope': 'all', 'branchId': null,
+      'generatedAt': clock.nowUtc().toIso8601String(), 'items': rows,
+      'me': {'rank': me['rank'], 'of': rows.where((r) => r['rank'] != null).length, 'postedPoisha': me['postedPoisha']},
+    };
   }
 
   Json _leaderRow(Json r, num value, int? rank, int scale) => {

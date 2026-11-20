@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Howlader Field Operations API
-  version: 1.24.0
+  version: 1.26.0
   description: |
     Contract owned by field-api. Consumers (admin-web, staff-app) generate types from this file.
     Conventions (auth, pagination, idempotency, errors) are described in docs/05-api-contract.md.
@@ -1454,7 +1454,7 @@ paths:
     get:
       tags: [attendance]
       operationId: myShift
-      description: 'attendance.record (1.12.0). The caller''s shift: their own if assigned, else the branch default (`id: default`). Weekly off days are 0 = Sunday … 6 = Saturday.'
+      description: 'attendance.record (1.12.0). The caller''s shift: their own if assigned, else the branch default (`id: default`). Weekly off days are 0 = Sunday … 6 = Saturday. 1.25.0: `breakWindows` (e.g. the Friday break).'
       responses:
         '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Shift' } } } }
   /attendance/days:
@@ -1753,6 +1753,25 @@ paths:
       parameters: [ { $ref: '#/components/parameters/BranchId' }, { name: period, in: query, required: true, schema: { type: string, enum: [day, month] } }, { name: date, in: query, schema: { type: string, description: 'YYYY-MM-DD for day, YYYY-MM for month; default the current one' } }, { name: metric, in: query, schema: { type: string, enum: [collected, visit_credit, promises_kept, target_achievement], default: collected } } ]
       responses:
         '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Leaderboard' } } } }
+  /reports/collection-board:
+    get:
+      tags: [reports]
+      operationId: collectionBoard
+      description: |
+        Who collected the most money that the ERP has accepted (1.26.0, FR-REP-007, ADR-045), for a month or for all time. Field collection amounts with status posted or resolved_posted only; money still pending in the ERP is never counted. Not a balance.
+        Everyone who collected is on it whatever their role (a manager or an admin is ranked by collections alone); active field staff with nothing posted are listed with rank null.
+        Access as the leaderboard: report.view, or setting reports.leaderboardVisibleToStaff true for the caller's own branch; otherwise 403 FORBIDDEN.
+        With setting reports.leaderboardScope = all (default) the board covers every branch for everyone who may open it; with branch a person sees the branches of their own scope (field staff: their home branch) and another branchId answers 404.
+        Equal amounts share a rank (1, 2, 2, 4).
+      parameters:
+        - { name: period, in: query, required: true, schema: { type: string, enum: [month, all] } }
+        - { name: month, in: query, schema: { type: string, example: 2026-11, description: 'Only with period=month; default the current month. A future month answers 400.' } }
+        - { $ref: '#/components/parameters/BranchId' }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/CollectionBoard' } } } }
+        '400': { $ref: '#/components/responses/Problem' }
+        '403': { $ref: '#/components/responses/Problem' }
+        '404': { $ref: '#/components/responses/Problem' }
   /reports/data-quality:
     get:
       tags: [reports]
@@ -1979,7 +1998,24 @@ components:
       properties: { id: { type: string }, date: { type: string, format: date }, name: { $ref: '#/components/schemas/I18nText' }, branchIds: { type: array, items: { type: string } }, type: { type: string, enum: [national, branch] } }
     Shift:
       type: object
-      properties: { id: { type: string }, name: { type: string }, start: { type: string, example: '09:00' }, end: { type: string, example: '18:00' }, weeklyOff: { type: array, items: { type: integer } }, lateGraceMin: { type: integer }, maxBreakMin: { type: integer } }
+      description: 'Duty hours. `weeklyOff` may be empty (a branch that works every day). `breakWindows` since 1.25.0.'
+      properties:
+        id: { type: string }
+        name: { type: string }
+        start: { type: string, example: '09:00' }
+        end: { type: string, example: '18:00' }
+        weeklyOff: { type: array, items: { type: integer, minimum: 0, maximum: 6 }, description: '0 = Sunday … 6 = Saturday' }
+        lateGraceMin: { type: integer }
+        maxBreakMin: { type: integer }
+        breakWindows: { type: array, maxItems: 14, items: { $ref: '#/components/schemas/BreakWindow' } }
+    BreakWindow:
+      type: object
+      description: '1.25.0 (FR-ATT-010). On that weekday, break time between `start` and `end` (Dhaka) is allowed on top of `maxBreakMin` and is never counted as over-break. Example: Friday 12:30–15:30.'
+      required: [weekday, start, end]
+      properties:
+        weekday: { type: integer, minimum: 0, maximum: 6, description: '0 = Sunday … 5 = Friday, 6 = Saturday' }
+        start: { type: string, example: '12:30' }
+        end: { type: string, example: '15:30' }
     ErpStatus:
       type: object
       properties: { mode: { type: string, enum: [live, record_only, mock] }, lastSuccessAt: { type: string }, lagSec: { type: integer }, consecutiveFailures: { type: integer }, circuit: { type: string, enum: [closed, open, half_open] }, outboxPending: { type: integer }, outboxFailed: { type: integer } }
@@ -2610,7 +2646,7 @@ components:
         location: { $ref: '#/components/schemas/CustomerLocation' }
     AttendanceSummaryRow:
       type: object
-      properties: { userId: { type: string }, userName: { type: string }, present: { type: integer }, late: { type: integer }, absent: { type: integer }, leave: { type: integer }, holiday: { type: integer }, weeklyOff: { type: integer }, lateMin: { type: integer }, breakMin: { type: integer }, dutyMin: { type: integer }, overBreakDays: { type: integer } }
+      properties: { userId: { type: string }, userName: { type: string }, present: { type: integer }, late: { type: integer }, absent: { type: integer }, leave: { type: integer }, holiday: { type: integer }, weeklyOff: { type: integer }, lateMin: { type: integer }, breakMin: { type: integer }, dutyMin: { type: integer }, overBreakDays: { type: integer }, overBreakMin: { type: integer, description: '1.25.0: break minutes over the limit in the month' }, overtimeMin: { type: integer, description: '1.25.0 (FR-ATT-011)' }, overtimeDays: { type: integer, description: '1.25.0: days with overtime' }, offDaysWorked: { type: integer, description: '1.25.0: weekly off days and holidays on which the person worked (all of that work is overtime)' }, lateAbsences: { type: integer, description: '1.25.0 (FR-ATT-012): absent days that the late days of the month count as for pay: floor(late / `attendance.lateDaysPerAbsent`); not included in `absent`' } }
     LeaveRequest:
       type: object
       description: '1.12.0 adds `branchId`, `days`, `decisionReason`, `cancelledAt` and status `cancelled`.'
@@ -2645,10 +2681,12 @@ components:
         lateMin: { type: integer }
         breakMin: { type: integer }
         dutyMin: { type: integer }
+        overBreakMin: { type: integer, description: '1.25.0: break minutes over the limit; break time inside a break window of the day is not counted (FR-ATT-010). > 0 goes with the flag `over_break`.' }
+        overtimeMin: { type: integer, description: '1.25.0 (FR-ATT-011): on a working day, minutes on duty after the shift end (breaks excluded), counted only from `attendance.overtimeAfterMin` and never on a day the system closed; on a weekly off day or holiday, every minute worked. > 0 goes with the flag `overtime`.' }
         breaks: { type: array, items: { type: object, properties: { start: { type: string }, end: { type: [string, 'null'] } } } }
         autoClosed: { type: boolean }
         corrected: { type: boolean }
-        flags: { type: array, items: { type: string } }
+        flags: { type: array, items: { type: string }, description: 'e.g. over_break, overtime (1.25.0), worked_on_off_day, invalid_sequence, auto_closed' }
     AttendanceEvent:
       type: object
       description: A stored attendance event as managers see it (1.8.0)
@@ -2936,6 +2974,32 @@ components:
         minPresentDays: { type: integer }
         items: { type: array, items: { $ref: '#/components/schemas/LeaderboardRow' } }
         me: { type: [object, 'null'], properties: { rank: { type: [integer, 'null'] }, of: { type: integer } } }
+    CollectionBoardRow:
+      type: object
+      description: 1.26.0
+      required: [rank, userId, name, employeeCode, role, postedPoisha, count, me]
+      properties:
+        rank: { type: [integer, 'null'], description: 'null while nothing of the person is posted in the period' }
+        userId: { type: string }
+        name: { $ref: '#/components/schemas/I18nText' }
+        employeeCode: { type: string }
+        role: { $ref: '#/components/schemas/Role' }
+        branchId: { type: [string, 'null'], description: 'The person''s home branch' }
+        postedPoisha: { type: integer, description: 'Sum of the person''s field collections the ERP has accepted in the period' }
+        count: { type: integer, description: 'How many collections that is' }
+        me: { type: boolean, description: 'The caller' }
+    CollectionBoard:
+      type: object
+      description: 1.26.0
+      required: [period, month, scope, branchId, generatedAt, items, me]
+      properties:
+        period: { type: string, enum: [month, all] }
+        month: { type: [string, 'null'], description: 'YYYY-MM; null for all time' }
+        scope: { type: string, enum: [all, branch], description: 'Setting reports.leaderboardScope' }
+        branchId: { type: [string, 'null'], description: 'The branch asked for; null when not narrowed' }
+        generatedAt: { type: string, format: date-time }
+        items: { type: array, items: { $ref: '#/components/schemas/CollectionBoardRow' } }
+        me: { type: [object, 'null'], description: 'The caller''s place; null when the caller is not on the board', properties: { rank: { type: [integer, 'null'] }, of: { type: integer, description: 'How many people are ranked' }, postedPoisha: { type: integer } } }
     DataQualityIssue: { type: string, enum: [no_location, invalid_location, suspect_swapped, far_from_branch, missing_phone, invalid_phone, shared_phone, plan_without_schedule, unassigned] }
     DataQualitySummary:
       type: object

@@ -1561,6 +1561,32 @@
     }
   },
   "phonePending": "Waiting to be sent to the server",
+  "boardTabCollection": "Collection board",
+  "boardTabBranch": "Branch ranking",
+  "boardAllTime": "All time",
+  "boardMyRank": "You are {rank} of {of} · verified {amount}",
+  "@boardMyRank": {
+    "placeholders": {
+      "rank": { "type": "String" },
+      "of": { "type": "String" },
+      "amount": { "type": "String" }
+    }
+  },
+  "boardNotRankedMe": "Nothing of yours is verified in this period yet.",
+  "boardCount": "{n} collections",
+  "@boardCount": {
+    "placeholders": {
+      "n": { "type": "String" }
+    }
+  },
+  "boardRoleManager": "Manager",
+  "boardRoleAdmin": "Admin",
+  "boardRoleOffice": "Office",
+  "boardNoPosted": "Nothing verified yet",
+  "boardEmpty": "Nobody has a verified collection in this period yet.",
+  "boardFootnoteAll": "Only collections the ERP has accepted are counted; money still waiting for the ERP is not. Every branch is on this board.",
+  "boardFootnoteBranch": "Only collections the ERP has accepted are counted; money still waiting for the ERP is not. This board shows your branch.",
+  "boardCrown": "First place",
   "alertsTitle": "Notifications",
   "alertsEmptyTitle": "Nothing is waiting for you",
   "alertsEmptyBody": "Promises due today, new tasks, co-work requests and notices from the office show here.",
