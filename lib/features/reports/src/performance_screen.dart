@@ -7,6 +7,7 @@ import '../../../core/settings/ui_prefs.dart';
 import '../../../core/theme/status_colors.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/tokens.dart';
+import '../../../core/time/clock.dart';
 import '../../../core/ui/common.dart';
 import '../../../core/ui/money_text.dart';
 import '../../../l10n/app_localizations.dart';
@@ -97,6 +98,19 @@ class _PerformanceScreenState extends ConsumerState<PerformanceScreen> {
               _VisitsCard(d: d),
               const SizedBox(height: Space.cardGap),
               _StatsRow(d: d),
+              // FR-M-040: every two late days in a month count as one absent day.
+              if (d.lateDays > 0) ...[
+                const SizedBox(height: Space.cardGap),
+                InfoBanner(icon: Icons.warning_amber_rounded, tone: BannerTone.warning, text: l.attHubLateMonth(f.num(d.lateDays), f.num(d.lateDays ~/ 2))),
+              ],
+              const SizedBox(height: Space.cardGap),
+              // FR-M-041: the work of each day of this month.
+              OutlinedButton.icon(
+                onPressed: () => context.push(_delta == 0 ? '/today-work' : '/today-work?date=${lastDayOfMonth(_month)}'),
+                icon: const Icon(Icons.history_rounded),
+                label: Text(l.perfWorkHistory),
+                style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(Sizes.minTarget)),
+              ),
               if (d.rank != null) ...[
                 const SizedBox(height: Space.cardGap),
                 _RankCard(rank: d.rank!, of: d.rankOf ?? 0, isCurrentMonth: _delta == 0),

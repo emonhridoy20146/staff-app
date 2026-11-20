@@ -1559,6 +1559,9 @@
     }
   },
   "phonePending": "Waiting to be sent to the server",
+  "attTilePending": "Not given yet",
+  "attTileDone": "Given",
+  "perfWorkHistory": "Work of each day",
   "workPosted": "Posted in ERP",
   "workPromises": "Promises",
   "workEmptyTitle": "No work recorded on this day",

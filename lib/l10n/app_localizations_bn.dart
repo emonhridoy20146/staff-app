@@ -2418,6 +2418,15 @@ class AppLocalizationsBn extends AppLocalizations {
   String get phonePending => 'সার্ভারে পাঠানোর অপেক্ষায়';
 
   @override
+  String get attTilePending => 'হাজিরা বাকি';
+
+  @override
+  String get attTileDone => 'হাজিরা হয়েছে';
+
+  @override
+  String get perfWorkHistory => 'দিন অনুযায়ী কাজের ইতিহাস';
+
+  @override
   String get workPosted => 'ERP-তে পোস্ট';
 
   @override

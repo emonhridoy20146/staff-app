@@ -52,6 +52,12 @@ DateTime businessDayStartUtc(String ymd) => parseBusinessDate(ymd).subtract(dhak
 /// The business date [days] after (negative: before) [ymd].
 String shiftBusinessDate(String ymd, int days) => businessDateOf(parseBusinessDate(ymd).add(Duration(days: days)));
 
+/// The last business date of a month (`YYYY-MM` → `YYYY-MM-DD`).
+String lastDayOfMonth(String ym) {
+  final p = ym.split('-').map(int.parse).toList();
+  return businessDateOf(DateTime.utc(p[0], p[1] + 1, 1).subtract(const Duration(days: 1)));
+}
+
 /// When a UUIDv7 was made (its first 48 bits are Unix milliseconds), or null
 /// when the id is not a version-7 UUID. Used for rows that carry a v7 client
 /// id and no time column of their own.

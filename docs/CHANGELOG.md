@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 Contract pinned: field-api `openapi.yaml` **1.24.0** (1.22.0 → 1.24.0, additive: 1.23.0 extra phone numbers, 1.24.0 this month on a customer and invoice counts; `docs/contract/openapi.yaml`). Needs field-api 1.23.0 on the server for adding numbers; everything else works with 1.22.0.
+### Added (owner request 2026-11-21: attendance reminder on Home, late warning and history on Performance; FR-M-042)
+- **Attendance tile on Home** shows whether today's attendance has been given: an amber "!" and "হাজিরা বাকি" until the work-in, a green tick and "হাজিরা হয়েছে" after it (colour, icon and words).
+- **Performance**: when the month has late days, a warning says "এ মাসে দেরি N দিন · অনুপস্থিতি ধরা হবে M দিন" (two late days = one absent day, FR-M-040), and a button "দিন অনুযায়ী কাজের ইতিহাস" opens Today's Work for that month (today, or the last day of an earlier month; the arrows go through the days).
+- Tests: `lastDayOfMonth` in `test/core/clock_test.dart`.
 ### Changed (owner request 2026-11-21: everything I did today, and on earlier days; FR-M-041)
 - **Today's Work lists all of the day's work**, latest first: visits, collections, promises, notes, map pins sent, calls and tasks reported done. Before it had visits and collections only. A row opens the customer (or the task).
 - **Earlier days**: the arrows in the top bar go back a day at a time (and forward again up to today); `/today-work?date=YYYY-MM-DD` opens a given day.

@@ -4283,6 +4283,24 @@ abstract class AppLocalizations {
   /// **'Waiting to be sent to the server'**
   String get phonePending;
 
+  /// No description provided for @attTilePending.
+  ///
+  /// In en, this message translates to:
+  /// **'Not given yet'**
+  String get attTilePending;
+
+  /// No description provided for @attTileDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Given'**
+  String get attTileDone;
+
+  /// No description provided for @perfWorkHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Work of each day'**
+  String get perfWorkHistory;
+
   /// No description provided for @workPosted.
   ///
   /// In en, this message translates to:

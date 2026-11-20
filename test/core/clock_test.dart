@@ -19,4 +19,11 @@ void main() {
     expect(c.nowUtc(), DateTime.utc(2026, 11, 15, 4, 10));
     expect(c.deviceNowUtc(), DateTime.utc(2026, 11, 15, 4));
   });
+
+  test('the last day of a month, also December and a leap February', () {
+    expect(lastDayOfMonth('2026-11'), '2026-11-30');
+    expect(lastDayOfMonth('2026-12'), '2026-12-31');
+    expect(lastDayOfMonth('2026-02'), '2026-02-28');
+    expect(lastDayOfMonth('2028-02'), '2028-02-29');
+  });
 }
