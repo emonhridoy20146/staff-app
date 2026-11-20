@@ -2424,6 +2424,42 @@ class AppLocalizationsEn extends AppLocalizations {
   String get phonePending => 'Waiting to be sent to the server';
 
   @override
+  String get alertsTitle => 'Notifications';
+
+  @override
+  String get alertsEmptyTitle => 'Nothing is waiting for you';
+
+  @override
+  String get alertsEmptyBody => 'Promises due today, new tasks, co-work requests and notices from the office show here.';
+
+  @override
+  String alertPromiseToday(String amount) {
+    return 'Promised $amount for today';
+  }
+
+  @override
+  String alertNewTask(String title) {
+    return 'New task: $title';
+  }
+
+  @override
+  String alertCoworkInvite(String name) {
+    return '$name asks you to work together';
+  }
+
+  @override
+  String get alertNoticeUnread => 'Notice from the office, not read yet';
+
+  @override
+  String get alertNoticeMustRead => 'Notice from the office: please confirm you read it';
+
+  @override
+  String get alertHandoverWaiting => 'Handover waiting for your answer';
+
+  @override
+  String get filterAllBranches => 'All branches';
+
+  @override
   String get farTitle => 'Far from the customer\'s pin';
 
   @override

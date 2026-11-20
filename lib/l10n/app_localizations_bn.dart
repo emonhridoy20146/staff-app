@@ -2418,6 +2418,42 @@ class AppLocalizationsBn extends AppLocalizations {
   String get phonePending => 'সার্ভারে পাঠানোর অপেক্ষায়';
 
   @override
+  String get alertsTitle => 'নোটিফিকেশন';
+
+  @override
+  String get alertsEmptyTitle => 'আপনার জন্য কিছু অপেক্ষায় নেই';
+
+  @override
+  String get alertsEmptyBody => 'আজকের প্রতিশ্রুতি, নতুন কাজ, যৌথ কাজের অনুরোধ ও অফিসের নোটিশ এখানে দেখা যাবে।';
+
+  @override
+  String alertPromiseToday(String amount) {
+    return 'আজ $amount দেওয়ার প্রতিশ্রুতি';
+  }
+
+  @override
+  String alertNewTask(String title) {
+    return 'নতুন কাজ: $title';
+  }
+
+  @override
+  String alertCoworkInvite(String name) {
+    return '$name যৌথ কাজের অনুরোধ করেছেন';
+  }
+
+  @override
+  String get alertNoticeUnread => 'অফিসের নোটিশ, এখনো পড়া হয়নি';
+
+  @override
+  String get alertNoticeMustRead => 'অফিসের নোটিশ: পড়ে নিশ্চিত করুন';
+
+  @override
+  String get alertHandoverWaiting => 'হ্যান্ডওভার আপনার উত্তরের অপেক্ষায়';
+
+  @override
+  String get filterAllBranches => 'সব শাখা';
+
+  @override
   String get farTitle => 'গ্রাহকের পিন থেকে দূরে';
 
   @override

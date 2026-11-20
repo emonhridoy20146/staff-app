@@ -4283,6 +4283,66 @@ abstract class AppLocalizations {
   /// **'Waiting to be sent to the server'**
   String get phonePending;
 
+  /// No description provided for @alertsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get alertsTitle;
+
+  /// No description provided for @alertsEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing is waiting for you'**
+  String get alertsEmptyTitle;
+
+  /// No description provided for @alertsEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Promises due today, new tasks, co-work requests and notices from the office show here.'**
+  String get alertsEmptyBody;
+
+  /// No description provided for @alertPromiseToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Promised {amount} for today'**
+  String alertPromiseToday(String amount);
+
+  /// No description provided for @alertNewTask.
+  ///
+  /// In en, this message translates to:
+  /// **'New task: {title}'**
+  String alertNewTask(String title);
+
+  /// No description provided for @alertCoworkInvite.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} asks you to work together'**
+  String alertCoworkInvite(String name);
+
+  /// No description provided for @alertNoticeUnread.
+  ///
+  /// In en, this message translates to:
+  /// **'Notice from the office, not read yet'**
+  String get alertNoticeUnread;
+
+  /// No description provided for @alertNoticeMustRead.
+  ///
+  /// In en, this message translates to:
+  /// **'Notice from the office: please confirm you read it'**
+  String get alertNoticeMustRead;
+
+  /// No description provided for @alertHandoverWaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'Handover waiting for your answer'**
+  String get alertHandoverWaiting;
+
+  /// No description provided for @filterAllBranches.
+  ///
+  /// In en, this message translates to:
+  /// **'All branches'**
+  String get filterAllBranches;
+
   /// No description provided for @farTitle.
   ///
   /// In en, this message translates to:

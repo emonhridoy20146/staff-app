@@ -1,4 +1,5 @@
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart' show Icons;
 
 import '../../core/feature/feature_manifest.dart';
 import '../../core/permissions/permission_service.dart';
@@ -14,6 +15,15 @@ final coworkManifest = FeatureManifest(
   permissions: const [Perm.coworkUse],
   routes: [GoRoute(path: '/cowork', builder: (_, _) => const CoworkScreen())],
   pullHandlers: [CoworkSessionPullHandler()],
+  alertSources: [
+    AlertSourceDef(
+      id: 'cowork-invites',
+      read: (ref) => [
+        for (final s in ref.watch(coworkTodayProvider).invites)
+          AppAlert(id: 'cowork/${s.id}', kind: AlertKind.cowork, icon: Icons.groups_rounded, title: (l, f) => l.alertCoworkInvite(s.nameOf(s.createdBy) ?? '—'), route: '/cowork'),
+      ],
+    ),
+  ],
   todayCards: [TodayCardDef(id: 'cowork', order: 4, permission: Perm.coworkUse, builder: (_) => const CoworkTodayCard())],
   meEntries: [MeEntryDef(id: 'cowork', order: 25, permission: Perm.coworkUse, builder: (_) => const CoworkMeEntry())],
 );

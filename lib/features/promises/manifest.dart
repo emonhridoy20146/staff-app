@@ -24,6 +24,15 @@ final promisesManifest = FeatureManifest(
       onTap: (c, ref, x) => showPromiseSheet(c, x.customerId),
     ),
   ],
+  alertSources: [
+    AlertSourceDef(
+      id: 'promises-today',
+      read: (ref) => [
+        for (final p in ref.watch(promisesDueTodayProvider).value ?? const [])
+          AppAlert(id: 'promise/${p.clientId}', kind: AlertKind.promise, icon: Icons.handshake_rounded, title: (l, f) => l.alertPromiseToday(f.money(p.promisedAmountPoisha)), customerId: p.customerId),
+      ],
+    ),
+  ],
   workLogSources: const [WorkLogSourceDef(id: 'promises', watch: watchPromiseWorkLog)],
   timelineSources: [
     TimelineSourceDef(
