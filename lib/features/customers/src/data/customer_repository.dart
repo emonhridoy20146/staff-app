@@ -6,6 +6,7 @@ import '../../../../core/api/api_models.dart';
 import '../../../../core/db/app_database.dart';
 import '../../../../core/sync/sync_handlers.dart';
 import '../domain/customer.dart';
+import '../domain/schedule.dart';
 
 /// Pull handler for `customer` changes. Payload = contract `CustomerDetail`.
 ///
@@ -182,7 +183,11 @@ class PlanWithSchedule {
   List<ScheduleLineRow> get visibleSchedule => schedule.where((s) => !s.rolled).toList();
   int get rolledCount => schedule.where((s) => s.rolled).length;
 
-  int get paidCount => visibleSchedule.where((s) => s.status == 'paid').length;
+  /// Lines with nothing left on them (a partly paid line is not counted as paid).
+  int get paidCount => visibleSchedule.where((s) => lineMoney(amountPoisha: s.amountPoisha, paidPoisha: s.paidPoisha).settled).length;
+
+  /// Open installments and the overdue money of this invoice (unpaid part only).
+  PlanDues get dues => planDues(visibleSchedule.map((s) => (status: s.status, amountPoisha: s.amountPoisha, paidPoisha: s.paidPoisha)));
 
   /// Installments to show: the visible lines when the ERP sent a schedule, else the plan's count.
   int get shownCount => schedule.isEmpty ? plan.installmentCount : visibleSchedule.length;

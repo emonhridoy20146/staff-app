@@ -21,6 +21,7 @@ import '../pin_correction.dart';
 import '../customer_providers.dart';
 import '../data/customer_repository.dart';
 import '../domain/customer.dart';
+import '../domain/schedule.dart';
 
 Future<void> launchCall(String phone) => launchUrl(Uri(scheme: 'tel', path: phone));
 
@@ -629,6 +630,19 @@ class _Plans extends ConsumerWidget {
                       ].join(' · '),
                       style: t.bodySmall!.copyWith(color: cs.onSurfaceVariant),
                     ),
+                    if (!p.closedInErp && p.dues.remainingCount > 0) ...[
+                      const SizedBox(height: Space.s4),
+                      Text(
+                        [
+                          if (!p.credit) l.planRemainingInstallments(f.num(p.dues.remainingCount)),
+                          if (p.dues.overduePoisha > 0) l.collectChipOverdue(f.money(p.dues.overduePoisha)),
+                        ].join(' · '),
+                        style: t.bodySmall!.copyWith(
+                          color: p.dues.overduePoisha > 0 ? context.statusColors.of(AppStatus.overdue).fg : cs.onSurfaceVariant,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: Space.s12),
                     _InvoiceSummary(plan: p),
                     const SizedBox(height: Space.s4),
@@ -719,19 +733,17 @@ class _ScheduleRow extends ConsumerWidget {
     final t = Theme.of(context).textTheme;
     final cs = Theme.of(context).colorScheme;
     final sc = context.statusColors;
-    // Treat as partial when partially paid, regardless of server status value.
-    final effectiveStatus = (line.paidPoisha > 0 && line.paidPoisha < line.amountPoisha + line.lateFeePoisha && line.status != 'paid')
-        ? 'partial'
-        : line.status;
-    final (icon, color, label) = switch (effectiveStatus) {
+    // amountPoisha already includes the late fee (contract), so left = amount − paid.
+    final money = lineMoney(amountPoisha: line.amountPoisha, paidPoisha: line.paidPoisha);
+    final state = lineState(status: line.status, amountPoisha: line.amountPoisha, paidPoisha: line.paidPoisha);
+    // A line past its date stays "overdue" when partly paid; the paid and left amounts are shown under the date.
+    final (icon, color, label) = switch (state) {
       'paid' => (Icons.check_circle_rounded, sc.of(AppStatus.paid).fg, l.schedulePaid),
       'overdue' => (Icons.error_rounded, sc.of(AppStatus.overdue).fg, l.scheduleOverdue),
       'due' => (Icons.event_rounded, sc.of(AppStatus.dueToday).fg, l.scheduleDue),
       'partial' => (Icons.timelapse_rounded, sc.of(AppStatus.dueToday).fg, l.schedulePartial),
       _ => (Icons.radio_button_unchecked_rounded, cs.outline, l.scheduleUpcoming),
     };
-    final isPartial = effectiveStatus == 'partial';
-    final leftPoisha = line.amountPoisha + line.lateFeePoisha - line.paidPoisha;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
@@ -744,10 +756,10 @@ class _ScheduleRow extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(f.date(line.dueDate, withYear: true), style: t.bodyMedium),
-              if (isPartial)
+              if (money.partlyPaid)
                 Text(
-                  l.schedulePaidOf(f.money(line.paidPoisha), f.money(leftPoisha.clamp(0, leftPoisha))),
-                  style: t.labelSmall!.copyWith(color: color),
+                  l.schedulePaidOf(f.money(money.paidPoisha), f.money(money.leftPoisha)),
+                  style: t.labelSmall!.copyWith(color: color, fontWeight: FontWeight.w600),
                 ),
             ],
           ),

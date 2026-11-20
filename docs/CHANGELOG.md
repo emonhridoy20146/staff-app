@@ -1,6 +1,11 @@
 # Changelog — staff-app
 
 ## [Unreleased]
+### Fixed (owner report 2026-11-21: a partly paid installment looked unpaid and the overdue under the list was wrong; FR-M-036)
+- **Installment lines on the customer page.** The row added the late fee to the line amount a second time (`amountPoisha` already includes it, contract `Plan.schedule[]`), so "left" was too high on lines with a late fee, and a partly paid line past its date lost its **Overdue** state (it was relabelled "partly paid" in the due-today colour). Now: left = amount − paid; a line past its date stays Overdue and shows "পরিশোধ X · বাকি Y" under the date; a line with nothing left is Paid.
+- **"N of M paid"** counts only lines with nothing left (a stale stored status no longer counts).
+- **Each invoice says what is open:** "Nটি বাকি · বকেয়া X" under the progress bar: installments with money left and the unpaid part of the lines past their date. The header total already came from the server and was right; the list now agrees with it.
+- Rules are pure functions in `customers/src/domain/schedule.dart` with unit tests (`test/features/schedule_line_test.dart`). No schema, contract or string change.
 ### Fixed (2026-11-21: `main` did not pass CI)
 - `flutter analyze` failed on two unused imports in `attendance_widgets.dart`, so the tests and the APK build were skipped. Removed.
 - Golden diff images of a failed local screenshot run (`test/screenshots/failures/`) were committed; removed and git-ignored.
