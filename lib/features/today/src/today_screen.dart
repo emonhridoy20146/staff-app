@@ -193,19 +193,22 @@ class _QuickCollect extends StatelessWidget {
 }
 
 /// Three quick-access tiles: Attendance hub, Today's Work log, Performance.
-class _QuickActions extends StatelessWidget {
+class _QuickActions extends ConsumerWidget {
   const _QuickActions({required this.access});
   final AccessSnapshot access;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l = AppLocalizations.of(context);
+    // FR-M-042: the attendance tile says whether today's attendance is still to be given.
+    final day = ref.watch(todayAttendanceProvider).value;
+    final attended = day != null && day.status != DayStatus.notStarted;
     final showAttendance = access.flag('module.attendance') && access.can(Perm.attendanceRecord);
     final showReports = access.flag('module.reports');
     if (!showAttendance && !showReports) return const SizedBox.shrink();
     return Row(children: [
       if (showAttendance) ...[
-        Expanded(child: _QuickTile(icon: Icons.work_history_rounded, label: l.attendanceBtn, onTap: () => context.push('/attendance'))),
+        Expanded(child: _QuickTile(icon: Icons.work_history_rounded, label: l.attendanceBtn, mark: attended ? _TileMark.done : _TileMark.pending, markLabel: attended ? l.attTileDone : l.attTilePending, onTap: () => context.push('/attendance'))),
         const SizedBox(width: Space.s8),
       ],
       Expanded(child: _QuickTile(icon: Icons.list_alt_rounded, label: l.todayWorkBtn, onTap: () => context.push('/today-work'))),
@@ -217,28 +220,59 @@ class _QuickActions extends StatelessWidget {
   }
 }
 
+enum _TileMark { pending, done }
+
 class _QuickTile extends StatelessWidget {
-  const _QuickTile({required this.icon, required this.label, required this.onTap});
+  const _QuickTile({required this.icon, required this.label, required this.onTap, this.mark, this.markLabel});
   final IconData icon;
   final String label;
   final VoidCallback onTap;
+
+  /// A small corner mark: amber "still to do" or green "done" (colour, icon and a spoken label).
+  final _TileMark? mark;
+  final String? markLabel;
 
   @override
   Widget build(BuildContext context) {
     final t = Theme.of(context).textTheme;
     final cs = Theme.of(context).colorScheme;
-    return Material(
-      color: cs.secondaryContainer,
-      borderRadius: Radii.brMd,
-      child: InkWell(
-        onTap: onTap,
+    final sem = context.semanticColors;
+    final markStyle = mark == _TileMark.done ? sem.success : sem.warning;
+    return Semantics(
+      label: markLabel,
+      child: Material(
+        color: cs.secondaryContainer,
         borderRadius: Radii.brMd,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: Space.s12, horizontal: Space.s8),
-          child: Column(mainAxisSize: MainAxisSize.min, children: [
-            Icon(icon, size: 24, color: cs.onSecondaryContainer),
-            const SizedBox(height: Space.s4),
-            Text(label, style: t.labelSmall!.copyWith(color: cs.onSecondaryContainer), textAlign: TextAlign.center, maxLines: 2),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: Radii.brMd,
+          child: Stack(children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: Space.s12, horizontal: Space.s8),
+              child: SizedBox(
+                width: double.infinity,
+                child: Column(mainAxisSize: MainAxisSize.min, children: [
+                  Icon(icon, size: 24, color: cs.onSecondaryContainer),
+                  const SizedBox(height: Space.s4),
+                  Text(label, style: t.labelSmall!.copyWith(color: cs.onSecondaryContainer), textAlign: TextAlign.center, maxLines: 2),
+                  if (mark != null && markLabel != null) ...[
+                    const SizedBox(height: 2),
+                    Text(markLabel!, style: t.labelSmall!.copyWith(color: markStyle.fg, fontWeight: FontWeight.w700), textAlign: TextAlign.center, maxLines: 1, overflow: TextOverflow.ellipsis),
+                  ],
+                ]),
+              ),
+            ),
+            if (mark != null)
+              PositionedDirectional(
+                top: Space.s4,
+                end: Space.s4,
+                child: Container(
+                  width: 18,
+                  height: 18,
+                  decoration: BoxDecoration(color: markStyle.bg, shape: BoxShape.circle, border: Border.all(color: markStyle.fg)),
+                  child: Icon(mark == _TileMark.done ? Icons.check_rounded : Icons.priority_high_rounded, size: 12, color: markStyle.fg),
+                ),
+              ),
           ]),
         ),
       ),

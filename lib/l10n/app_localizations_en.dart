@@ -2424,6 +2424,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get phonePending => 'Waiting to be sent to the server';
 
   @override
+  String get attTilePending => 'Not given yet';
+
+  @override
+  String get attTileDone => 'Given';
+
+  @override
+  String get perfWorkHistory => 'Work of each day';
+
+  @override
   String get workPosted => 'Posted in ERP';
 
   @override
