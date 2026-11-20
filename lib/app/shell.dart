@@ -27,7 +27,9 @@ class AppShell extends ConsumerWidget {
     final handovers = ref.watch(pendingHandoversProvider).length;
     final meBadge = problems + handovers;
     final branches = ref.watch(branchListProvider);
-    final selectedBranch = ref.watch(selectedBranchIdProvider);
+    // A branch that is no longer on the phone (access changed) falls back to all.
+    final picked = ref.watch(selectedBranchIdProvider);
+    final selectedBranch = branches.containsKey(picked) ? picked : null;
     final showBranchBar = branches.length > 1;
     // FR-M-044: what waits for me, counted on the bell (shown also with one branch).
     final alertCount = ref.watch(alertsProvider).length;

@@ -19,7 +19,7 @@ class _CustomerPickerScreenState extends ConsumerState<CustomerPickerScreen> {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
-    final all = ref.watch(allCustomersProvider).value ?? const <Customer>[];
+    final all = ref.watch(branchCustomersProvider).value ?? const <Customer>[];
     final today = ref.watch(todayProvider);
     final p = prioritize(all, today, myUserId: ref.watch(myCustomerUserIdProvider));
     final ordered = [...p.promised, ...p.due, ...p.overdue, ...all.where((c) => !p.promised.contains(c) && !p.due.contains(c) && !p.overdue.contains(c))];

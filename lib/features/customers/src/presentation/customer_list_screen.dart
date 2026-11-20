@@ -70,7 +70,9 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
     final all = ref.watch(allCustomersProvider).value ?? const [];
     final today = ref.watch(todayProvider);
     final me = ref.watch(myCustomerUserIdProvider);
-    int countFor(CustomerFilter x) => all.where((c) => matchesFilter(c, x, today: today, myUserId: me)).length;
+    // The chip numbers follow the branch picked in the top bar, like the list.
+    final shown = ref.watch(branchCustomersProvider).value ?? const <Customer>[];
+    int countFor(CustomerFilter x) => shown.where((c) => matchesFilter(c, x, today: today, myUserId: me)).length;
     // Since 1.19.0 the list holds the whole branch: "Mine" appears once someone else's customers are on the phone.
     final showMine = all.any((c) => c.isOthers(me));
     final sync = ref.watch(syncStatusProvider).value ?? ref.read(syncEngineProvider).current;

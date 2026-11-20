@@ -44,6 +44,19 @@ void main() {
     expect(b.row.assigneeId, isNull);
   });
 
+  test('a branch picked in the top bar narrows the customers; none picked shows all (FR-M-045)', () async {
+    await pull('a', dueToday: true);
+    await pull('b', branch: 'br-2', branchCode: 'ULN01', dueToday: true);
+    await pull('c', branch: 'br-2', branchCode: 'ULN01');
+    final all = await repo.watchAll().first;
+
+    expect(inBranch(all, null).map((c) => c.id).toSet(), {'a', 'b', 'c'});
+    expect(inBranch(all, 'br-2').map((c) => c.id).toSet(), {'b', 'c'});
+    expect(inBranch(all, 'br-9'), isEmpty);
+    // Today follows the same pick
+    expect(prioritize(inBranch(all, 'br-1'), today).due.map((c) => c.id), ['a']);
+  });
+
   test("Today lists own and unassigned customers, never a colleague's; Mine narrows the list", () async {
     await pull('mine', assignee: 'me', dueToday: true);
     await pull('free', daysOverdue: 3);
