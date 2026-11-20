@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 Contract pinned: field-api `openapi.yaml` **1.24.0** (1.22.0 → 1.24.0, additive: 1.23.0 extra phone numbers, 1.24.0 this month on a customer and invoice counts; `docs/contract/openapi.yaml`). Needs field-api 1.23.0 on the server for adding numbers; everything else works with 1.22.0.
+### Added (owner request 2026-11-21: confirm work done far from the customer; FR-M-043)
+- **Collecting or recording a visit far from the customer's pin asks first**: "আপনি গ্রাহকের পিন থেকে X দূরে আছেন। তবুও রেকর্ড করা যাবে; অফিস দূরত্বটি দেখতে পাবে।" with "ফিরে যান" and "তবুও রেকর্ড করুন". It never blocks (money taken at the shop or on the road must still be recorded). The visit screen already showed a warning line; the collect flow had nothing.
+- "Far" = outside the server's `geofenceRadiusM` (150 m until the server says). No fix or no pin: no question. The distance goes to the server with the record as before; field-api flags collections `far_from_pin`.
+- Rule in `core/location/geofence.dart`, dialog in `core/ui/far_confirm.dart`; unit tests `test/core/geofence_test.dart`.
 ### Added (owner request 2026-11-21: attendance reminder on Home, late warning and history on Performance; FR-M-042)
 - **Attendance tile on Home** shows whether today's attendance has been given: an amber "!" and "হাজিরা বাকি" until the work-in, a green tick and "হাজিরা হয়েছে" after it (colour, icon and words).
 - **Performance**: when the month has late days, a warning says "এ মাসে দেরি N দিন · অনুপস্থিতি ধরা হবে M দিন" (two late days = one absent day, FR-M-040), and a button "দিন অনুযায়ী কাজের ইতিহাস" opens Today's Work for that month (today, or the last day of an earlier month; the arrows go through the days).

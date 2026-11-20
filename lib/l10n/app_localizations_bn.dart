@@ -2418,6 +2418,17 @@ class AppLocalizationsBn extends AppLocalizations {
   String get phonePending => 'সার্ভারে পাঠানোর অপেক্ষায়';
 
   @override
+  String get farTitle => 'গ্রাহকের পিন থেকে দূরে';
+
+  @override
+  String farBody(String distance) {
+    return 'আপনি গ্রাহকের পিন থেকে $distance দূরে আছেন। তবুও রেকর্ড করা যাবে; অফিস দূরত্বটি দেখতে পাবে।';
+  }
+
+  @override
+  String get farConfirm => 'তবুও রেকর্ড করুন';
+
+  @override
   String get attTilePending => 'হাজিরা বাকি';
 
   @override

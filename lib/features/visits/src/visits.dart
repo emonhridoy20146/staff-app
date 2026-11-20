@@ -8,6 +8,8 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../../core/location/geofence.dart';
+import '../../../core/ui/far_confirm.dart';
 import '../../../core/api/api_models.dart';
 import '../../../core/db/app_database.dart';
 import '../../../core/location/location_engine.dart';
@@ -285,7 +287,7 @@ class _VisitScreenState extends ConsumerState<VisitScreen> {
               if (g == null) return InfoBanner(icon: Icons.location_disabled_rounded, text: l.collectGpsNone, tone: BannerTone.warning);
               if (g.mock) return InfoBanner(icon: Icons.gpp_maybe_rounded, text: l.collectGpsMock, tone: BannerTone.danger);
               final d = c.hasPin ? distanceMeters(g.lat, g.lng, c.row.lat!, c.row.lng!) : null;
-              final radius = (ref.read(serverSettingsProvider)['geofenceRadiusM'] as num?)?.toInt() ?? 150;
+              final radius = geofenceRadiusM(ref.read(serverSettingsProvider));
               if (d != null && d > radius) return InfoBanner(icon: Icons.wrong_location_rounded, text: l.visitFar(f.distance(d)), tone: BannerTone.warning);
               return InfoBanner(icon: Icons.gps_fixed_rounded, text: l.collectGpsAccurate(f.num(g.accuracyM.round())), tone: BannerTone.success);
             },
@@ -345,6 +347,15 @@ class _VisitScreenState extends ConsumerState<VisitScreen> {
                 : () async {
                     setState(() => _busy = true);
                     final fix = await _fix;
+                    // FR-M-043: far from the customer's pin → ask once, never block.
+                    final far = farFromPinM(fix: fix, pinLat: c.hasPin ? c.row.lat : null, pinLng: c.hasPin ? c.row.lng : null, radiusM: geofenceRadiusM(ref.read(serverSettingsProvider)));
+                    if (far != null) {
+                      if (!context.mounted) return;
+                      if (!await confirmFarFromPin(context, distance: f.distance(far))) {
+                        if (mounted) setState(() => _busy = false);
+                        return;
+                      }
+                    }
                     final cowork = _joint ? ref.read(coworkForVisitProvider) : null;
                     await recordVisit(ref, customer: c, outcome: _outcome!, fix: fix, photo: _photo, note: _note.text, cowork: cowork);
                     if (!context.mounted) return;

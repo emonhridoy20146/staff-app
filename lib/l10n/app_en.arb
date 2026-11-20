@@ -1559,6 +1559,14 @@
     }
   },
   "phonePending": "Waiting to be sent to the server",
+  "farTitle": "Far from the customer's pin",
+  "farBody": "You are {distance} from the customer's pin. You can still record it; the office will see the distance.",
+  "@farBody": {
+    "placeholders": {
+      "distance": { "type": "String" }
+    }
+  },
+  "farConfirm": "Record anyway",
   "attTilePending": "Not given yet",
   "attTileDone": "Given",
   "perfWorkHistory": "Work of each day",

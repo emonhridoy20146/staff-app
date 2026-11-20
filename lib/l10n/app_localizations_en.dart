@@ -2424,6 +2424,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get phonePending => 'Waiting to be sent to the server';
 
   @override
+  String get farTitle => 'Far from the customer\'s pin';
+
+  @override
+  String farBody(String distance) {
+    return 'You are $distance from the customer\'s pin. You can still record it; the office will see the distance.';
+  }
+
+  @override
+  String get farConfirm => 'Record anyway';
+
+  @override
   String get attTilePending => 'Not given yet';
 
   @override

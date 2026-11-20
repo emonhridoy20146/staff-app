@@ -4283,6 +4283,24 @@ abstract class AppLocalizations {
   /// **'Waiting to be sent to the server'**
   String get phonePending;
 
+  /// No description provided for @farTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Far from the customer\'s pin'**
+  String get farTitle;
+
+  /// No description provided for @farBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You are {distance} from the customer\'s pin. You can still record it; the office will see the distance.'**
+  String farBody(String distance);
+
+  /// No description provided for @farConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Record anyway'**
+  String get farConfirm;
+
   /// No description provided for @attTilePending.
   ///
   /// In en, this message translates to:
