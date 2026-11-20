@@ -1,7 +1,7 @@
 # Changelog — staff-app
 
 ## [Unreleased]
-Contract pinned: field-api `openapi.yaml` **1.26.0** (1.22.0 → 1.26.0, additive: 1.23.0 extra phone numbers, 1.24.0 this month on a customer and invoice counts, 1.25.0 duty hours per branch with break windows, overtime and late absences, 1.26.0 the collection board; `docs/contract/openapi.yaml`). The collection board needs the server at 1.26.0; on an older server its tab says it could not be loaded and the branch ranking still works.
+Contract pinned: field-api `openapi.yaml` **1.26.0** (1.22.0 → 1.26.0, additive: 1.23.0 extra phone numbers, 1.24.0 this month on a customer and invoice counts, 1.25.0 duty hours per branch with break windows, overtime and late absences, 1.26.0 the collection board; `docs/contract/openapi.yaml`). The collection board needs the server at 1.26.0; on an older server its tab says it could not be loaded and the branch ranking still works. Adding phone numbers needs 1.23.0; break windows and the late-days setting need 1.25.0; everything else works with 1.22.0.
 ### Added (owner request 2026-11-21: one board for everyone, verified money, month and all time, a crown; FR-M-048, field-api FR-REP-007)
 - **"আদায় বোর্ড" is the first tab of the leaderboard**: everyone who collected, in every branch, ranked by the collections the ERP has accepted. "এই মাস" and "সর্বকালের" switch the period. Money still waiting for the ERP is not counted (said under the list).
 - **First place wears a crown** (people who are level share it). A manager or an admin who collects is on the board with their role named, ranked by collections alone.
