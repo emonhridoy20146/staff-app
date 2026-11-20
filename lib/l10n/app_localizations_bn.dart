@@ -2424,6 +2424,52 @@ class AppLocalizationsBn extends AppLocalizations {
   String get phonePending => 'সার্ভারে পাঠানোর অপেক্ষায়';
 
   @override
+  String get boardTabCollection => 'আদায় বোর্ড';
+
+  @override
+  String get boardTabBranch => 'শাখার র‍্যাঙ্ক';
+
+  @override
+  String get boardAllTime => 'সর্বকালের';
+
+  @override
+  String boardMyRank(String rank, String of, String amount) {
+    return 'আপনি $rank / $of · যাচাই হওয়া আদায় $amount';
+  }
+
+  @override
+  String get boardNotRankedMe => 'এই সময়ে আপনার কোনো আদায় এখনো যাচাই হয়নি।';
+
+  @override
+  String boardCount(String n) {
+    return '$nটি আদায়';
+  }
+
+  @override
+  String get boardRoleManager => 'ম্যানেজার';
+
+  @override
+  String get boardRoleAdmin => 'অ্যাডমিন';
+
+  @override
+  String get boardRoleOffice => 'অফিস';
+
+  @override
+  String get boardNoPosted => 'এখনো কিছু যাচাই হয়নি';
+
+  @override
+  String get boardEmpty => 'এই সময়ে কারও যাচাই হওয়া আদায় নেই।';
+
+  @override
+  String get boardFootnoteAll => 'শুধু ইআরপি-তে গৃহীত আদায় গোনা হয়; ইআরপি-র অপেক্ষায় থাকা টাকা নয়। সব শাখা এই বোর্ডে আছে।';
+
+  @override
+  String get boardFootnoteBranch => 'শুধু ইআরপি-তে গৃহীত আদায় গোনা হয়; ইআরপি-র অপেক্ষায় থাকা টাকা নয়। এই বোর্ডে শুধু আপনার শাখা।';
+
+  @override
+  String get boardCrown => 'প্রথম স্থান';
+
+  @override
   String get alertsTitle => 'নোটিফিকেশন';
 
   @override

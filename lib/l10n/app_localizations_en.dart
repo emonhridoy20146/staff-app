@@ -2430,6 +2430,52 @@ class AppLocalizationsEn extends AppLocalizations {
   String get phonePending => 'Waiting to be sent to the server';
 
   @override
+  String get boardTabCollection => 'Collection board';
+
+  @override
+  String get boardTabBranch => 'Branch ranking';
+
+  @override
+  String get boardAllTime => 'All time';
+
+  @override
+  String boardMyRank(String rank, String of, String amount) {
+    return 'You are $rank of $of · verified $amount';
+  }
+
+  @override
+  String get boardNotRankedMe => 'Nothing of yours is verified in this period yet.';
+
+  @override
+  String boardCount(String n) {
+    return '$n collections';
+  }
+
+  @override
+  String get boardRoleManager => 'Manager';
+
+  @override
+  String get boardRoleAdmin => 'Admin';
+
+  @override
+  String get boardRoleOffice => 'Office';
+
+  @override
+  String get boardNoPosted => 'Nothing verified yet';
+
+  @override
+  String get boardEmpty => 'Nobody has a verified collection in this period yet.';
+
+  @override
+  String get boardFootnoteAll => 'Only collections the ERP has accepted are counted; money still waiting for the ERP is not. Every branch is on this board.';
+
+  @override
+  String get boardFootnoteBranch => 'Only collections the ERP has accepted are counted; money still waiting for the ERP is not. This board shows your branch.';
+
+  @override
+  String get boardCrown => 'First place';
+
+  @override
   String get alertsTitle => 'Notifications';
 
   @override

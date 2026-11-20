@@ -6,6 +6,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/ui/common.dart';
 import '../../../l10n/app_localizations.dart';
+import 'collection_board_view.dart';
 import 'performance_screen.dart' show reportErrorText;
 import 'reports_data.dart';
 
@@ -63,9 +64,17 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
     final cs = Theme.of(context).colorScheme;
     final f = ref.watch(fmtProvider);
     final d = _data;
-    return Scaffold(
-      appBar: AppBar(title: Text(l.leaderboardTitle)),
-      body: RefreshIndicator(
+    // Two boards: verified collections of everyone (FR-M-048) and the branch ranking by day or month (FR-REP-005).
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+      appBar: AppBar(
+        title: Text(l.leaderboardTitle),
+        bottom: TabBar(tabs: [Tab(text: l.boardTabCollection), Tab(text: l.boardTabBranch)]),
+      ),
+      body: TabBarView(children: [
+      const CollectionBoardView(),
+      RefreshIndicator(
         onRefresh: _load,
         child: ListView(
           padding: const EdgeInsets.fromLTRB(Space.screen, Space.s8, Space.screen, Space.s32),
@@ -148,6 +157,8 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
             ],
           ],
         ),
+      ),
+      ]),
       ),
     );
   }
