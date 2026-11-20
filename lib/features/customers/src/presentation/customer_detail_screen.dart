@@ -12,6 +12,7 @@ import '../../../../core/settings/ui_prefs.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/theme/status_colors.dart';
 import '../../../../core/theme/tokens.dart';
+import '../../../../core/time/clock.dart';
 import '../../../../core/ui/dashed_border.dart';
 import '../../../../core/ui/money_text.dart';
 import '../../../../core/ui/status_badge.dart';
@@ -23,6 +24,7 @@ import '../data/customer_repository.dart';
 import '../domain/customer.dart';
 import '../domain/phones.dart';
 import '../domain/schedule.dart';
+import '../domain/work_marks.dart';
 import '../phone_numbers.dart';
 
 Future<void> launchCall(String phone) => launchUrl(Uri(scheme: 'tel', path: phone));
@@ -101,6 +103,8 @@ class _DetailState extends ConsumerState<_Detail> {
             padding: const EdgeInsets.fromLTRB(Space.screen, Space.s16, Space.screen, Space.s8),
             sliver: SliverList.list(children: [
               _BalanceCard(customer: customer),
+              const SizedBox(height: Space.cardGap),
+              _MonthCard(customer: customer),
               if (customer.guarantor != null) ...[const SizedBox(height: Space.cardGap), _GuarantorCard(customer: customer)],
               if (customer.tagged || customer.row.badSuggested) ...[const SizedBox(height: Space.cardGap), _TagCard(customer: customer)],
               if (customer.row.openPromiseDate != null) ...[const SizedBox(height: Space.cardGap), _PromiseCard(customer: customer)],
@@ -594,6 +598,65 @@ class _PromiseCard extends ConsumerWidget {
           ),
         ),
       ]),
+    );
+  }
+}
+
+/// "This month" (FR-M-038): was the customer visited, is there money in the
+/// ERP or still waiting for it (two separate lines, never one sum), is a
+/// promise open, and how many invoices there are. All from the phone's own
+/// data, so it is right at once after a visit or a collection, also offline.
+class _MonthCard extends ConsumerWidget {
+  const _MonthCard({required this.customer});
+  final Customer customer;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context);
+    final t = Theme.of(context).textTheme;
+    final cs = Theme.of(context).colorScheme;
+    final f = ref.watch(fmtProvider);
+    final sc = context.statusColors;
+    final sem = context.semanticColors;
+    final m = workMarksFor(ref, customer);
+    final paid = ref.watch(paidThisMonthProvider.select((x) => x.value?[customer.id] ?? 0));
+    final plans = ref.watch(customerPlansProvider(customer.id)).value ?? const <PlanWithSchedule>[];
+    final invoices = plans.where((p) => p.plan.status != 'cancelled').toList();
+    final lastVisit = customer.row.lastVisitAt;
+    Widget line(IconData icon, Color color, String text) => Padding(
+          padding: const EdgeInsets.only(top: Space.s8),
+          child: Row(children: [
+            Icon(icon, size: 20, color: color),
+            const SizedBox(width: Space.s8),
+            Expanded(child: Text(text, style: t.bodyMedium!.copyWith(color: color == cs.outline ? cs.onSurfaceVariant : null))),
+          ]),
+        );
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(Space.s16),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Row(children: [
+            Expanded(child: Text(l.monthTitle, style: t.titleSmall)),
+            if (invoices.isNotEmpty)
+              Text(
+                l.monthInvoices(f.num(invoices.length), f.num(invoices.where((p) => p.collectable).length)),
+                style: t.bodySmall!.copyWith(color: cs.onSurfaceVariant),
+              ),
+          ]),
+          switch (m.visit) {
+            VisitMark.today => line(Icons.directions_walk_rounded, sem.success.fg, l.marksVisitToday),
+            VisitMark.month => line(Icons.directions_walk_rounded, sem.info.fg, l.monthLastVisit(f.date(businessDateOf(lastVisit!)))),
+            VisitMark.none => line(Icons.directions_walk_rounded, cs.outline, l.marksVisitNone),
+          },
+          if (paid > 0) line(Icons.payments_rounded, sc.of(AppStatus.paid).fg, l.monthPaid(f.money(paid))),
+          if (customer.row.pendingFieldPoisha > 0) line(Icons.cloud_upload_outlined, sc.of(AppStatus.pending).fg, l.monthPending(f.money(customer.row.pendingFieldPoisha))),
+          if (paid == 0 && customer.row.pendingFieldPoisha == 0) line(Icons.payments_rounded, cs.outline, l.marksPaidNone),
+          if (customer.row.openPromiseDate != null)
+            line(Icons.handshake_rounded, sc.of(AppStatus.promised).fg, l.monthPromise(f.date(customer.row.openPromiseDate!)))
+          else
+            line(Icons.handshake_rounded, cs.outline, l.marksPromiseNone),
+        ]),
+      ),
     );
   }
 }

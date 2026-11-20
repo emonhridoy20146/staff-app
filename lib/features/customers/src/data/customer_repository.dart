@@ -8,6 +8,7 @@ import '../../../../core/sync/sync_handlers.dart';
 import '../domain/customer.dart';
 import '../domain/phones.dart';
 import '../domain/schedule.dart';
+import '../domain/work_marks.dart';
 
 /// Pull handler for `customer` changes. Payload = contract `CustomerDetail`.
 ///
@@ -247,6 +248,12 @@ class CustomerRepository {
         ..where((t) => t.customerId.equals(customerId) & t.date.equals(day) & t.reversed.equals(false) & t.advance.equals(false) & t.planId.isNotNull()))
       .watch()
       .map((rows) => {for (final r in rows) r.planId!});
+
+  /// ERP money per customer in the month of [today] (FR-M-038): only this month's rows are read.
+  Stream<Map<String, int>> watchPaidThisMonth(String today) => (_db.select(_db.erpPayments)
+        ..where((t) => t.date.like('${today.substring(0, 7)}%') & t.reversed.equals(false)))
+      .watch()
+      .map((rows) => paidThisMonth(rows.map((r) => (customerId: r.customerId, date: r.date, amountPoisha: r.amountPoisha, reversed: r.reversed)), today));
 
   Stream<List<ErpPaymentRow>> watchPayments(String customerId) => (_db.select(_db.erpPayments)
         ..where((t) => t.customerId.equals(customerId))

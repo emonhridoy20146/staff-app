@@ -1552,6 +1552,48 @@
     }
   },
   "phonePending": "Waiting to be sent to the server",
+  "marksVisitToday": "Visited today",
+  "marksVisitMonth": "Visited this month",
+  "marksVisitNone": "Not visited this month",
+  "marksPaid": "Money in the ERP this month",
+  "marksPending": "Collected, pending in ERP",
+  "marksPaidNone": "Nothing paid this month",
+  "marksPromiseOpen": "Has an open promise",
+  "marksPromiseNone": "No open promise",
+  "marksPinSet": "Map pin set",
+  "marksPinMissing": "No map pin",
+  "monthTitle": "This month",
+  "monthLastVisit": "Last visit {date}",
+  "@monthLastVisit": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+  "monthPaid": "In the ERP: {amount}",
+  "@monthPaid": {
+    "placeholders": {
+      "amount": { "type": "String" }
+    }
+  },
+  "monthPending": "Pending in ERP: {amount}",
+  "@monthPending": {
+    "placeholders": {
+      "amount": { "type": "String" }
+    }
+  },
+  "monthPromise": "Promise on {date}",
+  "@monthPromise": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+  "monthInvoices": "Invoices: {total} · with a balance: {open}",
+  "@monthInvoices": {
+    "placeholders": {
+      "total": { "type": "String" },
+      "open": { "type": "String" }
+    }
+  },
   "planRolledHidden": "{n} unpaid installments were moved to a later one in the ERP and are hidden",
   "@planRolledHidden": {
     "placeholders": {

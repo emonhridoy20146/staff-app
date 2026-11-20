@@ -2418,6 +2418,64 @@ class AppLocalizationsEn extends AppLocalizations {
   String get phonePending => 'Waiting to be sent to the server';
 
   @override
+  String get marksVisitToday => 'Visited today';
+
+  @override
+  String get marksVisitMonth => 'Visited this month';
+
+  @override
+  String get marksVisitNone => 'Not visited this month';
+
+  @override
+  String get marksPaid => 'Money in the ERP this month';
+
+  @override
+  String get marksPending => 'Collected, pending in ERP';
+
+  @override
+  String get marksPaidNone => 'Nothing paid this month';
+
+  @override
+  String get marksPromiseOpen => 'Has an open promise';
+
+  @override
+  String get marksPromiseNone => 'No open promise';
+
+  @override
+  String get marksPinSet => 'Map pin set';
+
+  @override
+  String get marksPinMissing => 'No map pin';
+
+  @override
+  String get monthTitle => 'This month';
+
+  @override
+  String monthLastVisit(String date) {
+    return 'Last visit $date';
+  }
+
+  @override
+  String monthPaid(String amount) {
+    return 'In the ERP: $amount';
+  }
+
+  @override
+  String monthPending(String amount) {
+    return 'Pending in ERP: $amount';
+  }
+
+  @override
+  String monthPromise(String date) {
+    return 'Promise on $date';
+  }
+
+  @override
+  String monthInvoices(String total, String open) {
+    return 'Invoices: $total · with a balance: $open';
+  }
+
+  @override
   String planRolledHidden(String n) {
     return '$n unpaid installments were moved to a later one in the ERP and are hidden';
   }

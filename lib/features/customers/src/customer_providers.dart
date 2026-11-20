@@ -10,6 +10,7 @@ import '../../attendance/attendance.dart';
 import '../../auth/auth.dart';
 import 'data/customer_repository.dart';
 import 'domain/customer.dart';
+import 'domain/work_marks.dart';
 
 final customerRepositoryProvider = Provider<CustomerRepository>((ref) => CustomerRepository(ref.watch(databaseProvider)));
 
@@ -79,6 +80,21 @@ final plansPaidTodayProvider = StreamProvider.family<Set<String>, String>(
 final customerPaymentsProvider = StreamProvider.family<List<ErpPaymentRow>, String>(
   (ref, id) => ref.watch(customerRepositoryProvider).watchPayments(id),
 );
+
+/// ERP money per customer this month, for the work marks (FR-M-038).
+final paidThisMonthProvider = StreamProvider<Map<String, int>>(
+  (ref) => ref.watch(customerRepositoryProvider).watchPaidThisMonth(ref.watch(todayProvider)),
+);
+
+/// The four work marks of one customer: visited, money, promise, map pin.
+WorkMarks workMarksFor(WidgetRef ref, Customer c) => workMarksOf(
+      today: ref.watch(todayProvider),
+      lastVisitAt: c.row.lastVisitAt,
+      erpPaidThisMonthPoisha: ref.watch(paidThisMonthProvider.select((m) => m.value?[c.id] ?? 0)),
+      pendingFieldPoisha: c.row.pendingFieldPoisha,
+      hasOpenPromise: c.row.openPromiseDate != null,
+      hasPin: c.hasPin,
+    );
 
 final customerSearchProvider = StateProvider<String>((ref) => '');
 final customerFilterProvider = StateProvider<CustomerFilter>((ref) => CustomerFilter.all);

@@ -1,7 +1,13 @@
 # Changelog — staff-app
 
 ## [Unreleased]
-Contract pinned: field-api `openapi.yaml` **1.23.0** (1.22.0 → 1.23.0, additive: extra phone numbers; `docs/contract/openapi.yaml`). Needs field-api 1.23.0 on the server for adding numbers; everything else works with 1.22.0.
+Contract pinned: field-api `openapi.yaml` **1.24.0** (1.22.0 → 1.24.0, additive: 1.23.0 extra phone numbers, 1.24.0 this month on a customer and invoice counts; `docs/contract/openapi.yaml`). Needs field-api 1.23.0 on the server for adding numbers; everything else works with 1.22.0.
+### Added (owner request 2026-11-21: who has been dealt with this month; FR-M-038, master FR-CUS-017)
+- **Four work marks on every customer row, in every filter**: visited (today / this month), money (in the ERP this month / collected and still waiting for the ERP), open promise, and map pin set or missing. On = status colour and icon, off = grey outline; each has its meaning in words for TalkBack. They replace the two small dots on the avatar (which only said "visited today" and "promise today").
+- **"এ মাসে" card on the customer page**: visited today or the last visit date, money in the ERP this month, money still pending in ERP on its own line (never one sum), the open promise, and "ইনভয়েস Nটি · বাকি আছে Mটি".
+- Worked out on the phone from what it already holds (last visit, ERP payments, pending field money, open promise, pin, invoices), so a mark is right the moment a visit or a collection is saved, also offline. Dates are Dhaka dates (the old dot used the phone's own time zone).
+- No database change. Contract file updated to 1.24.0 (the server's `activity` is not needed by the app).
+- Tests: `test/features/work_marks_test.dart` (mark rules, Dhaka month boundary, ERP money per customer).
 ### Added (owner request 2026-11-21: several phone numbers for a customer; FR-M-037, master FR-CUS-016)
 - **"নম্বর যোগ করুন" on the customer page** (permission `customer.phone.manage`): a sheet with one row per number (number + whose number) and "আরেকটি নম্বর", up to five added numbers per customer. Bangla digits, spaces, dashes and `+880` are accepted; a wrong number, one the customer already has, or one typed twice is named under its field.
 - **Works offline**: the numbers show on the customer at once with a cloud icon, and go to the server as one `customer_phone` mutation (id made once, kept on every retry). A pull never removes a number that is still waiting. A refused mutation takes its numbers off the list again and stays visible in Problems.
