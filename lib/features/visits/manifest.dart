@@ -7,6 +7,7 @@ import '../../core/settings/ui_prefs.dart';
 import '../cowork/cowork.dart';
 import '../../l10n/app_localizations.dart';
 import 'src/visits.dart';
+import 'src/work_log.dart';
 
 /// Visits: check-in with camera photo, outcome, GPS distance to pin
 /// (FR-VIS-001…005, FR-MED-001 client side, FR-M-009).
@@ -27,6 +28,7 @@ final visitsManifest = FeatureManifest(
       onTap: (c, ref, x) => c.push('/visit/${x.customerId}'),
     ),
   ],
+  workLogSources: const [WorkLogSourceDef(id: 'visits', watch: watchVisitWorkLog)],
   timelineSources: [
     TimelineSourceDef(
       id: 'visits',

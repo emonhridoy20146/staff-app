@@ -49,6 +49,7 @@ class FeatureManifest {
   final List<DriftMigrationStep> migrations;
   final List<CustomerActionDef> customerActions; // extension point: buttons on customer detail
   final List<TodayCardDef> todayCards;            // extension point: cards on Today
+  final List<WorkLogSourceDef> workLogSources;    // extension point: the user's own work of a day (Today's Work)
 }
 ```
 
