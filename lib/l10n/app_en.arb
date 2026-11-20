@@ -1561,6 +1561,36 @@
     }
   },
   "phonePending": "Waiting to be sent to the server",
+  "cashInHandOpen": "Which collections is this cash from?",
+  "cashInHandTitle": "Cash on hand, by collection",
+  "cashInHandInvoice": "Invoice {no}",
+  "@cashInHandInvoice": {
+    "placeholders": {
+      "no": { "type": "String" }
+    }
+  },
+  "cashInHandPartOf": "left of {amount}",
+  "@cashInHandPartOf": {
+    "placeholders": {
+      "amount": { "type": "String" }
+    }
+  },
+  "cashInHandPendingDeposits": "{amount} handed in, waiting to be verified",
+  "@cashInHandPendingDeposits": {
+    "placeholders": {
+      "amount": { "type": "String" }
+    }
+  },
+  "cashInHandUnsent": "Some money on this phone has not reached the server yet; it is not in this list.",
+  "cashInHandEmpty": "No cash on hand.",
+  "cashInHandMore": "{n} older collections are not listed; the total above includes them.",
+  "@cashInHandMore": {
+    "placeholders": {
+      "n": { "type": "String" }
+    }
+  },
+  "cashInHandHow": "A deposit pays off your oldest collections first, so the cash on hand is your newest collections. Tap a line to open the customer.",
+  "cashInHandOffline": "This list needs the internet",
   "boardTabCollection": "Collection board",
   "boardTabBranch": "Branch ranking",
   "boardAllTime": "All time",

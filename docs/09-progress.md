@@ -52,6 +52,7 @@ Phases match `field-api/docs/09-progress.md`. Start each phase against the Prism
 | Customer list: paid / not paid this month filters with counts (FR-M-046) | ✅ 2026-11-21, unit test; device check pending |
 | Duty hours, Friday break window, geofence and cash rule read from the server's real setting keys (FR-M-047) | ✅ 2026-11-21, unit tests; device check pending |
 | Collection board: verified money, every branch, month and all time, crown on first place (FR-M-048, contract 1.26.0) | ✅ 2026-11-21, unit tests; device check pending |
+| Cash on hand by collection: customer, invoice, receipt per line (FR-M-049, contract 1.27.0) | ✅ 2026-11-21, unit tests; device check pending |
 | Notifications (FCM + centre), Sync centre & Problems | ◐ sync centre done; FCM not yet (needs Firebase project) |
 | Onboarding: consent, permissions primer | ✅ |
 **Acceptance:** M-E2…M-E7, M-E9, M-E10 green; manual device checklist (non-location sections) signed off on 4 OEM devices; pilot 5 staff × 2 weeks with zero lost/duplicate collections.

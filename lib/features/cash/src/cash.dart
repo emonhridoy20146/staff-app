@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:drift/drift.dart' hide Column;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:uuid/uuid.dart';
 
@@ -148,6 +149,11 @@ class CashCard extends ConsumerWidget {
         SizedBox(
           width: double.infinity,
           child: FilledButton.tonalIcon(onPressed: () => showDepositSheet(context), icon: const Icon(Icons.savings_rounded), label: Text(l.cashDeposit)),
+        ),
+        // FR-M-049: which customers and invoices the cash on hand came from
+        SizedBox(
+          width: double.infinity,
+          child: TextButton.icon(onPressed: () => context.push('/cash/in-hand'), icon: const Icon(Icons.receipt_long_rounded), label: Text(l.cashInHandOpen)),
         ),
         if (deposits.isNotEmpty) ...[
           const SizedBox(height: Space.s12),

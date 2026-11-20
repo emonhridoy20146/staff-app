@@ -1,7 +1,11 @@
 # Changelog — staff-app
 
 ## [Unreleased]
-Contract pinned: field-api `openapi.yaml` **1.26.0** (1.22.0 → 1.26.0, additive: 1.23.0 extra phone numbers, 1.24.0 this month on a customer and invoice counts, 1.25.0 duty hours per branch with break windows, overtime and late absences, 1.26.0 the collection board; `docs/contract/openapi.yaml`). The collection board needs the server at 1.26.0; on an older server its tab says it could not be loaded and the branch ranking still works. Adding phone numbers needs 1.23.0; break windows and the late-days setting need 1.25.0; everything else works with 1.22.0.
+Contract pinned: field-api `openapi.yaml` **1.27.0** (1.22.0 → 1.27.0, additive: 1.23.0 extra phone numbers, 1.24.0 this month on a customer and invoice counts, 1.25.0 duty hours per branch with break windows, overtime and late absences, 1.26.0 the collection board, 1.27.0 cash in hand by collection; `docs/contract/openapi.yaml`). The collection board needs the server at 1.26.0; on an older server its tab says it could not be loaded and the branch ranking still works. Adding phone numbers needs 1.23.0; break windows and the late-days setting need 1.25.0; everything else works with 1.22.0.
+### Added (owner request 2026-11-21: where my cash on hand came from; FR-M-049, field-api FR-CASH-007, contract 1.27.0)
+- **"কোন আদায়ের টাকা হাতে আছে"** on the cash card (Me): a list of the cash collections not yet covered by a deposit, newest first, each with the customer, the invoice, the receipt number, the time and the amount still in hand ("মোট …-এর বাকি" when a deposit covered part of it). A tap opens the customer. The total and deposits waiting for verification are on top.
+- A deposit pays off the oldest collections first (the server's rule, said under the list). Online; when this phone still holds unsent money the screen says that it is not in the list.
+- Tests `test/flows/cash_in_hand_test.dart`; demo data in the fake API.
 ### Added (owner request 2026-11-21: one board for everyone, verified money, month and all time, a crown; FR-M-048, field-api FR-REP-007)
 - **"আদায় বোর্ড" is the first tab of the leaderboard**: everyone who collected, in every branch, ranked by the collections the ERP has accepted. "এই মাস" and "সর্বকালের" switch the period. Money still waiting for the ERP is not counted (said under the list).
 - **First place wears a crown** (people who are level share it). A manager or an admin who collects is on the board with their role named, ranked by collections alone.

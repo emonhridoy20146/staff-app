@@ -32,6 +32,7 @@ System-wide ADRs and open decisions: `field-api/docs/08-decisions.md` (notably A
 ### ADR-M08 UI never calls the network directly · accepted
 - **Reason:** offline-first guarantee; all writes go through local DB + outbox; reads from DB streams.
 - **Exception:** explicitly online-only actions (handover decision, on-demand balance refresh, password change) via use cases that show "internet required".
+- **2026-11-21:** also read online, through a use case, because the server computes them: the collection board (FR-M-048) and cash on hand by collection (FR-M-049). Both say so when there is no internet.
 
 ### Amendments made during the build (2026-11-15)
 - **ADR-M02 amended:** encryption uses SQLite3MultipleCiphers (`sqlite3` package build hook `source: sqlite3mc`, `PRAGMA key`) instead of the separate SQLCipher plugin. Same at-rest protection; one native library; key = random 256-bit, stored in Android Keystore (`flutter_secure_storage`).

@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Howlader Field Operations API
-  version: 1.26.0
+  version: 1.27.0
   description: |
     Contract owned by field-api. Consumers (admin-web, staff-app) generate types from this file.
     Conventions (auth, pagination, idempotency, errors) are described in docs/05-api-contract.md.
@@ -867,6 +867,22 @@ paths:
       operationId: myCash
       responses:
         '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/CashPosition' } } } }
+  /cash/me/collections:
+    get:
+      tags: [cash]
+      operationId: myCashInHand
+      description: 'cash.view (1.27.0, FR-CASH-007). The collections behind the caller''s cash on hand: which customer and invoice the money came from.'
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/CashInHand' } } } }
+  /cash/positions/{id}/collections:
+    get:
+      tags: [cash]
+      operationId: cashInHandOf
+      description: 'cash.view (1.27.0, FR-CASH-007). The same for one staff member (`id` = user id) in the caller''s scope; a field staff member may only read their own. Out of scope answers 404.'
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/CashInHand' } } } }
+        '404': { $ref: '#/components/responses/Problem' }
   /cash/positions:
     get:
       tags: [cash]
@@ -2347,6 +2363,31 @@ components:
         pendingDepositsPoisha: { type: integer }
         todayCashPoisha: { type: integer }
         todayMobilePoisha: { type: integer }
+    CashInHand:
+      type: object
+      description: '1.27.0 (FR-CASH-007). Deposits (pending and verified) pay off cash collections oldest-first; what is left is the cash in hand, listed newest first. `onHandPoisha` equals the position''s and covers every item, also when more than 200 exist (`count` > `items.length`). Field-system cash, not an ERP balance.'
+      required: [userId, userName, onHandPoisha, pendingDepositsPoisha, count, items, generatedAt]
+      properties:
+        userId: { type: string }
+        userName: { type: string }
+        onHandPoisha: { type: integer }
+        pendingDepositsPoisha: { type: integer }
+        count: { type: integer, description: 'Collections with cash still in hand' }
+        items: { type: array, maxItems: 200, items: { $ref: '#/components/schemas/CashInHandItem' } }
+        generatedAt: { type: string, format: date-time }
+    CashInHandItem:
+      type: object
+      required: [collectionId, receiptNo, recordedAt, businessDate, customer, erpPlanId, amountPoisha, inHandPoisha, status]
+      properties:
+        collectionId: { type: string }
+        receiptNo: { type: string }
+        recordedAt: { type: string, format: date-time }
+        businessDate: { type: string, format: date }
+        customer: { type: object, properties: { id: { type: string }, name: { $ref: '#/components/schemas/I18nText' }, code: { type: string } } }
+        erpPlanId: { type: string, description: 'The invoice (ERP plan) the money was collected for' }
+        amountPoisha: { type: integer, description: 'The whole collection' }
+        inHandPoisha: { type: integer, description: 'The part not yet covered by a deposit; less than amountPoisha for the one collection a deposit covers only partly' }
+        status: { $ref: '#/components/schemas/CollectionStatus' }
     DepositCreate:
       type: object
       required: [clientId, amountPoisha, destination, depositedAt]
