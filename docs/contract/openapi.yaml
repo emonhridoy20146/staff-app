@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Howlader Field Operations API
-  version: 1.22.0
+  version: 1.23.0
   description: |
     Contract owned by field-api. Consumers (admin-web, staff-app) generate types from this file.
     Conventions (auth, pagination, idempotency, errors) are described in docs/05-api-contract.md.
@@ -664,6 +664,46 @@ paths:
         '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/DeleteLocationResult' } } } }
         '403': { $ref: '#/components/responses/Problem' }
         '404': { $ref: '#/components/responses/Problem' }
+  /customers/{id}/phones:
+    post:
+      tags: [customers]
+      operationId: addCustomerPhones
+      description: |
+        1.23.0 (FR-CUS-016, owner request 2026-11-21): add one to five mobile numbers to a customer in one call. The numbers
+        are kept in FOS only: nothing is written to the ERP and the ERP sync never removes them (ADR-042). Each number is
+        normalized to `01XXXXXXXXX` (Bangla digits, spaces, dashes and `+880` are accepted). A number the customer already
+        has (from the ERP or added before) is skipped as `duplicate`, so repeating a request changes nothing; at most five
+        added numbers per customer (`limit`). One invalid number refuses the whole request with 400. Audited as
+        `customer.phone.added` (last four digits only), reaches the phones through sync.
+        Permission `customer.phone.manage`; out of scope → 404. Offline phones use the sync mutation `customer_phone`.
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AddPhonesRequest' }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/AddPhonesResult' } } } }
+        '400': { $ref: '#/components/responses/Problem' }
+        '403': { $ref: '#/components/responses/Problem' }
+        '404': { $ref: '#/components/responses/Problem' }
+  /customers/{id}/phones/{number}:
+    delete:
+      tags: [customers]
+      operationId: removeCustomerPhone
+      description: |
+        1.23.0 (FR-CUS-016): remove a number that was added in FOS. A number that came from the ERP cannot be removed here
+        (422 `PHONE_FROM_ERP`: the office owns it). Idempotent: a number the customer does not have answers `removed: false`.
+        Audited as `customer.phone.removed`. Permission `customer.phone.manage`; out of scope → 404.
+      parameters:
+        - { $ref: '#/components/parameters/Id' }
+        - { name: number, in: path, required: true, schema: { type: string }, description: 'The mobile number, any accepted spelling' }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/RemovePhoneResult' } } } }
+        '400': { $ref: '#/components/responses/Problem' }
+        '403': { $ref: '#/components/responses/Problem' }
+        '404': { $ref: '#/components/responses/Problem' }
+        '422': { description: 'BUSINESS_RULE PHONE_FROM_ERP', content: { application/problem+json: { schema: { $ref: '#/components/schemas/Problem' } } } }
   /location-proposals:
     get:
       tags: [customers]
@@ -2138,7 +2178,8 @@ components:
         - $ref: '#/components/schemas/CustomerListItem'
         - type: object
           properties:
-            phones: { type: array, items: { type: string } }
+            phones: { type: array, items: { type: string }, description: 'ERP numbers first (ERP order), then the numbers added in FOS (1.23.0). Indexes of ERP numbers do not change' }
+            phoneDetails: { type: array, items: { $ref: '#/components/schemas/PhoneDetail' }, description: 'Added in 1.23.0. The same numbers in the same order, with where each came from' }
             guarantor: { type: object, properties: { name: { type: string }, phone: { type: string } } }
             detailedAddress: { type: string, description: 'Added in 1.13.0. ERP detailed address' }
             directions: { type: string, description: 'Added in 1.13.0. How to find the house (ERP location instructions)' }
@@ -2465,6 +2506,56 @@ components:
       properties:
         id: { type: string }
         status: { type: string, enum: [pending, approved, rejected], description: '`approved` when it was applied at once' }
+    PhoneDetail:
+      type: object
+      description: Added in 1.23.0. One phone number of a customer and where it came from
+      required: [number, source, primary]
+      properties:
+        number: { type: string, example: '01711000001' }
+        source: { type: string, enum: [erp, field], description: 'erp = sent by the office system; field = added in the app or the admin panel' }
+        primary: { type: boolean, description: 'The first ERP number, the one the office uses' }
+        label: { type: string, maxLength: 30, description: 'Whose number it is, as typed (field numbers only)' }
+        addedBy: { type: object, properties: { id: { type: string }, name: { type: string } }, description: 'Field numbers only' }
+        addedAt: { type: string, format: date-time, description: 'Field numbers only' }
+    AddPhonesRequest:
+      type: object
+      description: Added in 1.23.0
+      required: [phones]
+      properties:
+        phones:
+          type: array
+          minItems: 1
+          maxItems: 5
+          items:
+            type: object
+            required: [number]
+            properties:
+              number: { type: string, maxLength: 30, example: '01811000004' }
+              label: { type: [string, 'null'], maxLength: 30, example: 'wife' }
+    AddPhonesResult:
+      type: object
+      description: Added in 1.23.0
+      required: [added, skipped, phones, phoneDetails]
+      properties:
+        added: { type: array, items: { type: string }, description: 'Numbers added by this call, normalized' }
+        skipped:
+          type: array
+          items:
+            type: object
+            required: [number, reason]
+            properties:
+              number: { type: string }
+              reason: { type: string, enum: [duplicate, limit], description: 'duplicate = the customer already has it; limit = five added numbers already' }
+        phones: { type: array, items: { type: string } }
+        phoneDetails: { type: array, items: { $ref: '#/components/schemas/PhoneDetail' } }
+    RemovePhoneResult:
+      type: object
+      description: Added in 1.23.0
+      required: [removed, phones, phoneDetails]
+      properties:
+        removed: { type: boolean, description: 'false when the customer did not have this added number (nothing changed)' }
+        phones: { type: array, items: { type: string } }
+        phoneDetails: { type: array, items: { $ref: '#/components/schemas/PhoneDetail' } }
     DeleteLocationResult:
       type: object
       description: Added in 1.17.0
@@ -2576,7 +2667,7 @@ components:
       required: [mutationId, entity, op, payload]
       properties:
         mutationId: { type: string, format: uuid }
-        entity: { type: string, enum: [visit, collection, note, promise, promise_cancel, deposit, attendance_event, tag, location_proposal, visit_checkout, handover_decision, cash_closing, contact_attempt, broadcast_ack, task_resolve_request, attendance_selfie], description: 'attendance_selfie (1.21.0) payload { eventClientId, selfieMediaId }: adds the photo to an attendance event that was sent before its photo uploaded; send it after that event (dependsOn).' }
+        entity: { type: string, enum: [visit, collection, note, promise, promise_cancel, deposit, attendance_event, tag, location_proposal, visit_checkout, handover_decision, cash_closing, contact_attempt, broadcast_ack, task_resolve_request, attendance_selfie, customer_phone], description: 'customer_phone (1.23.0) payload { customerId, phones: [{ number, label? }] }: same body as POST /customers/{id}/phones; needs permission customer.phone.manage; a repeat adds nothing. attendance_selfie (1.21.0) payload { eventClientId, selfieMediaId }: adds the photo to an attendance event that was sent before its photo uploaded; send it after that event (dependsOn).' }
         op: { type: string, enum: [create, update] }
         payload:
           type: object

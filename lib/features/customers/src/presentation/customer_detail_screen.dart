@@ -21,7 +21,9 @@ import '../pin_correction.dart';
 import '../customer_providers.dart';
 import '../data/customer_repository.dart';
 import '../domain/customer.dart';
+import '../domain/phones.dart';
 import '../domain/schedule.dart';
+import '../phone_numbers.dart';
 
 Future<void> launchCall(String phone) => launchUrl(Uri(scheme: 'tel', path: phone));
 
@@ -240,7 +242,7 @@ class _Header extends ConsumerWidget {
     final cs = Theme.of(context).colorScheme;
     final f = ref.watch(fmtProvider);
     final today = ref.watch(todayProvider);
-    final phones = customer.phones;
+    final phones = customer.phoneList;
     final badges = customer.badges(today);
     final access = ref.watch(accessProvider);
     final canPropose = access.flag('module.customers') && access.can(Perm.customerLocationPropose);
@@ -303,6 +305,18 @@ class _Header extends ConsumerWidget {
             _PhonesRow(customer: customer, phones: phones),
             const SizedBox(height: Space.s8),
           ],
+          // FR-M-037: add more numbers (several at once); they are kept in the field system, not in the ERP.
+          if (access.can(Perm.customerPhoneManage) && phoneRoom(phones) > 0) ...[
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: TextButton.icon(
+                onPressed: () => showAddPhonesSheet(context, customerId: customer.id, existing: phones),
+                icon: const Icon(Icons.add_call),
+                label: Text(l.phoneAddNumber),
+              ),
+            ),
+            const SizedBox(height: Space.s4),
+          ],
           OutlinedButton.icon(
             onPressed: customer.hasPin
                 ? () => launchNavigate(customer.row.lat!, customer.row.lng!, customer.row.nameBn)
@@ -318,13 +332,15 @@ class _Header extends ConsumerWidget {
   }
 }
 
-/// All phone numbers for this customer. The first is the ERP primary (shown with
-/// a chip); any additional numbers are field-added (shown with "Added" chip).
-/// Each number is a tappable call button that logs the contact attempt.
+/// All phone numbers of the customer (FR-M-037): the ERP's first, marked
+/// "ERP" (the main one in the primary colour), then the ones added in the
+/// field, marked "added" with whose number it is; one still waiting to reach
+/// the server shows a cloud icon. Each row calls the number and logs the
+/// attempt by its index (never the number).
 class _PhonesRow extends ConsumerWidget {
   const _PhonesRow({required this.customer, required this.phones});
   final Customer customer;
-  final List<String> phones;
+  final List<CustomerPhone> phones;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -332,11 +348,12 @@ class _PhonesRow extends ConsumerWidget {
     final t = Theme.of(context).textTheme;
     final cs = Theme.of(context).colorScheme;
     final f = ref.watch(fmtProvider);
-    if (phones.length == 1) {
+    final numbers = [for (final p in phones) p.number];
+    if (phones.length == 1 && phones.first.fromErp) {
       return OutlinedButton.icon(
-        onPressed: () => callAndLog(context, ref, customerId: customer.id, phones: phones),
+        onPressed: () => callAndLog(context, ref, customerId: customer.id, phones: numbers),
         icon: const Icon(Icons.call_rounded),
-        label: Text(f.num(phones.first)),
+        label: Text(f.num(numbers.first)),
         style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(Sizes.primaryButton)),
       );
     }
@@ -347,21 +364,30 @@ class _PhonesRow extends ConsumerWidget {
           Padding(
             padding: EdgeInsets.only(bottom: i < phones.length - 1 ? Space.s8 : 0),
             child: OutlinedButton(
-              onPressed: () => callAndLog(context, ref, customerId: customer.id, phones: phones, index: i),
+              onPressed: () => callAndLog(context, ref, customerId: customer.id, phones: numbers, index: i),
               style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(Sizes.primaryButton), padding: const EdgeInsets.symmetric(horizontal: Space.s12, vertical: Space.s8)),
               child: Row(children: [
                 const Icon(Icons.call_rounded, size: 20),
                 const SizedBox(width: Space.s8),
-                Expanded(child: Text(f.num(phones[i]), style: t.bodyMedium)),
+                Expanded(
+                  child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Text(f.num(phones[i].number), style: t.bodyMedium),
+                    if (phones[i].label != null) Text(phones[i].label!, style: t.labelSmall!.copyWith(color: cs.onSurfaceVariant), maxLines: 1, overflow: TextOverflow.ellipsis),
+                  ]),
+                ),
+                if (phones[i].pending) ...[
+                  Icon(Icons.cloud_upload_outlined, size: 18, color: cs.onSurfaceVariant, semanticLabel: l.phonePending),
+                  const SizedBox(width: Space.s8),
+                ],
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: Space.s4, vertical: 2),
                   decoration: BoxDecoration(
-                    color: i == 0 ? cs.primaryContainer : cs.secondaryContainer,
+                    color: phones[i].primary ? cs.primaryContainer : (phones[i].fromErp ? cs.surfaceContainerHighest : cs.secondaryContainer),
                     borderRadius: Radii.brSm,
                   ),
                   child: Text(
-                    i == 0 ? l.phoneErpPrimary : l.phoneAdded,
-                    style: t.labelSmall!.copyWith(color: i == 0 ? cs.onPrimaryContainer : cs.onSecondaryContainer),
+                    phones[i].fromErp ? l.phoneErpPrimary : l.phoneAdded,
+                    style: t.labelSmall!.copyWith(color: phones[i].primary ? cs.onPrimaryContainer : (phones[i].fromErp ? cs.onSurfaceVariant : cs.onSecondaryContainer)),
                   ),
                 ),
               ]),

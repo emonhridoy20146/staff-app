@@ -48,3 +48,5 @@ drift `schemaVersion` integer; each feature contributes `MigrationStep`s registe
 - Own collections kept 60 days, visits/notes 30 days beyond scope.
 - Logout: requires empty outbox (or explicit manager-forced logout) → wipe DB file + media dir + secure storage tokens.
 - 5 failed PINs → lock; requires online password login of the **same** user to unlock (data kept encrypted).
+
+**0.13.1 (FR-M-037), no schema change:** `customers.phones_json` is a JSON array. An ERP number is a plain string (as before); a number added in the field is `{ "n": "01XXXXXXXXX", "s": "f", "l": label?, "p": true? }` where `p` marks one saved on this phone and not yet on the server. Read through `decodePhones` (`customers/src/domain/phones.dart`), never by hand.

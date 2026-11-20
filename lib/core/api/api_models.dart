@@ -207,6 +207,7 @@ class SyncMutation {
     'broadcast_ack', // 1.12.0
     'task_resolve_request', // 1.20.0
     'attendance_selfie', // 1.21.0
+    'customer_phone', // 1.23.0
   };
 }
 

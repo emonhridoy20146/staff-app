@@ -2367,6 +2367,57 @@ class AppLocalizationsEn extends AppLocalizations {
   String get phoneAddNumber => 'Add number';
 
   @override
+  String get phoneAddTitle => 'Add phone numbers';
+
+  @override
+  String get phoneAddHint => 'You can add several numbers at once. The ERP number stays as it is.';
+
+  @override
+  String phoneNumberN(String n) {
+    return 'Number $n';
+  }
+
+  @override
+  String get phoneWhose => 'Whose number';
+
+  @override
+  String get phoneWhoseHint => 'wife, shop, son';
+
+  @override
+  String phoneDropRow(String n) {
+    return 'Drop number $n';
+  }
+
+  @override
+  String get phoneAnother => 'Another number';
+
+  @override
+  String get phoneErrInvalid => 'Enter a Bangladesh mobile number (01XXXXXXXXX)';
+
+  @override
+  String get phoneErrDuplicate => 'The customer already has this number';
+
+  @override
+  String get phoneErrRepeated => 'This number is typed twice';
+
+  @override
+  String get phoneErrEmpty => 'Type at least one number';
+
+  @override
+  String get phoneKeptHere => 'These numbers stay in the field system. They are not sent to the ERP.';
+
+  @override
+  String get phoneSave => 'Save numbers';
+
+  @override
+  String phoneSavedN(String n) {
+    return 'Numbers added: $n';
+  }
+
+  @override
+  String get phonePending => 'Waiting to be sent to the server';
+
+  @override
   String planRolledHidden(String n) {
     return '$n unpaid installments were moved to a later one in the ERP and are hidden';
   }

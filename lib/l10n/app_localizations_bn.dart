@@ -2361,6 +2361,57 @@ class AppLocalizationsBn extends AppLocalizations {
   String get phoneAddNumber => 'নম্বর যোগ করুন';
 
   @override
+  String get phoneAddTitle => 'ফোন নম্বর যোগ করুন';
+
+  @override
+  String get phoneAddHint => 'একসাথে কয়েকটি নম্বর দিতে পারেন। ERP-র নম্বর আগের মতোই থাকবে।';
+
+  @override
+  String phoneNumberN(String n) {
+    return 'নম্বর $n';
+  }
+
+  @override
+  String get phoneWhose => 'কার নম্বর';
+
+  @override
+  String get phoneWhoseHint => 'স্ত্রী, দোকান, ছেলে';
+
+  @override
+  String phoneDropRow(String n) {
+    return 'নম্বর $n বাদ দিন';
+  }
+
+  @override
+  String get phoneAnother => 'আরেকটি নম্বর';
+
+  @override
+  String get phoneErrInvalid => 'বাংলাদেশের মোবাইল নম্বর দিন (01XXXXXXXXX)';
+
+  @override
+  String get phoneErrDuplicate => 'এই নম্বরটি গ্রাহকের আগে থেকেই আছে';
+
+  @override
+  String get phoneErrRepeated => 'এই নম্বরটি দুইবার লেখা হয়েছে';
+
+  @override
+  String get phoneErrEmpty => 'অন্তত একটি নম্বর লিখুন';
+
+  @override
+  String get phoneKeptHere => 'এই নম্বরগুলো ফিল্ড সিস্টেমে থাকে; ERP-তে পাঠানো হয় না।';
+
+  @override
+  String get phoneSave => 'নম্বর সংরক্ষণ';
+
+  @override
+  String phoneSavedN(String n) {
+    return '$nটি নম্বর যোগ হয়েছে';
+  }
+
+  @override
+  String get phonePending => 'সার্ভারে পাঠানোর অপেক্ষায়';
+
+  @override
   String planRolledHidden(String n) {
     return 'ইআরপি-তে $nটি অপরিশোধিত কিস্তি পরের কিস্তিতে সরানো হয়েছে, তাই দেখানো হচ্ছে না';
   }

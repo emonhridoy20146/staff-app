@@ -4187,6 +4187,96 @@ abstract class AppLocalizations {
   /// **'Add number'**
   String get phoneAddNumber;
 
+  /// No description provided for @phoneAddTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add phone numbers'**
+  String get phoneAddTitle;
+
+  /// No description provided for @phoneAddHint.
+  ///
+  /// In en, this message translates to:
+  /// **'You can add several numbers at once. The ERP number stays as it is.'**
+  String get phoneAddHint;
+
+  /// No description provided for @phoneNumberN.
+  ///
+  /// In en, this message translates to:
+  /// **'Number {n}'**
+  String phoneNumberN(String n);
+
+  /// No description provided for @phoneWhose.
+  ///
+  /// In en, this message translates to:
+  /// **'Whose number'**
+  String get phoneWhose;
+
+  /// No description provided for @phoneWhoseHint.
+  ///
+  /// In en, this message translates to:
+  /// **'wife, shop, son'**
+  String get phoneWhoseHint;
+
+  /// No description provided for @phoneDropRow.
+  ///
+  /// In en, this message translates to:
+  /// **'Drop number {n}'**
+  String phoneDropRow(String n);
+
+  /// No description provided for @phoneAnother.
+  ///
+  /// In en, this message translates to:
+  /// **'Another number'**
+  String get phoneAnother;
+
+  /// No description provided for @phoneErrInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a Bangladesh mobile number (01XXXXXXXXX)'**
+  String get phoneErrInvalid;
+
+  /// No description provided for @phoneErrDuplicate.
+  ///
+  /// In en, this message translates to:
+  /// **'The customer already has this number'**
+  String get phoneErrDuplicate;
+
+  /// No description provided for @phoneErrRepeated.
+  ///
+  /// In en, this message translates to:
+  /// **'This number is typed twice'**
+  String get phoneErrRepeated;
+
+  /// No description provided for @phoneErrEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Type at least one number'**
+  String get phoneErrEmpty;
+
+  /// No description provided for @phoneKeptHere.
+  ///
+  /// In en, this message translates to:
+  /// **'These numbers stay in the field system. They are not sent to the ERP.'**
+  String get phoneKeptHere;
+
+  /// No description provided for @phoneSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save numbers'**
+  String get phoneSave;
+
+  /// No description provided for @phoneSavedN.
+  ///
+  /// In en, this message translates to:
+  /// **'Numbers added: {n}'**
+  String phoneSavedN(String n);
+
+  /// No description provided for @phonePending.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting to be sent to the server'**
+  String get phonePending;
+
   /// No description provided for @planRolledHidden.
   ///
   /// In en, this message translates to:

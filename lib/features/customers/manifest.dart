@@ -8,6 +8,7 @@ import '../../core/settings/ui_prefs.dart';
 import '../../core/sync/sync_handlers.dart';
 import '../../l10n/app_localizations.dart';
 import 'src/contact_attempts.dart';
+import 'src/phone_numbers.dart';
 import 'src/pin_correction.dart';
 import 'src/data/customer_repository.dart';
 import 'src/presentation/customer_detail_screen.dart';
@@ -18,13 +19,13 @@ import 'src/presentation/map_pin_screen.dart';
 FeatureManifest customersManifest(SyncHandlerRegistry Function() registry) => FeatureManifest(
       name: 'customers',
       flag: 'module.customers',
-      permissions: const [Perm.customerView, Perm.customerLocationPropose],
+      permissions: const [Perm.customerView, Perm.customerLocationPropose, Perm.customerPhoneManage],
       routes: [
         GoRoute(path: '/customers/:id/pin', builder: (_, s) => MapPinScreen(customerId: s.pathParameters['id']!)),
         GoRoute(path: '/customers/:id', builder: (_, s) => CustomerDetailScreen(customerId: s.pathParameters['id']!, initialAction: s.uri.queryParameters['action'])),
       ],
       pullHandlers: [CustomerPullHandler(registry), ContactAttemptPullHandler(), LocationProposalPullHandler()],
-      pushHandlers: [ContactAttemptPushHandler(), LocationProposalPushHandler()],
+      pushHandlers: [ContactAttemptPushHandler(), LocationProposalPushHandler(), CustomerPhonePushHandler()],
       customerActions: [
         CustomerActionDef(
           id: 'pin',
