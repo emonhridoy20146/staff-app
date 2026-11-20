@@ -49,6 +49,7 @@ Phases match `field-api/docs/09-progress.md`. Start each phase against the Prism
 | Confirm a visit or collection recorded far from the customer's pin (FR-M-043) | ✅ 2026-11-21, unit tests; device check pending |
 | Bell with what waits for the user: promises due today, new tasks, co-work requests, notices, handovers (FR-M-044) | ✅ 2026-11-21, unit tests; device check pending |
 | Branch switch filters list, Today, map and collect picker together (FR-M-045) | ✅ 2026-11-21, unit test; device check pending |
+| Customer list: paid / not paid this month filters with counts (FR-M-046) | ✅ 2026-11-21, unit test; device check pending |
 | Notifications (FCM + centre), Sync centre & Problems | ◐ sync centre done; FCM not yet (needs Firebase project) |
 | Onboarding: consent, permissions primer | ✅ |
 **Acceptance:** M-E2…M-E7, M-E9, M-E10 green; manual device checklist (non-location sections) signed off on 4 OEM devices; pilot 5 staff × 2 weeks with zero lost/duplicate collections.

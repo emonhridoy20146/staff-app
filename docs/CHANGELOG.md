@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 Contract pinned: field-api `openapi.yaml` **1.24.0** (1.22.0 → 1.24.0, additive: 1.23.0 extra phone numbers, 1.24.0 this month on a customer and invoice counts; `docs/contract/openapi.yaml`). Needs field-api 1.23.0 on the server for adding numbers; everything else works with 1.22.0.
+### Added (owner request 2026-11-21: who paid this month; FR-M-046)
+- Two new chips on the customer list with their counts: **"এ মাসে দিয়েছে"** (an ERP payment dated this month, or field money still waiting for the ERP) and **"এ মাসে দেয়নি"** (owes money and gave nothing this month). Same rule as the money work mark; sorted by days overdue, so long-overdue customers come first in both. They follow the branch picked in the top bar and combine with search.
+- From the phone's own data, works offline. No schema or contract change.
+
 ### Fixed (owner request 2026-11-21: the branch switch filters everywhere; FR-M-045)
 - Picking a branch in the top bar narrowed only the customer list. Today's priorities and counts, the map, the collect customer picker and the numbers on the list's filter chips still showed every branch. All of them now read one provider (`branchCustomersProvider`, rule `inBranch`), so the switch changes them together; "সব শাখা" shows everyone.
 - A picked branch that is no longer on the phone falls back to all branches instead of breaking the dropdown.

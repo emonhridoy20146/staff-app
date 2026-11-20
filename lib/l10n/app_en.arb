@@ -234,6 +234,8 @@
   "filterBadSuggested": "Possibly bad",
   "filterTagged": "Tagged",
   "filterNoPin": "No pin",
+  "filterPaidThisMonth": "Paid this month",
+  "filterNotPaidThisMonth": "Not paid this month",
   "sortBy": "Sort",
   "sortDistance": "Nearest",
   "sortDaysOverdue": "Most overdue",

@@ -443,6 +443,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get filterNoPin => 'No pin';
 
   @override
+  String get filterPaidThisMonth => 'Paid this month';
+
+  @override
+  String get filterNotPaidThisMonth => 'Not paid this month';
+
+  @override
   String get sortBy => 'Sort';
 
   @override
