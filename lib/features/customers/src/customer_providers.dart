@@ -111,6 +111,7 @@ final filteredCustomersProvider = Provider<AsyncValue<List<Customer>>>((ref) {
       filter: ref.watch(customerFilterProvider),
       sort: ref.watch(customerSortProvider),
       myUserId: ref.watch(myCustomerUserIdProvider),
+      paidThisMonth: ref.watch(paidThisMonthProvider).value ?? const {},
     ),
   );
 });

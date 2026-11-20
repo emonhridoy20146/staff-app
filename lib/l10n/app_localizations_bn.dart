@@ -443,6 +443,12 @@ class AppLocalizationsBn extends AppLocalizations {
   String get filterNoPin => 'পিন নেই';
 
   @override
+  String get filterPaidThisMonth => 'এ মাসে দিয়েছে';
+
+  @override
+  String get filterNotPaidThisMonth => 'এ মাসে দেয়নি';
+
+  @override
   String get sortBy => 'সাজান';
 
   @override

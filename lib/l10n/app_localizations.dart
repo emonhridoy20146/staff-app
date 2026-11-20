@@ -872,6 +872,18 @@ abstract class AppLocalizations {
   /// **'No pin'**
   String get filterNoPin;
 
+  /// No description provided for @filterPaidThisMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Paid this month'**
+  String get filterPaidThisMonth;
+
+  /// No description provided for @filterNotPaidThisMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Not paid this month'**
+  String get filterNotPaidThisMonth;
+
   /// No description provided for @sortBy.
   ///
   /// In en, this message translates to:

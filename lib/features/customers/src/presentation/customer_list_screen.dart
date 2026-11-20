@@ -18,6 +18,8 @@ String filterLabel(AppLocalizations l, CustomerFilter f) => switch (f) {
       CustomerFilter.dueToday => l.filterDueToday,
       CustomerFilter.overdue => l.filterOverdue,
       CustomerFilter.promisedToday => l.filterPromisedToday,
+      CustomerFilter.paidThisMonth => l.filterPaidThisMonth,
+      CustomerFilter.notPaidThisMonth => l.filterNotPaidThisMonth,
       CustomerFilter.mine => l.filterMine,
       CustomerFilter.badSuggested => l.filterBadSuggested,
       CustomerFilter.tagged => l.filterTagged,
@@ -72,7 +74,8 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
     final me = ref.watch(myCustomerUserIdProvider);
     // The chip numbers follow the branch picked in the top bar, like the list.
     final shown = ref.watch(branchCustomersProvider).value ?? const <Customer>[];
-    int countFor(CustomerFilter x) => shown.where((c) => matchesFilter(c, x, today: today, myUserId: me)).length;
+    final paid = ref.watch(paidThisMonthProvider).value ?? const <String, int>{};
+    int countFor(CustomerFilter x) => shown.where((c) => matchesFilter(c, x, today: today, myUserId: me, paidThisMonth: paid)).length;
     // Since 1.19.0 the list holds the whole branch: "Mine" appears once someone else's customers are on the phone.
     final showMine = all.any((c) => c.isOthers(me));
     final sync = ref.watch(syncStatusProvider).value ?? ref.read(syncEngineProvider).current;

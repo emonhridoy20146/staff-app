@@ -57,6 +57,24 @@ void main() {
     expect(prioritize(inBranch(all, 'br-1'), today).due.map((c) => c.id), ['a']);
   });
 
+  test('paid this month / not paid this month (FR-M-046)', () async {
+    await pull('erp');
+    await pull('none', daysOverdue: 40);
+    await pull('other');
+    final all = await repo.watchAll().first;
+    const paid = {'erp': 50000, 'other': 0};
+
+    bool m(String id, CustomerFilter f) => matchesFilter(all.firstWhere((c) => c.id == id), f, today: today, paidThisMonth: paid);
+    expect(m('erp', CustomerFilter.paidThisMonth), isTrue);
+    expect(m('erp', CustomerFilter.notPaidThisMonth), isFalse);
+    expect(m('none', CustomerFilter.paidThisMonth), isFalse);
+    expect(m('none', CustomerFilter.notPaidThisMonth), isTrue);
+    // a zero in the map is not a payment
+    expect(m('other', CustomerFilter.notPaidThisMonth), isTrue);
+    // sorted by days overdue, the long-overdue one who has not paid comes first
+    expect(applyQuery(all, today: today, filter: CustomerFilter.notPaidThisMonth, paidThisMonth: paid).first.id, 'none');
+  });
+
   test("Today lists own and unassigned customers, never a colleague's; Mine narrows the list", () async {
     await pull('mine', assignee: 'me', dueToday: true);
     await pull('free', daysOverdue: 3);

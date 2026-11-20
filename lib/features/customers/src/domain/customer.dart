@@ -162,7 +162,10 @@ List<PlanItem> decodePlanItems(String? json) {
 bool isCollectablePlan({required String status, required int outstandingPoisha}) =>
     outstandingPoisha > 0 && status != 'closed' && status != 'cancelled' && status != 'completed';
 
-enum CustomerFilter { all, dueToday, overdue, promisedToday, mine, badSuggested, tagged, noPin }
+/// `paidThisMonth` / `notPaidThisMonth` (FR-M-046): money this month means an
+/// ERP payment dated this month or field money still waiting for the ERP,
+/// the same rule as the money work mark.
+enum CustomerFilter { all, dueToday, overdue, promisedToday, paidThisMonth, notPaidThisMonth, mine, badSuggested, tagged, noPin }
 
 enum CustomerSort { distance, daysOverdue, amount, name }
 
@@ -181,7 +184,14 @@ String normalizeSearch(String s) {
   return b.toString().replaceAll(RegExp(r'[\-\.,/]'), '').replaceAll(RegExp(r'\s+'), ' ').trim();
 }
 
-bool matchesFilter(Customer c, CustomerFilter f, {required String today, String? myUserId}) => switch (f) {
+/// [paidThisMonth] is ERP money per customer for the month of [today]
+/// (`paidThisMonth` in work_marks.dart); without it only field money counts.
+bool gaveMoneyThisMonth(Customer c, Map<String, int> paidThisMonth) => (paidThisMonth[c.id] ?? 0) > 0 || c.row.pendingFieldPoisha > 0;
+
+bool matchesFilter(Customer c, CustomerFilter f, {required String today, String? myUserId, Map<String, int> paidThisMonth = const {}}) => switch (f) {
+      CustomerFilter.paidThisMonth => gaveMoneyThisMonth(c, paidThisMonth),
+      // someone who owes nothing is not "still to pay"
+      CustomerFilter.notPaidThisMonth => c.outstanding > 0 && !gaveMoneyThisMonth(c, paidThisMonth),
       CustomerFilter.all => true,
       CustomerFilter.dueToday => c.row.dueToday,
       CustomerFilter.overdue => c.row.daysOverdue > 0,
@@ -199,9 +209,10 @@ List<Customer> applyQuery(
   CustomerFilter filter = CustomerFilter.all,
   CustomerSort sort = CustomerSort.daysOverdue,
   String? myUserId,
+  Map<String, int> paidThisMonth = const {},
 }) {
   final q = normalizeSearch(search);
-  final out = all.where((c) => matchesFilter(c, filter, today: today, myUserId: myUserId) && (q.isEmpty || c.row.searchText.contains(q))).toList();
+  final out = all.where((c) => matchesFilter(c, filter, today: today, myUserId: myUserId, paidThisMonth: paidThisMonth) && (q.isEmpty || c.row.searchText.contains(q))).toList();
   int byName(Customer a, Customer b) => a.row.nameBn.compareTo(b.row.nameBn);
   switch (sort) {
     case CustomerSort.distance:

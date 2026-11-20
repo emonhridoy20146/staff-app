@@ -129,6 +129,8 @@
   "filterBadSuggested": "সম্ভাব্য খারাপ",
   "filterTagged": "চিহ্নিত",
   "filterNoPin": "পিন নেই",
+  "filterPaidThisMonth": "এ মাসে দিয়েছে",
+  "filterNotPaidThisMonth": "এ মাসে দেয়নি",
   "sortBy": "সাজান",
   "sortDistance": "কাছের আগে",
   "sortDaysOverdue": "বেশি বকেয়া দিন",
