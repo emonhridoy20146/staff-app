@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 Contract pinned: field-api `openapi.yaml` **1.24.0** (1.22.0 → 1.24.0, additive: 1.23.0 extra phone numbers, 1.24.0 this month on a customer and invoice counts; `docs/contract/openapi.yaml`). Needs field-api 1.23.0 on the server for adding numbers; everything else works with 1.22.0.
+### Changed (owner request 2026-11-21: everything I did today, and on earlier days; FR-M-041)
+- **Today's Work lists all of the day's work**, latest first: visits, collections, promises, notes, map pins sent, calls and tasks reported done. Before it had visits and collections only. A row opens the customer (or the task).
+- **Earlier days**: the arrows in the top bar go back a day at a time (and forward again up to today); `/today-work?date=YYYY-MM-DD` opens a given day.
+- **Counts at the top**: visits, money posted in the ERP, money pending in ERP as its own chip (never one sum), promises.
+- **Customer names** are shown for every row (a visit without a collection used to show the customer's id).
+- New extension point `workLogSources` (`core/feature/feature_manifest.dart`): each feature lists the user's own work of a business day from its own table; the screen only merges. The `today` feature no longer imports the visits feature's internals or reads its table.
+- A map pin proposal has no time column; the moment comes from its UUIDv7 client id (`uuidV7Time`).
+- Tests: `test/features/work_log_test.dart` (counts, order, day bounds, UUIDv7 time). Device check pending.
 ### Fixed (owner rule 2026-11-21: two late days = one absent day; FR-M-040)
 - The attendance hub marked a late day red only when the day before or after was late too. The owner's rule is by count, not by neighbours: **every two late days in a month are one absent day**. The 2nd, 4th, … late day of a month is now the one marked "অনুপস্থিতি হিসেবে গণ্য"; other late days stay amber.
 - A line above the history says "এ মাসে দেরি N দিন · অনুপস্থিতি ধরা হবে M দিন" (amber, red once an absent day is counted).

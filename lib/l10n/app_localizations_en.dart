@@ -2424,6 +2424,32 @@ class AppLocalizationsEn extends AppLocalizations {
   String get phonePending => 'Waiting to be sent to the server';
 
   @override
+  String get workPosted => 'Posted in ERP';
+
+  @override
+  String get workPromises => 'Promises';
+
+  @override
+  String get workEmptyTitle => 'No work recorded on this day';
+
+  @override
+  String get workEmptyBody => 'Visits, collections, promises, notes, pins, calls and finished tasks show here.';
+
+  @override
+  String get workPrevDay => 'Previous day';
+
+  @override
+  String get workNextDay => 'Next day';
+
+  @override
+  String get workPin => 'Map pin sent';
+
+  @override
+  String workTaskDone(String title) {
+    return 'Reported done: $title';
+  }
+
+  @override
   String get marksVisitToday => 'Visited today';
 
   @override

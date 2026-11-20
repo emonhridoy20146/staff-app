@@ -4283,6 +4283,54 @@ abstract class AppLocalizations {
   /// **'Waiting to be sent to the server'**
   String get phonePending;
 
+  /// No description provided for @workPosted.
+  ///
+  /// In en, this message translates to:
+  /// **'Posted in ERP'**
+  String get workPosted;
+
+  /// No description provided for @workPromises.
+  ///
+  /// In en, this message translates to:
+  /// **'Promises'**
+  String get workPromises;
+
+  /// No description provided for @workEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No work recorded on this day'**
+  String get workEmptyTitle;
+
+  /// No description provided for @workEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Visits, collections, promises, notes, pins, calls and finished tasks show here.'**
+  String get workEmptyBody;
+
+  /// No description provided for @workPrevDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous day'**
+  String get workPrevDay;
+
+  /// No description provided for @workNextDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Next day'**
+  String get workNextDay;
+
+  /// No description provided for @workPin.
+  ///
+  /// In en, this message translates to:
+  /// **'Map pin sent'**
+  String get workPin;
+
+  /// No description provided for @workTaskDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Reported done: {title}'**
+  String workTaskDone(String title);
+
   /// No description provided for @marksVisitToday.
   ///
   /// In en, this message translates to:

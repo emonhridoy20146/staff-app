@@ -69,6 +69,41 @@ class TimelineSourceDef {
   final Stream<List<TimelineEntry>> Function(BuildContext context, WidgetRef ref, String customerId) watch;
 }
 
+/// What kind of work a work-log entry is (its colour and the day's counts).
+enum WorkKind { visit, collection, promise, note, pin, task, call }
+
+/// One thing the signed-in user did on a day (FR-M-041), contributed by the
+/// feature that owns it.
+class WorkLogEntry {
+  const WorkLogEntry({required this.at, required this.kind, required this.icon, required this.title, this.subtitle, this.customerId, this.route, this.amountPoisha, this.pending = false});
+  final DateTime at;
+  final WorkKind kind;
+  final IconData icon;
+  final String title;
+  final String? subtitle;
+
+  /// The customer it was done for; a tap opens that customer.
+  final String? customerId;
+
+  /// Where a tap goes when there is no customer (a task).
+  final String? route;
+
+  /// Money of a collection.
+  final int? amountPoisha;
+
+  /// Saved here or on the server but not final yet (money not in the ERP).
+  final bool pending;
+}
+
+/// Extension point: a feature lists the user's own work of one Dhaka
+/// business day. The Today's Work screen merges every source; it never
+/// reads another feature's tables itself.
+class WorkLogSourceDef {
+  const WorkLogSourceDef({required this.id, required this.watch});
+  final String id;
+  final Stream<List<WorkLogEntry>> Function(BuildContext context, WidgetRef ref, String businessDate) watch;
+}
+
 /// Feature module manifest (04-architecture §3). Each feature folder
 /// `lib/features/<name>/` exports exactly one manifest from its barrel and
 /// is listed once in `lib/app/features.dart`.
@@ -84,6 +119,7 @@ class FeatureManifest {
     this.todayCards = const [],
     this.meEntries = const [],
     this.timelineSources = const [],
+    this.workLogSources = const [],
   });
 
   final String name;
@@ -100,6 +136,7 @@ class FeatureManifest {
   final List<TodayCardDef> todayCards;
   final List<MeEntryDef> meEntries;
   final List<TimelineSourceDef> timelineSources;
+  final List<WorkLogSourceDef> workLogSources;
 }
 
 /// The registered manifests (overridden at bootstrap from

@@ -7,6 +7,6 @@ import 'src/today_work_screen.dart';
 final todayManifest = FeatureManifest(
   name: 'today',
   routes: [
-    GoRoute(path: '/today-work', builder: (_, _) => const TodayWorkScreen()),
+    GoRoute(path: '/today-work', builder: (_, s) => TodayWorkScreen(date: s.uri.queryParameters['date'])),
   ],
 );

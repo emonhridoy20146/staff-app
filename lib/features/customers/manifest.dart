@@ -10,6 +10,7 @@ import '../../l10n/app_localizations.dart';
 import 'src/contact_attempts.dart';
 import 'src/phone_numbers.dart';
 import 'src/pin_correction.dart';
+import 'src/work_log.dart';
 import 'src/data/customer_repository.dart';
 import 'src/presentation/customer_detail_screen.dart';
 import 'src/presentation/map_pin_screen.dart';
@@ -35,6 +36,10 @@ FeatureManifest customersManifest(SyncHandlerRegistry Function() registry) => Fe
           label: (c) => AppLocalizations.of(c).actionCorrectLocation,
           onTap: (c, ref, x) => openPinCorrection(c, x.customerId),
         ),
+      ],
+      workLogSources: const [
+        WorkLogSourceDef(id: 'pins', watch: watchPinWorkLog),
+        WorkLogSourceDef(id: 'calls', watch: watchCallWorkLog),
       ],
       timelineSources: [
         TimelineSourceDef(

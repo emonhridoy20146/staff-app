@@ -1559,6 +1559,19 @@
     }
   },
   "phonePending": "Waiting to be sent to the server",
+  "workPosted": "Posted in ERP",
+  "workPromises": "Promises",
+  "workEmptyTitle": "No work recorded on this day",
+  "workEmptyBody": "Visits, collections, promises, notes, pins, calls and finished tasks show here.",
+  "workPrevDay": "Previous day",
+  "workNextDay": "Next day",
+  "workPin": "Map pin sent",
+  "workTaskDone": "Reported done: {title}",
+  "@workTaskDone": {
+    "placeholders": {
+      "title": { "type": "String" }
+    }
+  },
   "marksVisitToday": "Visited today",
   "marksVisitMonth": "Visited this month",
   "marksVisitNone": "Not visited this month",

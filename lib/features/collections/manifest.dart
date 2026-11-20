@@ -15,6 +15,7 @@ import 'src/domain/collection_rules.dart' show receiptLowWater;
 import 'src/presentation/collect_flow_screen.dart';
 import 'src/presentation/collect_success_screen.dart';
 import 'src/presentation/customer_picker_screen.dart';
+import 'src/work_log.dart';
 
 /// Status chip for a local collection (04-architecture §5.6).
 Widget collectionStatusChip(BuildContext context, String status, String syncState) {
@@ -55,6 +56,7 @@ final collectionsManifest = FeatureManifest(
       onTap: (c, ref, x) => c.push('/collect/${x.customerId}'),
     ),
   ],
+  workLogSources: const [WorkLogSourceDef(id: 'collections', watch: watchCollectionWorkLog)],
   timelineSources: [
     TimelineSourceDef(
       id: 'collections',

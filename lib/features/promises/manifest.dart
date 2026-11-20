@@ -5,6 +5,7 @@ import '../../core/permissions/permission_service.dart';
 import '../../core/settings/ui_prefs.dart';
 import '../../l10n/app_localizations.dart';
 import 'src/promises.dart';
+import 'src/work_log.dart';
 
 /// Promises to pay with a local 09:00 reminder (FR-PRM-001…004, ADR-M06).
 final promisesManifest = FeatureManifest(
@@ -23,6 +24,7 @@ final promisesManifest = FeatureManifest(
       onTap: (c, ref, x) => showPromiseSheet(c, x.customerId),
     ),
   ],
+  workLogSources: const [WorkLogSourceDef(id: 'promises', watch: watchPromiseWorkLog)],
   timelineSources: [
     TimelineSourceDef(
       id: 'promises',

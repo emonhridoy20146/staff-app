@@ -46,6 +46,22 @@ DateTime parseBusinessDate(String s) {
   return DateTime.utc(p[0], p[1], p[2]);
 }
 
+/// 00:00 Dhaka of a business date, as a UTC instant.
+DateTime businessDayStartUtc(String ymd) => parseBusinessDate(ymd).subtract(dhakaOffset);
+
+/// The business date [days] after (negative: before) [ymd].
+String shiftBusinessDate(String ymd, int days) => businessDateOf(parseBusinessDate(ymd).add(Duration(days: days)));
+
+/// When a UUIDv7 was made (its first 48 bits are Unix milliseconds), or null
+/// when the id is not a version-7 UUID. Used for rows that carry a v7 client
+/// id and no time column of their own.
+DateTime? uuidV7Time(String id) {
+  final hex = id.replaceAll('-', '');
+  if (hex.length != 32 || hex[12] != '7') return null;
+  final ms = int.tryParse(hex.substring(0, 12), radix: 16);
+  return ms == null ? null : DateTime.fromMillisecondsSinceEpoch(ms, isUtc: true);
+}
+
 /// Days from [from] to [to] (both `YYYY-MM-DD`).
 int daysBetween(String from, String to) =>
     parseBusinessDate(to).difference(parseBusinessDate(from)).inDays;

@@ -5,6 +5,7 @@ import '../../core/permissions/permission_service.dart';
 import '../../core/settings/ui_prefs.dart';
 import '../../l10n/app_localizations.dart';
 import 'src/notes.dart';
+import 'src/work_log.dart';
 
 /// Notes on a customer (FR-NOTE-001).
 final notesManifest = FeatureManifest(
@@ -23,6 +24,7 @@ final notesManifest = FeatureManifest(
       onTap: (c, ref, x) => showNoteSheet(c, x.customerId),
     ),
   ],
+  workLogSources: const [WorkLogSourceDef(id: 'notes', watch: watchNoteWorkLog)],
   timelineSources: [
     TimelineSourceDef(
       id: 'notes',

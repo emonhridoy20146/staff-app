@@ -2418,6 +2418,32 @@ class AppLocalizationsBn extends AppLocalizations {
   String get phonePending => 'সার্ভারে পাঠানোর অপেক্ষায়';
 
   @override
+  String get workPosted => 'ERP-তে পোস্ট';
+
+  @override
+  String get workPromises => 'প্রতিশ্রুতি';
+
+  @override
+  String get workEmptyTitle => 'এই দিনে কোনো কাজ রেকর্ড নেই';
+
+  @override
+  String get workEmptyBody => 'ভিজিট, আদায়, প্রতিশ্রুতি, নোট, পিন, কল ও শেষ করা কাজ এখানে দেখা যাবে।';
+
+  @override
+  String get workPrevDay => 'আগের দিন';
+
+  @override
+  String get workNextDay => 'পরের দিন';
+
+  @override
+  String get workPin => 'ম্যাপ পিন পাঠানো হয়েছে';
+
+  @override
+  String workTaskDone(String title) {
+    return 'কাজ শেষ জানানো হয়েছে: $title';
+  }
+
+  @override
   String get marksVisitToday => 'আজ ভিজিট হয়েছে';
 
   @override
