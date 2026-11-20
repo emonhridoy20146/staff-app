@@ -2412,6 +2412,64 @@ class AppLocalizationsBn extends AppLocalizations {
   String get phonePending => 'সার্ভারে পাঠানোর অপেক্ষায়';
 
   @override
+  String get marksVisitToday => 'আজ ভিজিট হয়েছে';
+
+  @override
+  String get marksVisitMonth => 'এ মাসে ভিজিট হয়েছে';
+
+  @override
+  String get marksVisitNone => 'এ মাসে ভিজিট হয়নি';
+
+  @override
+  String get marksPaid => 'এ মাসে ERP-তে টাকা জমা হয়েছে';
+
+  @override
+  String get marksPending => 'আদায় হয়েছে, ERP-তে অপেক্ষমাণ';
+
+  @override
+  String get marksPaidNone => 'এ মাসে টাকা জমা হয়নি';
+
+  @override
+  String get marksPromiseOpen => 'প্রতিশ্রুতি আছে';
+
+  @override
+  String get marksPromiseNone => 'প্রতিশ্রুতি নেই';
+
+  @override
+  String get marksPinSet => 'ম্যাপে পিন আছে';
+
+  @override
+  String get marksPinMissing => 'ম্যাপে পিন নেই';
+
+  @override
+  String get monthTitle => 'এ মাসে';
+
+  @override
+  String monthLastVisit(String date) {
+    return 'সর্বশেষ ভিজিট $date';
+  }
+
+  @override
+  String monthPaid(String amount) {
+    return 'ERP-তে জমা $amount';
+  }
+
+  @override
+  String monthPending(String amount) {
+    return 'ERP-তে অপেক্ষমাণ $amount';
+  }
+
+  @override
+  String monthPromise(String date) {
+    return 'প্রতিশ্রুতি $date';
+  }
+
+  @override
+  String monthInvoices(String total, String open) {
+    return 'ইনভয়েস $totalটি · বাকি আছে $openটি';
+  }
+
+  @override
   String planRolledHidden(String n) {
     return 'ইআরপি-তে $nটি অপরিশোধিত কিস্তি পরের কিস্তিতে সরানো হয়েছে, তাই দেখানো হচ্ছে না';
   }

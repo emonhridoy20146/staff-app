@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Howlader Field Operations API
-  version: 1.23.0
+  version: 1.24.0
   description: |
     Contract owned by field-api. Consumers (admin-web, staff-app) generate types from this file.
     Conventions (auth, pagination, idempotency, errors) are described in docs/05-api-contract.md.
@@ -2066,13 +2066,40 @@ components:
           type: object
           description: Added in 1.14.0. Open (balance due) invoices by kind
           properties: { installment: { type: integer }, credit: { type: integer } }
+        invoiceCount:
+          type: object
+          description: Added in 1.24.0. Invoices of the customer (cancelled ones not counted) and how many still have a balance
+          properties: { total: { type: integer }, open: { type: integer } }
+        activity: { $ref: '#/components/schemas/CustomerActivity' }
         erpFetchedAt: { type: string, format: date-time }
+    CustomerActivity:
+      type: object
+      description: |
+        Added in 1.24.0 (FR-CUS-017). What happened with the customer in the current Asia/Dhaka month, for the row
+        markers (visited, paid, promised) and the customer header. `paidPoisha` is ERP money; `pendingPoisha` is field
+        money not in the ERP yet. Show the two apart and never add them together.
+      required: [month, visitCount, visitedToday, paidPoisha, pendingPoisha, promisesMade, promisesKept, promisesBroken]
+      properties:
+        month: { type: string, example: '2026-11', description: 'The Dhaka month the numbers are for' }
+        visitCount: { type: integer, description: 'Visits recorded this month' }
+        visitedToday: { type: boolean }
+        lastVisitAt: { type: [string, 'null'], format: date-time, description: 'Last visit of this month' }
+        paidPoisha: { type: integer, description: 'ERP payments dated this month (office and field, removed ones left out), from the recent ERP payments' }
+        lastPaidDate: { type: [string, 'null'], format: date, description: 'Date of the newest ERP payment this month' }
+        pendingPoisha: { type: integer, description: 'Field collections recorded this month that are not in the ERP yet' }
+        promisesMade: { type: integer, description: 'Promises created this month (cancelled ones not counted)' }
+        promisesKept: { type: integer, description: 'Promises due this month that were kept, fully or partly' }
+        promisesBroken: { type: integer, description: 'Promises due this month that were broken' }
     CustomerPage:
       type: object
       properties:
         items: { type: array, items: { $ref: '#/components/schemas/CustomerListItem' } }
         nextCursor: { type: [string, 'null'] }
         total: { type: integer }
+        invoiceTotals:
+          type: object
+          description: 'Added in 1.24.0 (FR-CUS-018), only with includeTotal=true. Invoices of every customer the query matches (not one page): all, with a balance, and those by kind'
+          properties: { total: { type: integer }, open: { type: integer }, installmentOpen: { type: integer }, creditOpen: { type: integer } }
     Plan:
       type: object
       description: |

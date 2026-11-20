@@ -4277,6 +4277,102 @@ abstract class AppLocalizations {
   /// **'Waiting to be sent to the server'**
   String get phonePending;
 
+  /// No description provided for @marksVisitToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Visited today'**
+  String get marksVisitToday;
+
+  /// No description provided for @marksVisitMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Visited this month'**
+  String get marksVisitMonth;
+
+  /// No description provided for @marksVisitNone.
+  ///
+  /// In en, this message translates to:
+  /// **'Not visited this month'**
+  String get marksVisitNone;
+
+  /// No description provided for @marksPaid.
+  ///
+  /// In en, this message translates to:
+  /// **'Money in the ERP this month'**
+  String get marksPaid;
+
+  /// No description provided for @marksPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Collected, pending in ERP'**
+  String get marksPending;
+
+  /// No description provided for @marksPaidNone.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing paid this month'**
+  String get marksPaidNone;
+
+  /// No description provided for @marksPromiseOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Has an open promise'**
+  String get marksPromiseOpen;
+
+  /// No description provided for @marksPromiseNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No open promise'**
+  String get marksPromiseNone;
+
+  /// No description provided for @marksPinSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Map pin set'**
+  String get marksPinSet;
+
+  /// No description provided for @marksPinMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'No map pin'**
+  String get marksPinMissing;
+
+  /// No description provided for @monthTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'This month'**
+  String get monthTitle;
+
+  /// No description provided for @monthLastVisit.
+  ///
+  /// In en, this message translates to:
+  /// **'Last visit {date}'**
+  String monthLastVisit(String date);
+
+  /// No description provided for @monthPaid.
+  ///
+  /// In en, this message translates to:
+  /// **'In the ERP: {amount}'**
+  String monthPaid(String amount);
+
+  /// No description provided for @monthPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending in ERP: {amount}'**
+  String monthPending(String amount);
+
+  /// No description provided for @monthPromise.
+  ///
+  /// In en, this message translates to:
+  /// **'Promise on {date}'**
+  String monthPromise(String date);
+
+  /// No description provided for @monthInvoices.
+  ///
+  /// In en, this message translates to:
+  /// **'Invoices: {total} · with a balance: {open}'**
+  String monthInvoices(String total, String open);
+
   /// No description provided for @planRolledHidden.
   ///
   /// In en, this message translates to:

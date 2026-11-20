@@ -44,6 +44,7 @@ Phases match `field-api/docs/09-progress.md`. Start each phase against the Prism
 | Attendance hub screen (history, today status, break/end-work buttons, late warning, GPS banner); colored branch top bar + notification bell in shell; customer list visited/promised dot indicators; Today's Work history screen (visits + collections merged); quick-action tiles on Today screen (Attendance, Today's Work, Performance) | ◐ 0.12.5, widget tests pending; GPS double-notification known issue (ADR-M20, requires native fix) |
 | Installment lines: partly paid keeps Overdue, late fee counted once, open installments per invoice (FR-M-036) | ✅ 2026-11-21, unit tests |
 | Extra phone numbers: ERP / added marks, add several at once, offline (contract 1.23.0, FR-M-037) | ✅ 2026-11-21, unit + flow tests; device check pending |
+| Work marks on every customer row and a "this month" card on the customer page (FR-M-038) | ✅ 2026-11-21, unit tests; device check pending |
 | Notifications (FCM + centre), Sync centre & Problems | ◐ sync centre done; FCM not yet (needs Firebase project) |
 | Onboarding: consent, permissions primer | ✅ |
 **Acceptance:** M-E2…M-E7, M-E9, M-E10 green; manual device checklist (non-location sections) signed off on 4 OEM devices; pilot 5 staff × 2 weeks with zero lost/duplicate collections.
