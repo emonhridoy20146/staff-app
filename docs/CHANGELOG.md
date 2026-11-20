@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 Contract pinned: field-api `openapi.yaml` **1.24.0** (1.22.0 → 1.24.0, additive: 1.23.0 extra phone numbers, 1.24.0 this month on a customer and invoice counts; `docs/contract/openapi.yaml`). Needs field-api 1.23.0 on the server for adding numbers; everything else works with 1.22.0.
+### Fixed (2026-11-21: the phone follows the office's duty settings; FR-M-047, field-api contract 1.25.0)
+- **The app read setting names the server never sends** (`dutyStart`, `dutyEnd`, `lateGraceMin`, `maxBreakMin`, `geofenceRadiusM`, `cashBlockOverLimit`), so with the live server it always used 09:00–18:00, 15 minutes grace, 60 minutes break, 150 m and "warn only", whatever the office had set. It now reads the server's own keys: `attendance.defaultShift` (per branch), `collections.geofenceM`, `cash.limitMode`, `attendance.lateDaysPerAbsent`. The old names are kept as a fallback.
+- **Friday break window**: break time inside the branch's window of the day (e.g. Friday 12:30–15:30) is not counted against the break limit; the "break too long" warning uses the same rule as the server.
+- **Late days per absent day** on the attendance hub and Performance follow the server setting (2 until it says otherwise; 0 hides the count).
+- The "far from the customer" question (FR-M-043) now uses the same distance as the office's `far_from_pin` flag.
+- Rules in `core/settings/duty_settings.dart`; unit tests `test/core/duty_settings_test.dart`. A staff member with a named shift of their own still sees the branch hours on the duty card (the calendar screen shows their own shift).
+
 ### Added (owner request 2026-11-21: who paid this month; FR-M-046)
 - Two new chips on the customer list with their counts: **"এ মাসে দিয়েছে"** (an ERP payment dated this month, or field money still waiting for the ERP) and **"এ মাসে দেয়নি"** (owes money and gave nothing this month). Same rule as the money work mark; sorted by days overdue, so long-overdue customers come first in both. They follow the branch picked in the top bar and combine with search.
 - From the phone's own data, works offline. No schema or contract change.

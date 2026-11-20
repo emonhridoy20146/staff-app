@@ -9,6 +9,7 @@ import '../../../../core/db/app_database.dart';
 import '../../../../core/location/geofence.dart';
 import '../../../../core/location/location_engine.dart';
 import '../../../../core/providers.dart';
+import '../../../../core/settings/duty_settings.dart';
 import '../../../../core/settings/ui_prefs.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/theme/status_colors.dart';
@@ -580,7 +581,7 @@ class _ReviewStep extends ConsumerWidget {
     final lang = Localizations.localeOf(context).languageCode;
     final cash = ref.watch(cashOnHandProvider).value;
     final settings = ref.watch(serverSettingsProvider);
-    final blockOverLimit = settings['cashBlockOverLimit'] == true;
+    final blockOverLimit = cashBlocksOverLimit(settings);
     final overLimit = method == PaymentMethod.cash && cash != null && cash.limit > 0 && cash.onHand + poisha > cash.limit;
     final blocked = overLimit && blockOverLimit;
 

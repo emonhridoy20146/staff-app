@@ -6,6 +6,8 @@ import 'package:material_ui/material_ui.dart';
 import '../../../core/db/app_database.dart';
 import '../../../core/providers.dart';
 import '../../../core/settings/ui_prefs.dart';
+import '../../../core/time/clock.dart';
+import '../../../core/settings/duty_settings.dart';
 import '../../../core/theme/status_colors.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/ui/common.dart';
@@ -67,20 +69,25 @@ class _AttendanceHubState extends ConsumerState<AttendanceHubScreen> with Widget
     final history = ref.watch(recentAttendanceDaysProvider).value ?? const <AttendanceDayRow>[];
     final now = ref.read(clockProvider).nowUtc();
     final settings = ref.watch(serverSettingsProvider);
-    final maxBreak = (settings['maxBreakMin'] as num?)?.toInt() ?? 60;
+    final duty = DutySettings.of(settings);
+    final businessDate = ref.watch(clockProvider).businessDate();
 
     final onDuty = day?.status == DayStatus.onDuty;
     final onBreak = day?.status == DayStatus.onBreak;
     final notStarted = day == null || day.status == DayStatus.notStarted;
     final ended = day?.status == DayStatus.offDuty;
     final isLate = (day?.lateMin ?? 0) > 0;
-    final overBreak = onBreak && day != null && day.breakTotal(now).inMinutes > maxBreak;
+    // Break time inside the day's window (the Friday break) is not held against the limit.
+    final overBreak = onBreak &&
+        day != null &&
+        duty.overBreakMin([for (final b in day.breaks) (start: b.start, end: b.end)], businessDate: businessDate, dhakaMidnightUtc: businessDayStartUtc(businessDate), now: now) > 0;
 
     // Late days per month and the absent days they count as (two late days = one absent day).
     final lateRows = [for (final r in history) (date: r.businessDate, lateMin: r.lateMin)];
     final months = {for (final r in history) r.businessDate.substring(0, 7)};
-    final absenceDates = {for (final m in months) ...lateTally(lateRows, month: m).absenceDates};
-    final thisMonth = lateTally(lateRows, month: ref.watch(clockProvider).businessDate().substring(0, 7));
+    final perAbsence = lateDaysPerAbsentOf(settings);
+    final absenceDates = {for (final m in months) ...lateTally(lateRows, month: m, latePerAbsence: perAbsence).absenceDates};
+    final thisMonth = lateTally(lateRows, month: businessDate.substring(0, 7), latePerAbsence: perAbsence);
     final f = ref.watch(fmtProvider);
 
     final bgColor = onDuty ? sem.success.bg : (onBreak ? sem.warning.bg : cs.surfaceContainer);

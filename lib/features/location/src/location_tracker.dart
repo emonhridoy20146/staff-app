@@ -17,6 +17,7 @@ import '../../../core/location/tracking/sampling.dart';
 import '../../../core/location/tracking/tracking_provider.dart';
 import '../../../core/permissions/permission_service.dart';
 import '../../../core/providers.dart';
+import '../../../core/settings/duty_settings.dart';
 import '../../../core/time/clock.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../attendance/attendance.dart';
@@ -117,7 +118,7 @@ class LocationTracker {
   }
 
   bool _withinShift() {
-    final end = (_settings['dutyEnd'] as String?) ?? '18:00';
+    final end = DutySettings.of(_settings).end;
     final p = end.split(':').map(int.parse).toList();
     final endUtc = parseBusinessDate(_clock.businessDate()).subtract(dhakaOffset).add(Duration(hours: p[0], minutes: p[1]));
     return !_clock.nowUtc().isAfter(endUtc.add(afterShiftGrace));

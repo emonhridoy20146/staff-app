@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../core/providers.dart';
 import '../../../core/settings/ui_prefs.dart';
+import '../../../core/settings/duty_settings.dart';
 import '../../../core/theme/status_colors.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/tokens.dart';
@@ -101,7 +102,7 @@ class _PerformanceScreenState extends ConsumerState<PerformanceScreen> {
               // FR-M-040: every two late days in a month count as one absent day.
               if (d.lateDays > 0) ...[
                 const SizedBox(height: Space.cardGap),
-                InfoBanner(icon: Icons.warning_amber_rounded, tone: BannerTone.warning, text: l.attHubLateMonth(f.num(d.lateDays), f.num(d.lateDays ~/ 2))),
+                InfoBanner(icon: Icons.warning_amber_rounded, tone: BannerTone.warning, text: l.attHubLateMonth(f.num(d.lateDays), f.num(lateAbsencesOf(d.lateDays, lateDaysPerAbsentOf(ref.watch(serverSettingsProvider)))))),
               ],
               const SizedBox(height: Space.cardGap),
               // FR-M-041: the work of each day of this month.
