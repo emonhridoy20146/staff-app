@@ -167,6 +167,9 @@ void main() {
       expect(inv1.rolledCount, 1);
       expect(inv1.visibleSchedule.map((s) => s.seq), [1, 3]);
       expect(inv1.paidCount, 1);
+      // One open line, overdue with its late fee counted once (amount already includes it).
+      expect(inv1.dues.remainingCount, 1);
+      expect(inv1.dues.overduePoisha, 520000);
       expect(inv1.shownCount, 2);
       expect(inv1.visibleSchedule.last.lateFeePoisha, 20000);
       expect(inv1.collectable, isTrue);
