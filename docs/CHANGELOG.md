@@ -1,5 +1,10 @@
 # Changelog — staff-app
 
+## [Unreleased]
+### Fixed (2026-11-21: `main` did not pass CI)
+- `flutter analyze` failed on two unused imports in `attendance_widgets.dart`, so the tests and the APK build were skipped. Removed.
+- Golden diff images of a failed local screenshot run (`test/screenshots/failures/`) were committed; removed and git-ignored.
+
 ## [0.12.5] — 2026-11-20
 Contract pinned: field-api `openapi.yaml` **1.22.0** (unchanged). No server change needed.
 ### Added (owner request 2026-11-20)
