@@ -10,8 +10,6 @@
 /// first and the old flat ones only as a fallback. Pure, no I/O.
 library;
 
-typedef _Json = Map<String, dynamic>;
-
 /// A weekly break window (field-api FR-ATT-010): on [weekday] (0 = Sunday …
 /// 5 = Friday, 6 = Saturday) break time between [start] and [end] (Dhaka
 /// `HH:mm`) is allowed on top of the daily break limit.
@@ -39,7 +37,7 @@ class DutySettings {
     this.breakWindows = const [],
   });
 
-  factory DutySettings.of(_Json settings) {
+  factory DutySettings.of(Map<String, dynamic> settings) {
     final raw = settings['attendance.defaultShift'];
     final s = raw is Map ? raw.cast<String, dynamic>() : const <String, dynamic>{};
     String time(String key, String legacy, String fallback) {
@@ -118,18 +116,18 @@ class DutySettings {
 
 /// How far from the customer's pin counts as "far" (`collections.geofenceM`;
 /// the server flags a collection `far_from_pin` with the same number).
-int geofenceRadiusOf(_Json settings) {
+int geofenceRadiusOf(Map<String, dynamic> settings) {
   final v = settings['collections.geofenceM'] ?? settings['geofenceRadiusM'];
   return v is num && v > 0 ? v.toInt() : 150;
 }
 
 /// At 100 % of the cash limit the app refuses more cash (`cash.limitMode` =
 /// `block`) or only warns (`warn`, the default).
-bool cashBlocksOverLimit(_Json settings) => settings['cash.limitMode'] == 'block' || settings['cashBlockOverLimit'] == true;
+bool cashBlocksOverLimit(Map<String, dynamic> settings) => settings['cash.limitMode'] == 'block' || settings['cashBlockOverLimit'] == true;
 
 /// From how many late days of a month one absent day is counted
 /// (`attendance.lateDaysPerAbsent`, 0 = the rule is off).
-int lateDaysPerAbsentOf(_Json settings) {
+int lateDaysPerAbsentOf(Map<String, dynamic> settings) {
   final v = settings['attendance.lateDaysPerAbsent'];
   return v is num && v >= 0 ? v.toInt() : 2;
 }
