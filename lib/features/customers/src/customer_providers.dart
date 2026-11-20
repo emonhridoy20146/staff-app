@@ -101,21 +101,17 @@ final customerFilterProvider = StateProvider<CustomerFilter>((ref) => CustomerFi
 final customerSortProvider = StateProvider<CustomerSort>((ref) => CustomerSort.daysOverdue);
 
 final filteredCustomersProvider = Provider<AsyncValue<List<Customer>>>((ref) {
-  final all = ref.watch(allCustomersProvider);
+  final all = ref.watch(branchCustomersProvider);
   final today = ref.watch(todayProvider);
-  final selectedBranch = ref.watch(selectedBranchIdProvider);
   return all.whenData(
-    (l) {
-      final branchFiltered = selectedBranch == null ? l : l.where((c) => c.branchId == selectedBranch).toList();
-      return applyQuery(
-        branchFiltered,
-        today: today,
-        search: ref.watch(customerSearchProvider),
-        filter: ref.watch(customerFilterProvider),
-        sort: ref.watch(customerSortProvider),
-        myUserId: ref.watch(myCustomerUserIdProvider),
-      );
-    },
+    (l) => applyQuery(
+      l,
+      today: today,
+      search: ref.watch(customerSearchProvider),
+      filter: ref.watch(customerFilterProvider),
+      sort: ref.watch(customerSortProvider),
+      myUserId: ref.watch(myCustomerUserIdProvider),
+    ),
   );
 });
 
@@ -127,6 +123,16 @@ final multiBranchProvider = Provider<bool>((ref) {
 
 /// null = all branches (no filter).
 final selectedBranchIdProvider = StateProvider<String?>((ref) => null);
+
+/// The customers the user is looking at: those of the branch picked in the
+/// top bar, or everyone (FR-M-045). The list, Today, the map and the
+/// collect picker all read this, so a branch switch changes them together.
+final branchCustomersProvider = Provider<AsyncValue<List<Customer>>>(
+  (ref) {
+    final branch = ref.watch(selectedBranchIdProvider);
+    return ref.watch(allCustomersProvider).whenData((l) => inBranch(l, branch));
+  },
+);
 
 /// Distinct branches from the customer list: {id: name}.
 final branchListProvider = Provider<Map<String, String>>((ref) {
@@ -145,5 +151,5 @@ final branchListProvider = Provider<Map<String, String>>((ref) {
 final todayPrioritiesProvider = Provider<AsyncValue<TodayPriorities>>((ref) {
   final today = ref.watch(todayProvider);
   final me = ref.watch(myCustomerUserIdProvider);
-  return ref.watch(allCustomersProvider).whenData((l) => prioritize(l, today, myUserId: me));
+  return ref.watch(branchCustomersProvider).whenData((l) => prioritize(l, today, myUserId: me));
 });

@@ -223,6 +223,10 @@ List<Customer> applyQuery(
 /// distance → others. Each customer appears once, in its first group.
 /// Since 1.19.0 the phone holds the whole branch; Today lists the user's own
 /// customers and the ones nobody is assigned to, never a colleague's.
+/// Customers of the branch picked in the top bar; null = all branches
+/// (FR-M-045). One rule for the list, Today, the map and the pickers.
+List<Customer> inBranch(List<Customer> all, String? branchId) => branchId == null ? all : [for (final c in all) if (c.branchId == branchId) c];
+
 class TodayPriorities {
   const TodayPriorities({required this.promised, required this.due, required this.overdue});
   final List<Customer> promised;

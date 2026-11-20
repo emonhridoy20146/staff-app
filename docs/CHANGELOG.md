@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 Contract pinned: field-api `openapi.yaml` **1.24.0** (1.22.0 → 1.24.0, additive: 1.23.0 extra phone numbers, 1.24.0 this month on a customer and invoice counts; `docs/contract/openapi.yaml`). Needs field-api 1.23.0 on the server for adding numbers; everything else works with 1.22.0.
+### Fixed (owner request 2026-11-21: the branch switch filters everywhere; FR-M-045)
+- Picking a branch in the top bar narrowed only the customer list. Today's priorities and counts, the map, the collect customer picker and the numbers on the list's filter chips still showed every branch. All of them now read one provider (`branchCustomersProvider`, rule `inBranch`), so the switch changes them together; "সব শাখা" shows everyone.
+- A picked branch that is no longer on the phone falls back to all branches instead of breaking the dropdown.
+
 ### Added (owner request 2026-11-21: the bell shows what waits for me; FR-M-044)
 - **Notifications screen behind the bell** (`/alerts`): promises due today (customer name + amount), new tasks, co-work requests, unread notices from the office and handovers waiting for an answer. A tap opens the customer or the page that deals with it. Built from the phone's own data, so it works offline; the bell's number is the count of these items.
 - **The coloured top bar is now on every main tab for everyone**; with one branch it shows the branch name instead of a dropdown. The dropdown's first entry reads "সব শাখা / All branches". The bell used to open Me and count sync problems; those stay on the Me tab's badge.

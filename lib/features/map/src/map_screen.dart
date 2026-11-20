@@ -55,7 +55,7 @@ class _CustomerMapScreenState extends ConsumerState<CustomerMapScreen> {
     final l = AppLocalizations.of(context);
     final cs = Theme.of(context).colorScheme;
     final today = ref.watch(todayProvider);
-    final everyone = ref.watch(allCustomersProvider).value ?? const <Customer>[];
+    final everyone = ref.watch(branchCustomersProvider).value ?? const <Customer>[];
     final filters = ref.watch(mapFiltersProvider);
     final listMode = ref.watch(mapListModeProvider);
     final all = applyMapFilters(everyone, filters, today);
