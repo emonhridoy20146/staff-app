@@ -2258,6 +2258,24 @@ abstract class AppLocalizations {
   /// **'Late by {minutes}'**
   String attHubLateWarning(String minutes);
 
+  /// No description provided for @attHubOverBreak.
+  ///
+  /// In en, this message translates to:
+  /// **'Break over by {minutes}'**
+  String attHubOverBreak(String minutes);
+
+  /// No description provided for @attHubOvertime.
+  ///
+  /// In en, this message translates to:
+  /// **'Overtime {minutes}'**
+  String attHubOvertime(String minutes);
+
+  /// No description provided for @attHubOffDayWork.
+  ///
+  /// In en, this message translates to:
+  /// **'Worked on a day off: {minutes}'**
+  String attHubOffDayWork(String minutes);
+
   /// No description provided for @attHubAbsenceStreak.
   ///
   /// In en, this message translates to:

@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 Contract pinned: field-api `openapi.yaml` **1.27.0** (1.22.0 → 1.27.0, additive: 1.23.0 extra phone numbers, 1.24.0 this month on a customer and invoice counts, 1.25.0 duty hours per branch with break windows, overtime and late absences, 1.26.0 the collection board, 1.27.0 cash in hand by collection; `docs/contract/openapi.yaml`). The collection board needs the server at 1.26.0; on an older server its tab says it could not be loaded and the branch ranking still works. Adding phone numbers needs 1.23.0; break windows and the late-days setting need 1.25.0; everything else works with 1.22.0.
+### Added (owner request 2026-11-21: overtime and break over the limit on the attendance history; FR-M-051, field-api FR-ATT-010/011, contract 1.25.0)
+- **Every day of the attendance history now carries the server's marks in words**, next to the late mark: "ওভারটাইম ৪৫ মি" (green) and "বিরতি ১২ মি বেশি" (amber). On a weekly off day or holiday the worked time reads "ছুটির দিনে কাজ: ৩ ঘ ০ মি". Days with nothing to mark show nothing.
+- **Local DB schema 10**: `attendance_day.overtime_min` and `over_break_min` (default 0; the next pull fills them). Migration from every released schema is tested (`test/core/migration_test.dart`); nothing unsynced is touched and no new snapshot is forced.
+- Tests `test/flows/attendance_marks_test.dart` (pull handler, the marks on screen).
 ### Added (owner request 2026-11-21: the receipt of any collection, later too; FR-M-050)
 - **A receipt screen for every collection on the phone** (`/receipt/:clientId`): the same receipt the customer saw, with "রসিদ শেয়ার" (the phone's share sheet sends it, saves it or prints it) and "গ্রাহক খুলুন". Works offline.
 - Opened by a tap on a collection in **Today's Work** (any day) and by the new "রসিদ" button on a collection in the **customer's timeline**. Until now the receipt was shown once, right after collecting.

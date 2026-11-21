@@ -12826,6 +12826,12 @@ class $AttendanceDaysTable extends AttendanceDays
   static const VerificationMeta _lateMinMeta = const VerificationMeta(
     'lateMin',
   );
+  static const VerificationMeta _overtimeMinMeta = const VerificationMeta(
+    'overtimeMin',
+  );
+  static const VerificationMeta _overBreakMinMeta = const VerificationMeta(
+    'overBreakMin',
+  );
   @override
   late final GeneratedColumn<int> lateMin = GeneratedColumn<int>(
     'late_min',
@@ -12835,7 +12841,24 @@ class $AttendanceDaysTable extends AttendanceDays
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
   );
-  static const VerificationMeta _breaksJsonMeta = const VerificationMeta(
+  @override
+  late final GeneratedColumn<int> overtimeMin = GeneratedColumn<int>(
+    'overtime_min',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  @override
+  late final GeneratedColumn<int> overBreakMin = GeneratedColumn<int>(
+    'over_break_min',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
     'breaksJson',
   );
   @override
@@ -12855,6 +12878,8 @@ class $AttendanceDaysTable extends AttendanceDays
     lastOut,
     breakMin,
     lateMin,
+    overtimeMin,
+    overBreakMin,
     breaksJson,
   ];
   @override
@@ -12912,6 +12937,18 @@ class $AttendanceDaysTable extends AttendanceDays
         lateMin.isAcceptableOrUnknown(data['late_min']!, _lateMinMeta),
       );
     }
+    if (data.containsKey('overtime_min')) {
+      context.handle(
+        _overtimeMinMeta,
+        overtimeMin.isAcceptableOrUnknown(data['overtime_min']!, _overtimeMinMeta),
+      );
+    }
+    if (data.containsKey('over_break_min')) {
+      context.handle(
+        _overBreakMinMeta,
+        overBreakMin.isAcceptableOrUnknown(data['over_break_min']!, _overBreakMinMeta),
+      );
+    }
     if (data.containsKey('breaks_json')) {
       context.handle(
         _breaksJsonMeta,
@@ -12951,6 +12988,14 @@ class $AttendanceDaysTable extends AttendanceDays
         DriftSqlType.int,
         data['${effectivePrefix}late_min'],
       )!,
+      overtimeMin: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}overtime_min'],
+      )!,
+      overBreakMin: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}over_break_min'],
+      )!,
       breaksJson: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}breaks_json'],
@@ -12972,6 +13017,8 @@ class AttendanceDayRow extends DataClass
   final DateTime? lastOut;
   final int breakMin;
   final int lateMin;
+  final int overtimeMin;
+  final int overBreakMin;
   final String breaksJson;
   const AttendanceDayRow({
     required this.businessDate,
@@ -12980,6 +13027,8 @@ class AttendanceDayRow extends DataClass
     this.lastOut,
     required this.breakMin,
     required this.lateMin,
+    required this.overtimeMin,
+    required this.overBreakMin,
     required this.breaksJson,
   });
   @override
@@ -12995,6 +13044,8 @@ class AttendanceDayRow extends DataClass
     }
     map['break_min'] = Variable<int>(breakMin);
     map['late_min'] = Variable<int>(lateMin);
+    map['overtime_min'] = Variable<int>(overtimeMin);
+    map['over_break_min'] = Variable<int>(overBreakMin);
     map['breaks_json'] = Variable<String>(breaksJson);
     return map;
   }
@@ -13011,6 +13062,8 @@ class AttendanceDayRow extends DataClass
           : Value(lastOut),
       breakMin: Value(breakMin),
       lateMin: Value(lateMin),
+      overtimeMin: Value(overtimeMin),
+      overBreakMin: Value(overBreakMin),
       breaksJson: Value(breaksJson),
     );
   }
@@ -13027,6 +13080,8 @@ class AttendanceDayRow extends DataClass
       lastOut: serializer.fromJson<DateTime?>(json['lastOut']),
       breakMin: serializer.fromJson<int>(json['breakMin']),
       lateMin: serializer.fromJson<int>(json['lateMin']),
+      overtimeMin: serializer.fromJson<int>(json['overtimeMin']),
+      overBreakMin: serializer.fromJson<int>(json['overBreakMin']),
       breaksJson: serializer.fromJson<String>(json['breaksJson']),
     );
   }
@@ -13040,6 +13095,8 @@ class AttendanceDayRow extends DataClass
       'lastOut': serializer.toJson<DateTime?>(lastOut),
       'breakMin': serializer.toJson<int>(breakMin),
       'lateMin': serializer.toJson<int>(lateMin),
+      'overtimeMin': serializer.toJson<int>(overtimeMin),
+      'overBreakMin': serializer.toJson<int>(overBreakMin),
       'breaksJson': serializer.toJson<String>(breaksJson),
     };
   }
@@ -13051,6 +13108,8 @@ class AttendanceDayRow extends DataClass
     Value<DateTime?> lastOut = const Value.absent(),
     int? breakMin,
     int? lateMin,
+    int? overtimeMin,
+    int? overBreakMin,
     String? breaksJson,
   }) => AttendanceDayRow(
     businessDate: businessDate ?? this.businessDate,
@@ -13059,6 +13118,8 @@ class AttendanceDayRow extends DataClass
     lastOut: lastOut.present ? lastOut.value : this.lastOut,
     breakMin: breakMin ?? this.breakMin,
     lateMin: lateMin ?? this.lateMin,
+    overtimeMin: overtimeMin ?? this.overtimeMin,
+    overBreakMin: overBreakMin ?? this.overBreakMin,
     breaksJson: breaksJson ?? this.breaksJson,
   );
   AttendanceDayRow copyWithCompanion(AttendanceDaysCompanion data) {
@@ -13071,6 +13132,8 @@ class AttendanceDayRow extends DataClass
       lastOut: data.lastOut.present ? data.lastOut.value : this.lastOut,
       breakMin: data.breakMin.present ? data.breakMin.value : this.breakMin,
       lateMin: data.lateMin.present ? data.lateMin.value : this.lateMin,
+      overtimeMin: data.overtimeMin.present ? data.overtimeMin.value : this.overtimeMin,
+      overBreakMin: data.overBreakMin.present ? data.overBreakMin.value : this.overBreakMin,
       breaksJson: data.breaksJson.present
           ? data.breaksJson.value
           : this.breaksJson,
@@ -13086,6 +13149,8 @@ class AttendanceDayRow extends DataClass
           ..write('lastOut: $lastOut, ')
           ..write('breakMin: $breakMin, ')
           ..write('lateMin: $lateMin, ')
+          ..write('overtimeMin: $overtimeMin, ')
+          ..write('overBreakMin: $overBreakMin, ')
           ..write('breaksJson: $breaksJson')
           ..write(')'))
         .toString();
@@ -13099,6 +13164,8 @@ class AttendanceDayRow extends DataClass
     lastOut,
     breakMin,
     lateMin,
+    overtimeMin,
+    overBreakMin,
     breaksJson,
   );
   @override
@@ -13111,6 +13178,8 @@ class AttendanceDayRow extends DataClass
           other.lastOut == this.lastOut &&
           other.breakMin == this.breakMin &&
           other.lateMin == this.lateMin &&
+          other.overtimeMin == this.overtimeMin &&
+          other.overBreakMin == this.overBreakMin &&
           other.breaksJson == this.breaksJson);
 }
 
@@ -13121,6 +13190,8 @@ class AttendanceDaysCompanion extends UpdateCompanion<AttendanceDayRow> {
   final Value<DateTime?> lastOut;
   final Value<int> breakMin;
   final Value<int> lateMin;
+  final Value<int> overtimeMin;
+  final Value<int> overBreakMin;
   final Value<String> breaksJson;
   final Value<int> rowid;
   const AttendanceDaysCompanion({
@@ -13130,6 +13201,8 @@ class AttendanceDaysCompanion extends UpdateCompanion<AttendanceDayRow> {
     this.lastOut = const Value.absent(),
     this.breakMin = const Value.absent(),
     this.lateMin = const Value.absent(),
+    this.overtimeMin = const Value.absent(),
+    this.overBreakMin = const Value.absent(),
     this.breaksJson = const Value.absent(),
     this.rowid = const Value.absent(),
   });
@@ -13140,6 +13213,8 @@ class AttendanceDaysCompanion extends UpdateCompanion<AttendanceDayRow> {
     this.lastOut = const Value.absent(),
     this.breakMin = const Value.absent(),
     this.lateMin = const Value.absent(),
+    this.overtimeMin = const Value.absent(),
+    this.overBreakMin = const Value.absent(),
     this.breaksJson = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : businessDate = Value(businessDate),
@@ -13151,6 +13226,8 @@ class AttendanceDaysCompanion extends UpdateCompanion<AttendanceDayRow> {
     Expression<DateTime>? lastOut,
     Expression<int>? breakMin,
     Expression<int>? lateMin,
+    Expression<int>? overtimeMin,
+    Expression<int>? overBreakMin,
     Expression<String>? breaksJson,
     Expression<int>? rowid,
   }) {
@@ -13161,6 +13238,8 @@ class AttendanceDaysCompanion extends UpdateCompanion<AttendanceDayRow> {
       if (lastOut != null) 'last_out': lastOut,
       if (breakMin != null) 'break_min': breakMin,
       if (lateMin != null) 'late_min': lateMin,
+      if (overtimeMin != null) 'overtime_min': overtimeMin,
+      if (overBreakMin != null) 'over_break_min': overBreakMin,
       if (breaksJson != null) 'breaks_json': breaksJson,
       if (rowid != null) 'rowid': rowid,
     });
@@ -13173,6 +13252,8 @@ class AttendanceDaysCompanion extends UpdateCompanion<AttendanceDayRow> {
     Value<DateTime?>? lastOut,
     Value<int>? breakMin,
     Value<int>? lateMin,
+    Value<int>? overtimeMin,
+    Value<int>? overBreakMin,
     Value<String>? breaksJson,
     Value<int>? rowid,
   }) {
@@ -13183,6 +13264,8 @@ class AttendanceDaysCompanion extends UpdateCompanion<AttendanceDayRow> {
       lastOut: lastOut ?? this.lastOut,
       breakMin: breakMin ?? this.breakMin,
       lateMin: lateMin ?? this.lateMin,
+      overtimeMin: overtimeMin ?? this.overtimeMin,
+      overBreakMin: overBreakMin ?? this.overBreakMin,
       breaksJson: breaksJson ?? this.breaksJson,
       rowid: rowid ?? this.rowid,
     );
@@ -13209,6 +13292,12 @@ class AttendanceDaysCompanion extends UpdateCompanion<AttendanceDayRow> {
     if (lateMin.present) {
       map['late_min'] = Variable<int>(lateMin.value);
     }
+    if (overtimeMin.present) {
+      map['overtime_min'] = Variable<int>(overtimeMin.value);
+    }
+    if (overBreakMin.present) {
+      map['over_break_min'] = Variable<int>(overBreakMin.value);
+    }
     if (breaksJson.present) {
       map['breaks_json'] = Variable<String>(breaksJson.value);
     }
@@ -13227,6 +13316,8 @@ class AttendanceDaysCompanion extends UpdateCompanion<AttendanceDayRow> {
           ..write('lastOut: $lastOut, ')
           ..write('breakMin: $breakMin, ')
           ..write('lateMin: $lateMin, ')
+          ..write('overtimeMin: $overtimeMin, ')
+          ..write('overBreakMin: $overBreakMin, ')
           ..write('breaksJson: $breaksJson, ')
           ..write('rowid: $rowid')
           ..write(')'))

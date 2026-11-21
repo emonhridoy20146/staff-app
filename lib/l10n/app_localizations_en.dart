@@ -1209,6 +1209,21 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String attHubOverBreak(String minutes) {
+    return 'Break over by $minutes';
+  }
+
+  @override
+  String attHubOvertime(String minutes) {
+    return 'Overtime $minutes';
+  }
+
+  @override
+  String attHubOffDayWork(String minutes) {
+    return 'Worked on a day off: $minutes';
+  }
+
+  @override
   String get attHubAbsenceStreak =>
       'Counts as an absent day (every 2 late days = 1)';
 
