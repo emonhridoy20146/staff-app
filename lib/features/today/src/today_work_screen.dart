@@ -157,7 +157,8 @@ class _WorkTile extends ConsumerWidget {
       WorkKind.task => sem.success,
       WorkKind.note || WorkKind.call => StatusStyle(fg: cs.onSurfaceVariant, bg: cs.surfaceContainerHigh),
     };
-    final target = item.customerId != null ? '/customers/${item.customerId}' : item.route;
+    // an entry's own page (a receipt, a task) comes first; otherwise its customer
+    final target = item.route ?? (item.customerId != null ? '/customers/${item.customerId}' : null);
     // The customer's name leads when there is one; what was done follows.
     final lines = [
       if (customerName != null) item.title,

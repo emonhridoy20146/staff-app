@@ -87,7 +87,8 @@ class WorkLogEntry {
   /// The customer it was done for; a tap opens that customer.
   final String? customerId;
 
-  /// Where a tap goes when there is no customer (a task).
+  /// The entry's own page (a task, a receipt); a tap goes here first, else to
+  /// the customer.
   final String? route;
 
   /// Money of a collection.

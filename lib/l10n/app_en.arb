@@ -1561,6 +1561,9 @@
     }
   },
   "phonePending": "Waiting to be sent to the server",
+  "receiptView": "Receipt",
+  "receiptOpenCustomer": "Open customer",
+  "receiptNotOnPhone": "This receipt is not on this phone",
   "cashInHandOpen": "Which collections is this cash from?",
   "cashInHandTitle": "Cash on hand, by collection",
   "cashInHandInvoice": "Invoice {no}",

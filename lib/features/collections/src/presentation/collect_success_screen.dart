@@ -51,17 +51,7 @@ class _CollectSuccessScreenState extends ConsumerState<CollectSuccessScreen> wit
     super.dispose();
   }
 
-  Future<void> _share(CollectionRow c) async {
-    final boundary = _receiptKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
-    if (boundary == null) return;
-    final ratio = 1080 / boundary.size.width;
-    final image = await boundary.toImage(pixelRatio: ratio);
-    final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
-    if (bytes == null) return;
-    await SharePlus.instance.share(
-      ShareParams(files: [XFile.fromData(bytes.buffer.asUint8List(), mimeType: 'image/png', name: '${c.receiptNo}.png')]),
-    );
-  }
+  Future<void> _share(CollectionRow c) => shareReceiptImage(_receiptKey, c.receiptNo);
 
   @override
   Widget build(BuildContext context) {
@@ -139,6 +129,76 @@ class _CollectSuccessScreenState extends ConsumerState<CollectSuccessScreen> wit
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Shares the receipt drawn under [key] as a 1080-px-wide PNG named after the
+/// receipt. The phone's share sheet sends it, saves it or prints it.
+Future<void> shareReceiptImage(GlobalKey key, String receiptNo) async {
+  final boundary = key.currentContext?.findRenderObject() as RenderRepaintBoundary?;
+  if (boundary == null) return;
+  final ratio = 1080 / boundary.size.width;
+  final image = await boundary.toImage(pixelRatio: ratio);
+  final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
+  if (bytes == null) return;
+  await SharePlus.instance.share(
+    ShareParams(files: [XFile.fromData(bytes.buffer.asUint8List(), mimeType: 'image/png', name: '$receiptNo.png')]),
+  );
+}
+
+/// The receipt of any collection on this phone, at any later time (FR-M-050):
+/// opened from Today's Work and from the customer's timeline. The same card
+/// the customer saw; share sends, saves or prints it. Works offline.
+class ReceiptScreen extends ConsumerStatefulWidget {
+  const ReceiptScreen({super.key, required this.clientId});
+  final String clientId;
+  @override
+  ConsumerState<ReceiptScreen> createState() => _ReceiptScreenState();
+}
+
+class _ReceiptScreenState extends ConsumerState<ReceiptScreen> {
+  final _receiptKey = GlobalKey();
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final cs = Theme.of(context).colorScheme;
+    final q = ref.watch(collectionProvider(widget.clientId));
+    final row = q.value;
+    return Scaffold(
+      backgroundColor: cs.surfaceContainer,
+      appBar: AppBar(title: Text(l.receiptTitle)),
+      body: row == null
+          ? (q.isLoading ? const Center(child: CircularProgressIndicator()) : EmptyState(icon: Icons.receipt_long_outlined, title: l.receiptNotOnPhone, body: ''))
+          : SafeArea(
+              child: Column(children: [
+                Expanded(
+                  child: ListView(
+                    padding: const EdgeInsets.fromLTRB(Space.screen, Space.s16, Space.screen, Space.s16),
+                    children: [
+                      RepaintBoundary(key: _receiptKey, child: ReceiptCard(row: row)),
+                      if (row.receiptNo.contains('-OFF')) ...[
+                        const SizedBox(height: Space.s12),
+                        InfoBanner(icon: Icons.info_outline_rounded, text: l.collectOfflineReceipt),
+                      ],
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(Space.screen, Space.s8, Space.screen, Space.s16),
+                  child: Row(children: [
+                    Expanded(
+                      child: OutlinedButton.icon(onPressed: () => context.push('/customers/${row.customerId}'), icon: const Icon(Icons.person_rounded), label: Text(l.receiptOpenCustomer)),
+                    ),
+                    const SizedBox(width: Space.s8),
+                    Expanded(
+                      child: FilledButton.icon(onPressed: () => shareReceiptImage(_receiptKey, row.receiptNo), icon: const Icon(Icons.share_rounded), label: Text(l.actionShareReceipt)),
+                    ),
+                  ]),
+                ),
+              ]),
+            ),
     );
   }
 }
