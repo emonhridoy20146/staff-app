@@ -2424,6 +2424,26 @@ class AppLocalizationsBn extends AppLocalizations {
   String get phonePending => 'সার্ভারে পাঠানোর অপেক্ষায়';
 
   @override
+  String get phoneRemove => 'নম্বর সরান';
+
+  @override
+  String get phoneRemoveTitle => 'এই নম্বরটি সরাবেন?';
+
+  @override
+  String phoneRemoveBody(String number) {
+    return '$number গ্রাহক থেকে সরিয়ে দেওয়া হবে। শুধু মাঠে যোগ করা নম্বর সরানো যায়; অফিসের নম্বর থাকবে।';
+  }
+
+  @override
+  String get phoneRemoved => 'নম্বর সরানো হয়েছে';
+
+  @override
+  String get phoneRemoveOffline => 'নম্বর সরাতে ইন্টারনেট লাগবে। অনলাইনে এসে আবার চেষ্টা করুন।';
+
+  @override
+  String get phoneRemoveNotAllowed => 'এই নম্বরটি সরানো যাবে না।';
+
+  @override
   String get receiptView => 'রসিদ';
 
   @override

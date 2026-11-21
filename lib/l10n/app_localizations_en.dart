@@ -2430,6 +2430,26 @@ class AppLocalizationsEn extends AppLocalizations {
   String get phonePending => 'Waiting to be sent to the server';
 
   @override
+  String get phoneRemove => 'Remove number';
+
+  @override
+  String get phoneRemoveTitle => 'Remove this number?';
+
+  @override
+  String phoneRemoveBody(String number) {
+    return '$number will be removed from the customer. Only numbers added in the field can be removed; the office\'s numbers stay.';
+  }
+
+  @override
+  String get phoneRemoved => 'Number removed';
+
+  @override
+  String get phoneRemoveOffline => 'Internet is needed to remove a number. Try again when online.';
+
+  @override
+  String get phoneRemoveNotAllowed => 'This number cannot be removed.';
+
+  @override
   String get receiptView => 'Receipt';
 
   @override

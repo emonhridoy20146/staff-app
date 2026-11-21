@@ -67,4 +67,33 @@ void main() {
     expect(await h.read(customerPhoneServiceProvider).add(customerId: 'no-such-customer', phones: [(number: '01811000004', label: null)]), 0);
     expect((await db.select(db.outbox).get()).length, outboxBefore);
   });
+
+  test('FR-M-053: an added number is removed again, online only; the ERP number and a number still waiting stay', () async {
+    await h.signIn();
+    final db = h.read(databaseProvider);
+    Future<List<CustomerPhone>> phones() async =>
+        decodePhones((await (db.select(db.customers)..where((c) => c.serverId.equals('c-1002'))).getSingle()).phonesJson);
+    final erp = (await phones()).first.number;
+    final svc = h.read(customerPhoneServiceProvider);
+    expect(await svc.add(customerId: 'c-1002', phones: [(number: '01911000006', label: 'son')]), 1);
+    await h.read(syncEngineProvider).syncNow();
+    expect((await phones()).where((p) => !p.fromErp).map((p) => p.number), ['01911000006']);
+
+    // offline: nothing changes, the caller is told why
+    h.api.offline = true;
+    expect(await svc.remove(customerId: 'c-1002', number: '01911000006'), PhoneRemoveError.offline);
+    expect((await phones()).any((p) => p.number == '01911000006'), isTrue);
+    h.api.offline = false;
+
+    // the ERP number is refused by the server and stays
+    expect(await svc.remove(customerId: 'c-1002', number: erp), PhoneRemoveError.notAllowed);
+    expect((await phones()).first.number, erp);
+
+    // the added number goes, here and on the server
+    expect(await svc.remove(customerId: 'c-1002', number: '01911000006'), isNull);
+    expect((await phones()).any((p) => p.number == '01911000006'), isFalse);
+    await h.read(syncEngineProvider).syncNow();
+    expect((await phones()).map((p) => p.number), isNot(contains('01911000006')));
+    expect((await phones()).first.number, erp);
+  });
 }

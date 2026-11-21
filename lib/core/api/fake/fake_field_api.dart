@@ -601,6 +601,21 @@ class FakeFieldApi implements HttpClientAdapter {
           });
           return _json(200, {'id': id, 'status': accepted ? 'accepted' : 'rejected'});
         }
+        final rp = RegExp(r'^/customers/([^/]+)/phones/([^/]+)$').firstMatch(path);
+        if (rp != null && o.method == 'DELETE') {
+          // Server rules (1.23.0): an added number goes; an ERP number answers 422 PHONE_FROM_ERP; unknown is 404.
+          final c = _customer(rp.group(1)!);
+          final number = rp.group(2)!.replaceAll(RegExp(r'\D'), '').replaceFirst(RegExp(r'^88'), '');
+          if (c == null) return _json(404, _problem(404, 'NOT_FOUND', 'Customer not found'));
+          final details = ((c['phoneDetails'] as List?)?.cast<Json>() ??
+              [for (final n in <String>{if (c['phone'] != null) c['phone'] as String, ...((c['phones'] as List?) ?? const []).cast<String>()}) {'number': n, 'source': 'erp'}]);
+          final hit = details.where((d) => d['number'] == number).firstOrNull;
+          if (hit == null) return _json(200, {});
+          if (hit['source'] == 'erp') return _json(422, {..._problem(422, 'BUSINESS_RULE', 'An ERP number cannot be removed'), 'details': {'rule': 'PHONE_FROM_ERP'}});
+          final next = [for (final d in details) if (d['number'] != number) d];
+          serverChange('customer', c['id'] as String, {...c, 'phones': [for (final d in next) d['number']], 'phoneDetails': next});
+          return _json(200, {});
+        }
         if (o.method == 'GET' && path == '/cash/me/collections') {
           return _json(200, _cashInHand());
         }
