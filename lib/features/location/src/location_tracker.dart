@@ -137,6 +137,9 @@ class LocationTracker {
     _provider = provider;
     _profile = profileFor(Activity.unknown, _config);
     _sub = provider.points.listen((p) => unawaited(handle(p)));
+    // FR-M-056: the native service first, so it owns the one "on duty" notification and the
+    // position stream below does not open a second one.
+    await NativeTrackingService.start(title: l.trackingNotificationTitle, text: l.trackingNotificationText);
     try {
       await provider.start(_profile!, notificationTitle: l.trackingNotificationTitle, notificationText: l.trackingNotificationText);
     } catch (_) {
@@ -159,8 +162,6 @@ class LocationTracker {
         deviceId: device.deviceId,
       ));
     }
-    // Start the native service so tracking survives app kill / recents clear.
-    unawaited(NativeTrackingService.start(title: l.trackingNotificationTitle, text: l.trackingNotificationText));
     // Import any points buffered by the native service while Flutter was dead.
     unawaited(_importBufferedPoints());
     unawaited(sendHeartbeat());
