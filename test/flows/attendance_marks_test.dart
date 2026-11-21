@@ -67,13 +67,17 @@ void main() {
     h.read(routerProvider).go('/attendance');
     await settle(t);
 
-    expect(find.text('উপস্থিতির ইতিহাস'), findsOneWidget);
+    // Digits stay Latin (the test profile's default); the history sits under the duty card, so scroll to it.
+    await t.dragUntilVisible(find.text('উপস্থিতির ইতিহাস'), find.byType(FieldApp), const Offset(0, -200));
+    await settle(t);
+    await t.dragUntilVisible(find.text('ছুটির দিনে কাজ: 3 ঘ 0 মি'), find.byType(FieldApp), const Offset(0, -200));
+    await settle(t);
     // 13 Nov: late, over-break and overtime, each in words with the minutes
-    expect(find.text('৪০ মি দেরি'), findsOneWidget);
-    expect(find.text('বিরতি ১২ মি বেশি'), findsOneWidget);
-    expect(find.text('ওভারটাইম ৪৫ মি'), findsOneWidget);
+    expect(find.text('40 মি দেরি'), findsOneWidget);
+    expect(find.text('বিরতি 12 মি বেশি'), findsOneWidget);
+    expect(find.text('ওভারটাইম 45 মি'), findsOneWidget);
     // 14 Nov (weekly off): every minute worked is "work on a day off", not "overtime"
-    expect(find.text('ছুটির দিনে কাজ: ৩ ঘ ০ মি'), findsOneWidget);
+    expect(find.text('ছুটির দিনে কাজ: 3 ঘ 0 মি'), findsOneWidget);
     // one of each mark kind for the two days that have them; the plain day has none
     expect(find.byKey(const Key('day-mark-late')), findsOneWidget);
     expect(find.byKey(const Key('day-mark-over_break')), findsOneWidget);
