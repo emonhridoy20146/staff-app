@@ -25,6 +25,7 @@
   "actionUndo": "Undo",
   "actionChange": "Change",
   "actionSeeAll": "See all",
+  "actionReceiptPdf": "Receipt as PDF (print or save)",
   "actionShareReceipt": "Share receipt",
   "actionNewPromise": "New promise",
   "loginTitle": "Sign in",
