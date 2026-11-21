@@ -5,6 +5,8 @@ Contract pinned: field-api `openapi.yaml` **1.27.0** (1.22.0 → 1.27.0, additiv
 ### Added (owner request 2026-11-21: remove an added number from the app; FR-M-053, master FR-CUS-016)
 - **A bin icon next to every number added in the field** on the customer page (once it reached the server; `customer.phone.manage`). A confirm names the number; the server is asked (`DELETE /customers/{id}/phones/{number}`, contract 1.23.0) and the number leaves the list. Online only, like the admin panel (ADR-M08 exception); offline the app says internet is needed. ERP numbers cannot be removed (no button; the server refuses too).
 - Fake API answers the DELETE by the server's rules. Test in `test/flows/customer_phone_flow_test.dart`.
+### Tests (plan item 3.1)
+- Widget tests for the attendance hub screen (`test/flows/attendance_hub_screen_test.dart`): before work-in it shows "শুরু হয়নি" and the history section, with no layout errors.
 ### Build
 - Every push to `main` builds the APK with build number = CI run number and publishes it as a **pre-release on the GitHub Releases page** (`staff-app-<version>-<build>.apk`), so each test build installs over the last one and can be downloaded without opening Actions.
 
