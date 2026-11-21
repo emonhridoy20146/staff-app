@@ -50,7 +50,8 @@ void main() {
 
   testWidgets('attendance history: overtime, break over the limit, late and work on a day off are marked in words on their day', (t) async {
     final h = Harness();
-    addTearDown(h.dispose);
+    // Like the screenshot tests: closing the database awaits a real future, which never completes inside the widget test's zone.
+    addTearDown(h.container.dispose);
     await t.runAsync(h.signIn);
     t.view.physicalSize = const Size(412, 892) * 2;
     t.view.devicePixelRatio = 2;
