@@ -25,6 +25,7 @@
   "actionUndo": "পূর্বাবস্থা",
   "actionChange": "পরিবর্তন",
   "actionSeeAll": "সব দেখুন",
+  "actionReceiptPdf": "রসিদ পিডিএফ (প্রিন্ট বা সেভ)",
   "actionShareReceipt": "রসিদ শেয়ার",
   "actionNewPromise": "নতুন প্রতিশ্রুতি",
   "loginTitle": "লগইন",

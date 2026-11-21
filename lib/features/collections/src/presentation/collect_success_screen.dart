@@ -18,6 +18,7 @@ import '../../../../core/ui/common.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../collection_providers.dart';
 import '../domain/collection_rules.dart';
+import '../domain/receipt_pdf.dart';
 import 'method_visuals.dart';
 
 /// Success screen with the receipt (design guide §5.4 / §10). Internal
@@ -107,10 +108,16 @@ class _CollectSuccessScreenState extends ConsumerState<CollectSuccessScreen> wit
               padding: const EdgeInsets.fromLTRB(Space.screen, Space.s8, Space.screen, Space.s16),
               child: Column(
                 children: [
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(onPressed: () => _share(row), icon: const Icon(Icons.share_rounded), label: Text(l.actionShareReceipt)),
-                  ),
+                  Row(children: [
+                    Expanded(child: OutlinedButton.icon(onPressed: () => _share(row), icon: const Icon(Icons.share_rounded), label: Text(l.actionShareReceipt))),
+                    const SizedBox(width: Space.s8),
+                    IconButton.outlined(
+                      key: const Key('receipt-pdf'),
+                      tooltip: l.actionReceiptPdf,
+                      onPressed: () => shareReceiptPdf(_receiptKey, row.receiptNo),
+                      icon: const Icon(Icons.picture_as_pdf_rounded),
+                    ),
+                  ]),
                   const SizedBox(height: Space.s8),
                   Row(children: [
                     Expanded(
@@ -145,6 +152,18 @@ Future<void> shareReceiptImage(GlobalKey key, String receiptNo) async {
   await SharePlus.instance.share(
     ShareParams(files: [XFile.fromData(bytes.buffer.asUint8List(), mimeType: 'image/png', name: '$receiptNo.png')]),
   );
+}
+
+/// Shares the receipt drawn under [key] as a one-page PDF (FR-M-055); the
+/// share sheet prints it, saves it or sends it.
+Future<void> shareReceiptPdf(GlobalKey key, String receiptNo) async {
+  final boundary = key.currentContext?.findRenderObject() as RenderRepaintBoundary?;
+  if (boundary == null) return;
+  final image = await boundary.toImage(pixelRatio: 1080 / boundary.size.width);
+  final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
+  if (bytes == null) return;
+  final pdf = await receiptPdfBytes(png: bytes.buffer.asUint8List(), widthPx: image.width, heightPx: image.height, receiptNo: receiptNo);
+  await SharePlus.instance.share(ShareParams(files: [XFile.fromData(pdf, mimeType: 'application/pdf', name: '$receiptNo.pdf')]));
 }
 
 /// The receipt of any collection on this phone, at any later time (FR-M-050):
@@ -194,6 +213,13 @@ class _ReceiptScreenState extends ConsumerState<ReceiptScreen> {
                     const SizedBox(width: Space.s8),
                     Expanded(
                       child: FilledButton.icon(onPressed: () => shareReceiptImage(_receiptKey, row.receiptNo), icon: const Icon(Icons.share_rounded), label: Text(l.actionShareReceipt)),
+                    ),
+                    const SizedBox(width: Space.s8),
+                    IconButton.outlined(
+                      key: const Key('receipt-pdf'),
+                      tooltip: l.actionReceiptPdf,
+                      onPressed: () => shareReceiptPdf(_receiptKey, row.receiptNo),
+                      icon: const Icon(Icons.picture_as_pdf_rounded),
                     ),
                   ]),
                 ),
