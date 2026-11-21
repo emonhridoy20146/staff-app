@@ -1208,6 +1208,21 @@ class AppLocalizationsBn extends AppLocalizations {
   }
 
   @override
+  String attHubOverBreak(String minutes) {
+    return 'বিরতি $minutes বেশি';
+  }
+
+  @override
+  String attHubOvertime(String minutes) {
+    return 'ওভারটাইম $minutes';
+  }
+
+  @override
+  String attHubOffDayWork(String minutes) {
+    return 'ছুটির দিনে কাজ: $minutes';
+  }
+
+  @override
   String get attHubAbsenceStreak =>
       'অনুপস্থিতি হিসেবে গণ্য (প্রতি ২ দিন দেরিতে ১ দিন)';
 

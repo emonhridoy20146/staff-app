@@ -48,7 +48,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 9;
+  int get schemaVersion => 10;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -132,6 +132,12 @@ class AppDatabase extends _$AppDatabase {
           // super admin turns `module.tasks` on, and a fresh install or v7 update already takes one.
           if (from < 9) {
             await m.createTable(tasks);
+          }
+          // v10 (0.13.x, contract 1.25.0): the server's overtime and over-break minutes on a day
+          // (FR-M-051). Two columns with a default of 0; the next pull fills them. Nothing else moves.
+          if (from < 10) {
+            await m.addColumn(attendanceDays, attendanceDays.overtimeMin);
+            await m.addColumn(attendanceDays, attendanceDays.overBreakMin);
           }
         },
         beforeOpen: (details) async {

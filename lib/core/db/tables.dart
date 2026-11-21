@@ -372,6 +372,9 @@ class AttendanceDays extends Table {
   DateTimeColumn get lastOut => dateTime().nullable()();
   IntColumn get breakMin => integer().withDefault(const Constant(0))();
   IntColumn get lateMin => integer().withDefault(const Constant(0))();
+  /// Schema 10 (contract 1.25.0): the server's overtime and over-break minutes of the day (FR-M-051).
+  IntColumn get overtimeMin => integer().withDefault(const Constant(0))();
+  IntColumn get overBreakMin => integer().withDefault(const Constant(0))();
   TextColumn get breaksJson => text().withDefault(const Constant('[]'))();
 
   @override

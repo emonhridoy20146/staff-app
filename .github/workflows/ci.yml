@@ -25,6 +25,8 @@ jobs:
   apk:
     needs: check
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # publish the test release on main
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -50,8 +52,23 @@ jobs:
           STAFF_KEYSTORE_PASSWORD: ${{ secrets.STAFF_KEYSTORE_PASSWORD }}
           STAFF_KEY_ALIAS: ${{ secrets.STAFF_KEY_ALIAS }}
           STAFF_KEY_PASSWORD: ${{ secrets.STAFF_KEY_PASSWORD }}
-        run: flutter build apk --release --dart-define-from-file=config/live.env
+        # Every build gets a higher build number, so a phone can install it over the previous one.
+        run: |
+          NAME=$(grep '^version:' pubspec.yaml | sed -E 's/version: *([0-9.]+).*/\1/')
+          echo "APP_VERSION=$NAME+${{ github.run_number }}" >> "$GITHUB_ENV"
+          flutter build apk --release --dart-define-from-file=config/live.env --build-name="$NAME" --build-number=${{ github.run_number }}
+          cp build/app/outputs/flutter-apk/app-release.apk "build/app/outputs/flutter-apk/staff-app-$NAME-${{ github.run_number }}.apk"
       - uses: actions/upload-artifact@v4
         with:
           name: staff-app-live-apk
           path: build/app/outputs/flutter-apk/app-release.apk
+      # On main: a GitHub release with the APK, so the owner downloads it from the Releases page (no login to Actions needed).
+      - name: Publish test release
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="v${APP_VERSION/+/-build.}"
+          gh release create "$TAG" build/app/outputs/flutter-apk/staff-app-*.apk \
+            --title "Staff app $APP_VERSION" --prerelease --target "${{ github.sha }}" \
+            --notes "Test build from main ($(git log -1 --format=%s)). What changed: docs/CHANGELOG.md."

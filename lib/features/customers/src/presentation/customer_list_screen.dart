@@ -75,6 +75,7 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
     // The chip numbers follow the branch picked in the top bar, like the list.
     final shown = ref.watch(branchCustomersProvider).value ?? const <Customer>[];
     final paid = ref.watch(paidThisMonthProvider).value ?? const <String, int>{};
+    final invoices = ref.watch(branchInvoiceTotalsProvider);
     int countFor(CustomerFilter x) => shown.where((c) => matchesFilter(c, x, today: today, myUserId: me, paidThisMonth: paid)).length;
     // Since 1.19.0 the list holds the whole branch: "Mine" appears once someone else's customers are on the phone.
     final showMine = all.any((c) => c.isOthers(me));
@@ -142,7 +143,17 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
             padding: const EdgeInsets.fromLTRB(Space.screen, Space.s4, Space.s4, 0),
             child: Row(
               children: [
-                Expanded(child: Text(l.customersCount(f.num(list.value?.length ?? 0)), style: t.bodyMedium!.copyWith(color: cs.onSurfaceVariant), overflow: TextOverflow.ellipsis)),
+                // FR-M-052: how many invoices the customers in view have (the picked branch or all my branches), as on the customer page.
+                Expanded(
+                  child: Text(
+                    invoices.total > 0
+                        ? '${l.customersCount(f.num(list.value?.length ?? 0))} · ${l.monthInvoices(f.num(invoices.total), f.num(invoices.open))}'
+                        : l.customersCount(f.num(list.value?.length ?? 0)),
+                    key: const Key('customers-count-line'),
+                    style: t.bodyMedium!.copyWith(color: cs.onSurfaceVariant),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
                 PopupMenuButton<CustomerSort>(
                   initialValue: sort,
                   onSelected: (s) => ref.read(customerSortProvider.notifier).state = s,

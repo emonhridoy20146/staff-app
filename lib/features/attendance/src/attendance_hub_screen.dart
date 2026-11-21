@@ -327,6 +327,11 @@ class _AttendanceDayTile extends ConsumerWidget {
     final notStarted = row.status == 'not_started';
     final ended = row.status == 'off_duty';
     final late = row.lateMin > 0;
+    // FR-M-051: the server's marks of the day (contract 1.25.0). On a weekly off day or holiday every
+    // worked minute is overtime, so that day says "worked on a day off" instead.
+    final offDay = row.status == 'weekly_off' || row.status == 'holiday';
+    final overtime = row.overtimeMin > 0;
+    final overBreak = row.overBreakMin > 0;
     final worked = (row.firstIn != null && row.lastOut != null)
         ? row.lastOut!.difference(row.firstIn!) - Duration(minutes: row.breakMin)
         : null;
@@ -376,18 +381,48 @@ class _AttendanceDayTile extends ConsumerWidget {
                   ),
                 if (absenceStreak)
                   Text(l.attHubAbsenceStreak, style: t.labelSmall!.copyWith(color: sem.danger.fg, fontWeight: FontWeight.w600)),
+                if (late || overtime || overBreak)
+                  Padding(
+                    padding: const EdgeInsets.only(top: Space.s4),
+                    child: Wrap(
+                      spacing: Space.s4,
+                      runSpacing: Space.s4,
+                      children: [
+                        if (late) _DayMark(text: l.attHubLateWarning(f.minutes(row.lateMin)), bg: badgeBg, fg: badgeFg, semantics: 'late'),
+                        if (overBreak)
+                          _DayMark(text: l.attHubOverBreak(f.minutes(row.overBreakMin)), bg: sem.warning.bg, fg: sem.warning.fg, semantics: 'over_break'),
+                        if (overtime)
+                          _DayMark(
+                            text: offDay ? l.attHubOffDayWork(f.minutes(row.overtimeMin)) : l.attHubOvertime(f.minutes(row.overtimeMin)),
+                            bg: sem.success.bg,
+                            fg: sem.success.fg,
+                            semantics: 'overtime',
+                          ),
+                      ],
+                    ),
+                  ),
               ],
             ),
-      trailing: late
-          ? Container(
-              padding: const EdgeInsets.symmetric(horizontal: Space.s8, vertical: Space.s4),
-              decoration: BoxDecoration(color: badgeBg, borderRadius: Radii.brSm),
-              child: Text(
-                l.attHubLateWarning(f.minutes(row.lateMin)),
-                style: t.labelSmall!.copyWith(color: badgeFg, fontWeight: FontWeight.w600),
-              ),
-            )
-          : null,
+    );
+  }
+}
+
+/// One small mark on a day row: late, break over the limit, overtime (FR-M-051). Words, not only colour.
+class _DayMark extends StatelessWidget {
+  const _DayMark({required this.text, required this.bg, required this.fg, required this.semantics});
+  final String text;
+  final Color bg;
+  final Color fg;
+  final String semantics;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = Theme.of(context).textTheme;
+    return Container(
+      key: Key('day-mark-$semantics'),
+      padding: const EdgeInsets.symmetric(horizontal: Space.s8, vertical: Space.s4),
+      decoration: BoxDecoration(color: bg, borderRadius: Radii.brSm),
+      child: Text(text, style: t.labelSmall!.copyWith(color: fg, fontWeight: FontWeight.w600)),
     );
   }
 }

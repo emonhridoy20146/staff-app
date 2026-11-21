@@ -5,6 +5,15 @@ Contract pinned: field-api `openapi.yaml` **1.27.0** (1.22.0 → 1.27.0, additiv
 ### Added (owner request 2026-11-21: remove an added number from the app; FR-M-053, master FR-CUS-016)
 - **A bin icon next to every number added in the field** on the customer page (once it reached the server; `customer.phone.manage`). A confirm names the number; the server is asked (`DELETE /customers/{id}/phones/{number}`, contract 1.23.0) and the number leaves the list. Online only, like the admin panel (ADR-M08 exception); offline the app says internet is needed. ERP numbers cannot be removed (no button; the server refuses too).
 - Fake API answers the DELETE by the server's rules. Test in `test/flows/customer_phone_flow_test.dart`.
+### Build
+- Every push to `main` builds the APK with build number = CI run number and publishes it as a **pre-release on the GitHub Releases page** (`staff-app-<version>-<build>.apk`), so each test build installs over the last one and can be downloaded without opening Actions.
+
+### Added (owner request 2026-11-21: how many invoices my branches have; FR-M-052, master FR-CUS-018)
+- **The customer list's count line now says how many invoices the customers in view have and how many still take money**: "৩৪ জন গ্রাহক · ইনভয়েস ৪১টি · বাকি আছে ২৯টি". It follows the branch picked in the top bar (one branch, or all my branches) and uses the customer page's rule (cancelled invoices not counted). From the phone's own invoices, offline; no schema or contract change. Unit test in `test/features/work_marks_test.dart`.
+### Added (owner request 2026-11-21: overtime and break over the limit on the attendance history; FR-M-051, field-api FR-ATT-010/011, contract 1.25.0)
+- **Every day of the attendance history now carries the server's marks in words**, next to the late mark: "ওভারটাইম ৪৫ মি" (green) and "বিরতি ১২ মি বেশি" (amber). On a weekly off day or holiday the worked time reads "ছুটির দিনে কাজ: ৩ ঘ ০ মি". Days with nothing to mark show nothing.
+- **Local DB schema 10**: `attendance_day.overtime_min` and `over_break_min` (default 0; the next pull fills them). Migration from every released schema is tested (`test/core/migration_test.dart`); nothing unsynced is touched and no new snapshot is forced.
+- Tests `test/flows/attendance_marks_test.dart` (pull handler, the marks on screen).
 ### Added (owner request 2026-11-21: the receipt of any collection, later too; FR-M-050)
 - **A receipt screen for every collection on the phone** (`/receipt/:clientId`): the same receipt the customer saw, with "রসিদ শেয়ার" (the phone's share sheet sends it, saves it or prints it) and "গ্রাহক খুলুন". Works offline.
 - Opened by a tap on a collection in **Today's Work** (any day) and by the new "রসিদ" button on a collection in the **customer's timeline**. Until now the receipt was shown once, right after collecting.
