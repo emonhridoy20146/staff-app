@@ -147,6 +147,9 @@ class FieldApi {
         (d) => d as Json,
       );
 
+  /// The collections behind my cash on hand (1.27.0, FR-CASH-007): online.
+  Future<Json> myCashInHand() => _call(() => _dio.get<dynamic>('/cash/me/collections'), (d) => d as Json);
+
   /// The collection board (1.26.0, FR-REP-007): everyone who collected,
   /// ranked by money the ERP has accepted, for a month or all time; 403
   /// unless the leaderboard is visible to staff.

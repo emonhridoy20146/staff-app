@@ -2430,6 +2430,44 @@ class AppLocalizationsEn extends AppLocalizations {
   String get phonePending => 'Waiting to be sent to the server';
 
   @override
+  String get cashInHandOpen => 'Which collections is this cash from?';
+
+  @override
+  String get cashInHandTitle => 'Cash on hand, by collection';
+
+  @override
+  String cashInHandInvoice(String no) {
+    return 'Invoice ${no}';
+  }
+
+  @override
+  String cashInHandPartOf(String amount) {
+    return 'left of ${amount}';
+  }
+
+  @override
+  String cashInHandPendingDeposits(String amount) {
+    return '${amount} handed in, waiting to be verified';
+  }
+
+  @override
+  String get cashInHandUnsent => 'Some money on this phone has not reached the server yet; it is not in this list.';
+
+  @override
+  String get cashInHandEmpty => 'No cash on hand.';
+
+  @override
+  String cashInHandMore(String n) {
+    return '${n} older collections are not listed; the total above includes them.';
+  }
+
+  @override
+  String get cashInHandHow => 'A deposit pays off your oldest collections first, so the cash on hand is your newest collections. Tap a line to open the customer.';
+
+  @override
+  String get cashInHandOffline => 'This list needs the internet';
+
+  @override
   String get boardTabCollection => 'Collection board';
 
   @override

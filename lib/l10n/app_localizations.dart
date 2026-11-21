@@ -4295,6 +4295,66 @@ abstract class AppLocalizations {
   /// **'Waiting to be sent to the server'**
   String get phonePending;
 
+  /// No description provided for @cashInHandOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Which collections is this cash from?'**
+  String get cashInHandOpen;
+
+  /// No description provided for @cashInHandTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Cash on hand, by collection'**
+  String get cashInHandTitle;
+
+  /// No description provided for @cashInHandInvoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Invoice {no}'**
+  String cashInHandInvoice(String no);
+
+  /// No description provided for @cashInHandPartOf.
+  ///
+  /// In en, this message translates to:
+  /// **'left of {amount}'**
+  String cashInHandPartOf(String amount);
+
+  /// No description provided for @cashInHandPendingDeposits.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} handed in, waiting to be verified'**
+  String cashInHandPendingDeposits(String amount);
+
+  /// No description provided for @cashInHandUnsent.
+  ///
+  /// In en, this message translates to:
+  /// **'Some money on this phone has not reached the server yet; it is not in this list.'**
+  String get cashInHandUnsent;
+
+  /// No description provided for @cashInHandEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No cash on hand.'**
+  String get cashInHandEmpty;
+
+  /// No description provided for @cashInHandMore.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} older collections are not listed; the total above includes them.'**
+  String cashInHandMore(String n);
+
+  /// No description provided for @cashInHandHow.
+  ///
+  /// In en, this message translates to:
+  /// **'A deposit pays off your oldest collections first, so the cash on hand is your newest collections. Tap a line to open the customer.'**
+  String get cashInHandHow;
+
+  /// No description provided for @cashInHandOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'This list needs the internet'**
+  String get cashInHandOffline;
+
   /// No description provided for @boardTabCollection.
   ///
   /// In en, this message translates to:

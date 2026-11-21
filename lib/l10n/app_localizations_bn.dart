@@ -2424,6 +2424,44 @@ class AppLocalizationsBn extends AppLocalizations {
   String get phonePending => 'সার্ভারে পাঠানোর অপেক্ষায়';
 
   @override
+  String get cashInHandOpen => 'কোন আদায়ের টাকা হাতে আছে';
+
+  @override
+  String get cashInHandTitle => 'হাতে থাকা নগদের হিসাব';
+
+  @override
+  String cashInHandInvoice(String no) {
+    return 'ইনভয়েস ${no}';
+  }
+
+  @override
+  String cashInHandPartOf(String amount) {
+    return 'মোট ${amount}-এর বাকি';
+  }
+
+  @override
+  String cashInHandPendingDeposits(String amount) {
+    return '${amount} জমা দেওয়া হয়েছে, যাচাই বাকি';
+  }
+
+  @override
+  String get cashInHandUnsent => 'এই ফোনের কিছু টাকা এখনো সার্ভারে পৌঁছায়নি; সেগুলো এই তালিকায় নেই।';
+
+  @override
+  String get cashInHandEmpty => 'হাতে কোনো নগদ নেই।';
+
+  @override
+  String cashInHandMore(String n) {
+    return 'আরও ${n}টি পুরনো আদায় তালিকায় নেই; ওপরের মোটে ধরা আছে।';
+  }
+
+  @override
+  String get cashInHandHow => 'জমা দিলে আপনার সবচেয়ে পুরনো আদায় আগে মেটানো ধরা হয়, তাই হাতে থাকা নগদ মানে আপনার সবচেয়ে নতুন আদায়গুলো। গ্রাহক খুলতে লাইনে চাপ দিন।';
+
+  @override
+  String get cashInHandOffline => 'এই তালিকার জন্য ইন্টারনেট লাগবে';
+
+  @override
   String get boardTabCollection => 'আদায় বোর্ড';
 
   @override

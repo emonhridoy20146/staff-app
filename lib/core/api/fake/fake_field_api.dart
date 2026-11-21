@@ -78,6 +78,13 @@ class FakeFieldApi implements HttpClientAdapter {
   var _password = 'demo1234';
   var _mustChange = true;
   var _cashOnHand = 820000; // ৳8,200 from yesterday
+
+  /// Cash collections the server has taken, oldest first (1.27.0): the
+  /// newest of them add up to [_cashOnHand].
+  late final List<Json> _cashRows = [
+    {'collectionId': 'col-y1', 'customerId': 'c-1002', 'erpPlanId': 'INV-2291', 'amountPoisha': 500000, 'receiptNo': 'BRL01-FS014-000118', 'recordedAt': clock.nowUtc().subtract(const Duration(hours: 22)).toIso8601String()},
+    {'collectionId': 'col-y2', 'customerId': 'c-1005', 'erpPlanId': 'INV-2317', 'amountPoisha': 450000, 'receiptNo': 'BRL01-FS014-000119', 'recordedAt': clock.nowUtc().subtract(const Duration(hours: 20)).toIso8601String()},
+  ];
   final _limit = 5000000; // ৳50,000
 
   static const user = {
@@ -594,6 +601,9 @@ class FakeFieldApi implements HttpClientAdapter {
           });
           return _json(200, {'id': id, 'status': accepted ? 'accepted' : 'rejected'});
         }
+        if (o.method == 'GET' && path == '/cash/me/collections') {
+          return _json(200, _cashInHand());
+        }
         if (o.method == 'GET' && path == '/reports/me/performance') {
           return _json(200, _performance(o.queryParameters['month'] as String));
         }
@@ -772,6 +782,25 @@ class FakeFieldApi implements HttpClientAdapter {
     return {'period': period, 'metric': metric, 'minPresentDays': 1, 'items': rows, 'me': {'rank': me['rank'], 'of': eligible.length}};
   }
 
+  /// Contract 1.27.0: deposits pay off the oldest cash first; the rest, newest first.
+  Json _cashInHand() {
+    var left = _cashOnHand;
+    final items = <Json>[];
+    for (final c in _cashRows.reversed) {
+      if (left <= 0) break;
+      final amount = c['amountPoisha'] as int;
+      final at = (c['recordedAt'] as String?) ?? clock.nowUtc().toIso8601String();
+      final part = left < amount ? left : amount;
+      left -= part;
+      items.add({
+        'collectionId': c['collectionId'], 'receiptNo': c['receiptNo'] ?? '', 'recordedAt': at, 'businessDate': at.substring(0, 10),
+        'customer': {'id': c['customerId'], 'name': {'bn': 'গ্রাহক ${c['customerId']}', 'en': 'Customer ${c['customerId']}'}, 'code': '${c['customerId']}'.toUpperCase()},
+        'erpPlanId': c['erpPlanId'] ?? '', 'amountPoisha': amount, 'inHandPoisha': part, 'status': 'received',
+      });
+    }
+    return {'userId': user['id'], 'userName': 'FS014', 'onHandPoisha': _cashOnHand - left, 'pendingDepositsPoisha': 0, 'count': items.length, 'items': items, 'generatedAt': clock.nowUtc().toIso8601String()};
+  }
+
   /// Contract 1.26.0: money the ERP has accepted, every branch, any role.
   Object _collectionBoard(String period) {
     if (!leaderboardVisible) return (403, _problem(403, 'FORBIDDEN', 'Leaderboard not visible to staff'));
@@ -851,6 +880,7 @@ class FakeFieldApi implements HttpClientAdapter {
       } else {
         r = {'mutationId': id, 'result': 'applied', 'entityId': '$entity-$id', 'status': entity == 'collection' ? 'received' : 'ok'};
         if (entity == 'collection' && payload['method'] == 'cash') _cashOnHand += payload['amountPoisha'] as int;
+        if (entity == 'collection' && payload['method'] == 'cash') _cashRows.add({...payload, 'collectionId': '$entity-$id'});
         if (entity == 'collection') _collectedToday += payload['amountPoisha'] as int;
         if (entity == 'deposit') _cashOnHand -= payload['amountPoisha'] as int;
         if (entity == 'attendance_event' && payload['type'] == 'work_out') _leaveCoworkOnWorkOut();
