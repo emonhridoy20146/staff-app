@@ -54,6 +54,7 @@ Phases match `field-api/docs/09-progress.md`. Start each phase against the Prism
 | Collection board: verified money, every branch, month and all time, crown on first place (FR-M-048, contract 1.26.0) | ✅ 2026-11-21, unit tests; device check pending |
 | Cash on hand by collection: customer, invoice, receipt per line (FR-M-049, contract 1.27.0) | ✅ 2026-11-21, unit tests; device check pending |
 | Receipt of any collection from Today's Work and the customer timeline (FR-M-050) | ✅ 2026-11-21, CI only; device check pending |
+| Invoice total of the customers in view on the list header (FR-M-052) | ✅ 2026-11-21, CI only; device check pending |
 | Overtime and break-over-limit marks on the attendance history, schema 10 (FR-M-051) | ✅ 2026-11-21, CI only; device check pending |
 | Notifications (FCM + centre), Sync centre & Problems | ◐ sync centre done; FCM not yet (needs Firebase project) |
 | Onboarding: consent, permissions primer | ✅ |
