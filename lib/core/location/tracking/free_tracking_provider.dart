@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 
+import 'native_tracking_service.dart';
 import 'sampling.dart';
 import 'tracking_provider.dart';
 
@@ -38,22 +39,7 @@ class FreeTrackingProvider implements TrackingProvider {
 
   Future<void> _listen(SamplingProfile profile) async {
     await _sub?.cancel();
-    // No separate foreground-service notification here: the native tracking
-    // service (NativeTrackingService.start) already shows the single
-    // persistent "On duty" notification. Adding a second geolocator foreground
-    // service would produce two duty notifications on Android (ADR-M20).
-    final settings = AndroidSettings(
-      accuracy: LocationAccuracy.high,
-      distanceFilter: profile.distanceFilterM,
-      intervalDuration: profile.interval,
-      foregroundNotificationConfig: ForegroundNotificationConfig(
-        notificationTitle: _title,
-        notificationText: _text,
-        notificationChannelName: 'Duty tracking',
-        enableWakeLock: true,
-        setOngoing: true,
-      ),
-    );
+    final settings = trackingSettings(profile, nativeRunning: await NativeTrackingService.isRunning(), title: _title, text: _text);
     _sub = Geolocator.getPositionStream(locationSettings: settings).listen(
       (p) => _out.add(RawLocation(
         t: p.timestamp.toUtc(),
@@ -94,3 +80,24 @@ class FreeTrackingProvider implements TrackingProvider {
     );
   }
 }
+
+/// The position-stream settings (FR-M-056). While the native tracking service
+/// runs it already holds the one persistent "on duty" notification and keeps
+/// the app a foreground location app, so geolocator starts no service of its
+/// own: before, both showed, and staff saw two notifications while the app was
+/// open. Only when the native service is not running (it failed to start)
+/// does geolocator keep its own, so tracking never runs without one.
+AndroidSettings trackingSettings(SamplingProfile profile, {required bool nativeRunning, required String title, required String text}) => AndroidSettings(
+      accuracy: LocationAccuracy.high,
+      distanceFilter: profile.distanceFilterM,
+      intervalDuration: profile.interval,
+      foregroundNotificationConfig: nativeRunning
+          ? null
+          : ForegroundNotificationConfig(
+              notificationTitle: title,
+              notificationText: text,
+              notificationChannelName: 'Duty tracking',
+              enableWakeLock: true,
+              setOngoing: true,
+            ),
+    );

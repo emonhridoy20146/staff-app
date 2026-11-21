@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 Contract pinned: field-api `openapi.yaml` **1.27.0** (1.22.0 → 1.27.0, additive: 1.23.0 extra phone numbers, 1.24.0 this month on a customer and invoice counts, 1.25.0 duty hours per branch with break windows, overtime and late absences, 1.26.0 the collection board, 1.27.0 cash in hand by collection; `docs/contract/openapi.yaml`). The collection board needs the server at 1.26.0; on an older server its tab says it could not be loaded and the branch ranking still works. Adding phone numbers needs 1.23.0; break windows and the late-days setting need 1.25.0; everything else works with 1.22.0.
+### Fixed (owner report: two GPS notifications while the app is open; FR-M-056, ADR-M21)
+- The geolocator position stream no longer opens its own foreground notification while the native tracking service runs; the native service is started first and is the only "on duty" notification. If it fails to start, geolocator keeps one (tracking is never invisible). Test `test/core/tracking_settings_test.dart`.
 ### Added (owner request 2026-11-21: receipt as a PDF; FR-M-055)
 - **PDF button next to "রসিদ শেয়ার"** on the success screen and the receipt screen: a one-page PDF, 80 mm wide, of the same receipt card; the share sheet prints, saves or sends it. Works offline. New package `pdf` (pure Dart). Test `test/features/receipt_pdf_test.dart`.
 ### Added (owner request 2026-11-21: remove an added number from the app; FR-M-053, master FR-CUS-016)
