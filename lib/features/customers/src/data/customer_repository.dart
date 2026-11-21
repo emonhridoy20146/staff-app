@@ -128,6 +128,15 @@ class CustomerPullHandler implements PullHandler {
                 estimated: Value((s['estimated'] as bool?) ?? false),
                 lateFeePoisha: Value((s['lateFeePoisha'] as num?)?.toInt() ?? 0),
                 rolled: Value((s['rolled'] as bool?) ?? false),
+                paidOn: Value(s['paidOn'] as String?),
+                daysLate: Value((s['daysLate'] as num?)?.toInt() ?? 0),
+                missed: Value((s['missed'] as bool?) ?? false),
+                paymentsJson: Value(s['payments'] is List
+                    ? jsonEncode([
+                        for (final x in (s['payments'] as List).cast<Json>())
+                          {'id': x['erpPaymentId'], 'date': x['date'], 'amountPoisha': x['amountPoisha'], 'receiptNo': x['receiptNo']},
+                      ])
+                    : null),
               ));
         }
       }

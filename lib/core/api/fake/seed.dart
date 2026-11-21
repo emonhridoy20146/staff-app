@@ -135,6 +135,9 @@ class DemoSeed {
                     : 'upcoming';
         if (status == 'overdue') overdueAmt += amount;
         if (!isPaid && nextDue == null) nextDue = due;
+        // Contract 1.14.0: how the ERP says a line was paid (some a few days late) or missed.
+        final lateBy = isPaid && s % 3 == 0 ? 4 : 0;
+        final paidOn = DateTime.parse(due).add(Duration(days: lateBy)).toIso8601String().substring(0, 10);
         schedule.add({
           'seq': s,
           'dueDate': due,
@@ -142,6 +145,13 @@ class DemoSeed {
           'paidPoisha': isPaid ? amount : 0,
           'status': status,
           'estimated': false,
+          if (isPaid) 'paidOn': paidOn,
+          'daysLate': isPaid ? lateBy : (status == 'overdue' ? -dueDiff : 0),
+          'missed': status == 'overdue',
+          if (isPaid)
+            'payments': [
+              {'erpPaymentId': 'ep-$i-$s', 'date': paidOn, 'amountPoisha': amount, 'receiptNo': 'R-${30100 + i}-$s'},
+            ],
         });
       }
       // The ERP keeps a late fee inside an overdue line's amount (contract 1.13.0).

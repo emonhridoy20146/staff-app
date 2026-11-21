@@ -1525,6 +1525,23 @@
       }
     }
   },
+  "scheduleLinePaidOn": "Paid on {date}",
+  "@scheduleLinePaidOn": {
+    "placeholders": { "date": { "type": "String" } }
+  },
+  "scheduleDaysLate": "{days} days late",
+  "@scheduleDaysLate": {
+    "placeholders": { "days": { "type": "String" } }
+  },
+  "scheduleMissed": "Missed",
+  "scheduleLinePayments": "Payments for installment {seq}",
+  "@scheduleLinePayments": {
+    "placeholders": { "seq": { "type": "String" } }
+  },
+  "scheduleReceiptNo": "Receipt {no}",
+  "@scheduleReceiptNo": {
+    "placeholders": { "no": { "type": "String" } }
+  },
   "schedulePaidOf": "Paid {paid} · left {left}",
   "@schedulePaidOf": {
     "placeholders": {

@@ -101,6 +101,12 @@ class ScheduleLines extends Table {
   // v7 (0.10.0): late fee inside amountPoisha; a line the ERP rolled forward (amount 0, hidden).
   IntColumn get lateFeePoisha => integer().withDefault(const Constant(0))();
   BoolColumn get rolled => boolean().withDefault(const Constant(false))();
+  // v11 (contract 1.14.0, FR-M-054): the ERP's own record of how the line was paid.
+  TextColumn get paidOn => text().nullable()();
+  IntColumn get daysLate => integer().withDefault(const Constant(0))();
+  BoolColumn get missed => boolean().withDefault(const Constant(false))();
+  /// [{"id","date","amountPoisha","receiptNo"}] — ERP payments that went to this line, oldest first.
+  TextColumn get paymentsJson => text().nullable()();
 
   @override
   Set<Column> get primaryKey => {erpPlanId, seq};

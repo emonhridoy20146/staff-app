@@ -48,7 +48,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 10;
+  int get schemaVersion => 11;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -138,6 +138,14 @@ class AppDatabase extends _$AppDatabase {
           if (from < 10) {
             await m.addColumn(attendanceDays, attendanceDays.overtimeMin);
             await m.addColumn(attendanceDays, attendanceDays.overBreakMin);
+          }
+          // v11 (contract 1.14.0): paid-on date, days late, missed and the payments of a schedule line
+          // (FR-M-054). Defaults only; the next pull of the customer fills them. Nothing else moves.
+          if (from < 11) {
+            await m.addColumn(scheduleLines, scheduleLines.paidOn);
+            await m.addColumn(scheduleLines, scheduleLines.daysLate);
+            await m.addColumn(scheduleLines, scheduleLines.missed);
+            await m.addColumn(scheduleLines, scheduleLines.paymentsJson);
           }
         },
         beforeOpen: (details) async {

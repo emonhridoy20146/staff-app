@@ -6,6 +6,9 @@ Contract pinned: field-api `openapi.yaml` **1.27.0** (1.22.0 → 1.27.0, additiv
 - The geolocator position stream no longer opens its own foreground notification while the native tracking service runs; the native service is started first and is the only "on duty" notification. If it fails to start, geolocator keeps one (tracking is never invisible). Test `test/core/tracking_settings_test.dart`.
 ### Added (owner request 2026-11-21: receipt as a PDF; FR-M-055)
 - **PDF button next to "রসিদ শেয়ার"** on the success screen and the receipt screen: a one-page PDF, 80 mm wide, of the same receipt card; the share sheet prints, saves or sends it. Works offline. New package `pdf` (pure Dart). Test `test/features/receipt_pdf_test.dart`.
+### Added (owner request 2026-11-21: installment detail like the ERP; FR-M-054, contract 1.14.0)
+- **Every installment line says what the ERP knows**: "৯ অক্টো-এ পরিশোধ · ৪ দিন দেরিতে", or "কিস্তি বাদ পড়েছে" on a missed one (in red when late or missed). Tap a line to see the payments that went to it (date, receipt, amount).
+- **Local DB schema 11**: `schedule_lines.paid_on`, `days_late`, `missed`, `payments_json`; migration tested from every released schema. Fake ERP sends the fields. Tests `test/flows/installment_detail_test.dart`.
 ### Added (owner request 2026-11-21: remove an added number from the app; FR-M-053, master FR-CUS-016)
 - **A bin icon next to every number added in the field** on the customer page (once it reached the server; `customer.phone.manage`). A confirm names the number; the server is asked (`DELETE /customers/{id}/phones/{number}`, contract 1.23.0) and the number leaves the list. Online only, like the admin panel (ADR-M08 exception); offline the app says internet is needed. ERP numbers cannot be removed (no button; the server refuses too).
 - Fake API answers the DELETE by the server's rules. Test in `test/flows/customer_phone_flow_test.dart`.

@@ -269,3 +269,19 @@ List<Customer> withDistances(List<Customer> list, GeoFix? fix) {
     for (final c in list) c.hasPin ? c.withDistance(distanceMeters(fix.lat, fix.lng, c.row.lat!, c.row.lng!)) : c,
   ];
 }
+
+
+/// One ERP payment that went to a schedule line (FR-M-054, contract 1.14.0).
+typedef LinePayment = ({String date, int amountPoisha, String? receiptNo});
+
+/// Reads `schedule_lines.payments_json`; empty when the ERP sent none.
+List<LinePayment> decodeLinePayments(String? json) {
+  if (json == null || json.isEmpty) return const [];
+  final raw = jsonDecode(json);
+  if (raw is! List) return const [];
+  return [
+    for (final x in raw)
+      if (x is Map && x['date'] is String)
+        (date: x['date'] as String, amountPoisha: (x['amountPoisha'] as num?)?.toInt() ?? 0, receiptNo: x['receiptNo'] as String?),
+  ];
+}

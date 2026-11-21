@@ -57,6 +57,7 @@ Phases match `field-api/docs/09-progress.md`. Start each phase against the Prism
 | Remove an added phone number from the customer page, online (FR-M-053) | ✅ 2026-11-21, CI only; device check pending |
 | One on-duty notification instead of two (FR-M-056, ADR-M21) | ✅ 2026-11-21, CI only; **device check needed** |
 | Receipt as a PDF from the success and receipt screens (FR-M-055) | ✅ 2026-11-21, CI only; device check pending |
+| Installment detail like the ERP: paid on, days late, missed, payments per line; schema 11 (FR-M-054) | ✅ 2026-11-21, CI only; device check pending |
 | Invoice total of the customers in view on the list header (FR-M-052) | ✅ 2026-11-21, CI only; device check pending |
 | Overtime and break-over-limit marks on the attendance history, schema 10 (FR-M-051) | ✅ 2026-11-21, CI only; device check pending |
 | Notifications (FCM + centre), Sync centre & Problems | ◐ sync centre done; FCM not yet (needs Firebase project) |
