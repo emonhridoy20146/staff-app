@@ -249,6 +249,16 @@ class CustomerRepository {
       .watch()
       .map((rows) => {for (final r in rows) r.planId!});
 
+  /// Every invoice on the phone, in the shape the invoice totals need (FR-M-052): who it belongs to,
+  /// its status and what it still owes.
+  Stream<List<({String customerId, String status, int outstandingPoisha})>> watchPlanSummaries() => (_db.selectOnly(_db.plans)
+        ..addColumns([_db.plans.customerId, _db.plans.status, _db.plans.outstandingPoisha]))
+      .watch()
+      .map((rows) => [
+            for (final r in rows)
+              (customerId: r.read(_db.plans.customerId)!, status: r.read(_db.plans.status)!, outstandingPoisha: r.read(_db.plans.outstandingPoisha)!),
+          ]);
+
   /// ERP money per customer in the month of [today] (FR-M-038): only this month's rows are read.
   Stream<Map<String, int>> watchPaidThisMonth(String today) => (_db.select(_db.erpPayments)
         ..where((t) => t.date.like('${today.substring(0, 7)}%') & t.reversed.equals(false)))

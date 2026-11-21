@@ -86,6 +86,18 @@ final paidThisMonthProvider = StreamProvider<Map<String, int>>(
   (ref) => ref.watch(customerRepositoryProvider).watchPaidThisMonth(ref.watch(todayProvider)),
 );
 
+/// Invoices of the customers in view (the branch picked in the top bar, or all my
+/// branches), for the list header (FR-M-052): all, and those with a balance.
+final branchInvoiceTotalsProvider = Provider<({int total, int open})>((ref) {
+  final customers = ref.watch(branchCustomersProvider).value ?? const <Customer>[];
+  final plans = ref.watch(_planSummariesProvider).value ?? const [];
+  return invoiceTotals(plans, {for (final c in customers) c.id});
+});
+
+final _planSummariesProvider = StreamProvider<List<({String customerId, String status, int outstandingPoisha})>>(
+  (ref) => ref.watch(customerRepositoryProvider).watchPlanSummaries(),
+);
+
 /// The four work marks of one customer: visited, money, promise, map pin.
 WorkMarks workMarksFor(WidgetRef ref, Customer c) => workMarksOf(
       today: ref.watch(todayProvider),
