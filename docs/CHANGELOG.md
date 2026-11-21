@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 Contract pinned: field-api `openapi.yaml` **1.27.0** (1.22.0 → 1.27.0, additive: 1.23.0 extra phone numbers, 1.24.0 this month on a customer and invoice counts, 1.25.0 duty hours per branch with break windows, overtime and late absences, 1.26.0 the collection board, 1.27.0 cash in hand by collection; `docs/contract/openapi.yaml`). The collection board needs the server at 1.26.0; on an older server its tab says it could not be loaded and the branch ranking still works. Adding phone numbers needs 1.23.0; break windows and the late-days setting need 1.25.0; everything else works with 1.22.0.
+### Added (owner request 2026-11-21: installment detail like the ERP; FR-M-054, contract 1.14.0)
+- **Every installment line says what the ERP knows**: "৯ অক্টো-এ পরিশোধ · ৪ দিন দেরিতে", or "কিস্তি বাদ পড়েছে" on a missed one (in red when late or missed). Tap a line to see the payments that went to it (date, receipt, amount).
+- **Local DB schema 11**: `schedule_lines.paid_on`, `days_late`, `missed`, `payments_json`; migration tested from every released schema. Fake ERP sends the fields. Tests `test/flows/installment_detail_test.dart`.
 ### Added (owner request 2026-11-21: remove an added number from the app; FR-M-053, master FR-CUS-016)
 - **A bin icon next to every number added in the field** on the customer page (once it reached the server; `customer.phone.manage`). A confirm names the number; the server is asked (`DELETE /customers/{id}/phones/{number}`, contract 1.23.0) and the number leaves the list. Online only, like the admin panel (ADR-M08 exception); offline the app says internet is needed. ERP numbers cannot be removed (no button; the server refuses too).
 - Fake API answers the DELETE by the server's rules. Test in `test/flows/customer_phone_flow_test.dart`.

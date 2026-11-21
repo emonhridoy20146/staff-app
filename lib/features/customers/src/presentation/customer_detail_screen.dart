@@ -844,7 +844,13 @@ class _ScheduleRow extends ConsumerWidget {
       'partial' => (Icons.timelapse_rounded, sc.of(AppStatus.dueToday).fg, l.schedulePartial),
       _ => (Icons.radio_button_unchecked_rounded, cs.outline, l.scheduleUpcoming),
     };
-    return Padding(
+    final payments = decodeLinePayments(line.paymentsJson);
+    final detail = [
+      if (line.paidOn != null) l.scheduleLinePaidOn(f.date(line.paidOn!)),
+      if (line.daysLate > 0) l.scheduleDaysLate(f.num(line.daysLate)),
+      if (line.missed) l.scheduleMissed,
+    ].join(' · ');
+    final row = Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
         SizedBox(width: 28, child: Text(f.num(line.seq), style: t.bodySmall!.copyWith(color: cs.onSurfaceVariant))),
@@ -861,6 +867,13 @@ class _ScheduleRow extends ConsumerWidget {
                   l.schedulePaidOf(f.money(money.paidPoisha), f.money(money.leftPoisha)),
                   style: t.labelSmall!.copyWith(color: color, fontWeight: FontWeight.w600),
                 ),
+              // FR-M-054: the ERP's record of the line: paid on which day, how late, or missed.
+              if (detail != null)
+                Text(
+                  detail,
+                  key: Key('schedule-detail-${line.seq}'),
+                  style: t.labelSmall!.copyWith(color: line.missed || line.daysLate > 0 ? sc.of(AppStatus.overdue).fg : cs.onSurfaceVariant),
+                ),
             ],
           ),
         ),
@@ -875,6 +888,31 @@ class _ScheduleRow extends ConsumerWidget {
           ]),
         ),
       ]),
+    );
+    if (payments.isEmpty) return row;
+    // Tap a line to see the ERP payments that went to it (date, receipt, amount).
+    return InkWell(
+      key: Key('schedule-line-${line.seq}'),
+      onTap: () => showModalBottomSheet<void>(
+        context: context,
+        useSafeArea: true,
+        builder: (_) => Padding(
+          padding: const EdgeInsets.all(Space.s16),
+          child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+            Text(l.scheduleLinePayments(f.num(line.seq)), style: t.titleMedium),
+            const SizedBox(height: Space.s8),
+            for (final p in payments)
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.receipt_long_rounded),
+                title: Text(f.date(p.date, withYear: true)),
+                subtitle: p.receiptNo == null ? null : Text(l.scheduleReceiptNo(p.receiptNo!)),
+                trailing: MoneyText(p.amountPoisha, style: t.bodyMedium),
+              ),
+          ]),
+        ),
+      ),
+      child: row,
     );
   }
 }
