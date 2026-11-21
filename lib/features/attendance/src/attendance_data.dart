@@ -32,6 +32,8 @@ class AttendanceDayPullHandler implements PullHandler {
           lastOut: Value(dt(d['lastOut'])),
           breakMin: Value((d['breakMin'] as num?)?.toInt() ?? 0),
           lateMin: Value((d['lateMin'] as num?)?.toInt() ?? 0),
+          overtimeMin: Value((d['overtimeMin'] as num?)?.toInt() ?? 0),
+          overBreakMin: Value((d['overBreakMin'] as num?)?.toInt() ?? 0),
         ));
   }
 

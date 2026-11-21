@@ -1,10 +1,11 @@
 import 'dart:io';
 
+import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:staff_app/core/db/app_database.dart';
 
-/// Every released schema upgrades to the current one (v9, 0.12.0) and
+/// Every released schema upgrades to the current one (v10, 0.13.x) and
 /// existing rows survive.
 void main() {
   test('migrates a 0.1.0 database to the current schema without losing outbox rows', () async {
@@ -14,6 +15,7 @@ void main() {
     // Build a v1-shaped file: current schema minus what v2 added.
     final v1 = AppDatabase(NativeDatabase(file));
     await v1.customStatement('SELECT 1');
+    await _dropV10(v1);
     await _dropV9(v1);
     await _dropV8(v1);
     await _dropV7(v1);
@@ -35,7 +37,7 @@ void main() {
     await v1.close();
 
     final v2 = AppDatabase(NativeDatabase(file));
-    expect(v2.schemaVersion, 9);
+    expect(v2.schemaVersion, 10);
     expect(await v2.select(v2.coworkSessions).get(), isEmpty);
     final props = await v2.select(v2.locationProposals).get();
     expect(props.single.decisionReason, isNull);
@@ -54,6 +56,7 @@ void main() {
     final file = File('${dir.path}/app.db');
     final v2 = AppDatabase(NativeDatabase(file));
     await v2.customStatement('SELECT 1');
+    await _dropV10(v2);
     await _dropV9(v2);
     await _dropV8(v2);
     await _dropV7(v2);
@@ -84,6 +87,7 @@ void main() {
     final file = File('${dir.path}/app.db');
     final v3 = AppDatabase(NativeDatabase(file));
     await v3.customStatement('SELECT 1');
+    await _dropV10(v3);
     await _dropV9(v3);
     await _dropV8(v3);
     await _dropV7(v3);
@@ -118,6 +122,7 @@ void main() {
     final file = File('${dir.path}/app.db');
     final v4 = AppDatabase(NativeDatabase(file));
     await v4.customStatement('SELECT 1');
+    await _dropV10(v4);
     await _dropV9(v4);
     await _dropV8(v4);
     await _dropV7(v4);
@@ -148,6 +153,7 @@ void main() {
     final file = File('${dir.path}/app.db');
     final v5 = AppDatabase(NativeDatabase(file));
     await v5.customStatement('SELECT 1');
+    await _dropV10(v5);
     await _dropV9(v5);
     await _dropV8(v5);
     await _dropV7(v5);
@@ -176,6 +182,7 @@ void main() {
     final file = File('${dir.path}/app.db');
     final v6 = AppDatabase(NativeDatabase(file));
     await v6.customStatement('SELECT 1');
+    await _dropV10(v6);
     await _dropV9(v6);
     await _dropV8(v6);
     await _dropV7(v6);
@@ -220,6 +227,7 @@ void main() {
     final file = File('${dir.path}/app.db');
     final v7 = AppDatabase(NativeDatabase(file));
     await v7.customStatement('SELECT 1');
+    await _dropV10(v7);
     await _dropV9(v7);
     await _dropV8(v7);
     await v7.customStatement("INSERT INTO customers (server_id, code, name_bn, assignee_id) VALUES ('c-7', 'C-7', 'গ্রাহক', 'u-1')");
@@ -249,6 +257,7 @@ void main() {
     final file = File('${dir.path}/app.db');
     final v8 = AppDatabase(NativeDatabase(file));
     await v8.customStatement('SELECT 1');
+    await _dropV10(v8);
     await _dropV9(v8);
     await v8.customStatement("INSERT INTO customers (server_id, code, name_bn, branch_id, branch_code) VALUES ('c-8', 'C-8', 'গ্রাহক', 'b-1', 'PTK')");
     await v8.customStatement("INSERT INTO sync_state (id, pull_cursor, bootstrap_done) VALUES (1, 's_99', 1)");
@@ -258,7 +267,7 @@ void main() {
     await v8.close();
 
     final v9 = AppDatabase(NativeDatabase(file));
-    expect(v9.schemaVersion, 9);
+    expect(v9.schemaVersion, 10);
     expect(await v9.select(v9.tasks).get(), isEmpty);
     // The new table works, with its defaults.
     await v9.into(v9.tasks).insert(TasksCompanion.insert(serverId: 't-1', title: 'কাজ', createdAt: DateTime.utc(2026, 11, 18)));
@@ -274,10 +283,52 @@ void main() {
     await v9.close();
     await dir.delete(recursive: true);
   });
+  test('migrates a 0.12.x / 0.13.0 (schema 9) database: overtime and over-break columns are added with 0, days, tasks and the outbox stay', () async {
+    final dir = await Directory.systemTemp.createTemp('mig9');
+    final file = File('${dir.path}/app.db');
+    final v9 = AppDatabase(NativeDatabase(file));
+    await v9.customStatement('SELECT 1');
+    await _dropV10(v9);
+    await v9.customStatement("INSERT INTO attendance_day (business_date, status, break_min, late_min) VALUES ('2026-11-20', 'off_duty', 70, 25)");
+    await v9.customStatement("INSERT INTO tasks (server_id, title, created_at) VALUES ('t-9', 'কাজ', 0)");
+    await v9.customStatement("INSERT INTO sync_state (id, pull_cursor, bootstrap_done) VALUES (1, 's_120', 1)");
+    await v9.customStatement(
+        "INSERT INTO outbox (mutation_id, entity, op, payload_json, created_at) VALUES ('col-9', 'collection', 'create', '{}', 0)");
+    await v9.customStatement('PRAGMA user_version = 9');
+    await v9.close();
+
+    final v10 = AppDatabase(NativeDatabase(file));
+    expect(v10.schemaVersion, 10);
+    final day = (await v10.select(v10.attendanceDays).get()).single;
+    expect(day.businessDate, '2026-11-20');
+    expect(day.lateMin, 25);
+    expect(day.breakMin, 70);
+    expect(day.overtimeMin, 0); // filled by the next pull
+    expect(day.overBreakMin, 0);
+    // the new columns take values
+    await v10.into(v10.attendanceDays).insertOnConflictUpdate(AttendanceDaysCompanion.insert(businessDate: '2026-11-21', status: 'off_duty', overtimeMin: const Value(45), overBreakMin: const Value(12)));
+    final today = (await v10.select(v10.attendanceDays).get()).firstWhere((d) => d.businessDate == '2026-11-21');
+    expect(today.overtimeMin, 45);
+    expect(today.overBreakMin, 12);
+    expect((await v10.select(v10.tasks).get()).single.serverId, 't-9');
+    final meta = (await v10.select(v10.syncMeta).get()).single;
+    expect(meta.bootstrapDone, isTrue); // no new snapshot is forced
+    expect(meta.pullCursor, 's_120');
+    expect((await v10.select(v10.outbox).get()).single.mutationId, 'col-9');
+    await v10.close();
+    await dir.delete(recursive: true);
+  });
 }
 
 /// What schema 9 (0.12.0, contract 1.20.0) added: the tasks table.
 Future<void> _dropV9(AppDatabase db) => db.customStatement('DROP TABLE tasks');
+
+/// What schema 10 (0.13.x, contract 1.25.0) added: the server's overtime and over-break minutes on a day.
+Future<void> _dropV10(AppDatabase db) async {
+  for (final c in ['overtime_min', 'over_break_min']) {
+    await db.customStatement('ALTER TABLE attendance_day DROP COLUMN $c');
+  }
+}
 
 /// What schema 7 (0.10.0, contract 1.13.0) added: the real ERP shape on the cached tables.
 Future<void> _dropV7(AppDatabase db) async {
