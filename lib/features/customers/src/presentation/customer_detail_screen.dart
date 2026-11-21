@@ -868,7 +868,7 @@ class _ScheduleRow extends ConsumerWidget {
                   style: t.labelSmall!.copyWith(color: color, fontWeight: FontWeight.w600),
                 ),
               // FR-M-054: the ERP's record of the line: paid on which day, how late, or missed.
-              if (detail != null)
+              if (detail.isNotEmpty)
                 Text(
                   detail,
                   key: Key('schedule-detail-${line.seq}'),
