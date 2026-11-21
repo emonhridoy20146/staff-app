@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 Contract pinned: field-api `openapi.yaml` **1.27.0** (1.22.0 → 1.27.0, additive: 1.23.0 extra phone numbers, 1.24.0 this month on a customer and invoice counts, 1.25.0 duty hours per branch with break windows, overtime and late absences, 1.26.0 the collection board, 1.27.0 cash in hand by collection; `docs/contract/openapi.yaml`). The collection board needs the server at 1.26.0; on an older server its tab says it could not be loaded and the branch ranking still works. Adding phone numbers needs 1.23.0; break windows and the late-days setting need 1.25.0; everything else works with 1.22.0.
+### Tests (plan item 3.1)
+- Widget tests for the attendance hub screen (`test/flows/attendance_hub_screen_test.dart`): before work-in it shows "শুরু হয়নি" and the history section, with no layout errors.
 ### Build
 - Every push to `main` builds the APK with build number = CI run number and publishes it as a **pre-release on the GitHub Releases page** (`staff-app-<version>-<build>.apk`), so each test build installs over the last one and can be downloaded without opening Actions.
 
