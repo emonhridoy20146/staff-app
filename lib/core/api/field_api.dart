@@ -150,6 +150,10 @@ class FieldApi {
   /// The collections behind my cash on hand (1.27.0, FR-CASH-007): online.
   Future<Json> myCashInHand() => _call(() => _dio.get<dynamic>('/cash/me/collections'), (d) => d as Json);
 
+  /// FR-M-053 (contract 1.23.0): remove a number added in the field; the ERP's own numbers cannot be removed. Online only.
+  Future<void> removeCustomerPhone(String customerId, String number) =>
+      _call(() => _dio.delete<dynamic>('/customers/$customerId/phones/$number'), (_) {});
+
   /// The collection board (1.26.0, FR-REP-007): everyone who collected,
   /// ranked by money the ERP has accepted, for a month or all time; 403
   /// unless the leaderboard is visible to staff.

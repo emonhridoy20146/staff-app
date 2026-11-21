@@ -1573,6 +1573,15 @@
     }
   },
   "phonePending": "Waiting to be sent to the server",
+  "phoneRemove": "Remove number",
+  "phoneRemoveTitle": "Remove this number?",
+  "phoneRemoveBody": "{number} will be removed from the customer. Only numbers added in the field can be removed; the office's numbers stay.",
+  "@phoneRemoveBody": {
+    "placeholders": { "number": { "type": "String" } }
+  },
+  "phoneRemoved": "Number removed",
+  "phoneRemoveOffline": "Internet is needed to remove a number. Try again when online.",
+  "phoneRemoveNotAllowed": "This number cannot be removed.",
   "receiptView": "Receipt",
   "receiptOpenCustomer": "Open customer",
   "receiptNotOnPhone": "This receipt is not on this phone",

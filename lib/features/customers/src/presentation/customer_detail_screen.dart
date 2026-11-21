@@ -353,6 +353,8 @@ class _PhonesRow extends ConsumerWidget {
     final cs = Theme.of(context).colorScheme;
     final f = ref.watch(fmtProvider);
     final numbers = [for (final p in phones) p.number];
+    // FR-M-053: an added number that reached the server can be removed again (online; ERP numbers never).
+    final canRemove = ref.watch(accessProvider).can(Perm.customerPhoneManage);
     if (phones.length == 1 && phones.first.fromErp) {
       return OutlinedButton.icon(
         onPressed: () => callAndLog(context, ref, customerId: customer.id, phones: numbers),
@@ -367,7 +369,8 @@ class _PhonesRow extends ConsumerWidget {
         for (var i = 0; i < phones.length; i++)
           Padding(
             padding: EdgeInsets.only(bottom: i < phones.length - 1 ? Space.s8 : 0),
-            child: OutlinedButton(
+            child: Row(children: [
+              Expanded(child: OutlinedButton(
               onPressed: () => callAndLog(context, ref, customerId: customer.id, phones: numbers, index: i),
               style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(Sizes.primaryButton), padding: const EdgeInsets.symmetric(horizontal: Space.s12, vertical: Space.s8)),
               child: Row(children: [
@@ -395,7 +398,15 @@ class _PhonesRow extends ConsumerWidget {
                   ),
                 ),
               ]),
-            ),
+              )),
+              if (canRemove && !phones[i].fromErp && !phones[i].pending)
+                IconButton(
+                  key: Key('phone-remove-${phones[i].number}'),
+                  tooltip: l.phoneRemove,
+                  onPressed: () => confirmRemovePhone(context, ref, customerId: customer.id, phone: phones[i]),
+                  icon: const Icon(Icons.delete_outline_rounded),
+                ),
+            ]),
           ),
       ],
     );

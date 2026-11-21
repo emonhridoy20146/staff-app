@@ -8,6 +8,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../core/api/api_models.dart';
+import '../../../core/api/field_api.dart';
 import '../../../core/db/app_database.dart';
 import '../../../core/providers.dart';
 import '../../../core/settings/ui_prefs.dart';
@@ -86,10 +87,58 @@ class CustomerPhonePushHandler implements PushResultHandler {
 
 final customerPhoneServiceProvider = Provider<CustomerPhoneService>(CustomerPhoneService.new);
 
+enum PhoneRemoveError { offline, notAllowed, failed }
+
 class CustomerPhoneService {
   CustomerPhoneService(this._ref);
   final Ref _ref;
   Future<int> add({required String customerId, required List<PhoneToAdd> phones}) => addCustomerPhones(_ref, customerId: customerId, phones: phones);
+
+  /// FR-M-053: removes a number added in the field. Online only (ADR-M08
+  /// exception, like the admin panel): the server is asked first, then the
+  /// number leaves the local list. An ERP number is never removed; a number
+  /// still waiting to reach the server is not removable until it got there.
+  Future<PhoneRemoveError?> remove({required String customerId, required String number}) async {
+    try {
+      await _ref.read(fieldApiProvider).removeCustomerPhone(customerId, number);
+    } on ApiException catch (e) {
+      if (e.isNetwork) return PhoneRemoveError.offline;
+      return e.statusCode == 403 || e.statusCode == 422 ? PhoneRemoveError.notAllowed : PhoneRemoveError.failed;
+    }
+    final db = _ref.read(databaseProvider);
+    final row = await (db.select(db.customers)..where((t) => t.serverId.equals(customerId))).getSingleOrNull();
+    if (row == null) return null;
+    final next = [for (final p in decodePhones(row.phonesJson)) if (p.fromErp || p.number != number) p];
+    await (db.update(db.customers)..where((t) => t.serverId.equals(customerId))).write(CustomersCompanion(phonesJson: Value(encodePhones(next))));
+    return null;
+  }
+}
+
+/// Asks before removing an added number and says what happened (FR-M-053).
+Future<void> confirmRemovePhone(BuildContext context, WidgetRef ref, {required String customerId, required CustomerPhone phone}) async {
+  final l = AppLocalizations.of(context);
+  final f = ref.read(fmtProvider);
+  final ok = await showDialog<bool>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: Text(l.phoneRemoveTitle),
+      content: Text(l.phoneRemoveBody(f.num(phone.number))),
+      actions: [
+        TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: Text(l.actionCancel)),
+        FilledButton(onPressed: () => Navigator.of(ctx).pop(true), child: Text(l.phoneRemove)),
+      ],
+    ),
+  );
+  if (ok != true || !context.mounted) return;
+  final err = await ref.read(customerPhoneServiceProvider).remove(customerId: customerId, number: phone.number);
+  if (!context.mounted) return;
+  final text = switch (err) {
+    null => l.phoneRemoved,
+    PhoneRemoveError.offline => l.phoneRemoveOffline,
+    PhoneRemoveError.notAllowed => l.phoneRemoveNotAllowed,
+    PhoneRemoveError.failed => l.errorGeneric,
+  };
+  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
 }
 
 Future<void> showAddPhonesSheet(BuildContext context, {required String customerId, required List<CustomerPhone> existing}) => showModalBottomSheet<void>(

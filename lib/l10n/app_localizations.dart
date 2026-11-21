@@ -4313,6 +4313,42 @@ abstract class AppLocalizations {
   /// **'Waiting to be sent to the server'**
   String get phonePending;
 
+  /// No description provided for @phoneRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove number'**
+  String get phoneRemove;
+
+  /// No description provided for @phoneRemoveTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove this number?'**
+  String get phoneRemoveTitle;
+
+  /// No description provided for @phoneRemoveBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{number} will be removed from the customer. Only numbers added in the field can be removed; the office's numbers stay.'**
+  String phoneRemoveBody(String number);
+
+  /// No description provided for @phoneRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'Number removed'**
+  String get phoneRemoved;
+
+  /// No description provided for @phoneRemoveOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'Internet is needed to remove a number. Try again when online.'**
+  String get phoneRemoveOffline;
+
+  /// No description provided for @phoneRemoveNotAllowed.
+  ///
+  /// In en, this message translates to:
+  /// **'This number cannot be removed.'**
+  String get phoneRemoveNotAllowed;
+
   /// No description provided for @receiptView.
   ///
   /// In en, this message translates to:
