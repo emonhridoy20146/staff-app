@@ -5,6 +5,8 @@ Contract pinned: field-api `openapi.yaml` **1.27.0** (1.22.0 → 1.27.0, additiv
 ### Tests (plan item 3.1)
 - Widget tests for the attendance hub screen (`test/flows/attendance_hub_screen_test.dart`): before work-in it shows "শুরু হয়নি" and the history section, with no layout errors.
 
+### Added (owner request 2026-11-21: how many invoices my branches have; FR-M-052, master FR-CUS-018)
+- **The customer list's count line now says how many invoices the customers in view have and how many still take money**: "৩৪ জন গ্রাহক · ইনভয়েস ৪১টি · বাকি আছে ২৯টি". It follows the branch picked in the top bar (one branch, or all my branches) and uses the customer page's rule (cancelled invoices not counted). From the phone's own invoices, offline; no schema or contract change. Unit test in `test/features/work_marks_test.dart`.
 ### Added (owner request 2026-11-21: overtime and break over the limit on the attendance history; FR-M-051, field-api FR-ATT-010/011, contract 1.25.0)
 - **Every day of the attendance history now carries the server's marks in words**, next to the late mark: "ওভারটাইম ৪৫ মি" (green) and "বিরতি ১২ মি বেশি" (amber). On a weekly off day or holiday the worked time reads "ছুটির দিনে কাজ: ৩ ঘ ০ মি". Days with nothing to mark show nothing.
 - **Local DB schema 10**: `attendance_day.overtime_min` and `over_break_min` (default 0; the next pull fills them). Migration from every released schema is tested (`test/core/migration_test.dart`); nothing unsynced is touched and no new snapshot is forced.
