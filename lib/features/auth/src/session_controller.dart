@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/api/api_models.dart';
 import '../../../core/api/field_api.dart';
 import '../../../core/auth/pin.dart';
+import '../../../core/db/colleague_activity.dart';
 import '../../../core/permissions/permission_service.dart';
 import '../../../core/providers.dart';
 
@@ -79,6 +80,7 @@ class SessionController extends Notifier<SessionState> {
       return;
     }
     final user = ApiUser.fromJson(jsonDecode(userJson) as Json);
+    await saveUserId(db, user.id);
     if (fails >= maxPinFailures) {
       state = SessionState(stage: SessionStage.signedOut, user: user, lockedOut: true);
       return;
@@ -135,6 +137,7 @@ class SessionController extends Notifier<SessionState> {
     await store.delete(_kLockedUser);
     ref.read(accessProvider.notifier).set(permissions: r.permissions, flags: r.flags);
     await ref.read(databaseProvider).kvSet('access', jsonEncode({'permissions': r.permissions, 'flags': r.flags}));
+    await saveUserId(ref.read(databaseProvider), r.user.id);
     state = SessionState(stage: SessionStage.loading, user: r.user);
     await _advance();
   }

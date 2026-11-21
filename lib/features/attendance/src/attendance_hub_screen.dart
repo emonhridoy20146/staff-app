@@ -99,7 +99,7 @@ class _AttendanceHubState extends ConsumerState<AttendanceHubScreen> with Widget
         slivers: [
           SliverAppBar(
             pinned: true,
-            expandedHeight: 230,
+            expandedHeight: onBreak ? 270 : 230,
             backgroundColor: bgColor,
             foregroundColor: fgColor,
             title: Text(l.attHubTitle, style: t.titleMedium),
@@ -306,6 +306,14 @@ class _HubHeader extends ConsumerWidget {
               ),
             ],
           ]),
+          if (onBreak) ...[
+            const SizedBox(height: Space.s8),
+            Row(children: [
+              Icon(Icons.info_outline_rounded, size: 18, color: sem.warning.fg),
+              const SizedBox(width: Space.s4),
+              Expanded(child: Text(l.dutyEndBreakFirst, style: t.bodySmall!.copyWith(color: sem.warning.fg, fontWeight: FontWeight.w600))),
+            ]),
+          ],
         ],
       ),
     );

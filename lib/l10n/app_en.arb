@@ -54,6 +54,7 @@
   "pinMismatch": "PINs did not match. Try again.",
   "pinWeak": "Too easy to guess. Avoid 1234 or 1111.",
   "pinUnlockTitle": "Enter your PIN",
+  "pinChecking": "Checking your PIN and signing you in…",
   "pinUnlockGreeting": "Welcome back, {name}",
   "@pinUnlockGreeting": {
     "placeholders": {
@@ -176,6 +177,20 @@
   "dutyEndWork": "End work",
   "dutyStartBreak": "Start break",
   "dutyEndBreak": "End break",
+  "dutyDetails": "Today's duty details",
+  "dutyRowShift": "Office time",
+  "dutyRowIn": "Attendance",
+  "dutyRowBreak": "Break",
+  "dutyRowOut": "Work end",
+  "dutyRowOvertime": "Overtime",
+  "dutyOnTime": "On time",
+  "dutyNotYet": "Not yet",
+  "dutyBreakOf": "{taken} of {limit}",
+  "@dutyBreakOf": {
+    "placeholders": { "taken": { "type": "String" }, "limit": { "type": "String" } }
+  },
+  "dutyOfficeOver": "Office time is over. You can end work now.",
+  "dutyEndBreakFirst": "End your break first, then you can end work.",
   "dutyNotStarted": "You have not started work today",
   "dutyEnded": "Work ended at {time}",
   "@dutyEnded": {
@@ -296,8 +311,15 @@
   "statusPosted": "Posted",
   "statusConflict": "Manager is reviewing",
   "statusRejected": "Not accepted",
+  "statusDeleted": "Deleted by office",
   "statusResolved": "Resolved",
   "statusVoided": "Voided",
+  "statusVoidedByOffice": "Voided by office",
+  "statusDeletedByYou": "Deleted by you",
+  "collectionVoidedBy": "by {name}",
+  "@collectionVoidedBy": {
+    "placeholders": { "name": { "type": "String" } }
+  },
   "detailOutstanding": "Total outstanding",
   "detailAsOfErp": "As per ERP · {time}",
   "@detailAsOfErp": {
@@ -1632,6 +1654,33 @@
     }
   },
   "cashInHandHow": "A deposit pays off your oldest collections first, so the cash on hand is your newest collections. Tap a line to open the customer.",
+  "cashActionEdit": "Change",
+  "cashActionDelete": "Delete",
+  "cashEditTitle": "Change this collection",
+  "cashEditAmount": "Amount (৳)",
+  "cashEditNote": "Note",
+  "cashEditPayer": "Paid by",
+  "cashEditSave": "Save",
+  "cashDeleteTitle": "Delete this collection?",
+  "cashDeleteBody": "{amount} from {customer} will be removed from your cash in hand. The receipt number stays used and the line stays in the history as deleted.",
+  "@cashDeleteBody": {
+    "placeholders": { "amount": { "type": "String" }, "customer": { "type": "String" } }
+  },
+  "cashDeleteReason": "Reason (optional)",
+  "cashDeleteConfirm": "Delete",
+  "cashActionDone": "Done",
+  "cashActionOffline": "This needs internet. Try again when you are online.",
+  "cashActionCovered": "A deposit already covers this cash, so it cannot be changed. Ask the office.",
+  "cashActionNotEditable": "This collection is already with the ERP and cannot be changed here. Ask the office.",
+  "cashActionPosted": "This collection is already posted to the ERP. Ask the office.",
+  "cashActionBusy": "It is being sent to the ERP right now. Try again in a minute.",
+  "cashActionNotAllowed": "You cannot change this collection.",
+  "cashActionFailed": "Could not do it. Try again.",
+  "collectionEditedWas": "edited · was {amount}",
+  "@collectionEditedWas": {
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "collectionDeletedTag": "deleted",
   "cashInHandOffline": "This list needs the internet",
   "boardTabCollection": "Collection board",
   "boardTabBranch": "Branch ranking",
@@ -1698,6 +1747,12 @@
   "workPosted": "Posted in ERP",
   "workPromises": "Promises",
   "workEmptyTitle": "No work recorded on this day",
+  "workTabMine": "My work",
+  "workTabTeam": "Other staff",
+  "teamEmptyTitle": "No work by other staff on this day",
+  "teamEmptyBody": "Visits, promises, collections and pins of your branch colleagues show here with their names.",
+  "alertsTeamSection": "Other staff today",
+  "alertsTeamMore": "See all",
   "workEmptyBody": "Visits, collections, promises, notes, pins, calls and finished tasks show here.",
   "workPrevDay": "Previous day",
   "workNextDay": "Next day",
@@ -1778,6 +1833,21 @@
       }
     }
   },
+  "timelineVisitBy": "visited by {name}",
+  "@timelineVisitBy": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "timelinePromiseBy": "promise taken by {name}",
+  "@timelinePromiseBy": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "timelinePinBy": "pin set by {name}",
+  "@timelinePinBy": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "timelinePinSet": "Customer pin set",
+  "timelinePinPending": "Customer pin proposed · waiting for approval",
+  "timelinePinRejected": "Customer pin not approved",
   "timelineAdvance": "advance",
   "timelineRemoved": "removed in the ERP",
   "collectSameDayWarning": "This invoice already has a payment today. The ERP takes one a day, so the office may need to decide on this one.",

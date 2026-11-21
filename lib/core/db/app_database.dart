@@ -42,13 +42,14 @@ part 'app_database.g.dart';
     Tasks,
     Notifications,
     KvSettings,
+    ColleagueActivities,
   ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 11;
+  int get schemaVersion => 13;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -74,6 +75,9 @@ class AppDatabase extends _$AppDatabase {
             'CREATE INDEX IF NOT EXISTS idx_notes_customer ON notes (customer_id, created_at DESC)',
           );
           await customStatement('CREATE INDEX IF NOT EXISTS idx_location_queue_t ON location_queue (t)');
+          await customStatement(
+            'CREATE INDEX IF NOT EXISTS idx_colleague_customer ON colleague_activities (customer_id, kind, at DESC)',
+          );
         },
         onUpgrade: (m, from, to) async {
           // v2 (0.2.0): contact attempts + location queue time index.
@@ -147,11 +151,40 @@ class AppDatabase extends _$AppDatabase {
             await m.addColumn(scheduleLines, scheduleLines.missed);
             await m.addColumn(scheduleLines, scheduleLines.paymentsJson);
           }
+          // v12/v13 (contract 1.31.0-1.33.0): colleagues' visits, promises and collections with their
+          // names, who made a promise, edited and voided collections (FR-M-057, FR-M-058). One idempotent
+          // step: v12 changed while it was still being built, so a phone that ran such a build is at 12
+          // with some columns missing; v13 adds whatever is missing and touches nothing else. The server's
+          // resync floor makes the phone take one fresh snapshot, which only upserts: the outbox and
+          // everything unsynced stay.
+          if (from < 13) {
+            await _ensureV12(m);
+          }
         },
         beforeOpen: (details) async {
           await customStatement('PRAGMA foreign_keys = ON');
         },
       );
+
+  Future<bool> _hasTable(String name) async =>
+      (await customSelect("SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?", variables: [Variable.withString(name)]).get()).isNotEmpty;
+
+  Future<void> _ensureColumn(Migrator m, TableInfo<Table, dynamic> table, GeneratedColumn<Object> column) async {
+    final cols = await customSelect('PRAGMA table_info(${table.actualTableName})').get();
+    if (cols.any((r) => r.read<String>('name') == column.name)) return;
+    await m.addColumn(table, column);
+  }
+
+  /// Everything schemas 12 and 13 add, safe to run on a phone that already has some of it.
+  Future<void> _ensureV12(Migrator m) async {
+    if (!await _hasTable('colleague_activities')) await m.createTable(colleagueActivities);
+    await _ensureColumn(m, colleagueActivities, colleagueActivities.voidedKind);
+    await _ensureColumn(m, promises, promises.createdByName);
+    for (final c in [collections.previousAmountPoisha, collections.voidedKind, collections.voidedByName, collections.voidedReason]) {
+      await _ensureColumn(m, collections, c);
+    }
+    await customStatement('CREATE INDEX IF NOT EXISTS idx_colleague_customer ON colleague_activities (customer_id, kind, at DESC)');
+  }
 
   // ── key/value settings ──────────────────────────────────────────────────
   Future<String?> kvGet(String key) async =>

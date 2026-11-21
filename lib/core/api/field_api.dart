@@ -150,6 +150,16 @@ class FieldApi {
   /// The collections behind my cash on hand (1.27.0, FR-CASH-007): online.
   Future<Json> myCashInHand() => _call(() => _dio.get<dynamic>('/cash/me/collections'), (d) => d as Json);
 
+  /// 1.32.0 (FR-COL-016): withdraw (delete) my own cash collection until it is deposited. Online only.
+  Future<Json> withdrawCollection(String id, {String? reason}) =>
+      _call(() => _dio.post<dynamic>('/collections/$id/withdraw', data: {'reason': ?reason}), (d) => d as Json);
+
+  /// 1.32.0: change the amount, note or payer of my own cash collection until it is deposited. Online only.
+  Future<Json> editCollection(String id, {int? amountPoisha, String? note, String? payerName}) => _call(
+        () => _dio.patch<dynamic>('/collections/$id', data: {'amountPoisha': ?amountPoisha, 'note': ?note, 'payerName': ?payerName}),
+        (d) => d as Json,
+      );
+
   /// FR-M-053 (contract 1.23.0): remove a number added in the field; the ERP's own numbers cannot be removed. Online only.
   Future<void> removeCustomerPhone(String customerId, String number) =>
       _call(() => _dio.delete<dynamic>('/customers/$customerId/phones/$number'), (_) {});

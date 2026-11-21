@@ -1,6 +1,36 @@
 # Changelog — staff-app
 
 ## [Unreleased]
+
+### Fixed (owner report: error in the app after test builds; schema 13)
+- **A phone that ran a test build from the middle of schema 12 stopped with "no such column".** Schema 12 grew while it was built (who made a promise, edited and voided collections), so such a phone had version 12 but some columns missing and the migration did not run again. Schema 13 runs one idempotent step that adds whatever is missing and nothing else. Test `test/core/migration_test.dart` (a middle-of-12 phone) plus every older version.
+
+### Added (owner request 2026-11-22: cash in hand change/delete, other staff's work, PIN progress; FR-M-058, ADR-M23, contract 1.32.0)
+- **Cash in hand: Change and Delete on every line not covered by a deposit.** Change: amount, payer, note. Delete: confirm naming the amount and customer, optional reason. The server refuses (and the app says why) when a deposit covers the cash, the ERP already took it, or it is being posted. Online only; the deleted line stays in the history as voided and its receipt number stays used. Test `test/features/cash_actions_test.dart`.
+- A deposit the office deleted shows "deleted by office" in the deposit list; its money returns to cash in hand. The depositor gets the server's notification.
+- **Other staff's work:** Today's Work has a "My work / Other staff" switch (day arrows work), and the notification screen has an "Other staff today" section, both from the phone's own copy with staff names. My own lists, performance, totals and cash stay mine only.
+- A promise a colleague made on a customer assigned to me no longer counts as a promise I made today (Today's Work, end-of-day count).
+- **PIN screen shows "Checking your PIN and signing you in…" with a spinner** while the PIN is checked, instead of an idle screen.
+- Contract copy updated to 1.32.0, then 1.33.0.
+- **A collection's timeline line says when it was edited ("edited · was ৳X", from `edited.previousAmountPoisha`; new column `collections.previous_amount_poisha`, schema 12) and a colleague's deleted collection says "deleted"** on the customer timeline and in the Other staff list. My own deleted line shows who voided it: "Deleted by you" (the collector withdrew it) or "Voided by office" with the office user's name and the reason (`voided.kind`, `byName`, `reason`; new columns `collections.voided_kind/voided_by_name/voided_reason` and `colleague_activities.voided_kind`, schema 12); a colleague's deleted line says the same.
+
+### Added (owner request 2026-11-22: who did it; FR-M-057, ADR-M22, contract 1.31.0, schema 12)
+- **Every visit, promise, collection and pin on a customer's timeline says who made it** ("visited by…", "promise taken by…", "by…", "pin set by…"), including colleagues' records of the same branch, which the phone now receives (field-api 1.31.0, ADR-046).
+- Colleagues' records live in a new table `colleague_activities` (migration v11 → v12, tested), never in the user's own `visits`/`promises`/`collections`, so Today totals, cash in hand, reminders and targets are unchanged. A promise a colleague made on a customer assigned to me stays in my promises (I follow it up) and shows who made it (`promises.created_by_name`). A joint visit I took part in stays mine. The signed-in user's id is saved as `kv_settings.my_user_id` at sign-in.
+- Pins: a colleague's pin proposal or applied pin appears on the timeline with the proposer's name; my own show the decision.
+- Contract copy in `docs/contract/openapi.yaml` updated to 1.31.0. Tests: `test/features/colleague_activity_test.dart`, `test/core/migration_test.dart`.
+- **Deploy order:** release this app before field-api 1.31.0 is switched on. An older app that pulls the widened feed would put colleagues' promises in its own list.
+
+### Changed (owner request 2026-11-21: Today duty card is a summary, not buttons; FR-M-004)
+- The duty card on Today no longer has Start work / Break / End work buttons (the Attendance tile has them). It is one collapsed line (on duty since…, on break, ended, not started) with the date. Tap it to open today's facts: office time set by the admin, attendance time and late minutes (or "on time"), break taken against the admin's limit and any minutes over, work-end time, and overtime. Tapping outside or the header closes it.
+- After the office end time, while still on duty, an amber strip says "Office time is over. You can end work now." (tap opens Attendance). Overtime counts from the office end to the work-out time, or to now while still on duty (`DutySettings.overtimeMin`, test `test/core/duty_overtime_test.dart`).
+- A live GPS icon sits left of the bell in the app header: green pin when location is on, red crossed pin when off (tap opens location settings). `core/location/gps_status.dart`.
+- While on break, End work stays off and both the card and the Attendance screen say to end the break first.
+
+### Fixed (owner report: battery "Allow" did not open the system dialog)
+- Battery is no longer required to press Continue on the permissions screen, so a phone that cannot grant it is still usable. If the system dialog does not grant it, the app opens the system battery-optimisation list (falling back to battery saver, then app info) so the user can switch it off by hand.
+- The fallback now walks a chain until one screen opens: system battery-optimisation list, battery saver, and the brand's own battery/autostart screen (Xiaomi/Redmi/Poco, Oppo/Realme, Vivo/iQOO, Huawei/Honor, Samsung, OnePlus, Tecno/Infinix/itel, Asus, Nokia), ending at app info. Xiaomi, Oppo, Vivo, Huawei and Transsion phones try their own screen first. Android below 6 has no battery optimisation and counts as allowed.
+- Added the missing `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` permission to the Android manifest, so the system "let app run in background" dialog now opens. The native side now waits for the dialog result (`startActivityForResult`) instead of answering "denied" immediately, and falls back to the battery-optimisation settings page if the dialog cannot open.
 Contract pinned: field-api `openapi.yaml` **1.27.0** (1.22.0 → 1.27.0, additive: 1.23.0 extra phone numbers, 1.24.0 this month on a customer and invoice counts, 1.25.0 duty hours per branch with break windows, overtime and late absences, 1.26.0 the collection board, 1.27.0 cash in hand by collection; `docs/contract/openapi.yaml`). The collection board needs the server at 1.26.0; on an older server its tab says it could not be loaded and the branch ranking still works. Adding phone numbers needs 1.23.0; break windows and the late-days setting need 1.25.0; everything else works with 1.22.0.
 ### Fixed (owner report: two GPS notifications while the app is open; FR-M-056, ADR-M21)
 - The geolocator position stream no longer opens its own foreground notification while the native tracking service runs; the native service is started first and is the only "on duty" notification. If it fails to start, geolocator keeps one (tracking is never invisible). Test `test/core/tracking_settings_test.dart`.

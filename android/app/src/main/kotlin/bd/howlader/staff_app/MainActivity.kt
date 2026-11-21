@@ -21,6 +21,7 @@ class MainActivity : FlutterActivity() {
     companion object {
         private const val RC_CAMERA = 1001
         private const val RC_NOTIFICATIONS = 1002
+        private const val RC_BATTERY = 1003
     }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
@@ -43,9 +44,14 @@ class MainActivity : FlutterActivity() {
                     }
                 }
                 "isBatteryOptimised" -> {
-                    val pm = getSystemService(POWER_SERVICE) as PowerManager
-                    result.success(!pm.isIgnoringBatteryOptimizations(packageName))
+                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+                        result.success(false)
+                    } else {
+                        val pm = getSystemService(POWER_SERVICE) as PowerManager
+                        result.success(!pm.isIgnoringBatteryOptimizations(packageName))
+                    }
                 }
+                "openBatterySettings" -> result.success(openBatterySettings())
                 "openAppSettings" -> {
                     val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
                         data = Uri.fromParts("package", packageName, null)
@@ -130,7 +136,86 @@ class MainActivity : FlutterActivity() {
         ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.POST_NOTIFICATIONS), RC_NOTIFICATIONS)
     }
 
+    private fun component(pkg: String, cls: String) =
+        Intent().setClassName(pkg, if (cls.startsWith(".")) pkg + cls else cls)
+
+    // Brand screens that hold the real "run in background / autostart" switch.
+    private fun oemBatteryIntents(): List<Intent> {
+        val m = Build.MANUFACTURER.lowercase()
+        return when {
+            m.contains("xiaomi") || m.contains("redmi") || m.contains("poco") -> listOf(
+                component("com.miui.powerkeeper", "com.miui.powerkeeper.ui.HiddenAppsConfigActivity")
+                    .putExtra("package_name", packageName).putExtra("package_label", "Howlader"),
+                component("com.miui.securitycenter", "com.miui.permcenter.autostart.AutoStartManagementActivity"),
+            )
+            m.contains("oppo") || m.contains("realme") -> listOf(
+                component("com.coloros.safecenter", "com.coloros.safecenter.permission.startup.StartupAppListActivity"),
+                component("com.coloros.safecenter", "com.coloros.safecenter.startupapp.StartupAppListActivity"),
+                component("com.oppo.safe", "com.oppo.safe.permission.startup.StartupAppListActivity"),
+                component("com.coloros.oppoguardelf", "com.coloros.powermanager.fuelgaue.PowerUsageModelActivity"),
+            )
+            m.contains("vivo") || m.contains("iqoo") -> listOf(
+                component("com.vivo.permissionmanager", "com.vivo.permissionmanager.activity.BgStartUpManagerActivity"),
+                component("com.iqoo.secure", "com.iqoo.secure.ui.phoneoptimize.AddWhiteListActivity"),
+                component("com.iqoo.secure", "com.iqoo.secure.ui.phoneoptimize.BgStartUpManager"),
+            )
+            m.contains("huawei") || m.contains("honor") -> listOf(
+                component("com.huawei.systemmanager", "com.huawei.systemmanager.startupmgr.ui.StartupNormalAppListActivity"),
+                component("com.huawei.systemmanager", "com.huawei.systemmanager.optimize.process.ProtectActivity"),
+            )
+            m.contains("samsung") -> listOf(
+                component("com.samsung.android.lool", "com.samsung.android.sm.battery.ui.BatteryActivity"),
+                component("com.samsung.android.lool", "com.samsung.android.sm.ui.battery.BatteryActivity"),
+            )
+            m.contains("oneplus") -> listOf(
+                component("com.oneplus.security", "com.oneplus.security.chainlaunch.view.ChainLaunchAppListActivity"),
+            )
+            m.contains("tecno") || m.contains("infinix") || m.contains("itel") -> listOf(
+                component("com.transsion.phonemaster", "com.cyin.himgr.autostart.AutoStartActivity"),
+                component("com.transsion.phonemaster", "com.cyin.himgr.whitelist.view.WhiteListActivity"),
+            )
+            m.contains("asus") -> listOf(
+                component("com.asus.mobilemanager", "com.asus.mobilemanager.autostart.AutoStartActivity"),
+            )
+            m.contains("nokia") || m.contains("hmd") -> listOf(
+                component("com.evenwell.powersaving.g3", "com.evenwell.powersaving.g3.exception.PowerSaverExceptionActivity"),
+            )
+            else -> emptyList()
+        }
+    }
+
+    // Opens the best settings screen we can find for turning battery optimisation off.
+    private fun openBatterySettings(): Boolean {
+        val oem = oemBatteryIntents()
+        val m = Build.MANUFACTURER.lowercase()
+        // Brands that hide or ignore the stock screen get their own screen first.
+        val oemFirst = listOf("xiaomi", "redmi", "poco", "oppo", "realme", "vivo", "iqoo", "huawei", "honor", "tecno", "infinix", "itel")
+            .any { m.contains(it) }
+        val stock = buildList {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                add(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
+            }
+            add(Intent(Settings.ACTION_BATTERY_SAVER_SETTINGS))
+        }
+        val appInfo = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+            data = Uri.fromParts("package", packageName, null)
+        }
+        val chain = (if (oemFirst) oem + stock else stock + oem) + appInfo
+        return chain.any {
+            try {
+                startActivity(it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                true
+            } catch (_: Exception) {
+                false
+            }
+        }
+    }
+
     private fun requestBatteryOptimisation(result: MethodChannel.Result) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            result.success("granted")
+            return
+        }
         val pm = getSystemService(POWER_SERVICE) as PowerManager
         if (pm.isIgnoringBatteryOptimizations(packageName)) {
             result.success("granted")
@@ -141,14 +226,28 @@ class MainActivity : FlutterActivity() {
             val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
                 data = Uri.parse("package:$packageName")
             }
-            startActivity(intent)
-            // Re-check after the dialog
-            result.success(
-                if (pm.isIgnoringBatteryOptimizations(packageName)) "granted" else "denied"
-            )
+            pendingResult = result
+            pendingRequestCode = RC_BATTERY
+            @Suppress("DEPRECATION")
+            startActivityForResult(intent, RC_BATTERY)
         } catch (_: Exception) {
+            pendingResult = null
+            try {
+                startActivity(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
+            } catch (_: Exception) {
+            }
             result.success("denied")
         }
+    }
+
+    @Suppress("DEPRECATION")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode != RC_BATTERY) return
+        val result = pendingResult ?: return
+        pendingResult = null
+        val pm = getSystemService(POWER_SERVICE) as PowerManager
+        result.success(if (pm.isIgnoringBatteryOptimizations(packageName)) "granted" else "denied")
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {

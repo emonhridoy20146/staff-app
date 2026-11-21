@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Howlader Field Operations API
-  version: 1.27.0
+  version: 1.33.0
   description: |
     Contract owned by field-api. Consumers (admin-web, staff-app) generate types from this file.
     Conventions (auth, pagination, idempotency, errors) are described in docs/05-api-contract.md.
@@ -521,6 +521,7 @@ paths:
         - { name: includeTotal, in: query, schema: { type: boolean, default: false }, description: 'Return `total` (capped at 10,000). Added in 1.1.0' }
         - $ref: '#/components/parameters/PayStateFilter'
         - $ref: '#/components/parameters/InvoiceKind'
+        - $ref: '#/components/parameters/PaidThisMonth'
       responses:
         '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/CustomerPage' } } } }
   /customers/map:
@@ -534,6 +535,7 @@ paths:
         - $ref: '#/components/parameters/BranchId'
         - $ref: '#/components/parameters/PayStateFilter'
         - $ref: '#/components/parameters/InvoiceKind'
+        - $ref: '#/components/parameters/PaidThisMonth'
       responses:
         '200':
           description: Pins (max 2000) or clusters when zoom < 13
@@ -821,6 +823,42 @@ paths:
       parameters: [ { $ref: '#/components/parameters/Id' } ]
       responses:
         '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Collection' } } } }
+    patch:
+      tags: [collections]
+      operationId: editCollection
+      description: |
+        collection.edit (1.32.0, FR-COL-016). A field staff member changes the amount, note or payer name of their OWN cash collection, until it is deposited: the collection must be cash, status `received`, never sent to the ERP yet, and not covered by any pending or verified deposit (same oldest-first rule as the cash in hand). Managers in scope may edit with the same limits. The pending ERP post is replaced with the new amount (same ERP key, it never reached the ERP). Audited (`collection.edited`, before and after). A repeat with the same values is a no-op. 409 INVALID_STATE reason: NOT_CASH, NOT_EDITABLE (status is not `received`, or the ERP already got an attempt), COVERED_BY_DEPOSIT, POSTING_IN_PROGRESS, STATUS_CHANGED. Another staff member's collection is 404.
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                amountPoisha: { type: integer, minimum: 1 }
+                note: { type: [string, 'null'], maxLength: 500 }
+                payerName: { type: [string, 'null'], maxLength: 100 }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Collection' } } } }
+        '404': { $ref: '#/components/responses/Problem' }
+        '409': { $ref: '#/components/responses/Problem' }
+  /collections/{id}/withdraw:
+    post:
+      tags: [collections]
+      operationId: withdrawCollection
+      description: |
+        collection.withdraw (1.32.0, FR-COL-016). A field staff member withdraws (deletes) their OWN cash collection until it is deposited: cash, status `received` or `posting_failed` (not posted to the ERP), not covered by a pending or verified deposit. The row is kept (ADR-018): status becomes `voided` with `voided {by, at, reason}`, the receipt number stays used, and the amount leaves cash in hand and the collected totals. Pending ERP post is cancelled. Audited (`collection.withdrawn`). A repeat by the same person answers 200 with the voided collection. Same 409 reasons as editing, plus USE_RESOLVE (status is `conflict`) and ALREADY_POSTED_OR_CLOSED.
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema: { type: object, properties: { reason: { type: string, maxLength: 500, description: 'Optional; defaults to a standard text' } } }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Collection' } } } }
+        '404': { $ref: '#/components/responses/Problem' }
+        '409': { $ref: '#/components/responses/Problem' }
   /collections/{id}/void:
     post:
       tags: [collections]
@@ -883,6 +921,15 @@ paths:
       responses:
         '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/CashInHand' } } } }
         '404': { $ref: '#/components/responses/Problem' }
+  /cash/deposits/{id}/collections:
+    get:
+      tags: [cash]
+      operationId: depositCollections
+      description: 'cash.view (1.30.0, FR-CASH-008). The cash collections one deposit covered: the person''s deposits (pending and verified, oldest first) pay off their cash collections oldest-first, the same order the cash in hand uses, so a deposit''s lines and the cash in hand never overlap. A rejected deposit covers nothing. Scope is the deposit''s: out of scope answers 404.'
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/DepositCoverage' } } } }
+        '404': { $ref: '#/components/responses/Problem' }
   /cash/positions:
     get:
       tags: [cash]
@@ -894,7 +941,7 @@ paths:
     get:
       tags: [cash]
       operationId: listDeposits
-      parameters: [ { $ref: '#/components/parameters/BranchId' }, { name: status, in: query, schema: { type: string, enum: [pending, verified, rejected] } }, { $ref: '#/components/parameters/Limit' }, { $ref: '#/components/parameters/Cursor' } ]
+      parameters: [ { $ref: '#/components/parameters/BranchId' }, { name: status, in: query, schema: { type: string, enum: [pending, verified, rejected, deleted] } }, { $ref: '#/components/parameters/Limit' }, { $ref: '#/components/parameters/Cursor' } ]
       responses:
         '200': { description: OK, content: { application/json: { schema: { type: object, properties: { items: { type: array, items: { $ref: '#/components/schemas/Deposit' } }, nextCursor: { type: [string, 'null'] } } } } } }
     post:
@@ -911,6 +958,17 @@ paths:
       parameters: [ { $ref: '#/components/parameters/Id' } ]
       responses:
         '200': { description: OK }
+  /cash/deposits/{id}/delete:
+    post:
+      tags: [cash]
+      operationId: deleteDeposit
+      description: 'cash.deposit.delete (1.32.0, FR-CASH-009; super admin, branch manager). Deletes a deposit that is `pending` or `verified` (a verified one gives its money back to the person''s cash in hand). The row is kept with status `deleted`, `deletedBy`, `deletedAt`, `deleteReason`; it no longer counts anywhere. The depositor is notified (type `cash.deposit.deleted`) and the sync entity `deposit` carries the new status. Audited (`cash.deposit.deleted`). 409 INVALID_STATE reason: NOT_DELETABLE (already rejected or deleted).'
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/Reason' } } } }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Deposit' } } } }
+        '404': { $ref: '#/components/responses/Problem' }
+        '409': { $ref: '#/components/responses/Problem' }
   /cash/deposits/{id}/reject:
     post:
       tags: [cash]
@@ -1693,6 +1751,30 @@ paths:
       parameters: [ { $ref: '#/components/parameters/BranchId' }, { name: status, in: query, schema: { type: string, enum: [open, snoozed, resolved], default: open } }, { name: type, in: query, schema: { type: string } }, { $ref: '#/components/parameters/Limit' }, { $ref: '#/components/parameters/Cursor' } ]
       responses:
         '200': { description: OK, content: { application/json: { schema: { type: object, properties: { items: { type: array, items: { $ref: '#/components/schemas/InboxItem' } }, counts: { type: object, additionalProperties: { type: integer } }, nextCursor: { type: [string, 'null'] } } } } } }
+  /activity:
+    get:
+      tags: [inbox]
+      operationId: listActivity
+      description: |
+        activity.view (1.28.0, FR-ACT-001; module `activity`, flag `module.activity`). Staff activity in the caller's branch scope, newest first: collections taken, visits recorded, promises made, map pins set or proposed by staff. Each line names the person and the customer.
+        `unseen` counts the lines since the caller last called POST /activity/seen (capped at 99), whatever the filters; `items[].unseen` marks them. Lines are kept 45 days; the records themselves stay in their modules.
+      parameters:
+        - { $ref: '#/components/parameters/BranchId' }
+        - { name: type, in: query, schema: { type: string, enum: [collection, visit, promise, pin, collection_withdrawn, collection_edited, deposit_deleted] } }
+        - { name: userId, in: query, schema: { type: string }, description: 'Only what this staff member did' }
+        - { $ref: '#/components/parameters/Limit' }
+        - { $ref: '#/components/parameters/Cursor' }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/ActivityFeed' } } } }
+        '400': { $ref: '#/components/responses/Problem' }
+        '403': { $ref: '#/components/responses/Problem' }
+  /activity/seen:
+    post:
+      tags: [inbox]
+      operationId: markActivitySeen
+      description: 'activity.view (1.28.0). The caller has looked at the feed; `unseen` starts again from now. Per user, idempotent.'
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: object, required: [seenAt, unseen], properties: { seenAt: { type: string, format: date-time }, unseen: { type: integer } } } } } }
   /inbox/{id}/resolve:
     post:
       tags: [inbox]
@@ -1849,6 +1931,7 @@ components:
     BranchId: { name: branchId, in: query, schema: { type: string } }
     PayStateFilter: { name: payState, in: query, style: form, explode: false, schema: { type: array, items: { $ref: '#/components/schemas/PayState' } }, description: 'Added in 1.14.0 (FR-CUS-012). Pin colours, combined with OR; other parameters narrow with AND' }
     InvoiceKind: { name: invoiceKind, in: query, schema: { type: string, enum: [installment, credit] }, description: 'Added in 1.14.0 (FR-CUS-013). Only customers with an open (balance due, not returned or cancelled) invoice of this kind' }
+    PaidThisMonth: { name: paidThisMonth, in: query, schema: { type: string, enum: [yes, no] }, description: 'Added in 1.29.0 (FR-CUS-019). `yes` = paid something in the current Asia/Dhaka month: an ERP payment dated this month (removed ones left out) or a field collection of this month still waiting for the ERP; `no` = neither. The same two sources as the row''s `activity.paidPoisha` / `activity.pendingPoisha`, so the filter agrees with the row''s money mark. Narrows with AND like the other parameters' }
     Limit: { name: limit, in: query, schema: { type: integer, default: 25, minimum: 1, maximum: 100 } }
     Cursor: { name: cursor, in: query, schema: { type: string } }
     IdempotencyKey: { name: Idempotency-Key, in: header, required: true, schema: { type: string, format: uuid } }
@@ -2348,6 +2431,24 @@ components:
             Show `message` (bn/en); unknown codes are possible.
           properties: { code: { type: string }, message: { $ref: '#/components/schemas/I18nText' }, raisedAt: { type: string } }
         resolution: { type: [object, 'null'], properties: { action: { type: string }, by: { type: string }, at: { type: string }, reason: { type: string } } }
+        voided:
+          type: object
+          description: 'Present when status is `voided` (documented 1.33.0, FR-COL-017). `kind` = `withdrawn` (the collector deleted their own cash collection, FR-COL-016) or `admin` (an office user voided it); rows voided before 1.33.0 are classified by who did it (the collector = withdrawn).'
+          properties:
+            by: { type: string }
+            byName: { type: string, description: 'Display name of `by` (1.33.0)' }
+            at: { type: string, format: date-time }
+            reason: { type: string }
+            kind: { type: string, enum: [withdrawn, admin], description: '1.33.0' }
+        edited:
+          type: object
+          description: 'Present once the collector has corrected the amount, note or payer with PATCH /collections/{id} (1.33.0, FR-COL-017). `previousAmountPoisha` is the amount before the FIRST edit; `at`/`by` are the latest edit.'
+          properties:
+            count: { type: integer }
+            at: { type: string, format: date-time }
+            by: { type: string }
+            byName: { type: string }
+            previousAmountPoisha: { type: integer }
         flags: { type: array, items: { type: string, enum: [far_from_pin, mock_location, clock_skew, late_sync, duplicate_txn_ref, not_in_scope_at_record_time, no_location] } }
         distanceToPinM: { type: [integer, 'null'] }
         cashOnHand: { $ref: '#/components/schemas/CashPosition' }
@@ -2388,6 +2489,34 @@ components:
         amountPoisha: { type: integer, description: 'The whole collection' }
         inHandPoisha: { type: integer, description: 'The part not yet covered by a deposit; less than amountPoisha for the one collection a deposit covers only partly' }
         status: { $ref: '#/components/schemas/CollectionStatus' }
+        promise: { oneOf: [ { $ref: '#/components/schemas/CollectionPromise' }, { type: 'null' } ], description: 'Added in 1.30.0 (FR-CASH-008). The promise this money was collected against, or null when none covered that day' }
+    CollectionPromise:
+      type: object
+      description: '1.30.0 (FR-CASH-008). The promise a collection was made against: same customer and invoice (a promise without an invoice covers any), made on or before the collection''s business date and not yet past its promised date plus the branch''s grace on that day; the newest when several match. `status` is how the promise stands now (kept / partly kept / broken are decided by ERP money, FR-PRM-003); `onTime` = collected on or before the promised date.'
+      required: [id, promisedDate, promisedAmountPoisha, status, onTime]
+      properties:
+        id: { type: string }
+        promisedDate: { type: string, format: date }
+        promisedAmountPoisha: { type: integer }
+        status: { type: string, enum: [open, kept, partially_kept, broken] }
+        onTime: { type: boolean }
+    DepositCoverage:
+      type: object
+      description: '1.30.0 (FR-CASH-008). Which cash collections a deposit covered, oldest first; the first and the last may be covered only in part (`coveredPoisha` < `amountPoisha`). `unmatchedPoisha` is deposit money with no collection behind it (a collection voided after the deposit). Field-system cash, not an ERP balance.'
+      required: [deposit, coveredPoisha, unmatchedPoisha, items, generatedAt]
+      properties:
+        deposit: { $ref: '#/components/schemas/Deposit' }
+        coveredPoisha: { type: integer }
+        unmatchedPoisha: { type: integer }
+        items:
+          type: array
+          items:
+            allOf:
+              - $ref: '#/components/schemas/CashInHandItem'
+              - type: object
+                required: [coveredPoisha]
+                properties: { coveredPoisha: { type: integer, description: 'The part of this collection this deposit covered' } }
+        generatedAt: { type: string, format: date-time }
     DepositCreate:
       type: object
       required: [clientId, amountPoisha, destination, depositedAt]
@@ -2403,7 +2532,7 @@ components:
       allOf:
         - $ref: '#/components/schemas/DepositCreate'
         - type: object
-          properties: { id: { type: string }, userId: { type: string }, userName: { type: string, description: 'Depositor display name (1.3.0)' }, status: { type: string, enum: [pending, verified, rejected] }, verifiedBy: { type: string }, verifiedAt: { type: string }, rejectReason: { type: string } }
+          properties: { id: { type: string }, userId: { type: string }, userName: { type: string, description: 'Depositor display name (1.3.0)' }, status: { type: string, enum: [pending, verified, rejected, deleted], description: '`deleted` added in 1.32.0: an admin deleted the deposit; it counts nowhere' }, verifiedBy: { type: string }, verifiedAt: { type: string }, rejectReason: { type: string }, deletedBy: { type: string, description: '1.32.0' }, deletedAt: { type: string, description: '1.32.0' }, deleteReason: { type: string, description: '1.32.0' } }
     Area:
       type: object
       properties: { id: { type: string }, branchId: { type: string }, name: { $ref: '#/components/schemas/I18nText' }, code: { type: string }, kind: { type: string, enum: [polygon, codes] }, polygon: { type: object, description: GeoJSON Polygon }, erpAreaCodes: { type: array, items: { type: string } }, color: { type: string }, customerCount: { type: integer }, assignees: { type: array, items: { type: string } }, active: { type: boolean }, version: { type: integer } }
@@ -2452,7 +2581,7 @@ components:
       allOf:
         - $ref: '#/components/schemas/VisitCreate'
         - type: object
-          properties: { id: { type: string }, userId: { type: string }, checkOutAt: { type: [string, 'null'] }, distanceToPinM: { type: [integer, 'null'] }, flags: { type: array, items: { type: string } }, coWork: { oneOf: [ { $ref: '#/components/schemas/VisitCoWork' }, { type: 'null' } ], description: 'null for a single visit (1.9.0)' } }
+          properties: { id: { type: string }, userId: { type: string }, userName: { type: string, description: 'Display name of userId, so any staff of the branch can say who visited (1.31.0, FR-ACT-002)' }, checkOutAt: { type: [string, 'null'] }, distanceToPinM: { type: [integer, 'null'] }, flags: { type: array, items: { type: string } }, coWork: { oneOf: [ { $ref: '#/components/schemas/VisitCoWork' }, { type: 'null' } ], description: 'null for a single visit (1.9.0)' } }
     VisitCoWork:
       type: object
       description: 'Who else took part in a co-work visit: the session members accepted at checkInAt, without the recorder (1.9.0)'
@@ -2551,7 +2680,7 @@ components:
       allOf:
         - $ref: '#/components/schemas/PromiseCreate'
         - type: object
-          properties: { id: { type: string }, ownerId: { type: string }, status: { $ref: '#/components/schemas/PromiseStatus' }, paidTowardsPoisha: { type: integer }, createdAt: { type: string } }
+          properties: { id: { type: string }, ownerId: { type: string }, ownerName: { type: string, description: 'Display name of ownerId, the customer''s assignee (1.31.0)' }, createdBy: { type: string, description: 'The staff member who made the promise (1.31.0); equals ownerId on promises older than 1.31.0' }, createdByName: { type: string, description: 'Display name of createdBy (1.31.0, FR-ACT-002)' }, status: { $ref: '#/components/schemas/PromiseStatus' }, paidTowardsPoisha: { type: integer }, createdAt: { type: string } }
     VisitListItem:
       description: 'Visit plus display refs, returned by GET /visits (1.4.0)'
       allOf:
@@ -2582,6 +2711,9 @@ components:
         decidedAt: { type: [string, 'null'] }
         method: { type: string, enum: [gps, map], description: 'Added in 1.11.0' }
         autoApplied: { type: boolean, description: 'Applied without a manager because the customer had no pin (1.11.0)' }
+        proposer: { type: object, description: 'Who proposed or set the pin (1.31.0, FR-ACT-002)', properties: { id: { type: string }, name: { type: string } } }
+        decider: { oneOf: [ { type: object, properties: { id: { type: string }, name: { type: string } } }, { type: 'null' } ], description: 'Who approved or rejected it; null while pending or when it applied at once (1.31.0)' }
+        direct: { type: boolean, description: 'Set directly by a manager (1.31.0). Since 1.31.0 the sync entity location_proposal reaches every device of the branch, not only the proposer: match proposer.id with the signed-in user to find your own' }
     LocationProposal:
       type: object
       properties:
@@ -2773,7 +2905,7 @@ components:
       required: [mutationId, entity, op, payload]
       properties:
         mutationId: { type: string, format: uuid }
-        entity: { type: string, enum: [visit, collection, note, promise, promise_cancel, deposit, attendance_event, tag, location_proposal, visit_checkout, handover_decision, cash_closing, contact_attempt, broadcast_ack, task_resolve_request, attendance_selfie, customer_phone], description: 'customer_phone (1.23.0) payload { customerId, phones: [{ number, label? }] }: same body as POST /customers/{id}/phones; needs permission customer.phone.manage; a repeat adds nothing. attendance_selfie (1.21.0) payload { eventClientId, selfieMediaId }: adds the photo to an attendance event that was sent before its photo uploaded; send it after that event (dependsOn).' }
+        entity: { type: string, enum: [visit, collection, note, promise, promise_cancel, deposit, attendance_event, tag, location_proposal, visit_checkout, handover_decision, cash_closing, contact_attempt, broadcast_ack, task_resolve_request, attendance_selfie, customer_phone, collection_withdraw, collection_edit], description: 'collection_withdraw (1.32.0) payload { collectionId | clientId, reason? }: same as POST /collections/{id}/withdraw; needs collection.withdraw; send it after the collection (dependsOn). collection_edit (1.32.0) payload { collectionId | clientId, amountPoisha?, note?, payerName? }: same as PATCH /collections/{id}; needs collection.edit; a repeat with the same values is a replay. customer_phone (1.23.0) payload { customerId, phones: [{ number, label? }] }: same body as POST /customers/{id}/phones; needs permission customer.phone.manage; a repeat adds nothing. attendance_selfie (1.21.0) payload { eventClientId, selfieMediaId }: adds the photo to an attendance event that was sent before its photo uploaded; send it after that event (dependsOn).' }
         op: { type: string, enum: [create, update] }
         payload:
           type: object
@@ -2880,6 +3012,42 @@ components:
         cash: { $ref: '#/components/schemas/CashPosition' }
         target: { $ref: '#/components/schemas/MyTarget' }
         serverTime: { type: string, format: date-time }
+    ActivityItem:
+      type: object
+      description: 1.28.0 (FR-ACT-001)
+      required: [id, type, at, branchId, actor, customer, entity, entityId, data, unseen]
+      properties:
+        id: { type: string }
+        type: { type: string, enum: [collection, visit, promise, pin, collection_withdrawn, collection_edited, deposit_deleted], description: 'Since 1.33.0 also collection_withdrawn (a collector deleted their own cash collection), collection_edited (they corrected it) and deposit_deleted (an office user deleted a staff deposit; `actor` is the staff member, `by` the office user)' }
+        at: { type: string, format: date-time }
+        branchId: { type: [string, 'null'] }
+        actor: { type: [object, 'null'], description: 'The staff member; null only for lines written before the event named them', properties: { id: { type: string }, name: { $ref: '#/components/schemas/I18nText' }, employeeCode: { type: string } } }
+        customer: { type: [object, 'null'], properties: { id: { type: string }, name: { $ref: '#/components/schemas/I18nText' }, code: { type: string } } }
+        by: { type: [object, 'null'], description: '1.33.0: the office user who did it to the actor''s record (deposit_deleted); null otherwise', properties: { id: { type: string }, name: { $ref: '#/components/schemas/I18nText' }, employeeCode: { type: string } } }
+        entity: { type: string, enum: [collection, visit, promise, customer, deposit], description: 'What a click opens (a pin opens the customer; a deposit opens the deposit drawer)' }
+        entityId: { type: string }
+        data:
+          type: object
+          description: 'Small facts for the line: collection amountPoisha, method, flags; visit outcome, flags; promise promisedDate; pin applied (true = applied at once, false = waits for a manager). Field-system activity, not ERP money.'
+          properties:
+            amountPoisha: { type: integer }
+            previousAmountPoisha: { type: integer, description: 'collection_edited (1.33.0): the amount before this edit' }
+            editCount: { type: integer, description: 'collection_edited (1.33.0): which edit this line is' }
+            method: { type: string }
+            outcome: { type: string }
+            promisedDate: { type: string, format: date }
+            applied: { type: boolean }
+            flags: { type: array, items: { type: string } }
+        unseen: { type: boolean, description: 'Newer than the caller''s last "seen"' }
+    ActivityFeed:
+      type: object
+      description: 1.28.0
+      required: [items, unseen, seenAt, nextCursor]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/ActivityItem' } }
+        unseen: { type: integer, maximum: 99 }
+        seenAt: { type: [string, 'null'], format: date-time }
+        nextCursor: { type: [string, 'null'] }
     InboxItem:
       type: object
       properties: { id: { type: string }, type: { type: string, example: collection.conflict }, severity: { type: string, enum: [low, medium, high, critical] }, branchId: { type: string }, entity: { type: string }, entityId: { type: string }, summary: { $ref: '#/components/schemas/I18nText' }, status: { type: string, enum: [open, snoozed, resolved] }, createdAt: { type: string }, link: { type: string, example: '/collections/6750…' } }

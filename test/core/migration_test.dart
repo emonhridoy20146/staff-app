@@ -15,6 +15,7 @@ void main() {
     // Build a v1-shaped file: current schema minus what v2 added.
     final v1 = AppDatabase(NativeDatabase(file));
     await v1.customStatement('SELECT 1');
+    await _dropV12(v1);
     await _dropV11(v1);
     await _dropV10(v1);
     await _dropV9(v1);
@@ -38,7 +39,7 @@ void main() {
     await v1.close();
 
     final v2 = AppDatabase(NativeDatabase(file));
-    expect(v2.schemaVersion, 11);
+    expect(v2.schemaVersion, 13);
     expect(await v2.select(v2.coworkSessions).get(), isEmpty);
     final props = await v2.select(v2.locationProposals).get();
     expect(props.single.decisionReason, isNull);
@@ -57,6 +58,7 @@ void main() {
     final file = File('${dir.path}/app.db');
     final v2 = AppDatabase(NativeDatabase(file));
     await v2.customStatement('SELECT 1');
+    await _dropV12(v2);
     await _dropV11(v2);
     await _dropV10(v2);
     await _dropV9(v2);
@@ -89,6 +91,7 @@ void main() {
     final file = File('${dir.path}/app.db');
     final v3 = AppDatabase(NativeDatabase(file));
     await v3.customStatement('SELECT 1');
+    await _dropV12(v3);
     await _dropV11(v3);
     await _dropV10(v3);
     await _dropV9(v3);
@@ -125,6 +128,7 @@ void main() {
     final file = File('${dir.path}/app.db');
     final v4 = AppDatabase(NativeDatabase(file));
     await v4.customStatement('SELECT 1');
+    await _dropV12(v4);
     await _dropV11(v4);
     await _dropV10(v4);
     await _dropV9(v4);
@@ -157,6 +161,7 @@ void main() {
     final file = File('${dir.path}/app.db');
     final v5 = AppDatabase(NativeDatabase(file));
     await v5.customStatement('SELECT 1');
+    await _dropV12(v5);
     await _dropV11(v5);
     await _dropV10(v5);
     await _dropV9(v5);
@@ -187,6 +192,7 @@ void main() {
     final file = File('${dir.path}/app.db');
     final v6 = AppDatabase(NativeDatabase(file));
     await v6.customStatement('SELECT 1');
+    await _dropV12(v6);
     await _dropV11(v6);
     await _dropV10(v6);
     await _dropV9(v6);
@@ -233,6 +239,7 @@ void main() {
     final file = File('${dir.path}/app.db');
     final v7 = AppDatabase(NativeDatabase(file));
     await v7.customStatement('SELECT 1');
+    await _dropV12(v7);
     await _dropV11(v7);
     await _dropV10(v7);
     await _dropV9(v7);
@@ -264,6 +271,7 @@ void main() {
     final file = File('${dir.path}/app.db');
     final v8 = AppDatabase(NativeDatabase(file));
     await v8.customStatement('SELECT 1');
+    await _dropV12(v8);
     await _dropV11(v8);
     await _dropV10(v8);
     await _dropV9(v8);
@@ -275,7 +283,7 @@ void main() {
     await v8.close();
 
     final v9 = AppDatabase(NativeDatabase(file));
-    expect(v9.schemaVersion, 11);
+    expect(v9.schemaVersion, 13);
     expect(await v9.select(v9.tasks).get(), isEmpty);
     // The new table works, with its defaults.
     await v9.into(v9.tasks).insert(TasksCompanion.insert(serverId: 't-1', title: 'কাজ', createdAt: DateTime.utc(2026, 11, 18)));
@@ -296,6 +304,7 @@ void main() {
     final file = File('${dir.path}/app.db');
     final v9 = AppDatabase(NativeDatabase(file));
     await v9.customStatement('SELECT 1');
+    await _dropV12(v9);
     await _dropV11(v9);
     await _dropV10(v9);
     await v9.customStatement("INSERT INTO attendance_day (business_date, status, break_min, late_min) VALUES ('2026-11-20', 'off_duty', 70, 25)");
@@ -307,7 +316,7 @@ void main() {
     await v9.close();
 
     final v10 = AppDatabase(NativeDatabase(file));
-    expect(v10.schemaVersion, 11);
+    expect(v10.schemaVersion, 13);
     final day = (await v10.select(v10.attendanceDays).get()).single;
     expect(day.businessDate, '2026-11-20');
     expect(day.lateMin, 25);
@@ -333,6 +342,7 @@ void main() {
     final file = File('${dir.path}/app.db');
     final v10 = AppDatabase(NativeDatabase(file));
     await v10.customStatement('SELECT 1');
+    await _dropV12(v10);
     await _dropV11(v10);
     await v10.customStatement("INSERT INTO schedule_lines (erp_plan_id, seq, due_date, amount_poisha, paid_poisha, status) VALUES ('p-1', 1, '2026-10-05', 500000, 500000, 'paid')");
     await v10.customStatement(
@@ -341,7 +351,7 @@ void main() {
     await v10.close();
 
     final v11 = AppDatabase(NativeDatabase(file));
-    expect(v11.schemaVersion, 11);
+    expect(v11.schemaVersion, 13);
     final line = (await v11.select(v11.scheduleLines).get()).single;
     expect([line.seq, line.amountPoisha, line.paidPoisha], [1, 500000, 500000]);
     expect(line.paidOn, isNull);
@@ -352,6 +362,62 @@ void main() {
     await v11.close();
     await dir.delete(recursive: true);
   });
+  test('migrates a schema 11 database: the colleagues table is added, the outbox, own rows and the finished sync stay', () async {
+    final dir = await Directory.systemTemp.createTemp('mig11');
+    final file = File('${dir.path}/app.db');
+    final v11 = AppDatabase(NativeDatabase(file));
+    await v11.customStatement('SELECT 1');
+    await _dropV12(v11);
+    await v11.customStatement(
+        "INSERT INTO outbox (mutation_id, entity, op, payload_json, created_at) VALUES ('col-11', 'collection', 'create', '{}', 0)");
+    await v11.customStatement("INSERT INTO promises (client_id, customer_id, promised_date, promised_amount_poisha, created_at) VALUES ('pr-1', 'c-1', '2026-11-25', 100000, 0)");
+    await v11.customStatement('INSERT INTO sync_state (id, bootstrap_done) VALUES (1, 1)');
+    await v11.customStatement('PRAGMA user_version = 11');
+    await v11.close();
+
+    final v12 = AppDatabase(NativeDatabase(file));
+    expect(v12.schemaVersion, 13);
+    expect(await v12.select(v12.colleagueActivities).get(), isEmpty);
+    expect((await v12.select(v12.outbox).get()).single.mutationId, 'col-11');
+    expect((await v12.select(v12.promises).get()).single.clientId, 'pr-1');
+    expect((await v12.select(v12.syncMeta).get()).single.bootstrapDone, isTrue);
+    await v12.close();
+    await dir.delete(recursive: true);
+  });
+  test('migrates a phone that ran a build from the middle of schema 12: the missing columns are added, nothing is lost', () async {
+    final dir = await Directory.systemTemp.createTemp('mig12');
+    final file = File('${dir.path}/app.db');
+    final v12 = AppDatabase(NativeDatabase(file));
+    await v12.customStatement('SELECT 1');
+    // That build had the colleagues table but not the later columns.
+    await v12.customStatement('ALTER TABLE promises DROP COLUMN created_by_name');
+    for (final c in ['previous_amount_poisha', 'voided_kind', 'voided_by_name', 'voided_reason']) {
+      await v12.customStatement('ALTER TABLE collections DROP COLUMN $c');
+    }
+    await v12.customStatement('ALTER TABLE colleague_activities DROP COLUMN voided_kind');
+    await v12.customStatement("INSERT INTO promises (client_id, customer_id, promised_date, promised_amount_poisha, created_at) VALUES ('pr-12', 'c-1', '2026-11-25', 100000, 0)");
+    await v12.customStatement("INSERT INTO outbox (mutation_id, entity, op, payload_json, created_at) VALUES ('col-12', 'collection', 'create', '{}', 0)");
+    await v12.customStatement('PRAGMA user_version = 12');
+    await v12.close();
+
+    final v13 = AppDatabase(NativeDatabase(file));
+    expect(v13.schemaVersion, 13);
+    expect((await v13.select(v13.promises).get()).single.createdByName, isNull);
+    expect(await v13.select(v13.collections).get(), isEmpty);
+    expect(await v13.select(v13.colleagueActivities).get(), isEmpty);
+    expect((await v13.select(v13.outbox).get()).single.mutationId, 'col-12');
+    await v13.close();
+    await dir.delete(recursive: true);
+  });
+}
+
+/// What schema 12 (contract 1.31.0) added: colleagues' visits, promises and collections.
+Future<void> _dropV12(AppDatabase db) async {
+  await db.customStatement('DROP TABLE colleague_activities');
+  await db.customStatement('ALTER TABLE promises DROP COLUMN created_by_name');
+  for (final c in ['previous_amount_poisha', 'voided_kind', 'voided_by_name', 'voided_reason']) {
+    await db.customStatement('ALTER TABLE collections DROP COLUMN $c');
+  }
 }
 
 /// What schema 11 (contract 1.14.0 fields) added: the ERP's paid-on, days late, missed and payments per line.

@@ -12,6 +12,7 @@ import '../../../core/location/geofence.dart';
 import '../../../core/ui/far_confirm.dart';
 import '../../../core/api/api_models.dart';
 import '../../../core/db/app_database.dart';
+import '../../../core/db/colleague_activity.dart';
 import '../../../core/location/location_engine.dart';
 import '../../../core/media/media.dart';
 import '../../../core/providers.dart';
@@ -73,6 +74,23 @@ class VisitPullHandler implements PullHandler {
     // 1.9.0: coWork is null for a single visit, and also when the server
     // could not confirm the claim (flag cowork_invalid) — then it is single.
     final coWork = d['coWork'] as Json?;
+    // A colleague's visit (FR-M-057): kept apart so my own counts stay mine; a joint visit I took part in is mine too.
+    final me = await savedUserId(db);
+    final staffId = d['userId'] as String?;
+    final partners = ((coWork?['participantIds'] as List?) ?? const []).cast<String>();
+    if (isColleague(me: me, staffId: staffId) && !partners.contains(me)) {
+      await upsertColleagueActivity(
+        db,
+        kind: 'visit',
+        serverId: id,
+        customerId: d['customerId'] as String,
+        staffId: staffId!,
+        staffName: (d['userName'] as String?) ?? '',
+        at: DateTime.parse(d['checkInAt'] as String).toUtc(),
+        outcome: (d['outcome'] as String?) ?? 'other',
+      );
+      return;
+    }
     await db.into(db.visits).insertOnConflictUpdate(VisitsCompanion.insert(
           clientId: clientId,
           serverId: Value(id),
@@ -90,7 +108,7 @@ class VisitPullHandler implements PullHandler {
   }
 
   @override
-  Future<void> delete(AppDatabase db, String id, {String? reason}) async {}
+  Future<void> delete(AppDatabase db, String id, {String? reason}) => deleteColleagueActivity(db, 'visit', id);
 }
 
 /// Media hook: once photos are confirmed, link them to the visit.

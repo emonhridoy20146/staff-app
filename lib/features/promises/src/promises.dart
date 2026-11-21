@@ -7,6 +7,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../../core/api/api_models.dart';
 import '../../../core/db/app_database.dart';
+import '../../../core/db/colleague_activity.dart';
 import '../../../core/format/money.dart';
 import '../../../core/notifications/reminders.dart';
 import '../../../core/providers.dart';
@@ -32,6 +33,27 @@ class PromisePullHandler implements PullHandler {
   @override
   Future<void> upsert(AppDatabase db, String id, Json d) async {
     final clientId = (d['clientId'] as String?) ?? id;
+    // A colleague's promise (FR-M-057): kept apart so "my promises" and the reminders stay mine.
+    // `ownerId` is the customer's assignee; who made the promise is `createdBy` (contract 1.31.0).
+    final owner = d['ownerId'] as String?;
+    final maker = (d['createdBy'] as String?) ?? owner;
+    final me = await savedUserId(db);
+    if (isColleague(me: me, staffId: maker) && isColleague(me: me, staffId: owner)) {
+      await upsertColleagueActivity(
+        db,
+        kind: 'promise',
+        serverId: id,
+        customerId: d['customerId'] as String,
+        staffId: maker!,
+        staffName: (d['createdByName'] as String?) ?? (d['ownerName'] as String?) ?? '',
+        at: d['createdAt'] == null ? DateTime.fromMillisecondsSinceEpoch(0, isUtc: true) : DateTime.parse(d['createdAt'] as String).toUtc(),
+        amountPoisha: (d['promisedAmountPoisha'] as num?)?.toInt(),
+        promisedDate: d['promisedDate'] as String?,
+        status: (d['status'] as String?) ?? 'open',
+        note: d['note'] as String?,
+      );
+      return;
+    }
     await db.into(db.promises).insertOnConflictUpdate(PromisesCompanion.insert(
           clientId: clientId,
           serverId: Value(id),
@@ -42,13 +64,17 @@ class PromisePullHandler implements PullHandler {
           paidTowardsPoisha: Value(((d['paidTowardsPoisha'] as num?) ?? 0).toInt()),
           status: Value((d['status'] as String?) ?? 'open'),
           note: Value(d['note'] as String?),
+          createdByName: Value(isColleague(me: me, staffId: maker) ? d['createdByName'] as String? : null),
           createdAt: d['createdAt'] == null ? DateTime.fromMillisecondsSinceEpoch(0, isUtc: true) : DateTime.parse(d['createdAt'] as String).toUtc(),
           syncState: const Value('synced'),
         ));
   }
 
   @override
-  Future<void> delete(AppDatabase db, String id, {String? reason}) => (db.delete(db.promises)..where((t) => t.serverId.equals(id))).go();
+  Future<void> delete(AppDatabase db, String id, {String? reason}) async {
+    await (db.delete(db.promises)..where((t) => t.serverId.equals(id))).go();
+    await deleteColleagueActivity(db, 'promise', id);
+  }
 }
 
 class PromisePushHandler implements PushResultHandler {
@@ -82,7 +108,7 @@ final todayPromiseCountProvider = StreamProvider<int>((ref) {
   final start = parseBusinessDate(clock.businessDate()).subtract(dhakaOffset);
   final q = db.selectOnly(db.promises)
     ..addColumns([db.promises.clientId.count()])
-    ..where(db.promises.createdAt.isBiggerOrEqualValue(start));
+    ..where(db.promises.createdAt.isBiggerOrEqualValue(start) & db.promises.createdByName.isNull());
   return q.map((r) => r.read(db.promises.clientId.count()) ?? 0).watchSingle();
 });
 

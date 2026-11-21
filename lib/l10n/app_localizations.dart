@@ -248,6 +248,12 @@ abstract class AppLocalizations {
   /// **'See all'**
   String get actionSeeAll;
 
+  /// No description provided for @actionReceiptPdf.
+  ///
+  /// In en, this message translates to:
+  /// **'Receipt as PDF (print or save)'**
+  String get actionReceiptPdf;
+
   /// No description provided for @actionShareReceipt.
   ///
   /// In en, this message translates to:
@@ -415,6 +421,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Enter your PIN'**
   String get pinUnlockTitle;
+
+  /// No description provided for @pinChecking.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking your PIN and signing you in…'**
+  String get pinChecking;
 
   /// No description provided for @pinUnlockGreeting.
   ///
@@ -727,6 +739,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'End break'**
   String get dutyEndBreak;
+
+  /// No description provided for @dutyDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s duty details'**
+  String get dutyDetails;
+
+  /// No description provided for @dutyRowShift.
+  ///
+  /// In en, this message translates to:
+  /// **'Office time'**
+  String get dutyRowShift;
+
+  /// No description provided for @dutyRowIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Attendance'**
+  String get dutyRowIn;
+
+  /// No description provided for @dutyRowBreak.
+  ///
+  /// In en, this message translates to:
+  /// **'Break'**
+  String get dutyRowBreak;
+
+  /// No description provided for @dutyRowOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Work end'**
+  String get dutyRowOut;
+
+  /// No description provided for @dutyRowOvertime.
+  ///
+  /// In en, this message translates to:
+  /// **'Overtime'**
+  String get dutyRowOvertime;
+
+  /// No description provided for @dutyOnTime.
+  ///
+  /// In en, this message translates to:
+  /// **'On time'**
+  String get dutyOnTime;
+
+  /// No description provided for @dutyNotYet.
+  ///
+  /// In en, this message translates to:
+  /// **'Not yet'**
+  String get dutyNotYet;
+
+  /// No description provided for @dutyBreakOf.
+  ///
+  /// In en, this message translates to:
+  /// **'{taken} of {limit}'**
+  String dutyBreakOf(String taken, String limit);
+
+  /// No description provided for @dutyOfficeOver.
+  ///
+  /// In en, this message translates to:
+  /// **'Office time is over. You can end work now.'**
+  String get dutyOfficeOver;
+
+  /// No description provided for @dutyEndBreakFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'End your break first, then you can end work.'**
+  String get dutyEndBreakFirst;
 
   /// No description provided for @dutyNotStarted.
   ///
@@ -1070,6 +1148,12 @@ abstract class AppLocalizations {
   /// **'Not accepted'**
   String get statusRejected;
 
+  /// No description provided for @statusDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Deleted by office'**
+  String get statusDeleted;
+
   /// No description provided for @statusResolved.
   ///
   /// In en, this message translates to:
@@ -1081,6 +1165,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Voided'**
   String get statusVoided;
+
+  /// No description provided for @statusVoidedByOffice.
+  ///
+  /// In en, this message translates to:
+  /// **'Voided by office'**
+  String get statusVoidedByOffice;
+
+  /// No description provided for @statusDeletedByYou.
+  ///
+  /// In en, this message translates to:
+  /// **'Deleted by you'**
+  String get statusDeletedByYou;
+
+  /// No description provided for @collectionVoidedBy.
+  ///
+  /// In en, this message translates to:
+  /// **'by {name}'**
+  String collectionVoidedBy(String name);
 
   /// No description provided for @detailOutstanding.
   ///
@@ -2279,7 +2381,7 @@ abstract class AppLocalizations {
   /// No description provided for @attHubAbsenceStreak.
   ///
   /// In en, this message translates to:
-  /// **'Counts as absence (2 consecutive late days)'**
+  /// **'Counts as an absent day (every 2 late days = 1)'**
   String get attHubAbsenceStreak;
 
   /// No description provided for @attHubLateMonth.
@@ -2853,36 +2955,171 @@ abstract class AppLocalizations {
   String get oemGuideTitle;
 
   /// No description provided for @oemGuideSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Some phones stop GPS when the screen turns off. Follow the steps for your phone brand to keep tracking on while on duty.'**
   String get oemGuideSubtitle;
 
   /// No description provided for @oemGuideDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Got it'**
   String get oemGuideDone;
 
+  /// No description provided for @oemGuideXiaomiName.
+  ///
+  /// In en, this message translates to:
+  /// **'Xiaomi / Redmi / POCO (MIUI)'**
   String get oemGuideXiaomiName;
+
+  /// No description provided for @oemGuideXiaomiStep1.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings → Apps → Manage apps → [this app] → Battery saver → No restrictions'**
   String get oemGuideXiaomiStep1;
+
+  /// No description provided for @oemGuideXiaomiStep2.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings → Apps → Manage apps → [this app] → Autostart → turn ON'**
   String get oemGuideXiaomiStep2;
+
+  /// No description provided for @oemGuideXiaomiStep3.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings → Battery & performance → App battery saver → find this app → No restrictions'**
   String get oemGuideXiaomiStep3;
+
+  /// No description provided for @oemGuideSamsungName.
+  ///
+  /// In en, this message translates to:
+  /// **'Samsung (One UI)'**
   String get oemGuideSamsungName;
+
+  /// No description provided for @oemGuideSamsungStep1.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings → Apps → [this app] → Battery → Unrestricted'**
   String get oemGuideSamsungStep1;
+
+  /// No description provided for @oemGuideSamsungStep2.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings → Device care → Battery → App power management → Sleeping apps → remove this app'**
   String get oemGuideSamsungStep2;
+
+  /// No description provided for @oemGuideSamsungStep3.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings → Apps → [this app] → Mobile data → Allow background data usage'**
   String get oemGuideSamsungStep3;
+
+  /// No description provided for @oemGuideOppoName.
+  ///
+  /// In en, this message translates to:
+  /// **'Oppo / Realme (ColorOS)'**
   String get oemGuideOppoName;
+
+  /// No description provided for @oemGuideOppoStep1.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings → Battery → App power saving → find this app → turn OFF'**
   String get oemGuideOppoStep1;
+
+  /// No description provided for @oemGuideOppoStep2.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings → Apps → [this app] → Battery usage → Allow background activity'**
   String get oemGuideOppoStep2;
+
+  /// No description provided for @oemGuideOppoStep3.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings → Battery → More → App quick freeze → exclude this app'**
   String get oemGuideOppoStep3;
+
+  /// No description provided for @oemGuideVivoName.
+  ///
+  /// In en, this message translates to:
+  /// **'Vivo (Funtouch OS)'**
   String get oemGuideVivoName;
+
+  /// No description provided for @oemGuideVivoStep1.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings → Battery → Background app power management → turn OFF for this app'**
   String get oemGuideVivoStep1;
+
+  /// No description provided for @oemGuideVivoStep2.
+  ///
+  /// In en, this message translates to:
+  /// **'iManager → App Management → [this app] → Background run → Allow'**
   String get oemGuideVivoStep2;
+
+  /// No description provided for @oemGuideVivoStep3.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings → Apps → [this app] → Battery → Unrestricted'**
   String get oemGuideVivoStep3;
+
+  /// No description provided for @oemGuideHuaweiName.
+  ///
+  /// In en, this message translates to:
+  /// **'Huawei / Honor (EMUI / MagicUI)'**
   String get oemGuideHuaweiName;
+
+  /// No description provided for @oemGuideHuaweiStep1.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone Manager → Launch manager → find this app → Manage manually'**
   String get oemGuideHuaweiStep1;
+
+  /// No description provided for @oemGuideHuaweiStep2.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn on Auto-launch, Secondary launch, and Run in background'**
   String get oemGuideHuaweiStep2;
+
+  /// No description provided for @oemGuideHuaweiStep3.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings → Battery → App launch → find this app → Manage manually → allow all three'**
   String get oemGuideHuaweiStep3;
+
+  /// No description provided for @oemGuideOneplusName.
+  ///
+  /// In en, this message translates to:
+  /// **'OnePlus / Nothing (OxygenOS)'**
   String get oemGuideOneplusName;
+
+  /// No description provided for @oemGuideOneplusStep1.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings → Apps → [this app] → Battery → Allow background activity'**
   String get oemGuideOneplusStep1;
+
+  /// No description provided for @oemGuideOneplusStep2.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings → Battery → Battery optimization → All apps → [this app] → Don\'t optimize'**
   String get oemGuideOneplusStep2;
+
+  /// No description provided for @oemGuideOtherName.
+  ///
+  /// In en, this message translates to:
+  /// **'Other Android phones'**
   String get oemGuideOtherName;
+
+  /// No description provided for @oemGuideOtherStep1.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings → Apps → [this app] → Battery → Unrestricted (or Don\'t optimize)'**
   String get oemGuideOtherStep1;
+
+  /// No description provided for @oemGuideOtherStep2.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings → Battery → Battery optimization → find this app → Don\'t optimize'**
   String get oemGuideOtherStep2;
 
   /// No description provided for @visitSuggestTitle.
@@ -4175,6 +4412,36 @@ abstract class AppLocalizations {
   /// **'incl. late fee {amount}'**
   String scheduleLateFee(String amount);
 
+  /// No description provided for @scheduleLinePaidOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Paid on {date}'**
+  String scheduleLinePaidOn(String date);
+
+  /// No description provided for @scheduleDaysLate.
+  ///
+  /// In en, this message translates to:
+  /// **'{days} days late'**
+  String scheduleDaysLate(String days);
+
+  /// No description provided for @scheduleMissed.
+  ///
+  /// In en, this message translates to:
+  /// **'Missed'**
+  String get scheduleMissed;
+
+  /// No description provided for @scheduleLinePayments.
+  ///
+  /// In en, this message translates to:
+  /// **'Payments for installment {seq}'**
+  String scheduleLinePayments(String seq);
+
+  /// No description provided for @scheduleReceiptNo.
+  ///
+  /// In en, this message translates to:
+  /// **'Receipt {no}'**
+  String scheduleReceiptNo(String no);
+
   /// No description provided for @schedulePaidOf.
   ///
   /// In en, this message translates to:
@@ -4328,7 +4595,7 @@ abstract class AppLocalizations {
   /// No description provided for @phoneRemoveBody.
   ///
   /// In en, this message translates to:
-  /// **'{number} will be removed from the customer. Only numbers added in the field can be removed; the office's numbers stay.'**
+  /// **'{number} will be removed from the customer. Only numbers added in the field can be removed; the office\'s numbers stay.'**
   String phoneRemoveBody(String number);
 
   /// No description provided for @phoneRemoved.
@@ -4420,6 +4687,132 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'A deposit pays off your oldest collections first, so the cash on hand is your newest collections. Tap a line to open the customer.'**
   String get cashInHandHow;
+
+  /// No description provided for @cashActionEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Change'**
+  String get cashActionEdit;
+
+  /// No description provided for @cashActionDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get cashActionDelete;
+
+  /// No description provided for @cashEditTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Change this collection'**
+  String get cashEditTitle;
+
+  /// No description provided for @cashEditAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount (৳)'**
+  String get cashEditAmount;
+
+  /// No description provided for @cashEditNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Note'**
+  String get cashEditNote;
+
+  /// No description provided for @cashEditPayer.
+  ///
+  /// In en, this message translates to:
+  /// **'Paid by'**
+  String get cashEditPayer;
+
+  /// No description provided for @cashEditSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get cashEditSave;
+
+  /// No description provided for @cashDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this collection?'**
+  String get cashDeleteTitle;
+
+  /// No description provided for @cashDeleteBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} from {customer} will be removed from your cash in hand. The receipt number stays used and the line stays in the history as deleted.'**
+  String cashDeleteBody(String amount, String customer);
+
+  /// No description provided for @cashDeleteReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Reason (optional)'**
+  String get cashDeleteReason;
+
+  /// No description provided for @cashDeleteConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get cashDeleteConfirm;
+
+  /// No description provided for @cashActionDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get cashActionDone;
+
+  /// No description provided for @cashActionOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'This needs internet. Try again when you are online.'**
+  String get cashActionOffline;
+
+  /// No description provided for @cashActionCovered.
+  ///
+  /// In en, this message translates to:
+  /// **'A deposit already covers this cash, so it cannot be changed. Ask the office.'**
+  String get cashActionCovered;
+
+  /// No description provided for @cashActionNotEditable.
+  ///
+  /// In en, this message translates to:
+  /// **'This collection is already with the ERP and cannot be changed here. Ask the office.'**
+  String get cashActionNotEditable;
+
+  /// No description provided for @cashActionPosted.
+  ///
+  /// In en, this message translates to:
+  /// **'This collection is already posted to the ERP. Ask the office.'**
+  String get cashActionPosted;
+
+  /// No description provided for @cashActionBusy.
+  ///
+  /// In en, this message translates to:
+  /// **'It is being sent to the ERP right now. Try again in a minute.'**
+  String get cashActionBusy;
+
+  /// No description provided for @cashActionNotAllowed.
+  ///
+  /// In en, this message translates to:
+  /// **'You cannot change this collection.'**
+  String get cashActionNotAllowed;
+
+  /// No description provided for @cashActionFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not do it. Try again.'**
+  String get cashActionFailed;
+
+  /// No description provided for @collectionEditedWas.
+  ///
+  /// In en, this message translates to:
+  /// **'edited · was {amount}'**
+  String collectionEditedWas(String amount);
+
+  /// No description provided for @collectionDeletedTag.
+  ///
+  /// In en, this message translates to:
+  /// **'deleted'**
+  String get collectionDeletedTag;
 
   /// No description provided for @cashInHandOffline.
   ///
@@ -4625,6 +5018,42 @@ abstract class AppLocalizations {
   /// **'No work recorded on this day'**
   String get workEmptyTitle;
 
+  /// No description provided for @workTabMine.
+  ///
+  /// In en, this message translates to:
+  /// **'My work'**
+  String get workTabMine;
+
+  /// No description provided for @workTabTeam.
+  ///
+  /// In en, this message translates to:
+  /// **'Other staff'**
+  String get workTabTeam;
+
+  /// No description provided for @teamEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No work by other staff on this day'**
+  String get teamEmptyTitle;
+
+  /// No description provided for @teamEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Visits, promises, collections and pins of your branch colleagues show here with their names.'**
+  String get teamEmptyBody;
+
+  /// No description provided for @alertsTeamSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Other staff today'**
+  String get alertsTeamSection;
+
+  /// No description provided for @alertsTeamMore.
+  ///
+  /// In en, this message translates to:
+  /// **'See all'**
+  String get alertsTeamMore;
+
   /// No description provided for @workEmptyBody.
   ///
   /// In en, this message translates to:
@@ -4792,6 +5221,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'by {name}'**
   String timelineCollector(String name);
+
+  /// No description provided for @timelineVisitBy.
+  ///
+  /// In en, this message translates to:
+  /// **'visited by {name}'**
+  String timelineVisitBy(String name);
+
+  /// No description provided for @timelinePromiseBy.
+  ///
+  /// In en, this message translates to:
+  /// **'promise taken by {name}'**
+  String timelinePromiseBy(String name);
+
+  /// No description provided for @timelinePinBy.
+  ///
+  /// In en, this message translates to:
+  /// **'pin set by {name}'**
+  String timelinePinBy(String name);
+
+  /// No description provided for @timelinePinSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Customer pin set'**
+  String get timelinePinSet;
+
+  /// No description provided for @timelinePinPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Customer pin proposed · waiting for approval'**
+  String get timelinePinPending;
+
+  /// No description provided for @timelinePinRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Customer pin not approved'**
+  String get timelinePinRejected;
 
   /// No description provided for @timelineAdvance.
   ///

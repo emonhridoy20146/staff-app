@@ -1,5 +1,5 @@
 import 'package:go_router/go_router.dart';
-import 'package:material_ui/material_ui.dart' show Icons;
+import 'package:material_ui/material_ui.dart' show Icons, Localizations;
 
 import '../../core/feature/feature_manifest.dart';
 import '../../core/permissions/permission_service.dart';
@@ -7,6 +7,7 @@ import '../../core/providers.dart';
 import '../../core/settings/ui_prefs.dart';
 import '../../core/sync/sync_handlers.dart';
 import '../../l10n/app_localizations.dart';
+import '../auth/auth.dart' show sessionProvider;
 import 'src/contact_attempts.dart';
 import 'src/phone_numbers.dart';
 import 'src/pin_correction.dart';
@@ -42,6 +43,13 @@ FeatureManifest customersManifest(SyncHandlerRegistry Function() registry) => Fe
         WorkLogSourceDef(id: 'calls', watch: watchCallWorkLog),
       ],
       timelineSources: [
+        TimelineSourceDef(
+          id: 'pins',
+          watch: (context, ref, id) {
+            final lang = Localizations.localeOf(context).languageCode;
+            return watchPinTimeline(ref.read(databaseProvider), AppLocalizations.of(context), ref.read(fmtProvider), id, ref.read(sessionProvider).user?.name.of(lang));
+          },
+        ),
         TimelineSourceDef(
           id: 'contact-attempts',
           watch: (context, ref, id) {

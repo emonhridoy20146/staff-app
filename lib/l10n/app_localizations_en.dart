@@ -85,6 +85,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get actionSeeAll => 'See all';
 
   @override
+  String get actionReceiptPdf => 'Receipt as PDF (print or save)';
+
+  @override
   String get actionShareReceipt => 'Share receipt';
 
   @override
@@ -171,6 +174,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pinUnlockTitle => 'Enter your PIN';
+
+  @override
+  String get pinChecking => 'Checking your PIN and signing you in…';
 
   @override
   String pinUnlockGreeting(String name) {
@@ -359,6 +365,42 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dutyEndBreak => 'End break';
+
+  @override
+  String get dutyDetails => 'Today\'s duty details';
+
+  @override
+  String get dutyRowShift => 'Office time';
+
+  @override
+  String get dutyRowIn => 'Attendance';
+
+  @override
+  String get dutyRowBreak => 'Break';
+
+  @override
+  String get dutyRowOut => 'Work end';
+
+  @override
+  String get dutyRowOvertime => 'Overtime';
+
+  @override
+  String get dutyOnTime => 'On time';
+
+  @override
+  String get dutyNotYet => 'Not yet';
+
+  @override
+  String dutyBreakOf(String taken, String limit) {
+    return '$taken of $limit';
+  }
+
+  @override
+  String get dutyOfficeOver => 'Office time is over. You can end work now.';
+
+  @override
+  String get dutyEndBreakFirst =>
+      'End your break first, then you can end work.';
 
   @override
   String get dutyNotStarted => 'You have not started work today';
@@ -552,10 +594,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get statusRejected => 'Not accepted';
 
   @override
+  String get statusDeleted => 'Deleted by office';
+
+  @override
   String get statusResolved => 'Resolved';
 
   @override
   String get statusVoided => 'Voided';
+
+  @override
+  String get statusVoidedByOffice => 'Voided by office';
+
+  @override
+  String get statusDeletedByYou => 'Deleted by you';
+
+  @override
+  String collectionVoidedBy(String name) {
+    return 'by $name';
+  }
 
   @override
   String get detailOutstanding => 'Total outstanding';
@@ -1554,62 +1610,110 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get oemGuideTitle => 'Battery & Background Settings';
+
   @override
-  String get oemGuideSubtitle => 'Some phones stop GPS when the screen turns off. Follow the steps for your phone brand to keep tracking on while on duty.';
+  String get oemGuideSubtitle =>
+      'Some phones stop GPS when the screen turns off. Follow the steps for your phone brand to keep tracking on while on duty.';
+
   @override
   String get oemGuideDone => 'Got it';
+
   @override
   String get oemGuideXiaomiName => 'Xiaomi / Redmi / POCO (MIUI)';
+
   @override
-  String get oemGuideXiaomiStep1 => 'Settings → Apps → Manage apps → [this app] → Battery saver → No restrictions';
+  String get oemGuideXiaomiStep1 =>
+      'Settings → Apps → Manage apps → [this app] → Battery saver → No restrictions';
+
   @override
-  String get oemGuideXiaomiStep2 => 'Settings → Apps → Manage apps → [this app] → Autostart → turn ON';
+  String get oemGuideXiaomiStep2 =>
+      'Settings → Apps → Manage apps → [this app] → Autostart → turn ON';
+
   @override
-  String get oemGuideXiaomiStep3 => 'Settings → Battery & performance → App battery saver → find this app → No restrictions';
+  String get oemGuideXiaomiStep3 =>
+      'Settings → Battery & performance → App battery saver → find this app → No restrictions';
+
   @override
   String get oemGuideSamsungName => 'Samsung (One UI)';
+
   @override
-  String get oemGuideSamsungStep1 => 'Settings → Apps → [this app] → Battery → Unrestricted';
+  String get oemGuideSamsungStep1 =>
+      'Settings → Apps → [this app] → Battery → Unrestricted';
+
   @override
-  String get oemGuideSamsungStep2 => 'Settings → Device care → Battery → App power management → Sleeping apps → remove this app';
+  String get oemGuideSamsungStep2 =>
+      'Settings → Device care → Battery → App power management → Sleeping apps → remove this app';
+
   @override
-  String get oemGuideSamsungStep3 => 'Settings → Apps → [this app] → Mobile data → Allow background data usage';
+  String get oemGuideSamsungStep3 =>
+      'Settings → Apps → [this app] → Mobile data → Allow background data usage';
+
   @override
   String get oemGuideOppoName => 'Oppo / Realme (ColorOS)';
+
   @override
-  String get oemGuideOppoStep1 => 'Settings → Battery → App power saving → find this app → turn OFF';
+  String get oemGuideOppoStep1 =>
+      'Settings → Battery → App power saving → find this app → turn OFF';
+
   @override
-  String get oemGuideOppoStep2 => 'Settings → Apps → [this app] → Battery usage → Allow background activity';
+  String get oemGuideOppoStep2 =>
+      'Settings → Apps → [this app] → Battery usage → Allow background activity';
+
   @override
-  String get oemGuideOppoStep3 => 'Settings → Battery → More → App quick freeze → exclude this app';
+  String get oemGuideOppoStep3 =>
+      'Settings → Battery → More → App quick freeze → exclude this app';
+
   @override
   String get oemGuideVivoName => 'Vivo (Funtouch OS)';
+
   @override
-  String get oemGuideVivoStep1 => 'Settings → Battery → Background app power management → turn OFF for this app';
+  String get oemGuideVivoStep1 =>
+      'Settings → Battery → Background app power management → turn OFF for this app';
+
   @override
-  String get oemGuideVivoStep2 => 'iManager → App Management → [this app] → Background run → Allow';
+  String get oemGuideVivoStep2 =>
+      'iManager → App Management → [this app] → Background run → Allow';
+
   @override
-  String get oemGuideVivoStep3 => 'Settings → Apps → [this app] → Battery → Unrestricted';
+  String get oemGuideVivoStep3 =>
+      'Settings → Apps → [this app] → Battery → Unrestricted';
+
   @override
   String get oemGuideHuaweiName => 'Huawei / Honor (EMUI / MagicUI)';
+
   @override
-  String get oemGuideHuaweiStep1 => 'Phone Manager → Launch manager → find this app → Manage manually';
+  String get oemGuideHuaweiStep1 =>
+      'Phone Manager → Launch manager → find this app → Manage manually';
+
   @override
-  String get oemGuideHuaweiStep2 => 'Turn on Auto-launch, Secondary launch, and Run in background';
+  String get oemGuideHuaweiStep2 =>
+      'Turn on Auto-launch, Secondary launch, and Run in background';
+
   @override
-  String get oemGuideHuaweiStep3 => 'Settings → Battery → App launch → find this app → Manage manually → allow all three';
+  String get oemGuideHuaweiStep3 =>
+      'Settings → Battery → App launch → find this app → Manage manually → allow all three';
+
   @override
   String get oemGuideOneplusName => 'OnePlus / Nothing (OxygenOS)';
+
   @override
-  String get oemGuideOneplusStep1 => 'Settings → Apps → [this app] → Battery → Allow background activity';
+  String get oemGuideOneplusStep1 =>
+      'Settings → Apps → [this app] → Battery → Allow background activity';
+
   @override
-  String get oemGuideOneplusStep2 => 'Settings → Battery → Battery optimization → All apps → [this app] → Don\'t optimize';
+  String get oemGuideOneplusStep2 =>
+      'Settings → Battery → Battery optimization → All apps → [this app] → Don\'t optimize';
+
   @override
   String get oemGuideOtherName => 'Other Android phones';
+
   @override
-  String get oemGuideOtherStep1 => 'Settings → Apps → [this app] → Battery → Unrestricted (or Don\'t optimize)';
+  String get oemGuideOtherStep1 =>
+      'Settings → Apps → [this app] → Battery → Unrestricted (or Don\'t optimize)';
+
   @override
-  String get oemGuideOtherStep2 => 'Settings → Battery → Battery optimization → find this app → Don\'t optimize';
+  String get oemGuideOtherStep2 =>
+      'Settings → Battery → Battery optimization → find this app → Don\'t optimize';
 
   @override
   String visitSuggestTitle(String name) {
@@ -2366,6 +2470,29 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String scheduleLinePaidOn(String date) {
+    return 'Paid on $date';
+  }
+
+  @override
+  String scheduleDaysLate(String days) {
+    return '$days days late';
+  }
+
+  @override
+  String get scheduleMissed => 'Missed';
+
+  @override
+  String scheduleLinePayments(String seq) {
+    return 'Payments for installment $seq';
+  }
+
+  @override
+  String scheduleReceiptNo(String no) {
+    return 'Receipt $no';
+  }
+
+  @override
   String schedulePaidOf(String paid, String left) {
     return 'Paid $paid · left $left';
   }
@@ -2397,7 +2524,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get phoneAddTitle => 'Add phone numbers';
 
   @override
-  String get phoneAddHint => 'You can add several numbers at once. The ERP number stays as it is.';
+  String get phoneAddHint =>
+      'You can add several numbers at once. The ERP number stays as it is.';
 
   @override
   String phoneNumberN(String n) {
@@ -2419,7 +2547,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get phoneAnother => 'Another number';
 
   @override
-  String get phoneErrInvalid => 'Enter a Bangladesh mobile number (01XXXXXXXXX)';
+  String get phoneErrInvalid =>
+      'Enter a Bangladesh mobile number (01XXXXXXXXX)';
 
   @override
   String get phoneErrDuplicate => 'The customer already has this number';
@@ -2431,7 +2560,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get phoneErrEmpty => 'Type at least one number';
 
   @override
-  String get phoneKeptHere => 'These numbers stay in the field system. They are not sent to the ERP.';
+  String get phoneKeptHere =>
+      'These numbers stay in the field system. They are not sent to the ERP.';
 
   @override
   String get phoneSave => 'Save numbers';
@@ -2459,7 +2589,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get phoneRemoved => 'Number removed';
 
   @override
-  String get phoneRemoveOffline => 'Internet is needed to remove a number. Try again when online.';
+  String get phoneRemoveOffline =>
+      'Internet is needed to remove a number. Try again when online.';
 
   @override
   String get phoneRemoveNotAllowed => 'This number cannot be removed.';
@@ -2481,32 +2612,106 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String cashInHandInvoice(String no) {
-    return 'Invoice ${no}';
+    return 'Invoice $no';
   }
 
   @override
   String cashInHandPartOf(String amount) {
-    return 'left of ${amount}';
+    return 'left of $amount';
   }
 
   @override
   String cashInHandPendingDeposits(String amount) {
-    return '${amount} handed in, waiting to be verified';
+    return '$amount handed in, waiting to be verified';
   }
 
   @override
-  String get cashInHandUnsent => 'Some money on this phone has not reached the server yet; it is not in this list.';
+  String get cashInHandUnsent =>
+      'Some money on this phone has not reached the server yet; it is not in this list.';
 
   @override
   String get cashInHandEmpty => 'No cash on hand.';
 
   @override
   String cashInHandMore(String n) {
-    return '${n} older collections are not listed; the total above includes them.';
+    return '$n older collections are not listed; the total above includes them.';
   }
 
   @override
-  String get cashInHandHow => 'A deposit pays off your oldest collections first, so the cash on hand is your newest collections. Tap a line to open the customer.';
+  String get cashInHandHow =>
+      'A deposit pays off your oldest collections first, so the cash on hand is your newest collections. Tap a line to open the customer.';
+
+  @override
+  String get cashActionEdit => 'Change';
+
+  @override
+  String get cashActionDelete => 'Delete';
+
+  @override
+  String get cashEditTitle => 'Change this collection';
+
+  @override
+  String get cashEditAmount => 'Amount (৳)';
+
+  @override
+  String get cashEditNote => 'Note';
+
+  @override
+  String get cashEditPayer => 'Paid by';
+
+  @override
+  String get cashEditSave => 'Save';
+
+  @override
+  String get cashDeleteTitle => 'Delete this collection?';
+
+  @override
+  String cashDeleteBody(String amount, String customer) {
+    return '$amount from $customer will be removed from your cash in hand. The receipt number stays used and the line stays in the history as deleted.';
+  }
+
+  @override
+  String get cashDeleteReason => 'Reason (optional)';
+
+  @override
+  String get cashDeleteConfirm => 'Delete';
+
+  @override
+  String get cashActionDone => 'Done';
+
+  @override
+  String get cashActionOffline =>
+      'This needs internet. Try again when you are online.';
+
+  @override
+  String get cashActionCovered =>
+      'A deposit already covers this cash, so it cannot be changed. Ask the office.';
+
+  @override
+  String get cashActionNotEditable =>
+      'This collection is already with the ERP and cannot be changed here. Ask the office.';
+
+  @override
+  String get cashActionPosted =>
+      'This collection is already posted to the ERP. Ask the office.';
+
+  @override
+  String get cashActionBusy =>
+      'It is being sent to the ERP right now. Try again in a minute.';
+
+  @override
+  String get cashActionNotAllowed => 'You cannot change this collection.';
+
+  @override
+  String get cashActionFailed => 'Could not do it. Try again.';
+
+  @override
+  String collectionEditedWas(String amount) {
+    return 'edited · was $amount';
+  }
+
+  @override
+  String get collectionDeletedTag => 'deleted';
 
   @override
   String get cashInHandOffline => 'This list needs the internet';
@@ -2526,7 +2731,8 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get boardNotRankedMe => 'Nothing of yours is verified in this period yet.';
+  String get boardNotRankedMe =>
+      'Nothing of yours is verified in this period yet.';
 
   @override
   String boardCount(String n) {
@@ -2546,13 +2752,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get boardNoPosted => 'Nothing verified yet';
 
   @override
-  String get boardEmpty => 'Nobody has a verified collection in this period yet.';
+  String get boardEmpty =>
+      'Nobody has a verified collection in this period yet.';
 
   @override
-  String get boardFootnoteAll => 'Only collections the ERP has accepted are counted; money still waiting for the ERP is not. Every branch is on this board.';
+  String get boardFootnoteAll =>
+      'Only collections the ERP has accepted are counted; money still waiting for the ERP is not. Every branch is on this board.';
 
   @override
-  String get boardFootnoteBranch => 'Only collections the ERP has accepted are counted; money still waiting for the ERP is not. This board shows your branch.';
+  String get boardFootnoteBranch =>
+      'Only collections the ERP has accepted are counted; money still waiting for the ERP is not. This board shows your branch.';
 
   @override
   String get boardCrown => 'First place';
@@ -2564,7 +2773,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get alertsEmptyTitle => 'Nothing is waiting for you';
 
   @override
-  String get alertsEmptyBody => 'Promises due today, new tasks, co-work requests and notices from the office show here.';
+  String get alertsEmptyBody =>
+      'Promises due today, new tasks, co-work requests and notices from the office show here.';
 
   @override
   String alertPromiseToday(String amount) {
@@ -2585,7 +2795,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get alertNoticeUnread => 'Notice from the office, not read yet';
 
   @override
-  String get alertNoticeMustRead => 'Notice from the office: please confirm you read it';
+  String get alertNoticeMustRead =>
+      'Notice from the office: please confirm you read it';
 
   @override
   String get alertHandoverWaiting => 'Handover waiting for your answer';
@@ -2623,7 +2834,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String get workEmptyTitle => 'No work recorded on this day';
 
   @override
-  String get workEmptyBody => 'Visits, collections, promises, notes, pins, calls and finished tasks show here.';
+  String get workTabMine => 'My work';
+
+  @override
+  String get workTabTeam => 'Other staff';
+
+  @override
+  String get teamEmptyTitle => 'No work by other staff on this day';
+
+  @override
+  String get teamEmptyBody =>
+      'Visits, promises, collections and pins of your branch colleagues show here with their names.';
+
+  @override
+  String get alertsTeamSection => 'Other staff today';
+
+  @override
+  String get alertsTeamMore => 'See all';
+
+  @override
+  String get workEmptyBody =>
+      'Visits, collections, promises, notes, pins, calls and finished tasks show here.';
 
   @override
   String get workPrevDay => 'Previous day';
@@ -2723,6 +2954,31 @@ class AppLocalizationsEn extends AppLocalizations {
   String timelineCollector(String name) {
     return 'by $name';
   }
+
+  @override
+  String timelineVisitBy(String name) {
+    return 'visited by $name';
+  }
+
+  @override
+  String timelinePromiseBy(String name) {
+    return 'promise taken by $name';
+  }
+
+  @override
+  String timelinePinBy(String name) {
+    return 'pin set by $name';
+  }
+
+  @override
+  String get timelinePinSet => 'Customer pin set';
+
+  @override
+  String get timelinePinPending =>
+      'Customer pin proposed · waiting for approval';
+
+  @override
+  String get timelinePinRejected => 'Customer pin not approved';
 
   @override
   String get timelineAdvance => 'advance';

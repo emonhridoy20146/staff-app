@@ -2,12 +2,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../core/format/money.dart';
 import '../../../core/providers.dart';
 import '../../../core/settings/ui_prefs.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/ui/common.dart';
 import '../../../l10n/app_localizations.dart';
+import 'cash_actions.dart';
 import 'cash_in_hand_data.dart';
 
 /// "কোন আদায়ের টাকা হাতে আছে" (FR-M-049): the collections behind my cash on
@@ -95,7 +97,7 @@ class _CashInHandScreenState extends ConsumerState<CashInHandScreen> {
                   child: Column(children: [
                     for (var i = 0; i < d.items.length; i++) ...[
                       if (i > 0) const Divider(height: 1, indent: Space.s16, endIndent: Space.s16),
-                      _Tile(item: d.items[i], lang: lang),
+                      _Tile(item: d.items[i], lang: lang, onChanged: _load),
                     ],
                   ]),
                 ),
@@ -114,9 +116,10 @@ class _CashInHandScreenState extends ConsumerState<CashInHandScreen> {
 }
 
 class _Tile extends ConsumerWidget {
-  const _Tile({required this.item, required this.lang});
+  const _Tile({required this.item, required this.lang, required this.onChanged});
   final CashInHandItem item;
   final String lang;
+  final Future<void> Function() onChanged;
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l = AppLocalizations.of(context);
@@ -136,10 +139,99 @@ class _Tile extends ConsumerWidget {
         Text(lines.join(' · '), style: t.bodySmall!.copyWith(color: cs.onSurfaceVariant), maxLines: 1, overflow: TextOverflow.ellipsis),
         Text(item.receiptNo, style: AppTheme.tabular(t.bodySmall!).copyWith(color: cs.onSurfaceVariant), maxLines: 1, overflow: TextOverflow.ellipsis),
       ]),
-      trailing: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.end, mainAxisSize: MainAxisSize.min, children: [
-        Text(f.money(item.inHandPoisha), style: AppTheme.tabular(t.titleMedium!)),
-        if (item.partly) Text(l.cashInHandPartOf(f.money(item.amountPoisha)), style: t.bodySmall!.copyWith(color: cs.onSurfaceVariant)),
+      trailing: Row(mainAxisSize: MainAxisSize.min, children: [
+        Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.end, mainAxisSize: MainAxisSize.min, children: [
+          Text(f.money(item.inHandPoisha), style: AppTheme.tabular(t.titleMedium!)),
+          if (item.partly) Text(l.cashInHandPartOf(f.money(item.amountPoisha)), style: t.bodySmall!.copyWith(color: cs.onSurfaceVariant)),
+        ]),
+        // Until a deposit covers it, the cash can still be changed or deleted (FR-M-058).
+        if (!item.partly && item.collectionId.isNotEmpty)
+          PopupMenuButton<String>(
+            tooltip: '',
+            onSelected: (v) => v == 'edit' ? _edit(context, ref) : _delete(context, ref),
+            itemBuilder: (_) => [
+              PopupMenuItem(value: 'edit', child: ListTile(leading: const Icon(Icons.edit_rounded), title: Text(l.cashActionEdit), contentPadding: EdgeInsets.zero)),
+              PopupMenuItem(value: 'delete', child: ListTile(leading: const Icon(Icons.delete_outline_rounded), title: Text(l.cashActionDelete), contentPadding: EdgeInsets.zero)),
+            ],
+          ),
       ]),
     );
+  }
+
+  void _say(BuildContext context, CashActionError? e) {
+    final l = AppLocalizations.of(context);
+    if (e == null) return showAppSnack(context, l.cashActionDone, icon: Icons.check_circle_rounded);
+    final text = switch (e) {
+      CashActionError.offline => l.cashActionOffline,
+      CashActionError.covered => l.cashActionCovered,
+      CashActionError.notEditable => l.cashActionNotEditable,
+      CashActionError.posted => l.cashActionPosted,
+      CashActionError.busy => l.cashActionBusy,
+      CashActionError.notAllowed => l.cashActionNotAllowed,
+      CashActionError.failed => l.cashActionFailed,
+    };
+    showAppSnack(context, text, icon: Icons.error_outline_rounded);
+  }
+
+  Future<void> _edit(BuildContext context, WidgetRef ref) async {
+    final l = AppLocalizations.of(context);
+    final amount = TextEditingController(text: item.amountPoisha % 100 == 0 ? '${item.amountPoisha ~/ 100}' : (item.amountPoisha / 100).toStringAsFixed(2));
+    final note = TextEditingController();
+    final payer = TextEditingController();
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (c) => AlertDialog(
+        title: Text(l.cashEditTitle),
+        content: SingleChildScrollView(
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            TextField(controller: amount, keyboardType: const TextInputType.numberWithOptions(decimal: true), decoration: InputDecoration(labelText: l.cashEditAmount)),
+            const SizedBox(height: Space.s12),
+            TextField(controller: payer, decoration: InputDecoration(labelText: l.cashEditPayer)),
+            const SizedBox(height: Space.s12),
+            TextField(controller: note, decoration: InputDecoration(labelText: l.cashEditNote)),
+          ]),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(c, false), child: Text(l.actionCancel)),
+          FilledButton(onPressed: () => Navigator.pop(c, true), child: Text(l.cashEditSave)),
+        ],
+      ),
+    );
+    if (ok != true || !context.mounted) return;
+    final poisha = parseMoneyInput(amount.text);
+    final changed = poisha != null && poisha > 0 && poisha != item.amountPoisha ? poisha : null;
+    final n = note.text.trim().isEmpty ? null : note.text.trim();
+    final p = payer.text.trim().isEmpty ? null : payer.text.trim();
+    if (changed == null && n == null && p == null) return;
+    final err = await ref.read(cashActionsServiceProvider).edit(item.collectionId, customerId: item.customerId ?? '', oldAmountPoisha: item.amountPoisha, amountPoisha: changed, note: n, payerName: p);
+    if (!context.mounted) return;
+    _say(context, err);
+    if (err == null) await onChanged();
+  }
+
+  Future<void> _delete(BuildContext context, WidgetRef ref) async {
+    final l = AppLocalizations.of(context);
+    final f = ref.read(fmtProvider);
+    final reason = TextEditingController();
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (c) => AlertDialog(
+        title: Text(l.cashDeleteTitle),
+        content: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(l.cashDeleteBody(f.money(item.amountPoisha), item.nameOf(lang))),
+          const SizedBox(height: Space.s12),
+          TextField(controller: reason, decoration: InputDecoration(labelText: l.cashDeleteReason)),
+        ]),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(c, false), child: Text(l.actionCancel)),
+          FilledButton(style: FilledButton.styleFrom(backgroundColor: Theme.of(c).colorScheme.error, foregroundColor: Theme.of(c).colorScheme.onError), onPressed: () => Navigator.pop(c, true), child: Text(l.cashDeleteConfirm)),
+        ],
+      ),
+    );
+    if (ok != true || !context.mounted) return;
+    final err = await ref.read(cashActionsServiceProvider).withdraw(item.collectionId, customerId: item.customerId ?? '', amountPoisha: item.amountPoisha, reason: reason.text.trim().isEmpty ? null : reason.text.trim());
+    if (!context.mounted) return;
+    _say(context, err);
+    if (err == null) await onChanged();
   }
 }

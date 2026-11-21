@@ -3539,6 +3539,51 @@ class $ScheduleLinesTable extends ScheduleLines
     ),
     defaultValue: const Constant(false),
   );
+  static const VerificationMeta _paidOnMeta = const VerificationMeta('paidOn');
+  @override
+  late final GeneratedColumn<String> paidOn = GeneratedColumn<String>(
+    'paid_on',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _daysLateMeta = const VerificationMeta(
+    'daysLate',
+  );
+  @override
+  late final GeneratedColumn<int> daysLate = GeneratedColumn<int>(
+    'days_late',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _missedMeta = const VerificationMeta('missed');
+  @override
+  late final GeneratedColumn<bool> missed = GeneratedColumn<bool>(
+    'missed',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("missed" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _paymentsJsonMeta = const VerificationMeta(
+    'paymentsJson',
+  );
+  @override
+  late final GeneratedColumn<String> paymentsJson = GeneratedColumn<String>(
+    'payments_json',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     erpPlanId,
@@ -3550,6 +3595,10 @@ class $ScheduleLinesTable extends ScheduleLines
     estimated,
     lateFeePoisha,
     rolled,
+    paidOn,
+    daysLate,
+    missed,
+    paymentsJson,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -3635,6 +3684,33 @@ class $ScheduleLinesTable extends ScheduleLines
         rolled.isAcceptableOrUnknown(data['rolled']!, _rolledMeta),
       );
     }
+    if (data.containsKey('paid_on')) {
+      context.handle(
+        _paidOnMeta,
+        paidOn.isAcceptableOrUnknown(data['paid_on']!, _paidOnMeta),
+      );
+    }
+    if (data.containsKey('days_late')) {
+      context.handle(
+        _daysLateMeta,
+        daysLate.isAcceptableOrUnknown(data['days_late']!, _daysLateMeta),
+      );
+    }
+    if (data.containsKey('missed')) {
+      context.handle(
+        _missedMeta,
+        missed.isAcceptableOrUnknown(data['missed']!, _missedMeta),
+      );
+    }
+    if (data.containsKey('payments_json')) {
+      context.handle(
+        _paymentsJsonMeta,
+        paymentsJson.isAcceptableOrUnknown(
+          data['payments_json']!,
+          _paymentsJsonMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -3680,6 +3756,22 @@ class $ScheduleLinesTable extends ScheduleLines
         DriftSqlType.bool,
         data['${effectivePrefix}rolled'],
       )!,
+      paidOn: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}paid_on'],
+      ),
+      daysLate: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}days_late'],
+      )!,
+      missed: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}missed'],
+      )!,
+      paymentsJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}payments_json'],
+      ),
     );
   }
 
@@ -3699,6 +3791,12 @@ class ScheduleLineRow extends DataClass implements Insertable<ScheduleLineRow> {
   final bool estimated;
   final int lateFeePoisha;
   final bool rolled;
+  final String? paidOn;
+  final int daysLate;
+  final bool missed;
+
+  /// [{"id","date","amountPoisha","receiptNo"}] — ERP payments that went to this line, oldest first.
+  final String? paymentsJson;
   const ScheduleLineRow({
     required this.erpPlanId,
     required this.seq,
@@ -3709,6 +3807,10 @@ class ScheduleLineRow extends DataClass implements Insertable<ScheduleLineRow> {
     required this.estimated,
     required this.lateFeePoisha,
     required this.rolled,
+    this.paidOn,
+    required this.daysLate,
+    required this.missed,
+    this.paymentsJson,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -3722,6 +3824,14 @@ class ScheduleLineRow extends DataClass implements Insertable<ScheduleLineRow> {
     map['estimated'] = Variable<bool>(estimated);
     map['late_fee_poisha'] = Variable<int>(lateFeePoisha);
     map['rolled'] = Variable<bool>(rolled);
+    if (!nullToAbsent || paidOn != null) {
+      map['paid_on'] = Variable<String>(paidOn);
+    }
+    map['days_late'] = Variable<int>(daysLate);
+    map['missed'] = Variable<bool>(missed);
+    if (!nullToAbsent || paymentsJson != null) {
+      map['payments_json'] = Variable<String>(paymentsJson);
+    }
     return map;
   }
 
@@ -3736,6 +3846,14 @@ class ScheduleLineRow extends DataClass implements Insertable<ScheduleLineRow> {
       estimated: Value(estimated),
       lateFeePoisha: Value(lateFeePoisha),
       rolled: Value(rolled),
+      paidOn: paidOn == null && nullToAbsent
+          ? const Value.absent()
+          : Value(paidOn),
+      daysLate: Value(daysLate),
+      missed: Value(missed),
+      paymentsJson: paymentsJson == null && nullToAbsent
+          ? const Value.absent()
+          : Value(paymentsJson),
     );
   }
 
@@ -3754,6 +3872,10 @@ class ScheduleLineRow extends DataClass implements Insertable<ScheduleLineRow> {
       estimated: serializer.fromJson<bool>(json['estimated']),
       lateFeePoisha: serializer.fromJson<int>(json['lateFeePoisha']),
       rolled: serializer.fromJson<bool>(json['rolled']),
+      paidOn: serializer.fromJson<String?>(json['paidOn']),
+      daysLate: serializer.fromJson<int>(json['daysLate']),
+      missed: serializer.fromJson<bool>(json['missed']),
+      paymentsJson: serializer.fromJson<String?>(json['paymentsJson']),
     );
   }
   @override
@@ -3769,6 +3891,10 @@ class ScheduleLineRow extends DataClass implements Insertable<ScheduleLineRow> {
       'estimated': serializer.toJson<bool>(estimated),
       'lateFeePoisha': serializer.toJson<int>(lateFeePoisha),
       'rolled': serializer.toJson<bool>(rolled),
+      'paidOn': serializer.toJson<String?>(paidOn),
+      'daysLate': serializer.toJson<int>(daysLate),
+      'missed': serializer.toJson<bool>(missed),
+      'paymentsJson': serializer.toJson<String?>(paymentsJson),
     };
   }
 
@@ -3782,6 +3908,10 @@ class ScheduleLineRow extends DataClass implements Insertable<ScheduleLineRow> {
     bool? estimated,
     int? lateFeePoisha,
     bool? rolled,
+    Value<String?> paidOn = const Value.absent(),
+    int? daysLate,
+    bool? missed,
+    Value<String?> paymentsJson = const Value.absent(),
   }) => ScheduleLineRow(
     erpPlanId: erpPlanId ?? this.erpPlanId,
     seq: seq ?? this.seq,
@@ -3792,6 +3922,10 @@ class ScheduleLineRow extends DataClass implements Insertable<ScheduleLineRow> {
     estimated: estimated ?? this.estimated,
     lateFeePoisha: lateFeePoisha ?? this.lateFeePoisha,
     rolled: rolled ?? this.rolled,
+    paidOn: paidOn.present ? paidOn.value : this.paidOn,
+    daysLate: daysLate ?? this.daysLate,
+    missed: missed ?? this.missed,
+    paymentsJson: paymentsJson.present ? paymentsJson.value : this.paymentsJson,
   );
   ScheduleLineRow copyWithCompanion(ScheduleLinesCompanion data) {
     return ScheduleLineRow(
@@ -3810,6 +3944,12 @@ class ScheduleLineRow extends DataClass implements Insertable<ScheduleLineRow> {
           ? data.lateFeePoisha.value
           : this.lateFeePoisha,
       rolled: data.rolled.present ? data.rolled.value : this.rolled,
+      paidOn: data.paidOn.present ? data.paidOn.value : this.paidOn,
+      daysLate: data.daysLate.present ? data.daysLate.value : this.daysLate,
+      missed: data.missed.present ? data.missed.value : this.missed,
+      paymentsJson: data.paymentsJson.present
+          ? data.paymentsJson.value
+          : this.paymentsJson,
     );
   }
 
@@ -3824,7 +3964,11 @@ class ScheduleLineRow extends DataClass implements Insertable<ScheduleLineRow> {
           ..write('status: $status, ')
           ..write('estimated: $estimated, ')
           ..write('lateFeePoisha: $lateFeePoisha, ')
-          ..write('rolled: $rolled')
+          ..write('rolled: $rolled, ')
+          ..write('paidOn: $paidOn, ')
+          ..write('daysLate: $daysLate, ')
+          ..write('missed: $missed, ')
+          ..write('paymentsJson: $paymentsJson')
           ..write(')'))
         .toString();
   }
@@ -3840,6 +3984,10 @@ class ScheduleLineRow extends DataClass implements Insertable<ScheduleLineRow> {
     estimated,
     lateFeePoisha,
     rolled,
+    paidOn,
+    daysLate,
+    missed,
+    paymentsJson,
   );
   @override
   bool operator ==(Object other) =>
@@ -3853,7 +4001,11 @@ class ScheduleLineRow extends DataClass implements Insertable<ScheduleLineRow> {
           other.status == this.status &&
           other.estimated == this.estimated &&
           other.lateFeePoisha == this.lateFeePoisha &&
-          other.rolled == this.rolled);
+          other.rolled == this.rolled &&
+          other.paidOn == this.paidOn &&
+          other.daysLate == this.daysLate &&
+          other.missed == this.missed &&
+          other.paymentsJson == this.paymentsJson);
 }
 
 class ScheduleLinesCompanion extends UpdateCompanion<ScheduleLineRow> {
@@ -3866,6 +4018,10 @@ class ScheduleLinesCompanion extends UpdateCompanion<ScheduleLineRow> {
   final Value<bool> estimated;
   final Value<int> lateFeePoisha;
   final Value<bool> rolled;
+  final Value<String?> paidOn;
+  final Value<int> daysLate;
+  final Value<bool> missed;
+  final Value<String?> paymentsJson;
   final Value<int> rowid;
   const ScheduleLinesCompanion({
     this.erpPlanId = const Value.absent(),
@@ -3877,6 +4033,10 @@ class ScheduleLinesCompanion extends UpdateCompanion<ScheduleLineRow> {
     this.estimated = const Value.absent(),
     this.lateFeePoisha = const Value.absent(),
     this.rolled = const Value.absent(),
+    this.paidOn = const Value.absent(),
+    this.daysLate = const Value.absent(),
+    this.missed = const Value.absent(),
+    this.paymentsJson = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   ScheduleLinesCompanion.insert({
@@ -3889,6 +4049,10 @@ class ScheduleLinesCompanion extends UpdateCompanion<ScheduleLineRow> {
     this.estimated = const Value.absent(),
     this.lateFeePoisha = const Value.absent(),
     this.rolled = const Value.absent(),
+    this.paidOn = const Value.absent(),
+    this.daysLate = const Value.absent(),
+    this.missed = const Value.absent(),
+    this.paymentsJson = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : erpPlanId = Value(erpPlanId),
        seq = Value(seq),
@@ -3906,6 +4070,10 @@ class ScheduleLinesCompanion extends UpdateCompanion<ScheduleLineRow> {
     Expression<bool>? estimated,
     Expression<int>? lateFeePoisha,
     Expression<bool>? rolled,
+    Expression<String>? paidOn,
+    Expression<int>? daysLate,
+    Expression<bool>? missed,
+    Expression<String>? paymentsJson,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -3918,6 +4086,10 @@ class ScheduleLinesCompanion extends UpdateCompanion<ScheduleLineRow> {
       if (estimated != null) 'estimated': estimated,
       if (lateFeePoisha != null) 'late_fee_poisha': lateFeePoisha,
       if (rolled != null) 'rolled': rolled,
+      if (paidOn != null) 'paid_on': paidOn,
+      if (daysLate != null) 'days_late': daysLate,
+      if (missed != null) 'missed': missed,
+      if (paymentsJson != null) 'payments_json': paymentsJson,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -3932,6 +4104,10 @@ class ScheduleLinesCompanion extends UpdateCompanion<ScheduleLineRow> {
     Value<bool>? estimated,
     Value<int>? lateFeePoisha,
     Value<bool>? rolled,
+    Value<String?>? paidOn,
+    Value<int>? daysLate,
+    Value<bool>? missed,
+    Value<String?>? paymentsJson,
     Value<int>? rowid,
   }) {
     return ScheduleLinesCompanion(
@@ -3944,6 +4120,10 @@ class ScheduleLinesCompanion extends UpdateCompanion<ScheduleLineRow> {
       estimated: estimated ?? this.estimated,
       lateFeePoisha: lateFeePoisha ?? this.lateFeePoisha,
       rolled: rolled ?? this.rolled,
+      paidOn: paidOn ?? this.paidOn,
+      daysLate: daysLate ?? this.daysLate,
+      missed: missed ?? this.missed,
+      paymentsJson: paymentsJson ?? this.paymentsJson,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -3978,6 +4158,18 @@ class ScheduleLinesCompanion extends UpdateCompanion<ScheduleLineRow> {
     if (rolled.present) {
       map['rolled'] = Variable<bool>(rolled.value);
     }
+    if (paidOn.present) {
+      map['paid_on'] = Variable<String>(paidOn.value);
+    }
+    if (daysLate.present) {
+      map['days_late'] = Variable<int>(daysLate.value);
+    }
+    if (missed.present) {
+      map['missed'] = Variable<bool>(missed.value);
+    }
+    if (paymentsJson.present) {
+      map['payments_json'] = Variable<String>(paymentsJson.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -3996,6 +4188,10 @@ class ScheduleLinesCompanion extends UpdateCompanion<ScheduleLineRow> {
           ..write('estimated: $estimated, ')
           ..write('lateFeePoisha: $lateFeePoisha, ')
           ..write('rolled: $rolled, ')
+          ..write('paidOn: $paidOn, ')
+          ..write('daysLate: $daysLate, ')
+          ..write('missed: $missed, ')
+          ..write('paymentsJson: $paymentsJson, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -5779,6 +5975,49 @@ class $CollectionsTable extends Collections
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _previousAmountPoishaMeta =
+      const VerificationMeta('previousAmountPoisha');
+  @override
+  late final GeneratedColumn<int> previousAmountPoisha = GeneratedColumn<int>(
+    'previous_amount_poisha',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _voidedKindMeta = const VerificationMeta(
+    'voidedKind',
+  );
+  @override
+  late final GeneratedColumn<String> voidedKind = GeneratedColumn<String>(
+    'voided_kind',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _voidedByNameMeta = const VerificationMeta(
+    'voidedByName',
+  );
+  @override
+  late final GeneratedColumn<String> voidedByName = GeneratedColumn<String>(
+    'voided_by_name',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _voidedReasonMeta = const VerificationMeta(
+    'voidedReason',
+  );
+  @override
+  late final GeneratedColumn<String> voidedReason = GeneratedColumn<String>(
+    'voided_reason',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _conflictCodeMeta = const VerificationMeta(
     'conflictCode',
   );
@@ -5862,6 +6101,10 @@ class $CollectionsTable extends Collections
     photoMediaClientId,
     status,
     erpReceiptNo,
+    previousAmountPoisha,
+    voidedKind,
+    voidedByName,
+    voidedReason,
     conflictCode,
     conflictMessage,
     resolutionText,
@@ -6071,6 +6314,39 @@ class $CollectionsTable extends Collections
         ),
       );
     }
+    if (data.containsKey('previous_amount_poisha')) {
+      context.handle(
+        _previousAmountPoishaMeta,
+        previousAmountPoisha.isAcceptableOrUnknown(
+          data['previous_amount_poisha']!,
+          _previousAmountPoishaMeta,
+        ),
+      );
+    }
+    if (data.containsKey('voided_kind')) {
+      context.handle(
+        _voidedKindMeta,
+        voidedKind.isAcceptableOrUnknown(data['voided_kind']!, _voidedKindMeta),
+      );
+    }
+    if (data.containsKey('voided_by_name')) {
+      context.handle(
+        _voidedByNameMeta,
+        voidedByName.isAcceptableOrUnknown(
+          data['voided_by_name']!,
+          _voidedByNameMeta,
+        ),
+      );
+    }
+    if (data.containsKey('voided_reason')) {
+      context.handle(
+        _voidedReasonMeta,
+        voidedReason.isAcceptableOrUnknown(
+          data['voided_reason']!,
+          _voidedReasonMeta,
+        ),
+      );
+    }
     if (data.containsKey('conflict_code')) {
       context.handle(
         _conflictCodeMeta,
@@ -6215,6 +6491,22 @@ class $CollectionsTable extends Collections
         DriftSqlType.string,
         data['${effectivePrefix}erp_receipt_no'],
       ),
+      previousAmountPoisha: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}previous_amount_poisha'],
+      ),
+      voidedKind: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}voided_kind'],
+      ),
+      voidedByName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}voided_by_name'],
+      ),
+      voidedReason: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}voided_reason'],
+      ),
       conflictCode: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}conflict_code'],
@@ -6272,6 +6564,14 @@ class CollectionRow extends DataClass implements Insertable<CollectionRow> {
   /// resolved_posted | resolved_refund | resolved_voided | voided | rejected
   final String status;
   final String? erpReceiptNo;
+
+  /// The amount before the first edit (v12, contract 1.33.0); null = never edited.
+  final int? previousAmountPoisha;
+
+  /// Who voided it (v12, contract 1.33.0): `withdrawn` (the collector) or `admin` (the office); null = not voided.
+  final String? voidedKind;
+  final String? voidedByName;
+  final String? voidedReason;
   final String? conflictCode;
   final String? conflictMessage;
   final String? resolutionText;
@@ -6302,6 +6602,10 @@ class CollectionRow extends DataClass implements Insertable<CollectionRow> {
     this.photoMediaClientId,
     required this.status,
     this.erpReceiptNo,
+    this.previousAmountPoisha,
+    this.voidedKind,
+    this.voidedByName,
+    this.voidedReason,
     this.conflictCode,
     this.conflictMessage,
     this.resolutionText,
@@ -6358,6 +6662,18 @@ class CollectionRow extends DataClass implements Insertable<CollectionRow> {
     map['status'] = Variable<String>(status);
     if (!nullToAbsent || erpReceiptNo != null) {
       map['erp_receipt_no'] = Variable<String>(erpReceiptNo);
+    }
+    if (!nullToAbsent || previousAmountPoisha != null) {
+      map['previous_amount_poisha'] = Variable<int>(previousAmountPoisha);
+    }
+    if (!nullToAbsent || voidedKind != null) {
+      map['voided_kind'] = Variable<String>(voidedKind);
+    }
+    if (!nullToAbsent || voidedByName != null) {
+      map['voided_by_name'] = Variable<String>(voidedByName);
+    }
+    if (!nullToAbsent || voidedReason != null) {
+      map['voided_reason'] = Variable<String>(voidedReason);
     }
     if (!nullToAbsent || conflictCode != null) {
       map['conflict_code'] = Variable<String>(conflictCode);
@@ -6417,6 +6733,18 @@ class CollectionRow extends DataClass implements Insertable<CollectionRow> {
       erpReceiptNo: erpReceiptNo == null && nullToAbsent
           ? const Value.absent()
           : Value(erpReceiptNo),
+      previousAmountPoisha: previousAmountPoisha == null && nullToAbsent
+          ? const Value.absent()
+          : Value(previousAmountPoisha),
+      voidedKind: voidedKind == null && nullToAbsent
+          ? const Value.absent()
+          : Value(voidedKind),
+      voidedByName: voidedByName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(voidedByName),
+      voidedReason: voidedReason == null && nullToAbsent
+          ? const Value.absent()
+          : Value(voidedReason),
       conflictCode: conflictCode == null && nullToAbsent
           ? const Value.absent()
           : Value(conflictCode),
@@ -6465,6 +6793,12 @@ class CollectionRow extends DataClass implements Insertable<CollectionRow> {
       ),
       status: serializer.fromJson<String>(json['status']),
       erpReceiptNo: serializer.fromJson<String?>(json['erpReceiptNo']),
+      previousAmountPoisha: serializer.fromJson<int?>(
+        json['previousAmountPoisha'],
+      ),
+      voidedKind: serializer.fromJson<String?>(json['voidedKind']),
+      voidedByName: serializer.fromJson<String?>(json['voidedByName']),
+      voidedReason: serializer.fromJson<String?>(json['voidedReason']),
       conflictCode: serializer.fromJson<String?>(json['conflictCode']),
       conflictMessage: serializer.fromJson<String?>(json['conflictMessage']),
       resolutionText: serializer.fromJson<String?>(json['resolutionText']),
@@ -6500,6 +6834,10 @@ class CollectionRow extends DataClass implements Insertable<CollectionRow> {
       'photoMediaClientId': serializer.toJson<String?>(photoMediaClientId),
       'status': serializer.toJson<String>(status),
       'erpReceiptNo': serializer.toJson<String?>(erpReceiptNo),
+      'previousAmountPoisha': serializer.toJson<int?>(previousAmountPoisha),
+      'voidedKind': serializer.toJson<String?>(voidedKind),
+      'voidedByName': serializer.toJson<String?>(voidedByName),
+      'voidedReason': serializer.toJson<String?>(voidedReason),
       'conflictCode': serializer.toJson<String?>(conflictCode),
       'conflictMessage': serializer.toJson<String?>(conflictMessage),
       'resolutionText': serializer.toJson<String?>(resolutionText),
@@ -6533,6 +6871,10 @@ class CollectionRow extends DataClass implements Insertable<CollectionRow> {
     Value<String?> photoMediaClientId = const Value.absent(),
     String? status,
     Value<String?> erpReceiptNo = const Value.absent(),
+    Value<int?> previousAmountPoisha = const Value.absent(),
+    Value<String?> voidedKind = const Value.absent(),
+    Value<String?> voidedByName = const Value.absent(),
+    Value<String?> voidedReason = const Value.absent(),
     Value<String?> conflictCode = const Value.absent(),
     Value<String?> conflictMessage = const Value.absent(),
     Value<String?> resolutionText = const Value.absent(),
@@ -6571,6 +6913,12 @@ class CollectionRow extends DataClass implements Insertable<CollectionRow> {
         : this.photoMediaClientId,
     status: status ?? this.status,
     erpReceiptNo: erpReceiptNo.present ? erpReceiptNo.value : this.erpReceiptNo,
+    previousAmountPoisha: previousAmountPoisha.present
+        ? previousAmountPoisha.value
+        : this.previousAmountPoisha,
+    voidedKind: voidedKind.present ? voidedKind.value : this.voidedKind,
+    voidedByName: voidedByName.present ? voidedByName.value : this.voidedByName,
+    voidedReason: voidedReason.present ? voidedReason.value : this.voidedReason,
     conflictCode: conflictCode.present ? conflictCode.value : this.conflictCode,
     conflictMessage: conflictMessage.present
         ? conflictMessage.value
@@ -6631,6 +6979,18 @@ class CollectionRow extends DataClass implements Insertable<CollectionRow> {
       erpReceiptNo: data.erpReceiptNo.present
           ? data.erpReceiptNo.value
           : this.erpReceiptNo,
+      previousAmountPoisha: data.previousAmountPoisha.present
+          ? data.previousAmountPoisha.value
+          : this.previousAmountPoisha,
+      voidedKind: data.voidedKind.present
+          ? data.voidedKind.value
+          : this.voidedKind,
+      voidedByName: data.voidedByName.present
+          ? data.voidedByName.value
+          : this.voidedByName,
+      voidedReason: data.voidedReason.present
+          ? data.voidedReason.value
+          : this.voidedReason,
       conflictCode: data.conflictCode.present
           ? data.conflictCode.value
           : this.conflictCode,
@@ -6672,6 +7032,10 @@ class CollectionRow extends DataClass implements Insertable<CollectionRow> {
           ..write('photoMediaClientId: $photoMediaClientId, ')
           ..write('status: $status, ')
           ..write('erpReceiptNo: $erpReceiptNo, ')
+          ..write('previousAmountPoisha: $previousAmountPoisha, ')
+          ..write('voidedKind: $voidedKind, ')
+          ..write('voidedByName: $voidedByName, ')
+          ..write('voidedReason: $voidedReason, ')
           ..write('conflictCode: $conflictCode, ')
           ..write('conflictMessage: $conflictMessage, ')
           ..write('resolutionText: $resolutionText, ')
@@ -6707,6 +7071,10 @@ class CollectionRow extends DataClass implements Insertable<CollectionRow> {
     photoMediaClientId,
     status,
     erpReceiptNo,
+    previousAmountPoisha,
+    voidedKind,
+    voidedByName,
+    voidedReason,
     conflictCode,
     conflictMessage,
     resolutionText,
@@ -6741,6 +7109,10 @@ class CollectionRow extends DataClass implements Insertable<CollectionRow> {
           other.photoMediaClientId == this.photoMediaClientId &&
           other.status == this.status &&
           other.erpReceiptNo == this.erpReceiptNo &&
+          other.previousAmountPoisha == this.previousAmountPoisha &&
+          other.voidedKind == this.voidedKind &&
+          other.voidedByName == this.voidedByName &&
+          other.voidedReason == this.voidedReason &&
           other.conflictCode == this.conflictCode &&
           other.conflictMessage == this.conflictMessage &&
           other.resolutionText == this.resolutionText &&
@@ -6773,6 +7145,10 @@ class CollectionsCompanion extends UpdateCompanion<CollectionRow> {
   final Value<String?> photoMediaClientId;
   final Value<String> status;
   final Value<String?> erpReceiptNo;
+  final Value<int?> previousAmountPoisha;
+  final Value<String?> voidedKind;
+  final Value<String?> voidedByName;
+  final Value<String?> voidedReason;
   final Value<String?> conflictCode;
   final Value<String?> conflictMessage;
   final Value<String?> resolutionText;
@@ -6804,6 +7180,10 @@ class CollectionsCompanion extends UpdateCompanion<CollectionRow> {
     this.photoMediaClientId = const Value.absent(),
     this.status = const Value.absent(),
     this.erpReceiptNo = const Value.absent(),
+    this.previousAmountPoisha = const Value.absent(),
+    this.voidedKind = const Value.absent(),
+    this.voidedByName = const Value.absent(),
+    this.voidedReason = const Value.absent(),
     this.conflictCode = const Value.absent(),
     this.conflictMessage = const Value.absent(),
     this.resolutionText = const Value.absent(),
@@ -6836,6 +7216,10 @@ class CollectionsCompanion extends UpdateCompanion<CollectionRow> {
     this.photoMediaClientId = const Value.absent(),
     this.status = const Value.absent(),
     this.erpReceiptNo = const Value.absent(),
+    this.previousAmountPoisha = const Value.absent(),
+    this.voidedKind = const Value.absent(),
+    this.voidedByName = const Value.absent(),
+    this.voidedReason = const Value.absent(),
     this.conflictCode = const Value.absent(),
     this.conflictMessage = const Value.absent(),
     this.resolutionText = const Value.absent(),
@@ -6877,6 +7261,10 @@ class CollectionsCompanion extends UpdateCompanion<CollectionRow> {
     Expression<String>? photoMediaClientId,
     Expression<String>? status,
     Expression<String>? erpReceiptNo,
+    Expression<int>? previousAmountPoisha,
+    Expression<String>? voidedKind,
+    Expression<String>? voidedByName,
+    Expression<String>? voidedReason,
     Expression<String>? conflictCode,
     Expression<String>? conflictMessage,
     Expression<String>? resolutionText,
@@ -6910,6 +7298,11 @@ class CollectionsCompanion extends UpdateCompanion<CollectionRow> {
         'photo_media_client_id': photoMediaClientId,
       if (status != null) 'status': status,
       if (erpReceiptNo != null) 'erp_receipt_no': erpReceiptNo,
+      if (previousAmountPoisha != null)
+        'previous_amount_poisha': previousAmountPoisha,
+      if (voidedKind != null) 'voided_kind': voidedKind,
+      if (voidedByName != null) 'voided_by_name': voidedByName,
+      if (voidedReason != null) 'voided_reason': voidedReason,
       if (conflictCode != null) 'conflict_code': conflictCode,
       if (conflictMessage != null) 'conflict_message': conflictMessage,
       if (resolutionText != null) 'resolution_text': resolutionText,
@@ -6944,6 +7337,10 @@ class CollectionsCompanion extends UpdateCompanion<CollectionRow> {
     Value<String?>? photoMediaClientId,
     Value<String>? status,
     Value<String?>? erpReceiptNo,
+    Value<int?>? previousAmountPoisha,
+    Value<String?>? voidedKind,
+    Value<String?>? voidedByName,
+    Value<String?>? voidedReason,
     Value<String?>? conflictCode,
     Value<String?>? conflictMessage,
     Value<String?>? resolutionText,
@@ -6976,6 +7373,10 @@ class CollectionsCompanion extends UpdateCompanion<CollectionRow> {
       photoMediaClientId: photoMediaClientId ?? this.photoMediaClientId,
       status: status ?? this.status,
       erpReceiptNo: erpReceiptNo ?? this.erpReceiptNo,
+      previousAmountPoisha: previousAmountPoisha ?? this.previousAmountPoisha,
+      voidedKind: voidedKind ?? this.voidedKind,
+      voidedByName: voidedByName ?? this.voidedByName,
+      voidedReason: voidedReason ?? this.voidedReason,
       conflictCode: conflictCode ?? this.conflictCode,
       conflictMessage: conflictMessage ?? this.conflictMessage,
       resolutionText: resolutionText ?? this.resolutionText,
@@ -7060,6 +7461,18 @@ class CollectionsCompanion extends UpdateCompanion<CollectionRow> {
     if (erpReceiptNo.present) {
       map['erp_receipt_no'] = Variable<String>(erpReceiptNo.value);
     }
+    if (previousAmountPoisha.present) {
+      map['previous_amount_poisha'] = Variable<int>(previousAmountPoisha.value);
+    }
+    if (voidedKind.present) {
+      map['voided_kind'] = Variable<String>(voidedKind.value);
+    }
+    if (voidedByName.present) {
+      map['voided_by_name'] = Variable<String>(voidedByName.value);
+    }
+    if (voidedReason.present) {
+      map['voided_reason'] = Variable<String>(voidedReason.value);
+    }
     if (conflictCode.present) {
       map['conflict_code'] = Variable<String>(conflictCode.value);
     }
@@ -7108,6 +7521,10 @@ class CollectionsCompanion extends UpdateCompanion<CollectionRow> {
           ..write('photoMediaClientId: $photoMediaClientId, ')
           ..write('status: $status, ')
           ..write('erpReceiptNo: $erpReceiptNo, ')
+          ..write('previousAmountPoisha: $previousAmountPoisha, ')
+          ..write('voidedKind: $voidedKind, ')
+          ..write('voidedByName: $voidedByName, ')
+          ..write('voidedReason: $voidedReason, ')
           ..write('conflictCode: $conflictCode, ')
           ..write('conflictMessage: $conflictMessage, ')
           ..write('resolutionText: $resolutionText, ')
@@ -10992,6 +11409,17 @@ class $PromisesTable extends Promises
     ),
     defaultValue: const Constant(false),
   );
+  static const VerificationMeta _createdByNameMeta = const VerificationMeta(
+    'createdByName',
+  );
+  @override
+  late final GeneratedColumn<String> createdByName = GeneratedColumn<String>(
+    'created_by_name',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     clientId,
@@ -11006,6 +11434,7 @@ class $PromisesTable extends Promises
     createdAt,
     syncState,
     reminderScheduled,
+    createdByName,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -11113,6 +11542,15 @@ class $PromisesTable extends Promises
         ),
       );
     }
+    if (data.containsKey('created_by_name')) {
+      context.handle(
+        _createdByNameMeta,
+        createdByName.isAcceptableOrUnknown(
+          data['created_by_name']!,
+          _createdByNameMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -11170,6 +11608,10 @@ class $PromisesTable extends Promises
         DriftSqlType.bool,
         data['${effectivePrefix}reminder_scheduled'],
       )!,
+      createdByName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}created_by_name'],
+      ),
     );
   }
 
@@ -11192,6 +11634,10 @@ class PromiseRow extends DataClass implements Insertable<PromiseRow> {
   final DateTime createdAt;
   final String syncState;
   final bool reminderScheduled;
+
+  /// Who made the promise (v12, contract 1.31.0); null = me / not known. A colleague's promise on
+  /// a customer assigned to me stays here (it is mine to follow up) and says who made it.
+  final String? createdByName;
   const PromiseRow({
     required this.clientId,
     this.serverId,
@@ -11205,6 +11651,7 @@ class PromiseRow extends DataClass implements Insertable<PromiseRow> {
     required this.createdAt,
     required this.syncState,
     required this.reminderScheduled,
+    this.createdByName,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -11227,6 +11674,9 @@ class PromiseRow extends DataClass implements Insertable<PromiseRow> {
     map['created_at'] = Variable<DateTime>(createdAt);
     map['sync_state'] = Variable<String>(syncState);
     map['reminder_scheduled'] = Variable<bool>(reminderScheduled);
+    if (!nullToAbsent || createdByName != null) {
+      map['created_by_name'] = Variable<String>(createdByName);
+    }
     return map;
   }
 
@@ -11248,6 +11698,9 @@ class PromiseRow extends DataClass implements Insertable<PromiseRow> {
       createdAt: Value(createdAt),
       syncState: Value(syncState),
       reminderScheduled: Value(reminderScheduled),
+      createdByName: createdByName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(createdByName),
     );
   }
 
@@ -11271,6 +11724,7 @@ class PromiseRow extends DataClass implements Insertable<PromiseRow> {
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       syncState: serializer.fromJson<String>(json['syncState']),
       reminderScheduled: serializer.fromJson<bool>(json['reminderScheduled']),
+      createdByName: serializer.fromJson<String?>(json['createdByName']),
     );
   }
   @override
@@ -11289,6 +11743,7 @@ class PromiseRow extends DataClass implements Insertable<PromiseRow> {
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'syncState': serializer.toJson<String>(syncState),
       'reminderScheduled': serializer.toJson<bool>(reminderScheduled),
+      'createdByName': serializer.toJson<String?>(createdByName),
     };
   }
 
@@ -11305,6 +11760,7 @@ class PromiseRow extends DataClass implements Insertable<PromiseRow> {
     DateTime? createdAt,
     String? syncState,
     bool? reminderScheduled,
+    Value<String?> createdByName = const Value.absent(),
   }) => PromiseRow(
     clientId: clientId ?? this.clientId,
     serverId: serverId.present ? serverId.value : this.serverId,
@@ -11318,6 +11774,9 @@ class PromiseRow extends DataClass implements Insertable<PromiseRow> {
     createdAt: createdAt ?? this.createdAt,
     syncState: syncState ?? this.syncState,
     reminderScheduled: reminderScheduled ?? this.reminderScheduled,
+    createdByName: createdByName.present
+        ? createdByName.value
+        : this.createdByName,
   );
   PromiseRow copyWithCompanion(PromisesCompanion data) {
     return PromiseRow(
@@ -11343,6 +11802,9 @@ class PromiseRow extends DataClass implements Insertable<PromiseRow> {
       reminderScheduled: data.reminderScheduled.present
           ? data.reminderScheduled.value
           : this.reminderScheduled,
+      createdByName: data.createdByName.present
+          ? data.createdByName.value
+          : this.createdByName,
     );
   }
 
@@ -11360,7 +11822,8 @@ class PromiseRow extends DataClass implements Insertable<PromiseRow> {
           ..write('note: $note, ')
           ..write('createdAt: $createdAt, ')
           ..write('syncState: $syncState, ')
-          ..write('reminderScheduled: $reminderScheduled')
+          ..write('reminderScheduled: $reminderScheduled, ')
+          ..write('createdByName: $createdByName')
           ..write(')'))
         .toString();
   }
@@ -11379,6 +11842,7 @@ class PromiseRow extends DataClass implements Insertable<PromiseRow> {
     createdAt,
     syncState,
     reminderScheduled,
+    createdByName,
   );
   @override
   bool operator ==(Object other) =>
@@ -11395,7 +11859,8 @@ class PromiseRow extends DataClass implements Insertable<PromiseRow> {
           other.note == this.note &&
           other.createdAt == this.createdAt &&
           other.syncState == this.syncState &&
-          other.reminderScheduled == this.reminderScheduled);
+          other.reminderScheduled == this.reminderScheduled &&
+          other.createdByName == this.createdByName);
 }
 
 class PromisesCompanion extends UpdateCompanion<PromiseRow> {
@@ -11411,6 +11876,7 @@ class PromisesCompanion extends UpdateCompanion<PromiseRow> {
   final Value<DateTime> createdAt;
   final Value<String> syncState;
   final Value<bool> reminderScheduled;
+  final Value<String?> createdByName;
   final Value<int> rowid;
   const PromisesCompanion({
     this.clientId = const Value.absent(),
@@ -11425,6 +11891,7 @@ class PromisesCompanion extends UpdateCompanion<PromiseRow> {
     this.createdAt = const Value.absent(),
     this.syncState = const Value.absent(),
     this.reminderScheduled = const Value.absent(),
+    this.createdByName = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   PromisesCompanion.insert({
@@ -11440,6 +11907,7 @@ class PromisesCompanion extends UpdateCompanion<PromiseRow> {
     required DateTime createdAt,
     this.syncState = const Value.absent(),
     this.reminderScheduled = const Value.absent(),
+    this.createdByName = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : clientId = Value(clientId),
        customerId = Value(customerId),
@@ -11459,6 +11927,7 @@ class PromisesCompanion extends UpdateCompanion<PromiseRow> {
     Expression<DateTime>? createdAt,
     Expression<String>? syncState,
     Expression<bool>? reminderScheduled,
+    Expression<String>? createdByName,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -11475,6 +11944,7 @@ class PromisesCompanion extends UpdateCompanion<PromiseRow> {
       if (createdAt != null) 'created_at': createdAt,
       if (syncState != null) 'sync_state': syncState,
       if (reminderScheduled != null) 'reminder_scheduled': reminderScheduled,
+      if (createdByName != null) 'created_by_name': createdByName,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -11492,6 +11962,7 @@ class PromisesCompanion extends UpdateCompanion<PromiseRow> {
     Value<DateTime>? createdAt,
     Value<String>? syncState,
     Value<bool>? reminderScheduled,
+    Value<String?>? createdByName,
     Value<int>? rowid,
   }) {
     return PromisesCompanion(
@@ -11507,6 +11978,7 @@ class PromisesCompanion extends UpdateCompanion<PromiseRow> {
       createdAt: createdAt ?? this.createdAt,
       syncState: syncState ?? this.syncState,
       reminderScheduled: reminderScheduled ?? this.reminderScheduled,
+      createdByName: createdByName ?? this.createdByName,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -11550,6 +12022,9 @@ class PromisesCompanion extends UpdateCompanion<PromiseRow> {
     if (reminderScheduled.present) {
       map['reminder_scheduled'] = Variable<bool>(reminderScheduled.value);
     }
+    if (createdByName.present) {
+      map['created_by_name'] = Variable<String>(createdByName.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -11571,6 +12046,7 @@ class PromisesCompanion extends UpdateCompanion<PromiseRow> {
           ..write('createdAt: $createdAt, ')
           ..write('syncState: $syncState, ')
           ..write('reminderScheduled: $reminderScheduled, ')
+          ..write('createdByName: $createdByName, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -12826,12 +13302,6 @@ class $AttendanceDaysTable extends AttendanceDays
   static const VerificationMeta _lateMinMeta = const VerificationMeta(
     'lateMin',
   );
-  static const VerificationMeta _overtimeMinMeta = const VerificationMeta(
-    'overtimeMin',
-  );
-  static const VerificationMeta _overBreakMinMeta = const VerificationMeta(
-    'overBreakMin',
-  );
   @override
   late final GeneratedColumn<int> lateMin = GeneratedColumn<int>(
     'late_min',
@@ -12840,6 +13310,9 @@ class $AttendanceDaysTable extends AttendanceDays
     type: DriftSqlType.int,
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _overtimeMinMeta = const VerificationMeta(
+    'overtimeMin',
   );
   @override
   late final GeneratedColumn<int> overtimeMin = GeneratedColumn<int>(
@@ -12850,6 +13323,9 @@ class $AttendanceDaysTable extends AttendanceDays
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
   );
+  static const VerificationMeta _overBreakMinMeta = const VerificationMeta(
+    'overBreakMin',
+  );
   @override
   late final GeneratedColumn<int> overBreakMin = GeneratedColumn<int>(
     'over_break_min',
@@ -12859,6 +13335,7 @@ class $AttendanceDaysTable extends AttendanceDays
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
   );
+  static const VerificationMeta _breaksJsonMeta = const VerificationMeta(
     'breaksJson',
   );
   @override
@@ -12940,13 +13417,19 @@ class $AttendanceDaysTable extends AttendanceDays
     if (data.containsKey('overtime_min')) {
       context.handle(
         _overtimeMinMeta,
-        overtimeMin.isAcceptableOrUnknown(data['overtime_min']!, _overtimeMinMeta),
+        overtimeMin.isAcceptableOrUnknown(
+          data['overtime_min']!,
+          _overtimeMinMeta,
+        ),
       );
     }
     if (data.containsKey('over_break_min')) {
       context.handle(
         _overBreakMinMeta,
-        overBreakMin.isAcceptableOrUnknown(data['over_break_min']!, _overBreakMinMeta),
+        overBreakMin.isAcceptableOrUnknown(
+          data['over_break_min']!,
+          _overBreakMinMeta,
+        ),
       );
     }
     if (data.containsKey('breaks_json')) {
@@ -13017,6 +13500,8 @@ class AttendanceDayRow extends DataClass
   final DateTime? lastOut;
   final int breakMin;
   final int lateMin;
+
+  /// Schema 10 (contract 1.25.0): the server's overtime and over-break minutes of the day (FR-M-051).
   final int overtimeMin;
   final int overBreakMin;
   final String breaksJson;
@@ -13132,8 +13617,12 @@ class AttendanceDayRow extends DataClass
       lastOut: data.lastOut.present ? data.lastOut.value : this.lastOut,
       breakMin: data.breakMin.present ? data.breakMin.value : this.breakMin,
       lateMin: data.lateMin.present ? data.lateMin.value : this.lateMin,
-      overtimeMin: data.overtimeMin.present ? data.overtimeMin.value : this.overtimeMin,
-      overBreakMin: data.overBreakMin.present ? data.overBreakMin.value : this.overBreakMin,
+      overtimeMin: data.overtimeMin.present
+          ? data.overtimeMin.value
+          : this.overtimeMin,
+      overBreakMin: data.overBreakMin.present
+          ? data.overBreakMin.value
+          : this.overBreakMin,
       breaksJson: data.breaksJson.present
           ? data.breaksJson.value
           : this.breaksJson,
@@ -20224,6 +20713,771 @@ class KvSettingsCompanion extends UpdateCompanion<KvRow> {
   }
 }
 
+class $ColleagueActivitiesTable extends ColleagueActivities
+    with TableInfo<$ColleagueActivitiesTable, ColleagueActivityRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ColleagueActivitiesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _kindMeta = const VerificationMeta('kind');
+  @override
+  late final GeneratedColumn<String> kind = GeneratedColumn<String>(
+    'kind',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _customerIdMeta = const VerificationMeta(
+    'customerId',
+  );
+  @override
+  late final GeneratedColumn<String> customerId = GeneratedColumn<String>(
+    'customer_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _staffIdMeta = const VerificationMeta(
+    'staffId',
+  );
+  @override
+  late final GeneratedColumn<String> staffId = GeneratedColumn<String>(
+    'staff_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _staffNameMeta = const VerificationMeta(
+    'staffName',
+  );
+  @override
+  late final GeneratedColumn<String> staffName = GeneratedColumn<String>(
+    'staff_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _atMeta = const VerificationMeta('at');
+  @override
+  late final GeneratedColumn<DateTime> at = GeneratedColumn<DateTime>(
+    'at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _outcomeMeta = const VerificationMeta(
+    'outcome',
+  );
+  @override
+  late final GeneratedColumn<String> outcome = GeneratedColumn<String>(
+    'outcome',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _amountPoishaMeta = const VerificationMeta(
+    'amountPoisha',
+  );
+  @override
+  late final GeneratedColumn<int> amountPoisha = GeneratedColumn<int>(
+    'amount_poisha',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _methodMeta = const VerificationMeta('method');
+  @override
+  late final GeneratedColumn<String> method = GeneratedColumn<String>(
+    'method',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _promisedDateMeta = const VerificationMeta(
+    'promisedDate',
+  );
+  @override
+  late final GeneratedColumn<String> promisedDate = GeneratedColumn<String>(
+    'promised_date',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _noteMeta = const VerificationMeta('note');
+  @override
+  late final GeneratedColumn<String> note = GeneratedColumn<String>(
+    'note',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _voidedKindMeta = const VerificationMeta(
+    'voidedKind',
+  );
+  @override
+  late final GeneratedColumn<String> voidedKind = GeneratedColumn<String>(
+    'voided_kind',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    kind,
+    customerId,
+    staffId,
+    staffName,
+    at,
+    outcome,
+    amountPoisha,
+    method,
+    promisedDate,
+    status,
+    note,
+    voidedKind,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'colleague_activities';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ColleagueActivityRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('kind')) {
+      context.handle(
+        _kindMeta,
+        kind.isAcceptableOrUnknown(data['kind']!, _kindMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_kindMeta);
+    }
+    if (data.containsKey('customer_id')) {
+      context.handle(
+        _customerIdMeta,
+        customerId.isAcceptableOrUnknown(data['customer_id']!, _customerIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_customerIdMeta);
+    }
+    if (data.containsKey('staff_id')) {
+      context.handle(
+        _staffIdMeta,
+        staffId.isAcceptableOrUnknown(data['staff_id']!, _staffIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_staffIdMeta);
+    }
+    if (data.containsKey('staff_name')) {
+      context.handle(
+        _staffNameMeta,
+        staffName.isAcceptableOrUnknown(data['staff_name']!, _staffNameMeta),
+      );
+    }
+    if (data.containsKey('at')) {
+      context.handle(_atMeta, at.isAcceptableOrUnknown(data['at']!, _atMeta));
+    } else if (isInserting) {
+      context.missing(_atMeta);
+    }
+    if (data.containsKey('outcome')) {
+      context.handle(
+        _outcomeMeta,
+        outcome.isAcceptableOrUnknown(data['outcome']!, _outcomeMeta),
+      );
+    }
+    if (data.containsKey('amount_poisha')) {
+      context.handle(
+        _amountPoishaMeta,
+        amountPoisha.isAcceptableOrUnknown(
+          data['amount_poisha']!,
+          _amountPoishaMeta,
+        ),
+      );
+    }
+    if (data.containsKey('method')) {
+      context.handle(
+        _methodMeta,
+        method.isAcceptableOrUnknown(data['method']!, _methodMeta),
+      );
+    }
+    if (data.containsKey('promised_date')) {
+      context.handle(
+        _promisedDateMeta,
+        promisedDate.isAcceptableOrUnknown(
+          data['promised_date']!,
+          _promisedDateMeta,
+        ),
+      );
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    }
+    if (data.containsKey('note')) {
+      context.handle(
+        _noteMeta,
+        note.isAcceptableOrUnknown(data['note']!, _noteMeta),
+      );
+    }
+    if (data.containsKey('voided_kind')) {
+      context.handle(
+        _voidedKindMeta,
+        voidedKind.isAcceptableOrUnknown(data['voided_kind']!, _voidedKindMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ColleagueActivityRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ColleagueActivityRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      kind: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}kind'],
+      )!,
+      customerId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}customer_id'],
+      )!,
+      staffId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}staff_id'],
+      )!,
+      staffName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}staff_name'],
+      )!,
+      at: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}at'],
+      )!,
+      outcome: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}outcome'],
+      ),
+      amountPoisha: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}amount_poisha'],
+      ),
+      method: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}method'],
+      ),
+      promisedDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}promised_date'],
+      ),
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status'],
+      ),
+      note: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}note'],
+      ),
+      voidedKind: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}voided_kind'],
+      ),
+    );
+  }
+
+  @override
+  $ColleagueActivitiesTable createAlias(String alias) {
+    return $ColleagueActivitiesTable(attachedDatabase, alias);
+  }
+}
+
+class ColleagueActivityRow extends DataClass
+    implements Insertable<ColleagueActivityRow> {
+  /// `<kind>:<server id>`.
+  final String id;
+
+  /// `visit` | `promise` | `collection`.
+  final String kind;
+  final String customerId;
+  final String staffId;
+  final String staffName;
+
+  /// Visit check-in, promise created, or collection recorded.
+  final DateTime at;
+  final String? outcome;
+  final int? amountPoisha;
+  final String? method;
+  final String? promisedDate;
+  final String? status;
+  final String? note;
+
+  /// A voided collection: `withdrawn` (by its collector) or `admin` (by the office).
+  final String? voidedKind;
+  const ColleagueActivityRow({
+    required this.id,
+    required this.kind,
+    required this.customerId,
+    required this.staffId,
+    required this.staffName,
+    required this.at,
+    this.outcome,
+    this.amountPoisha,
+    this.method,
+    this.promisedDate,
+    this.status,
+    this.note,
+    this.voidedKind,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['kind'] = Variable<String>(kind);
+    map['customer_id'] = Variable<String>(customerId);
+    map['staff_id'] = Variable<String>(staffId);
+    map['staff_name'] = Variable<String>(staffName);
+    map['at'] = Variable<DateTime>(at);
+    if (!nullToAbsent || outcome != null) {
+      map['outcome'] = Variable<String>(outcome);
+    }
+    if (!nullToAbsent || amountPoisha != null) {
+      map['amount_poisha'] = Variable<int>(amountPoisha);
+    }
+    if (!nullToAbsent || method != null) {
+      map['method'] = Variable<String>(method);
+    }
+    if (!nullToAbsent || promisedDate != null) {
+      map['promised_date'] = Variable<String>(promisedDate);
+    }
+    if (!nullToAbsent || status != null) {
+      map['status'] = Variable<String>(status);
+    }
+    if (!nullToAbsent || note != null) {
+      map['note'] = Variable<String>(note);
+    }
+    if (!nullToAbsent || voidedKind != null) {
+      map['voided_kind'] = Variable<String>(voidedKind);
+    }
+    return map;
+  }
+
+  ColleagueActivitiesCompanion toCompanion(bool nullToAbsent) {
+    return ColleagueActivitiesCompanion(
+      id: Value(id),
+      kind: Value(kind),
+      customerId: Value(customerId),
+      staffId: Value(staffId),
+      staffName: Value(staffName),
+      at: Value(at),
+      outcome: outcome == null && nullToAbsent
+          ? const Value.absent()
+          : Value(outcome),
+      amountPoisha: amountPoisha == null && nullToAbsent
+          ? const Value.absent()
+          : Value(amountPoisha),
+      method: method == null && nullToAbsent
+          ? const Value.absent()
+          : Value(method),
+      promisedDate: promisedDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(promisedDate),
+      status: status == null && nullToAbsent
+          ? const Value.absent()
+          : Value(status),
+      note: note == null && nullToAbsent ? const Value.absent() : Value(note),
+      voidedKind: voidedKind == null && nullToAbsent
+          ? const Value.absent()
+          : Value(voidedKind),
+    );
+  }
+
+  factory ColleagueActivityRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ColleagueActivityRow(
+      id: serializer.fromJson<String>(json['id']),
+      kind: serializer.fromJson<String>(json['kind']),
+      customerId: serializer.fromJson<String>(json['customerId']),
+      staffId: serializer.fromJson<String>(json['staffId']),
+      staffName: serializer.fromJson<String>(json['staffName']),
+      at: serializer.fromJson<DateTime>(json['at']),
+      outcome: serializer.fromJson<String?>(json['outcome']),
+      amountPoisha: serializer.fromJson<int?>(json['amountPoisha']),
+      method: serializer.fromJson<String?>(json['method']),
+      promisedDate: serializer.fromJson<String?>(json['promisedDate']),
+      status: serializer.fromJson<String?>(json['status']),
+      note: serializer.fromJson<String?>(json['note']),
+      voidedKind: serializer.fromJson<String?>(json['voidedKind']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'kind': serializer.toJson<String>(kind),
+      'customerId': serializer.toJson<String>(customerId),
+      'staffId': serializer.toJson<String>(staffId),
+      'staffName': serializer.toJson<String>(staffName),
+      'at': serializer.toJson<DateTime>(at),
+      'outcome': serializer.toJson<String?>(outcome),
+      'amountPoisha': serializer.toJson<int?>(amountPoisha),
+      'method': serializer.toJson<String?>(method),
+      'promisedDate': serializer.toJson<String?>(promisedDate),
+      'status': serializer.toJson<String?>(status),
+      'note': serializer.toJson<String?>(note),
+      'voidedKind': serializer.toJson<String?>(voidedKind),
+    };
+  }
+
+  ColleagueActivityRow copyWith({
+    String? id,
+    String? kind,
+    String? customerId,
+    String? staffId,
+    String? staffName,
+    DateTime? at,
+    Value<String?> outcome = const Value.absent(),
+    Value<int?> amountPoisha = const Value.absent(),
+    Value<String?> method = const Value.absent(),
+    Value<String?> promisedDate = const Value.absent(),
+    Value<String?> status = const Value.absent(),
+    Value<String?> note = const Value.absent(),
+    Value<String?> voidedKind = const Value.absent(),
+  }) => ColleagueActivityRow(
+    id: id ?? this.id,
+    kind: kind ?? this.kind,
+    customerId: customerId ?? this.customerId,
+    staffId: staffId ?? this.staffId,
+    staffName: staffName ?? this.staffName,
+    at: at ?? this.at,
+    outcome: outcome.present ? outcome.value : this.outcome,
+    amountPoisha: amountPoisha.present ? amountPoisha.value : this.amountPoisha,
+    method: method.present ? method.value : this.method,
+    promisedDate: promisedDate.present ? promisedDate.value : this.promisedDate,
+    status: status.present ? status.value : this.status,
+    note: note.present ? note.value : this.note,
+    voidedKind: voidedKind.present ? voidedKind.value : this.voidedKind,
+  );
+  ColleagueActivityRow copyWithCompanion(ColleagueActivitiesCompanion data) {
+    return ColleagueActivityRow(
+      id: data.id.present ? data.id.value : this.id,
+      kind: data.kind.present ? data.kind.value : this.kind,
+      customerId: data.customerId.present
+          ? data.customerId.value
+          : this.customerId,
+      staffId: data.staffId.present ? data.staffId.value : this.staffId,
+      staffName: data.staffName.present ? data.staffName.value : this.staffName,
+      at: data.at.present ? data.at.value : this.at,
+      outcome: data.outcome.present ? data.outcome.value : this.outcome,
+      amountPoisha: data.amountPoisha.present
+          ? data.amountPoisha.value
+          : this.amountPoisha,
+      method: data.method.present ? data.method.value : this.method,
+      promisedDate: data.promisedDate.present
+          ? data.promisedDate.value
+          : this.promisedDate,
+      status: data.status.present ? data.status.value : this.status,
+      note: data.note.present ? data.note.value : this.note,
+      voidedKind: data.voidedKind.present
+          ? data.voidedKind.value
+          : this.voidedKind,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ColleagueActivityRow(')
+          ..write('id: $id, ')
+          ..write('kind: $kind, ')
+          ..write('customerId: $customerId, ')
+          ..write('staffId: $staffId, ')
+          ..write('staffName: $staffName, ')
+          ..write('at: $at, ')
+          ..write('outcome: $outcome, ')
+          ..write('amountPoisha: $amountPoisha, ')
+          ..write('method: $method, ')
+          ..write('promisedDate: $promisedDate, ')
+          ..write('status: $status, ')
+          ..write('note: $note, ')
+          ..write('voidedKind: $voidedKind')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    kind,
+    customerId,
+    staffId,
+    staffName,
+    at,
+    outcome,
+    amountPoisha,
+    method,
+    promisedDate,
+    status,
+    note,
+    voidedKind,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ColleagueActivityRow &&
+          other.id == this.id &&
+          other.kind == this.kind &&
+          other.customerId == this.customerId &&
+          other.staffId == this.staffId &&
+          other.staffName == this.staffName &&
+          other.at == this.at &&
+          other.outcome == this.outcome &&
+          other.amountPoisha == this.amountPoisha &&
+          other.method == this.method &&
+          other.promisedDate == this.promisedDate &&
+          other.status == this.status &&
+          other.note == this.note &&
+          other.voidedKind == this.voidedKind);
+}
+
+class ColleagueActivitiesCompanion
+    extends UpdateCompanion<ColleagueActivityRow> {
+  final Value<String> id;
+  final Value<String> kind;
+  final Value<String> customerId;
+  final Value<String> staffId;
+  final Value<String> staffName;
+  final Value<DateTime> at;
+  final Value<String?> outcome;
+  final Value<int?> amountPoisha;
+  final Value<String?> method;
+  final Value<String?> promisedDate;
+  final Value<String?> status;
+  final Value<String?> note;
+  final Value<String?> voidedKind;
+  final Value<int> rowid;
+  const ColleagueActivitiesCompanion({
+    this.id = const Value.absent(),
+    this.kind = const Value.absent(),
+    this.customerId = const Value.absent(),
+    this.staffId = const Value.absent(),
+    this.staffName = const Value.absent(),
+    this.at = const Value.absent(),
+    this.outcome = const Value.absent(),
+    this.amountPoisha = const Value.absent(),
+    this.method = const Value.absent(),
+    this.promisedDate = const Value.absent(),
+    this.status = const Value.absent(),
+    this.note = const Value.absent(),
+    this.voidedKind = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ColleagueActivitiesCompanion.insert({
+    required String id,
+    required String kind,
+    required String customerId,
+    required String staffId,
+    this.staffName = const Value.absent(),
+    required DateTime at,
+    this.outcome = const Value.absent(),
+    this.amountPoisha = const Value.absent(),
+    this.method = const Value.absent(),
+    this.promisedDate = const Value.absent(),
+    this.status = const Value.absent(),
+    this.note = const Value.absent(),
+    this.voidedKind = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       kind = Value(kind),
+       customerId = Value(customerId),
+       staffId = Value(staffId),
+       at = Value(at);
+  static Insertable<ColleagueActivityRow> custom({
+    Expression<String>? id,
+    Expression<String>? kind,
+    Expression<String>? customerId,
+    Expression<String>? staffId,
+    Expression<String>? staffName,
+    Expression<DateTime>? at,
+    Expression<String>? outcome,
+    Expression<int>? amountPoisha,
+    Expression<String>? method,
+    Expression<String>? promisedDate,
+    Expression<String>? status,
+    Expression<String>? note,
+    Expression<String>? voidedKind,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (kind != null) 'kind': kind,
+      if (customerId != null) 'customer_id': customerId,
+      if (staffId != null) 'staff_id': staffId,
+      if (staffName != null) 'staff_name': staffName,
+      if (at != null) 'at': at,
+      if (outcome != null) 'outcome': outcome,
+      if (amountPoisha != null) 'amount_poisha': amountPoisha,
+      if (method != null) 'method': method,
+      if (promisedDate != null) 'promised_date': promisedDate,
+      if (status != null) 'status': status,
+      if (note != null) 'note': note,
+      if (voidedKind != null) 'voided_kind': voidedKind,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ColleagueActivitiesCompanion copyWith({
+    Value<String>? id,
+    Value<String>? kind,
+    Value<String>? customerId,
+    Value<String>? staffId,
+    Value<String>? staffName,
+    Value<DateTime>? at,
+    Value<String?>? outcome,
+    Value<int?>? amountPoisha,
+    Value<String?>? method,
+    Value<String?>? promisedDate,
+    Value<String?>? status,
+    Value<String?>? note,
+    Value<String?>? voidedKind,
+    Value<int>? rowid,
+  }) {
+    return ColleagueActivitiesCompanion(
+      id: id ?? this.id,
+      kind: kind ?? this.kind,
+      customerId: customerId ?? this.customerId,
+      staffId: staffId ?? this.staffId,
+      staffName: staffName ?? this.staffName,
+      at: at ?? this.at,
+      outcome: outcome ?? this.outcome,
+      amountPoisha: amountPoisha ?? this.amountPoisha,
+      method: method ?? this.method,
+      promisedDate: promisedDate ?? this.promisedDate,
+      status: status ?? this.status,
+      note: note ?? this.note,
+      voidedKind: voidedKind ?? this.voidedKind,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (kind.present) {
+      map['kind'] = Variable<String>(kind.value);
+    }
+    if (customerId.present) {
+      map['customer_id'] = Variable<String>(customerId.value);
+    }
+    if (staffId.present) {
+      map['staff_id'] = Variable<String>(staffId.value);
+    }
+    if (staffName.present) {
+      map['staff_name'] = Variable<String>(staffName.value);
+    }
+    if (at.present) {
+      map['at'] = Variable<DateTime>(at.value);
+    }
+    if (outcome.present) {
+      map['outcome'] = Variable<String>(outcome.value);
+    }
+    if (amountPoisha.present) {
+      map['amount_poisha'] = Variable<int>(amountPoisha.value);
+    }
+    if (method.present) {
+      map['method'] = Variable<String>(method.value);
+    }
+    if (promisedDate.present) {
+      map['promised_date'] = Variable<String>(promisedDate.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (note.present) {
+      map['note'] = Variable<String>(note.value);
+    }
+    if (voidedKind.present) {
+      map['voided_kind'] = Variable<String>(voidedKind.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ColleagueActivitiesCompanion(')
+          ..write('id: $id, ')
+          ..write('kind: $kind, ')
+          ..write('customerId: $customerId, ')
+          ..write('staffId: $staffId, ')
+          ..write('staffName: $staffName, ')
+          ..write('at: $at, ')
+          ..write('outcome: $outcome, ')
+          ..write('amountPoisha: $amountPoisha, ')
+          ..write('method: $method, ')
+          ..write('promisedDate: $promisedDate, ')
+          ..write('status: $status, ')
+          ..write('note: $note, ')
+          ..write('voidedKind: $voidedKind, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -20260,6 +21514,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $TasksTable tasks = $TasksTable(this);
   late final $NotificationsTable notifications = $NotificationsTable(this);
   late final $KvSettingsTable kvSettings = $KvSettingsTable(this);
+  late final $ColleagueActivitiesTable colleagueActivities =
+      $ColleagueActivitiesTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -20293,6 +21549,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     tasks,
     notifications,
     kvSettings,
+    colleagueActivities,
   ];
 }
 
@@ -21778,6 +23035,10 @@ typedef $$ScheduleLinesTableCreateCompanionBuilder =
       Value<bool> estimated,
       Value<int> lateFeePoisha,
       Value<bool> rolled,
+      Value<String?> paidOn,
+      Value<int> daysLate,
+      Value<bool> missed,
+      Value<String?> paymentsJson,
       Value<int> rowid,
     });
 typedef $$ScheduleLinesTableUpdateCompanionBuilder =
@@ -21791,6 +23052,10 @@ typedef $$ScheduleLinesTableUpdateCompanionBuilder =
       Value<bool> estimated,
       Value<int> lateFeePoisha,
       Value<bool> rolled,
+      Value<String?> paidOn,
+      Value<int> daysLate,
+      Value<bool> missed,
+      Value<String?> paymentsJson,
       Value<int> rowid,
     });
 
@@ -21845,6 +23110,26 @@ class $$ScheduleLinesTableFilterComposer
 
   ColumnFilters<bool> get rolled => $composableBuilder(
     column: $table.rolled,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get paidOn => $composableBuilder(
+    column: $table.paidOn,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get daysLate => $composableBuilder(
+    column: $table.daysLate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get missed => $composableBuilder(
+    column: $table.missed,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get paymentsJson => $composableBuilder(
+    column: $table.paymentsJson,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -21902,6 +23187,26 @@ class $$ScheduleLinesTableOrderingComposer
     column: $table.rolled,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get paidOn => $composableBuilder(
+    column: $table.paidOn,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get daysLate => $composableBuilder(
+    column: $table.daysLate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get missed => $composableBuilder(
+    column: $table.missed,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get paymentsJson => $composableBuilder(
+    column: $table.paymentsJson,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$ScheduleLinesTableAnnotationComposer
@@ -21945,6 +23250,20 @@ class $$ScheduleLinesTableAnnotationComposer
 
   GeneratedColumn<bool> get rolled =>
       $composableBuilder(column: $table.rolled, builder: (column) => column);
+
+  GeneratedColumn<String> get paidOn =>
+      $composableBuilder(column: $table.paidOn, builder: (column) => column);
+
+  GeneratedColumn<int> get daysLate =>
+      $composableBuilder(column: $table.daysLate, builder: (column) => column);
+
+  GeneratedColumn<bool> get missed =>
+      $composableBuilder(column: $table.missed, builder: (column) => column);
+
+  GeneratedColumn<String> get paymentsJson => $composableBuilder(
+    column: $table.paymentsJson,
+    builder: (column) => column,
+  );
 }
 
 class $$ScheduleLinesTableTableManager
@@ -21987,6 +23306,10 @@ class $$ScheduleLinesTableTableManager
                 Value<bool> estimated = const Value.absent(),
                 Value<int> lateFeePoisha = const Value.absent(),
                 Value<bool> rolled = const Value.absent(),
+                Value<String?> paidOn = const Value.absent(),
+                Value<int> daysLate = const Value.absent(),
+                Value<bool> missed = const Value.absent(),
+                Value<String?> paymentsJson = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => ScheduleLinesCompanion(
                 erpPlanId: erpPlanId,
@@ -21998,6 +23321,10 @@ class $$ScheduleLinesTableTableManager
                 estimated: estimated,
                 lateFeePoisha: lateFeePoisha,
                 rolled: rolled,
+                paidOn: paidOn,
+                daysLate: daysLate,
+                missed: missed,
+                paymentsJson: paymentsJson,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -22011,6 +23338,10 @@ class $$ScheduleLinesTableTableManager
                 Value<bool> estimated = const Value.absent(),
                 Value<int> lateFeePoisha = const Value.absent(),
                 Value<bool> rolled = const Value.absent(),
+                Value<String?> paidOn = const Value.absent(),
+                Value<int> daysLate = const Value.absent(),
+                Value<bool> missed = const Value.absent(),
+                Value<String?> paymentsJson = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => ScheduleLinesCompanion.insert(
                 erpPlanId: erpPlanId,
@@ -22022,6 +23353,10 @@ class $$ScheduleLinesTableTableManager
                 estimated: estimated,
                 lateFeePoisha: lateFeePoisha,
                 rolled: rolled,
+                paidOn: paidOn,
+                daysLate: daysLate,
+                missed: missed,
+                paymentsJson: paymentsJson,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -22822,6 +24157,10 @@ typedef $$CollectionsTableCreateCompanionBuilder =
       Value<String?> photoMediaClientId,
       Value<String> status,
       Value<String?> erpReceiptNo,
+      Value<int?> previousAmountPoisha,
+      Value<String?> voidedKind,
+      Value<String?> voidedByName,
+      Value<String?> voidedReason,
       Value<String?> conflictCode,
       Value<String?> conflictMessage,
       Value<String?> resolutionText,
@@ -22855,6 +24194,10 @@ typedef $$CollectionsTableUpdateCompanionBuilder =
       Value<String?> photoMediaClientId,
       Value<String> status,
       Value<String?> erpReceiptNo,
+      Value<int?> previousAmountPoisha,
+      Value<String?> voidedKind,
+      Value<String?> voidedByName,
+      Value<String?> voidedReason,
       Value<String?> conflictCode,
       Value<String?> conflictMessage,
       Value<String?> resolutionText,
@@ -22989,6 +24332,26 @@ class $$CollectionsTableFilterComposer
 
   ColumnFilters<String> get erpReceiptNo => $composableBuilder(
     column: $table.erpReceiptNo,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get previousAmountPoisha => $composableBuilder(
+    column: $table.previousAmountPoisha,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get voidedKind => $composableBuilder(
+    column: $table.voidedKind,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get voidedByName => $composableBuilder(
+    column: $table.voidedByName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get voidedReason => $composableBuilder(
+    column: $table.voidedReason,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -23147,6 +24510,26 @@ class $$CollectionsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get previousAmountPoisha => $composableBuilder(
+    column: $table.previousAmountPoisha,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get voidedKind => $composableBuilder(
+    column: $table.voidedKind,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get voidedByName => $composableBuilder(
+    column: $table.voidedByName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get voidedReason => $composableBuilder(
+    column: $table.voidedReason,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get conflictCode => $composableBuilder(
     column: $table.conflictCode,
     builder: (column) => ColumnOrderings(column),
@@ -23278,6 +24661,26 @@ class $$CollectionsTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<int> get previousAmountPoisha => $composableBuilder(
+    column: $table.previousAmountPoisha,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get voidedKind => $composableBuilder(
+    column: $table.voidedKind,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get voidedByName => $composableBuilder(
+    column: $table.voidedByName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get voidedReason => $composableBuilder(
+    column: $table.voidedReason,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<String> get conflictCode => $composableBuilder(
     column: $table.conflictCode,
     builder: (column) => column,
@@ -23355,6 +24758,10 @@ class $$CollectionsTableTableManager
                 Value<String?> photoMediaClientId = const Value.absent(),
                 Value<String> status = const Value.absent(),
                 Value<String?> erpReceiptNo = const Value.absent(),
+                Value<int?> previousAmountPoisha = const Value.absent(),
+                Value<String?> voidedKind = const Value.absent(),
+                Value<String?> voidedByName = const Value.absent(),
+                Value<String?> voidedReason = const Value.absent(),
                 Value<String?> conflictCode = const Value.absent(),
                 Value<String?> conflictMessage = const Value.absent(),
                 Value<String?> resolutionText = const Value.absent(),
@@ -23386,6 +24793,10 @@ class $$CollectionsTableTableManager
                 photoMediaClientId: photoMediaClientId,
                 status: status,
                 erpReceiptNo: erpReceiptNo,
+                previousAmountPoisha: previousAmountPoisha,
+                voidedKind: voidedKind,
+                voidedByName: voidedByName,
+                voidedReason: voidedReason,
                 conflictCode: conflictCode,
                 conflictMessage: conflictMessage,
                 resolutionText: resolutionText,
@@ -23419,6 +24830,10 @@ class $$CollectionsTableTableManager
                 Value<String?> photoMediaClientId = const Value.absent(),
                 Value<String> status = const Value.absent(),
                 Value<String?> erpReceiptNo = const Value.absent(),
+                Value<int?> previousAmountPoisha = const Value.absent(),
+                Value<String?> voidedKind = const Value.absent(),
+                Value<String?> voidedByName = const Value.absent(),
+                Value<String?> voidedReason = const Value.absent(),
                 Value<String?> conflictCode = const Value.absent(),
                 Value<String?> conflictMessage = const Value.absent(),
                 Value<String?> resolutionText = const Value.absent(),
@@ -23450,6 +24865,10 @@ class $$CollectionsTableTableManager
                 photoMediaClientId: photoMediaClientId,
                 status: status,
                 erpReceiptNo: erpReceiptNo,
+                previousAmountPoisha: previousAmountPoisha,
+                voidedKind: voidedKind,
+                voidedByName: voidedByName,
+                voidedReason: voidedReason,
                 conflictCode: conflictCode,
                 conflictMessage: conflictMessage,
                 resolutionText: resolutionText,
@@ -25325,6 +26744,7 @@ typedef $$PromisesTableCreateCompanionBuilder = PromisesCompanion Function({
   required DateTime createdAt,
   Value<String> syncState,
   Value<bool> reminderScheduled,
+  Value<String?> createdByName,
   Value<int> rowid,
 });
 typedef $$PromisesTableUpdateCompanionBuilder = PromisesCompanion Function({
@@ -25340,6 +26760,7 @@ typedef $$PromisesTableUpdateCompanionBuilder = PromisesCompanion Function({
   Value<DateTime> createdAt,
   Value<String> syncState,
   Value<bool> reminderScheduled,
+  Value<String?> createdByName,
   Value<int> rowid,
 });
 
@@ -25409,6 +26830,11 @@ class $$PromisesTableFilterComposer
 
   ColumnFilters<bool> get reminderScheduled => $composableBuilder(
     column: $table.reminderScheduled,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get createdByName => $composableBuilder(
+    column: $table.createdByName,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -25481,6 +26907,11 @@ class $$PromisesTableOrderingComposer
     column: $table.reminderScheduled,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get createdByName => $composableBuilder(
+    column: $table.createdByName,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$PromisesTableAnnotationComposer
@@ -25537,6 +26968,11 @@ class $$PromisesTableAnnotationComposer
     column: $table.reminderScheduled,
     builder: (column) => column,
   );
+
+  GeneratedColumn<String> get createdByName => $composableBuilder(
+    column: $table.createdByName,
+    builder: (column) => column,
+  );
 }
 
 class $$PromisesTableTableManager
@@ -25582,6 +27018,7 @@ class $$PromisesTableTableManager
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<String> syncState = const Value.absent(),
                 Value<bool> reminderScheduled = const Value.absent(),
+                Value<String?> createdByName = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => PromisesCompanion(
                 clientId: clientId,
@@ -25596,6 +27033,7 @@ class $$PromisesTableTableManager
                 createdAt: createdAt,
                 syncState: syncState,
                 reminderScheduled: reminderScheduled,
+                createdByName: createdByName,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -25612,6 +27050,7 @@ class $$PromisesTableTableManager
                 required DateTime createdAt,
                 Value<String> syncState = const Value.absent(),
                 Value<bool> reminderScheduled = const Value.absent(),
+                Value<String?> createdByName = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => PromisesCompanion.insert(
                 clientId: clientId,
@@ -25626,6 +27065,7 @@ class $$PromisesTableTableManager
                 createdAt: createdAt,
                 syncState: syncState,
                 reminderScheduled: reminderScheduled,
+                createdByName: createdByName,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -26278,6 +27718,8 @@ typedef $$AttendanceDaysTableCreateCompanionBuilder =
       Value<DateTime?> lastOut,
       Value<int> breakMin,
       Value<int> lateMin,
+      Value<int> overtimeMin,
+      Value<int> overBreakMin,
       Value<String> breaksJson,
       Value<int> rowid,
     });
@@ -26289,6 +27731,8 @@ typedef $$AttendanceDaysTableUpdateCompanionBuilder =
       Value<DateTime?> lastOut,
       Value<int> breakMin,
       Value<int> lateMin,
+      Value<int> overtimeMin,
+      Value<int> overBreakMin,
       Value<String> breaksJson,
       Value<int> rowid,
     });
@@ -26329,6 +27773,16 @@ class $$AttendanceDaysTableFilterComposer
 
   ColumnFilters<int> get lateMin => $composableBuilder(
     column: $table.lateMin,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get overtimeMin => $composableBuilder(
+    column: $table.overtimeMin,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get overBreakMin => $composableBuilder(
+    column: $table.overBreakMin,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -26377,6 +27831,16 @@ class $$AttendanceDaysTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get overtimeMin => $composableBuilder(
+    column: $table.overtimeMin,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get overBreakMin => $composableBuilder(
+    column: $table.overBreakMin,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get breaksJson => $composableBuilder(
     column: $table.breaksJson,
     builder: (column) => ColumnOrderings(column),
@@ -26411,6 +27875,16 @@ class $$AttendanceDaysTableAnnotationComposer
 
   GeneratedColumn<int> get lateMin =>
       $composableBuilder(column: $table.lateMin, builder: (column) => column);
+
+  GeneratedColumn<int> get overtimeMin => $composableBuilder(
+    column: $table.overtimeMin,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get overBreakMin => $composableBuilder(
+    column: $table.overBreakMin,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<String> get breaksJson => $composableBuilder(
     column: $table.breaksJson,
@@ -26461,6 +27935,8 @@ class $$AttendanceDaysTableTableManager
                 Value<DateTime?> lastOut = const Value.absent(),
                 Value<int> breakMin = const Value.absent(),
                 Value<int> lateMin = const Value.absent(),
+                Value<int> overtimeMin = const Value.absent(),
+                Value<int> overBreakMin = const Value.absent(),
                 Value<String> breaksJson = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => AttendanceDaysCompanion(
@@ -26470,6 +27946,8 @@ class $$AttendanceDaysTableTableManager
                 lastOut: lastOut,
                 breakMin: breakMin,
                 lateMin: lateMin,
+                overtimeMin: overtimeMin,
+                overBreakMin: overBreakMin,
                 breaksJson: breaksJson,
                 rowid: rowid,
               ),
@@ -26481,6 +27959,8 @@ class $$AttendanceDaysTableTableManager
                 Value<DateTime?> lastOut = const Value.absent(),
                 Value<int> breakMin = const Value.absent(),
                 Value<int> lateMin = const Value.absent(),
+                Value<int> overtimeMin = const Value.absent(),
+                Value<int> overBreakMin = const Value.absent(),
                 Value<String> breaksJson = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => AttendanceDaysCompanion.insert(
@@ -26490,6 +27970,8 @@ class $$AttendanceDaysTableTableManager
                 lastOut: lastOut,
                 breakMin: breakMin,
                 lateMin: lateMin,
+                overtimeMin: overtimeMin,
+                overBreakMin: overBreakMin,
                 breaksJson: breaksJson,
                 rowid: rowid,
               ),
@@ -30006,6 +31488,393 @@ typedef $$KvSettingsTableProcessedTableManager =
       KvRow,
       PrefetchHooks Function()
     >;
+typedef $$ColleagueActivitiesTableCreateCompanionBuilder =
+    ColleagueActivitiesCompanion Function({
+      required String id,
+      required String kind,
+      required String customerId,
+      required String staffId,
+      Value<String> staffName,
+      required DateTime at,
+      Value<String?> outcome,
+      Value<int?> amountPoisha,
+      Value<String?> method,
+      Value<String?> promisedDate,
+      Value<String?> status,
+      Value<String?> note,
+      Value<String?> voidedKind,
+      Value<int> rowid,
+    });
+typedef $$ColleagueActivitiesTableUpdateCompanionBuilder =
+    ColleagueActivitiesCompanion Function({
+      Value<String> id,
+      Value<String> kind,
+      Value<String> customerId,
+      Value<String> staffId,
+      Value<String> staffName,
+      Value<DateTime> at,
+      Value<String?> outcome,
+      Value<int?> amountPoisha,
+      Value<String?> method,
+      Value<String?> promisedDate,
+      Value<String?> status,
+      Value<String?> note,
+      Value<String?> voidedKind,
+      Value<int> rowid,
+    });
+
+class $$ColleagueActivitiesTableFilterComposer
+    extends Composer<_$AppDatabase, $ColleagueActivitiesTable> {
+  $$ColleagueActivitiesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get customerId => $composableBuilder(
+    column: $table.customerId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get staffId => $composableBuilder(
+    column: $table.staffId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get staffName => $composableBuilder(
+    column: $table.staffName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get at => $composableBuilder(
+    column: $table.at,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get outcome => $composableBuilder(
+    column: $table.outcome,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get amountPoisha => $composableBuilder(
+    column: $table.amountPoisha,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get method => $composableBuilder(
+    column: $table.method,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get promisedDate => $composableBuilder(
+    column: $table.promisedDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get voidedKind => $composableBuilder(
+    column: $table.voidedKind,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$ColleagueActivitiesTableOrderingComposer
+    extends Composer<_$AppDatabase, $ColleagueActivitiesTable> {
+  $$ColleagueActivitiesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get customerId => $composableBuilder(
+    column: $table.customerId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get staffId => $composableBuilder(
+    column: $table.staffId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get staffName => $composableBuilder(
+    column: $table.staffName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get at => $composableBuilder(
+    column: $table.at,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get outcome => $composableBuilder(
+    column: $table.outcome,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get amountPoisha => $composableBuilder(
+    column: $table.amountPoisha,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get method => $composableBuilder(
+    column: $table.method,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get promisedDate => $composableBuilder(
+    column: $table.promisedDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get voidedKind => $composableBuilder(
+    column: $table.voidedKind,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$ColleagueActivitiesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ColleagueActivitiesTable> {
+  $$ColleagueActivitiesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get kind =>
+      $composableBuilder(column: $table.kind, builder: (column) => column);
+
+  GeneratedColumn<String> get customerId => $composableBuilder(
+    column: $table.customerId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get staffId =>
+      $composableBuilder(column: $table.staffId, builder: (column) => column);
+
+  GeneratedColumn<String> get staffName =>
+      $composableBuilder(column: $table.staffName, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get at =>
+      $composableBuilder(column: $table.at, builder: (column) => column);
+
+  GeneratedColumn<String> get outcome =>
+      $composableBuilder(column: $table.outcome, builder: (column) => column);
+
+  GeneratedColumn<int> get amountPoisha => $composableBuilder(
+    column: $table.amountPoisha,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get method =>
+      $composableBuilder(column: $table.method, builder: (column) => column);
+
+  GeneratedColumn<String> get promisedDate => $composableBuilder(
+    column: $table.promisedDate,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<String> get note =>
+      $composableBuilder(column: $table.note, builder: (column) => column);
+
+  GeneratedColumn<String> get voidedKind => $composableBuilder(
+    column: $table.voidedKind,
+    builder: (column) => column,
+  );
+}
+
+class $$ColleagueActivitiesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ColleagueActivitiesTable,
+          ColleagueActivityRow,
+          $$ColleagueActivitiesTableFilterComposer,
+          $$ColleagueActivitiesTableOrderingComposer,
+          $$ColleagueActivitiesTableAnnotationComposer,
+          $$ColleagueActivitiesTableCreateCompanionBuilder,
+          $$ColleagueActivitiesTableUpdateCompanionBuilder,
+          (
+            ColleagueActivityRow,
+            BaseReferences<
+              _$AppDatabase,
+              $ColleagueActivitiesTable,
+              ColleagueActivityRow
+            >,
+          ),
+          ColleagueActivityRow,
+          PrefetchHooks Function()
+        > {
+  $$ColleagueActivitiesTableTableManager(
+    _$AppDatabase db,
+    $ColleagueActivitiesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ColleagueActivitiesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ColleagueActivitiesTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$ColleagueActivitiesTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> kind = const Value.absent(),
+                Value<String> customerId = const Value.absent(),
+                Value<String> staffId = const Value.absent(),
+                Value<String> staffName = const Value.absent(),
+                Value<DateTime> at = const Value.absent(),
+                Value<String?> outcome = const Value.absent(),
+                Value<int?> amountPoisha = const Value.absent(),
+                Value<String?> method = const Value.absent(),
+                Value<String?> promisedDate = const Value.absent(),
+                Value<String?> status = const Value.absent(),
+                Value<String?> note = const Value.absent(),
+                Value<String?> voidedKind = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ColleagueActivitiesCompanion(
+                id: id,
+                kind: kind,
+                customerId: customerId,
+                staffId: staffId,
+                staffName: staffName,
+                at: at,
+                outcome: outcome,
+                amountPoisha: amountPoisha,
+                method: method,
+                promisedDate: promisedDate,
+                status: status,
+                note: note,
+                voidedKind: voidedKind,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String kind,
+                required String customerId,
+                required String staffId,
+                Value<String> staffName = const Value.absent(),
+                required DateTime at,
+                Value<String?> outcome = const Value.absent(),
+                Value<int?> amountPoisha = const Value.absent(),
+                Value<String?> method = const Value.absent(),
+                Value<String?> promisedDate = const Value.absent(),
+                Value<String?> status = const Value.absent(),
+                Value<String?> note = const Value.absent(),
+                Value<String?> voidedKind = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ColleagueActivitiesCompanion.insert(
+                id: id,
+                kind: kind,
+                customerId: customerId,
+                staffId: staffId,
+                staffName: staffName,
+                at: at,
+                outcome: outcome,
+                amountPoisha: amountPoisha,
+                method: method,
+                promisedDate: promisedDate,
+                status: status,
+                note: note,
+                voidedKind: voidedKind,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$ColleagueActivitiesTable, ColleagueActivityRow>(
+                    table,
+                  ),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $ColleagueActivitiesTable,
+                    ColleagueActivityRow
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$ColleagueActivitiesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ColleagueActivitiesTable,
+      ColleagueActivityRow,
+      $$ColleagueActivitiesTableFilterComposer,
+      $$ColleagueActivitiesTableOrderingComposer,
+      $$ColleagueActivitiesTableAnnotationComposer,
+      $$ColleagueActivitiesTableCreateCompanionBuilder,
+      $$ColleagueActivitiesTableUpdateCompanionBuilder,
+      (
+        ColleagueActivityRow,
+        BaseReferences<
+          _$AppDatabase,
+          $ColleagueActivitiesTable,
+          ColleagueActivityRow
+        >,
+      ),
+      ColleagueActivityRow,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -30066,4 +31935,6 @@ class $AppDatabaseManager {
       $$NotificationsTableTableManager(_db, _db.notifications);
   $$KvSettingsTableTableManager get kvSettings =>
       $$KvSettingsTableTableManager(_db, _db.kvSettings);
+  $$ColleagueActivitiesTableTableManager get colleagueActivities =>
+      $$ColleagueActivitiesTableTableManager(_db, _db.colleagueActivities);
 }

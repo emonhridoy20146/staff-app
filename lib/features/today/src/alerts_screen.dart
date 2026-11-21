@@ -9,6 +9,7 @@ import '../../../core/theme/tokens.dart';
 import '../../../core/ui/common.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../customers/customers.dart';
+import 'team_activity.dart';
 
 /// What waits for me (FR-M-044), behind the bell: promises due today, new
 /// tasks, co-work requests, unread notices and handovers. Each feature
@@ -28,11 +29,13 @@ class AlertsScreen extends ConsumerWidget {
     final sc = context.statusColors;
     final lang = Localizations.localeOf(context).languageCode;
     final alerts = ref.watch(alertsProvider);
+    final today = ref.watch(todayProvider);
+    final team = ref.watch(teamActivityProvider(today)).value ?? const [];
     final names = {for (final c in ref.watch(allCustomersProvider).value ?? const <Customer>[]) c.id: c.nameOf(lang)};
     return Scaffold(
       backgroundColor: cs.surfaceContainerLowest,
       appBar: AppBar(title: Text(l.alertsTitle)),
-      body: alerts.isEmpty
+      body: alerts.isEmpty && team.isEmpty
           ? EmptyState(icon: Icons.notifications_none_rounded, title: l.alertsEmptyTitle, body: l.alertsEmptyBody)
           : ListView(
               padding: const EdgeInsets.fromLTRB(Space.screen, Space.s16, Space.screen, Space.s32),
@@ -71,6 +74,21 @@ class AlertsScreen extends ConsumerWidget {
                     ],
                   ]),
                 ),
+                if (team.isNotEmpty) ...[
+                  const SizedBox(height: Space.s24),
+                  SectionHeader(l.alertsTeamSection, count: f.num(team.length)),
+                  Card(
+                    margin: EdgeInsets.zero,
+                    child: Column(children: [
+                      for (var i = 0; i < team.take(8).length; i++) ...[
+                        if (i > 0) const Divider(height: 1, indent: Space.s16, endIndent: Space.s16),
+                        TeamActivityTile(row: team[i], customerName: names[team[i].customerId]),
+                      ],
+                      if (team.length > 8)
+                        TextButton(onPressed: () => context.push('/today-work'), child: Text(l.alertsTeamMore)),
+                    ]),
+                  ),
+                ],
               ],
             ),
     );

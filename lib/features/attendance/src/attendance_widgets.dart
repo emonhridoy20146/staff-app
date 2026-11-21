@@ -70,7 +70,9 @@ Future<bool> recordAttendance(BuildContext context, WidgetRef ref, AttendanceEve
   }
 }
 
-/// Duty card on Today (tap → break / work-out).
+/// Duty summary on Today (FR-M-004): one line while closed; tap to open the
+/// day's shift and attendance facts. It has no buttons: start work, break and
+/// end work live on the Attendance screen. Tapping outside closes it.
 class DutyCard extends ConsumerStatefulWidget {
   const DutyCard({super.key});
 
@@ -78,31 +80,8 @@ class DutyCard extends ConsumerStatefulWidget {
   ConsumerState<DutyCard> createState() => _DutyCardState();
 }
 
-class _DutyCardState extends ConsumerState<DutyCard> with WidgetsBindingObserver {
-  bool _gpsOn = true;
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addObserver(this);
-    _checkGps();
-  }
-
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) _checkGps();
-  }
-
-  Future<void> _checkGps() async {
-    final on = await Geolocator.isLocationServiceEnabled();
-    if (mounted && on != _gpsOn) setState(() => _gpsOn = on);
-  }
+class _DutyCardState extends ConsumerState<DutyCard> {
+  bool _open = false;
 
   @override
   Widget build(BuildContext context) {
@@ -117,94 +96,127 @@ class _DutyCardState extends ConsumerState<DutyCard> with WidgetsBindingObserver
     final now = ref.read(clockProvider).nowUtc();
     final duty = DutySettings.of(ref.watch(serverSettingsProvider));
     final businessDate = ref.watch(clockProvider).businessDate();
+    final midnight = businessDayStartUtc(businessDate);
 
-    if (day.status == DayStatus.notStarted || day.status == DayStatus.offDuty) {
-      return AppCard(
-        child: Row(
-          children: [
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(color: cs.surfaceContainerHigh, shape: BoxShape.circle),
-              child: Icon(Icons.wb_twilight_rounded, color: cs.onSurfaceVariant),
-            ),
-            const SizedBox(width: Space.s12),
-            Expanded(
-              child: Text(
-                day.status == DayStatus.offDuty && day.lastOut != null ? l.dutyEnded(f.time(day.lastOut!)) : l.dutyNotStarted,
-                style: t.bodyLarge!.copyWith(fontWeight: FontWeight.w600),
-              ),
-            ),
-            FilledButton.icon(
-              style: FilledButton.styleFrom(minimumSize: const Size(0, Sizes.minTarget)),
-              onPressed: () => context.push('/attendance/work-in'),
-              icon: const Icon(Icons.play_arrow_rounded),
-              label: Text(l.dutyStartWork),
-            ),
-          ],
-        ),
-      );
-    }
-
+    final started = day.status != DayStatus.notStarted;
+    final onDuty = day.status == DayStatus.onDuty;
     final onBreak = day.status == DayStatus.onBreak;
+    final ended = day.status == DayStatus.offDuty;
     final br = day.openBreak;
-    final overBreak = onBreak &&
-        br != null &&
-        duty.overBreakMin([for (final b in day.breaks) (start: b.start, end: b.end)], businessDate: businessDate, dhakaMidnightUtc: businessDayStartUtc(businessDate), now: now) > 0;
-    final tone = onBreak ? sem.warning : sem.success;
-    return Column(
-      children: [
-        if (!_gpsOn) ...[
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: Space.s12, vertical: Space.s8),
-            decoration: BoxDecoration(color: sem.danger.bg, borderRadius: Radii.brLg),
-            child: Row(
-              children: [
-                Icon(Icons.location_off_rounded, size: 18, color: sem.danger.fg),
-                const SizedBox(width: Space.s8),
-                Expanded(child: Text(l.gpsStatusOff, style: t.bodySmall!.copyWith(color: sem.danger.fg, fontWeight: FontWeight.w600))),
-                TextButton(
-                  onPressed: () => Geolocator.openLocationSettings(),
-                  child: Text(l.gpsTurnOn, style: TextStyle(color: sem.danger.fg)),
+    final spans = [for (final b in day.breaks) (start: b.start, end: b.end)];
+    final overBreakMin = duty.overBreakMin(spans, businessDate: businessDate, dhakaMidnightUtc: midnight, now: now);
+    final overtimeMin = duty.overtimeMin(firstIn: day.firstIn, lastOut: day.lastOut, dhakaMidnightUtc: midnight, now: now);
+    final officeOver = (onDuty || onBreak) && now.isAfter(duty.endAt(midnight));
+    final tone = onBreak ? sem.warning : (onDuty ? sem.success : null);
+    final fg = tone?.fg ?? cs.onSurfaceVariant;
+    final breakTaken = f.minutes(day.breakTotal(now).inMinutes);
+    final breakText = l.dutyBreakOf(breakTaken, f.minutes(duty.maxBreakMin));
+
+    final title = onBreak
+        ? l.dutyBreakSince(f.duration(br!.length(now)))
+        : onDuty
+            ? l.dutyOnSince(f.time(day.firstIn!))
+            : (ended && day.lastOut != null ? l.dutyEnded(f.time(day.lastOut!)) : l.dutyNotStarted);
+
+    Widget row(IconData icon, String label, String value, {Color? color}) => Padding(
+          padding: const EdgeInsets.symmetric(vertical: Space.s4),
+          child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Icon(icon, size: 18, color: color ?? cs.onSurfaceVariant),
+            const SizedBox(width: Space.s8),
+            Expanded(child: Text(label, style: t.bodyMedium!.copyWith(color: cs.onSurfaceVariant))),
+            const SizedBox(width: Space.s8),
+            Flexible(child: Text(value, textAlign: TextAlign.end, style: t.bodyMedium!.copyWith(color: color, fontWeight: FontWeight.w600))),
+          ]),
+        );
+
+    return TapRegion(
+      onTapOutside: (_) {
+        if (_open) setState(() => _open = false);
+      },
+      child: Container(
+        decoration: BoxDecoration(color: tone?.bg ?? cs.surfaceContainer, borderRadius: Radii.brXl),
+        clipBehavior: Clip.antiAlias,
+        child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          Semantics(
+            button: true,
+            expanded: _open,
+            label: l.dutyDetails,
+            child: InkWell(
+              onTap: () => setState(() => _open = !_open),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(Space.s16, Space.s12, Space.s12, Space.s12),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(minHeight: Sizes.minTarget),
+                  child: Row(children: [
+                    if (onDuty || onBreak)
+                      _PulseDot(color: fg, animate: onDuty)
+                    else
+                      Icon(started ? Icons.check_circle_outline_rounded : Icons.wb_twilight_rounded, color: fg),
+                    const SizedBox(width: Space.s12),
+                    Expanded(
+                      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                        Text(title, style: t.titleSmall!.copyWith(color: tone == null ? cs.onSurface : fg)),
+                        Text(f.date(businessDate, withYear: true), style: t.bodySmall!.copyWith(color: tone == null ? cs.onSurfaceVariant : fg)),
+                      ]),
+                    ),
+                    Icon(_open ? Icons.expand_less_rounded : Icons.expand_more_rounded, color: fg),
+                  ]),
                 ),
-              ],
+              ),
             ),
           ),
-          const SizedBox(height: Space.s8),
-        ],
-        Container(
-          decoration: BoxDecoration(color: tone.bg, borderRadius: Radii.brXl),
-          padding: const EdgeInsets.fromLTRB(Space.s16, Space.s12, Space.s12, Space.s12),
-          child: Row(
-            children: [
-              _PulseDot(color: tone.fg, animate: !onBreak),
-              const SizedBox(width: Space.s12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      onBreak ? l.dutyBreakSince(f.duration(br!.length(now))) : l.dutyOnSince(f.time(day.firstIn!)),
-                      style: t.titleSmall!.copyWith(color: tone.fg),
-                    ),
-                    Text(
-                      overBreak ? l.meBreakTotal(f.duration(day.breakTotal(now))) : (onBreak ? l.dutyOnBreak : l.dutyTracking),
-                      style: t.bodySmall!.copyWith(color: tone.fg),
-                    ),
-                  ],
-                ),
+          if (officeOver)
+            InkWell(
+              onTap: () => context.push('/attendance'),
+              child: Container(
+                color: sem.warning.bg,
+                padding: const EdgeInsets.symmetric(horizontal: Space.s16, vertical: Space.s8),
+                child: Row(children: [
+                  Icon(Icons.nights_stay_rounded, size: 18, color: sem.warning.fg),
+                  const SizedBox(width: Space.s8),
+                  Expanded(child: Text(l.dutyOfficeOver, style: t.bodySmall!.copyWith(color: sem.warning.fg, fontWeight: FontWeight.w600))),
+                ]),
               ),
-              TextButton(
-                style: TextButton.styleFrom(foregroundColor: tone.fg),
-                onPressed: _gpsOn ? () => recordAttendance(context, ref, onBreak ? AttendanceEventType.breakEnd : AttendanceEventType.breakStart) : null,
-                child: Text(onBreak ? l.dutyEndBreak : l.dutyStartBreak),
-              ),
-              if (!onBreak)
-                IconButton(tooltip: l.dutyEndWork, color: tone.fg, onPressed: _gpsOn ? () => context.push('/attendance/work-out') : null, icon: const Icon(Icons.logout_rounded)),
-            ],
+            ),
+          AnimatedSize(
+            duration: const Duration(milliseconds: 180),
+            alignment: Alignment.topCenter,
+            child: !_open
+                ? const SizedBox(width: double.infinity)
+                : Padding(
+                    padding: const EdgeInsets.fromLTRB(Space.s16, 0, Space.s16, Space.s12),
+                    child: Column(children: [
+                      const Divider(height: Space.s16),
+                      row(Icons.schedule_rounded, l.dutyRowShift, '${f.time(duty.startAt(midnight))} – ${f.time(duty.endAt(midnight))}'),
+                      row(
+                        Icons.login_rounded,
+                        l.dutyRowIn,
+                        day.firstIn == null
+                            ? l.dutyNotYet
+                            : '${f.time(day.firstIn!)} · ${day.lateMin > 0 ? l.attHubLateWarning(f.minutes(day.lateMin)) : l.dutyOnTime}',
+                        color: day.lateMin > 0 ? sem.warning.fg : null,
+                      ),
+                      row(
+                        Icons.coffee_rounded,
+                        l.dutyRowBreak,
+                        overBreakMin > 0 ? '$breakText · ${l.attHubOverBreak(f.minutes(overBreakMin))}' : breakText,
+                        color: overBreakMin > 0 ? sem.warning.fg : null,
+                      ),
+                      row(Icons.logout_rounded, l.dutyRowOut, day.lastOut == null ? l.dutyNotYet : f.time(day.lastOut!)),
+                      if (overtimeMin > 0) row(Icons.more_time_rounded, l.dutyRowOvertime, f.minutes(overtimeMin), color: sem.info.fg),
+                      if (onBreak) ...[
+                        const SizedBox(height: Space.s8),
+                        Row(children: [
+                          Icon(Icons.info_outline_rounded, size: 18, color: sem.warning.fg),
+                          const SizedBox(width: Space.s8),
+                          Expanded(child: Text(l.dutyEndBreakFirst, style: t.bodySmall!.copyWith(color: sem.warning.fg))),
+                        ]),
+                      ],
+                    ]),
+                  ),
           ),
-        ),
-      ],
+        ]),
+      ),
     );
   }
 }

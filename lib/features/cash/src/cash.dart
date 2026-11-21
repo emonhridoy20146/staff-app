@@ -165,9 +165,9 @@ class CashCard extends ConsumerWidget {
               title: MoneyText(d.amountPoisha, style: t.bodyLarge!.copyWith(fontWeight: FontWeight.w600)),
               subtitle: Text(f.dateTime(d.depositedAt)),
               trailing: StatusBadge(
-                d.status == 'verified' ? AppStatus.paid : (d.status == 'rejected' ? AppStatus.overdue : AppStatus.pending),
+                d.status == 'verified' ? AppStatus.paid : (d.status == 'rejected' || d.status == 'deleted' ? AppStatus.overdue : AppStatus.pending),
                 dense: true,
-                label: d.status == 'verified' ? l.statusPosted : (d.status == 'rejected' ? l.statusRejected : (d.syncState == 'synced' ? l.statusPending : l.statusQueued)),
+                label: d.status == 'verified' ? l.statusPosted : (d.status == 'deleted' ? l.statusDeleted : d.status == 'rejected' ? l.statusRejected : (d.syncState == 'synced' ? l.statusPending : l.statusQueued)),
               ),
             ),
         ],

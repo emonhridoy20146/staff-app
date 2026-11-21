@@ -85,6 +85,9 @@ class AppLocalizationsBn extends AppLocalizations {
   String get actionSeeAll => 'সব দেখুন';
 
   @override
+  String get actionReceiptPdf => 'রসিদ পিডিএফ (প্রিন্ট বা সেভ)';
+
+  @override
   String get actionShareReceipt => 'রসিদ শেয়ার';
 
   @override
@@ -172,6 +175,9 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get pinUnlockTitle => 'পিন দিন';
+
+  @override
+  String get pinChecking => 'পিন যাচাই হচ্ছে, লগইন চলছে…';
 
   @override
   String pinUnlockGreeting(String name) {
@@ -359,6 +365,42 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get dutyEndBreak => 'বিরতি শেষ';
+
+  @override
+  String get dutyDetails => 'আজকের ডিউটির তথ্য';
+
+  @override
+  String get dutyRowShift => 'অফিস সময়';
+
+  @override
+  String get dutyRowIn => 'উপস্থিতি';
+
+  @override
+  String get dutyRowBreak => 'বিরতি';
+
+  @override
+  String get dutyRowOut => 'কাজ শেষ';
+
+  @override
+  String get dutyRowOvertime => 'ওভারটাইম';
+
+  @override
+  String get dutyOnTime => 'সময়মতো';
+
+  @override
+  String get dutyNotYet => 'এখনো না';
+
+  @override
+  String dutyBreakOf(String taken, String limit) {
+    return '$limit-এর মধ্যে $taken';
+  }
+
+  @override
+  String get dutyOfficeOver => 'অফিস সময় শেষ। এখন কাজ শেষ করতে পারেন।';
+
+  @override
+  String get dutyEndBreakFirst =>
+      'আগে বিরতি শেষ করুন, তারপর কাজ শেষ করতে পারবেন।';
 
   @override
   String get dutyNotStarted => 'আজ এখনো কাজ শুরু করেননি';
@@ -552,10 +594,24 @@ class AppLocalizationsBn extends AppLocalizations {
   String get statusRejected => 'গৃহীত হয়নি';
 
   @override
+  String get statusDeleted => 'অফিস মুছে দিয়েছে';
+
+  @override
   String get statusResolved => 'সমাধান হয়েছে';
 
   @override
   String get statusVoided => 'বাতিল';
+
+  @override
+  String get statusVoidedByOffice => 'অফিস বাতিল করেছে';
+
+  @override
+  String get statusDeletedByYou => 'আপনি মুছেছেন';
+
+  @override
+  String collectionVoidedBy(String name) {
+    return '$name';
+  }
 
   @override
   String get detailOutstanding => 'মোট বকেয়া';
@@ -1554,62 +1610,110 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get oemGuideTitle => 'ব্যাটারি ও ব্যাকগ্রাউন্ড সেটিংস';
+
   @override
-  String get oemGuideSubtitle => 'কিছু ফোন স্ক্রিন বন্ধ হলে GPS বন্ধ করে দেয়। ডিউটিতে ট্র্যাকিং চালু রাখতে আপনার ফোন ব্র্যান্ড অনুযায়ী নিচের ধাপগুলো অনুসরণ করুন।';
+  String get oemGuideSubtitle =>
+      'কিছু ফোন স্ক্রিন বন্ধ হলে GPS বন্ধ করে দেয়। ডিউটিতে ট্র্যাকিং চালু রাখতে আপনার ফোন ব্র্যান্ড অনুযায়ী নিচের ধাপগুলো অনুসরণ করুন।';
+
   @override
   String get oemGuideDone => 'বুঝেছি';
+
   @override
   String get oemGuideXiaomiName => 'Xiaomi / Redmi / POCO (MIUI)';
+
   @override
-  String get oemGuideXiaomiStep1 => 'সেটিংস → Apps → Manage apps → [এই অ্যাপ] → Battery saver → No restrictions';
+  String get oemGuideXiaomiStep1 =>
+      'সেটিংস → Apps → Manage apps → [এই অ্যাপ] → Battery saver → No restrictions';
+
   @override
-  String get oemGuideXiaomiStep2 => 'সেটিংস → Apps → Manage apps → [এই অ্যাপ] → Autostart → চালু করুন';
+  String get oemGuideXiaomiStep2 =>
+      'সেটিংস → Apps → Manage apps → [এই অ্যাপ] → Autostart → চালু করুন';
+
   @override
-  String get oemGuideXiaomiStep3 => 'সেটিংস → Battery & performance → App battery saver → এই অ্যাপ খুঁজুন → No restrictions';
+  String get oemGuideXiaomiStep3 =>
+      'সেটিংস → Battery & performance → App battery saver → এই অ্যাপ খুঁজুন → No restrictions';
+
   @override
   String get oemGuideSamsungName => 'Samsung (One UI)';
+
   @override
-  String get oemGuideSamsungStep1 => 'সেটিংস → Apps → [এই অ্যাপ] → Battery → Unrestricted';
+  String get oemGuideSamsungStep1 =>
+      'সেটিংস → Apps → [এই অ্যাপ] → Battery → Unrestricted';
+
   @override
-  String get oemGuideSamsungStep2 => 'সেটিংস → Device care → Battery → App power management → Sleeping apps → এই অ্যাপ সরান';
+  String get oemGuideSamsungStep2 =>
+      'সেটিংস → Device care → Battery → App power management → Sleeping apps → এই অ্যাপ সরান';
+
   @override
-  String get oemGuideSamsungStep3 => 'সেটিংস → Apps → [এই অ্যাপ] → Mobile data → Allow background data usage';
+  String get oemGuideSamsungStep3 =>
+      'সেটিংস → Apps → [এই অ্যাপ] → Mobile data → Allow background data usage';
+
   @override
   String get oemGuideOppoName => 'Oppo / Realme (ColorOS)';
+
   @override
-  String get oemGuideOppoStep1 => 'সেটিংস → Battery → App power saving → এই অ্যাপ → বন্ধ করুন';
+  String get oemGuideOppoStep1 =>
+      'সেটিংস → Battery → App power saving → এই অ্যাপ → বন্ধ করুন';
+
   @override
-  String get oemGuideOppoStep2 => 'সেটিংস → Apps → [এই অ্যাপ] → Battery usage → Allow background activity';
+  String get oemGuideOppoStep2 =>
+      'সেটিংস → Apps → [এই অ্যাপ] → Battery usage → Allow background activity';
+
   @override
-  String get oemGuideOppoStep3 => 'সেটিংস → Battery → More → App quick freeze → এই অ্যাপ বাদ দিন';
+  String get oemGuideOppoStep3 =>
+      'সেটিংস → Battery → More → App quick freeze → এই অ্যাপ বাদ দিন';
+
   @override
   String get oemGuideVivoName => 'Vivo (Funtouch OS)';
+
   @override
-  String get oemGuideVivoStep1 => 'সেটিংস → Battery → Background app power management → এই অ্যাপ বন্ধ করুন';
+  String get oemGuideVivoStep1 =>
+      'সেটিংস → Battery → Background app power management → এই অ্যাপ বন্ধ করুন';
+
   @override
-  String get oemGuideVivoStep2 => 'iManager → App Management → [এই অ্যাপ] → Background run → Allow';
+  String get oemGuideVivoStep2 =>
+      'iManager → App Management → [এই অ্যাপ] → Background run → Allow';
+
   @override
-  String get oemGuideVivoStep3 => 'সেটিংস → Apps → [এই অ্যাপ] → Battery → Unrestricted';
+  String get oemGuideVivoStep3 =>
+      'সেটিংস → Apps → [এই অ্যাপ] → Battery → Unrestricted';
+
   @override
   String get oemGuideHuaweiName => 'Huawei / Honor (EMUI / MagicUI)';
+
   @override
-  String get oemGuideHuaweiStep1 => 'Phone Manager → Launch manager → এই অ্যাপ খুঁজুন → Manage manually';
+  String get oemGuideHuaweiStep1 =>
+      'Phone Manager → Launch manager → এই অ্যাপ খুঁজুন → Manage manually';
+
   @override
-  String get oemGuideHuaweiStep2 => 'Auto-launch, Secondary launch এবং Run in background চালু করুন';
+  String get oemGuideHuaweiStep2 =>
+      'Auto-launch, Secondary launch এবং Run in background চালু করুন';
+
   @override
-  String get oemGuideHuaweiStep3 => 'সেটিংস → Battery → App launch → এই অ্যাপ → Manage manually → তিনটিই Allow করুন';
+  String get oemGuideHuaweiStep3 =>
+      'সেটিংস → Battery → App launch → এই অ্যাপ → Manage manually → তিনটিই Allow করুন';
+
   @override
   String get oemGuideOneplusName => 'OnePlus / Nothing (OxygenOS)';
+
   @override
-  String get oemGuideOneplusStep1 => 'সেটিংস → Apps → [এই অ্যাপ] → Battery → Allow background activity';
+  String get oemGuideOneplusStep1 =>
+      'সেটিংস → Apps → [এই অ্যাপ] → Battery → Allow background activity';
+
   @override
-  String get oemGuideOneplusStep2 => 'সেটিংস → Battery → Battery optimization → All apps → [এই অ্যাপ] → Don\'t optimize';
+  String get oemGuideOneplusStep2 =>
+      'সেটিংস → Battery → Battery optimization → All apps → [এই অ্যাপ] → Don\'t optimize';
+
   @override
   String get oemGuideOtherName => 'অন্যান্য Android ফোন';
+
   @override
-  String get oemGuideOtherStep1 => 'সেটিংস → Apps → [এই অ্যাপ] → Battery → Unrestricted বা Don\'t optimize';
+  String get oemGuideOtherStep1 =>
+      'সেটিংস → Apps → [এই অ্যাপ] → Battery → Unrestricted বা Don\'t optimize';
+
   @override
-  String get oemGuideOtherStep2 => 'সেটিংস → Battery → Battery optimization → এই অ্যাপ খুঁজুন → Don\'t optimize';
+  String get oemGuideOtherStep2 =>
+      'সেটিংস → Battery → Battery optimization → এই অ্যাপ খুঁজুন → Don\'t optimize';
 
   @override
   String visitSuggestTitle(String name) {
@@ -2360,6 +2464,29 @@ class AppLocalizationsBn extends AppLocalizations {
   }
 
   @override
+  String scheduleLinePaidOn(String date) {
+    return '$date-এ পরিশোধ';
+  }
+
+  @override
+  String scheduleDaysLate(String days) {
+    return '$days দিন দেরিতে';
+  }
+
+  @override
+  String get scheduleMissed => 'কিস্তি বাদ পড়েছে';
+
+  @override
+  String scheduleLinePayments(String seq) {
+    return '$seq নম্বর কিস্তির পরিশোধ';
+  }
+
+  @override
+  String scheduleReceiptNo(String no) {
+    return 'রসিদ $no';
+  }
+
+  @override
   String schedulePaidOf(String paid, String left) {
     return 'পরিশোধ $paid · বাকি $left';
   }
@@ -2391,7 +2518,8 @@ class AppLocalizationsBn extends AppLocalizations {
   String get phoneAddTitle => 'ফোন নম্বর যোগ করুন';
 
   @override
-  String get phoneAddHint => 'একসাথে কয়েকটি নম্বর দিতে পারেন। ERP-র নম্বর আগের মতোই থাকবে।';
+  String get phoneAddHint =>
+      'একসাথে কয়েকটি নম্বর দিতে পারেন। ERP-র নম্বর আগের মতোই থাকবে।';
 
   @override
   String phoneNumberN(String n) {
@@ -2425,7 +2553,8 @@ class AppLocalizationsBn extends AppLocalizations {
   String get phoneErrEmpty => 'অন্তত একটি নম্বর লিখুন';
 
   @override
-  String get phoneKeptHere => 'এই নম্বরগুলো ফিল্ড সিস্টেমে থাকে; ERP-তে পাঠানো হয় না।';
+  String get phoneKeptHere =>
+      'এই নম্বরগুলো ফিল্ড সিস্টেমে থাকে; ERP-তে পাঠানো হয় না।';
 
   @override
   String get phoneSave => 'নম্বর সংরক্ষণ';
@@ -2453,7 +2582,8 @@ class AppLocalizationsBn extends AppLocalizations {
   String get phoneRemoved => 'নম্বর সরানো হয়েছে';
 
   @override
-  String get phoneRemoveOffline => 'নম্বর সরাতে ইন্টারনেট লাগবে। অনলাইনে এসে আবার চেষ্টা করুন।';
+  String get phoneRemoveOffline =>
+      'নম্বর সরাতে ইন্টারনেট লাগবে। অনলাইনে এসে আবার চেষ্টা করুন।';
 
   @override
   String get phoneRemoveNotAllowed => 'এই নম্বরটি সরানো যাবে না।';
@@ -2475,32 +2605,106 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String cashInHandInvoice(String no) {
-    return 'ইনভয়েস ${no}';
+    return 'ইনভয়েস $no';
   }
 
   @override
   String cashInHandPartOf(String amount) {
-    return 'মোট ${amount}-এর বাকি';
+    return 'মোট $amount-এর বাকি';
   }
 
   @override
   String cashInHandPendingDeposits(String amount) {
-    return '${amount} জমা দেওয়া হয়েছে, যাচাই বাকি';
+    return '$amount জমা দেওয়া হয়েছে, যাচাই বাকি';
   }
 
   @override
-  String get cashInHandUnsent => 'এই ফোনের কিছু টাকা এখনো সার্ভারে পৌঁছায়নি; সেগুলো এই তালিকায় নেই।';
+  String get cashInHandUnsent =>
+      'এই ফোনের কিছু টাকা এখনো সার্ভারে পৌঁছায়নি; সেগুলো এই তালিকায় নেই।';
 
   @override
   String get cashInHandEmpty => 'হাতে কোনো নগদ নেই।';
 
   @override
   String cashInHandMore(String n) {
-    return 'আরও ${n}টি পুরনো আদায় তালিকায় নেই; ওপরের মোটে ধরা আছে।';
+    return 'আরও $nটি পুরনো আদায় তালিকায় নেই; ওপরের মোটে ধরা আছে।';
   }
 
   @override
-  String get cashInHandHow => 'জমা দিলে আপনার সবচেয়ে পুরনো আদায় আগে মেটানো ধরা হয়, তাই হাতে থাকা নগদ মানে আপনার সবচেয়ে নতুন আদায়গুলো। গ্রাহক খুলতে লাইনে চাপ দিন।';
+  String get cashInHandHow =>
+      'জমা দিলে আপনার সবচেয়ে পুরনো আদায় আগে মেটানো ধরা হয়, তাই হাতে থাকা নগদ মানে আপনার সবচেয়ে নতুন আদায়গুলো। গ্রাহক খুলতে লাইনে চাপ দিন।';
+
+  @override
+  String get cashActionEdit => 'পরিবর্তন';
+
+  @override
+  String get cashActionDelete => 'মুছুন';
+
+  @override
+  String get cashEditTitle => 'এই আদায় পরিবর্তন করুন';
+
+  @override
+  String get cashEditAmount => 'টাকার পরিমাণ (৳)';
+
+  @override
+  String get cashEditNote => 'নোট';
+
+  @override
+  String get cashEditPayer => 'যিনি দিয়েছেন';
+
+  @override
+  String get cashEditSave => 'সংরক্ষণ';
+
+  @override
+  String get cashDeleteTitle => 'এই আদায় মুছবেন?';
+
+  @override
+  String cashDeleteBody(String amount, String customer) {
+    return '$customer-এর $amount আপনার হাতের নগদ থেকে বাদ যাবে। রসিদ নম্বর ব্যবহৃত থাকবে এবং লাইনটি ইতিহাসে মুছে ফেলা হিসেবে থাকবে।';
+  }
+
+  @override
+  String get cashDeleteReason => 'কারণ (ঐচ্ছিক)';
+
+  @override
+  String get cashDeleteConfirm => 'মুছুন';
+
+  @override
+  String get cashActionDone => 'হয়েছে';
+
+  @override
+  String get cashActionOffline =>
+      'ইন্টারনেট লাগবে। অনলাইনে এসে আবার চেষ্টা করুন।';
+
+  @override
+  String get cashActionCovered =>
+      'এই টাকা ইতিমধ্যে জমার মধ্যে ধরা হয়েছে, তাই পরিবর্তন করা যাবে না। অফিসকে জানান।';
+
+  @override
+  String get cashActionNotEditable =>
+      'এই আদায় ইতিমধ্যে ERP-তে চলে গেছে, এখান থেকে পরিবর্তন করা যাবে না। অফিসকে জানান।';
+
+  @override
+  String get cashActionPosted =>
+      'এই আদায় ERP-তে পোস্ট হয়ে গেছে। অফিসকে জানান।';
+
+  @override
+  String get cashActionBusy =>
+      'এখন ERP-তে পাঠানো হচ্ছে। এক মিনিট পর আবার চেষ্টা করুন।';
+
+  @override
+  String get cashActionNotAllowed => 'আপনি এই আদায় পরিবর্তন করতে পারবেন না।';
+
+  @override
+  String get cashActionFailed => 'করা যায়নি। আবার চেষ্টা করুন।';
+
+  @override
+  String collectionEditedWas(String amount) {
+    return 'সম্পাদিত · আগে $amount';
+  }
+
+  @override
+  String get collectionDeletedTag => 'মুছে ফেলা';
 
   @override
   String get cashInHandOffline => 'এই তালিকার জন্য ইন্টারনেট লাগবে';
@@ -2543,10 +2747,12 @@ class AppLocalizationsBn extends AppLocalizations {
   String get boardEmpty => 'এই সময়ে কারও যাচাই হওয়া আদায় নেই।';
 
   @override
-  String get boardFootnoteAll => 'শুধু ইআরপি-তে গৃহীত আদায় গোনা হয়; ইআরপি-র অপেক্ষায় থাকা টাকা নয়। সব শাখা এই বোর্ডে আছে।';
+  String get boardFootnoteAll =>
+      'শুধু ইআরপি-তে গৃহীত আদায় গোনা হয়; ইআরপি-র অপেক্ষায় থাকা টাকা নয়। সব শাখা এই বোর্ডে আছে।';
 
   @override
-  String get boardFootnoteBranch => 'শুধু ইআরপি-তে গৃহীত আদায় গোনা হয়; ইআরপি-র অপেক্ষায় থাকা টাকা নয়। এই বোর্ডে শুধু আপনার শাখা।';
+  String get boardFootnoteBranch =>
+      'শুধু ইআরপি-তে গৃহীত আদায় গোনা হয়; ইআরপি-র অপেক্ষায় থাকা টাকা নয়। এই বোর্ডে শুধু আপনার শাখা।';
 
   @override
   String get boardCrown => 'প্রথম স্থান';
@@ -2558,7 +2764,8 @@ class AppLocalizationsBn extends AppLocalizations {
   String get alertsEmptyTitle => 'আপনার জন্য কিছু অপেক্ষায় নেই';
 
   @override
-  String get alertsEmptyBody => 'আজকের প্রতিশ্রুতি, নতুন কাজ, যৌথ কাজের অনুরোধ ও অফিসের নোটিশ এখানে দেখা যাবে।';
+  String get alertsEmptyBody =>
+      'আজকের প্রতিশ্রুতি, নতুন কাজ, যৌথ কাজের অনুরোধ ও অফিসের নোটিশ এখানে দেখা যাবে।';
 
   @override
   String alertPromiseToday(String amount) {
@@ -2617,7 +2824,27 @@ class AppLocalizationsBn extends AppLocalizations {
   String get workEmptyTitle => 'এই দিনে কোনো কাজ রেকর্ড নেই';
 
   @override
-  String get workEmptyBody => 'ভিজিট, আদায়, প্রতিশ্রুতি, নোট, পিন, কল ও শেষ করা কাজ এখানে দেখা যাবে।';
+  String get workTabMine => 'আমার কাজ';
+
+  @override
+  String get workTabTeam => 'অন্য কর্মী';
+
+  @override
+  String get teamEmptyTitle => 'এই দিনে অন্য কর্মীর কোনো কাজ নেই';
+
+  @override
+  String get teamEmptyBody =>
+      'আপনার শাখার সহকর্মীদের ভিজিট, প্রতিশ্রুতি, আদায় ও পিন নামসহ এখানে দেখা যাবে।';
+
+  @override
+  String get alertsTeamSection => 'আজ অন্য কর্মীরা';
+
+  @override
+  String get alertsTeamMore => 'সব দেখুন';
+
+  @override
+  String get workEmptyBody =>
+      'ভিজিট, আদায়, প্রতিশ্রুতি, নোট, পিন, কল ও শেষ করা কাজ এখানে দেখা যাবে।';
 
   @override
   String get workPrevDay => 'আগের দিন';
@@ -2717,6 +2944,31 @@ class AppLocalizationsBn extends AppLocalizations {
   String timelineCollector(String name) {
     return 'আদায়: $name';
   }
+
+  @override
+  String timelineVisitBy(String name) {
+    return 'ভিজিট করেছেন $name';
+  }
+
+  @override
+  String timelinePromiseBy(String name) {
+    return 'প্রতিশ্রুতি নিয়েছেন $name';
+  }
+
+  @override
+  String timelinePinBy(String name) {
+    return 'পিন দিয়েছেন $name';
+  }
+
+  @override
+  String get timelinePinSet => 'গ্রাহকের পিন দেওয়া হয়েছে';
+
+  @override
+  String get timelinePinPending =>
+      'গ্রাহকের পিন প্রস্তাব · অনুমোদনের অপেক্ষায়';
+
+  @override
+  String get timelinePinRejected => 'গ্রাহকের পিন অনুমোদিত হয়নি';
 
   @override
   String get timelineAdvance => 'অগ্রিম';

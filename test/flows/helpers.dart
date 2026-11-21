@@ -13,6 +13,7 @@ import 'package:staff_app/features/auth/auth.dart';
 import 'package:staff_app/features/auth/src/session_controller.dart'
     show pinHasherProvider;
 import 'package:staff_app/core/auth/pin.dart';
+import 'package:staff_app/core/location/gps_status.dart';
 import 'package:staff_app/features/onboarding/onboarding.dart';
 
 /// A small camera-like JPEG for selfie / photo tests.
@@ -50,6 +51,7 @@ class Harness {
       api: api,
       extra: [
         reminderSchedulerProvider.overrideWithValue(reminders),
+        gpsStatusStreamProvider.overrideWithValue(const Stream<bool>.empty()),
         permissionRequesterProvider.overrideWithValue(AlwaysGrantRequester()),
         // Fewer PBKDF2 rounds keep tests fast; production uses 60 000.
         pinHasherProvider.overrideWithValue(const PinHasher(iterations: 1000)),

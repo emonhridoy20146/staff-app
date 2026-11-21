@@ -1,9 +1,12 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/db/app_database.dart' show PromiseRow;
+import '../../core/db/colleague_activity.dart';
 import '../../core/feature/feature_manifest.dart';
 import '../../core/permissions/permission_service.dart';
+import '../../core/providers.dart' show databaseProvider;
 import '../../core/settings/ui_prefs.dart';
+import '../auth/auth.dart' show sessionProvider;
 import '../../l10n/app_localizations.dart';
 import 'src/promises.dart';
 import 'src/work_log.dart';
@@ -40,16 +43,25 @@ final promisesManifest = FeatureManifest(
       id: 'promises',
       watch: (context, ref, id) {
         final l = AppLocalizations.of(context);
-        return watchPromisesFor(ref, id).map((rows) {
+        final lang = Localizations.localeOf(context).languageCode;
+        return combineLatest2(watchPromisesFor(ref, id), watchColleagueActivities(ref.read(databaseProvider), id, 'promise'), (rows, others) {
           final f = ref.read(fmtProvider);
+          final myName = ref.read(sessionProvider).user?.name.of(lang);
           return [
             for (final p in rows)
               TimelineEntry(
                 at: p.createdAt,
                 icon: Icons.handshake_rounded,
                 title: l.timelinePromise(f.money(p.promisedAmountPoisha), f.date(p.promisedDate)),
-                subtitle: [f.dateTime(p.createdAt), if (p.note != null) p.note!].join(' · '),
+                subtitle: [f.dateTime(p.createdAt), if ((p.createdByName ?? myName) != null) l.timelinePromiseBy((p.createdByName ?? myName)!), if (p.note != null) p.note!].join(' · '),
                 statusChip: Builder(builder: (c) => promiseStatusChip(c, p)),
+              ),
+            for (final o in others)
+              TimelineEntry(
+                at: o.at,
+                icon: Icons.handshake_rounded,
+                title: l.timelinePromise(f.money(o.amountPoisha ?? 0), o.promisedDate == null ? '' : f.date(o.promisedDate!)),
+                subtitle: [f.dateTime(o.at), l.timelinePromiseBy(o.staffName), if (o.note != null) o.note!].join(' · '),
               ),
           ];
         });

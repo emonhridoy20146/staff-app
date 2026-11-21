@@ -14,7 +14,7 @@ Stream<List<WorkLogEntry>> watchPromiseWorkLog(BuildContext context, WidgetRef r
   final db = ref.read(databaseProvider);
   final from = businessDayStartUtc(businessDate);
   final to = from.add(const Duration(days: 1));
-  return (db.select(db.promises)..where((t) => t.createdAt.isBiggerOrEqualValue(from) & t.createdAt.isSmallerThanValue(to))).watch().map((rows) {
+  return (db.select(db.promises)..where((t) => t.createdAt.isBiggerOrEqualValue(from) & t.createdAt.isSmallerThanValue(to) & t.createdByName.isNull())).watch().map((rows) {
     final f = ref.read(fmtProvider);
     return [
       for (final p in rows)

@@ -190,6 +190,14 @@ class Collections extends Table {
   /// resolved_posted | resolved_refund | resolved_voided | voided | rejected
   TextColumn get status => text().withDefault(const Constant('queued'))();
   TextColumn get erpReceiptNo => text().nullable()();
+
+  /// The amount before the first edit (v12, contract 1.33.0); null = never edited.
+  IntColumn get previousAmountPoisha => integer().nullable()();
+
+  /// Who voided it (v12, contract 1.33.0): `withdrawn` (the collector) or `admin` (the office); null = not voided.
+  TextColumn get voidedKind => text().nullable()();
+  TextColumn get voidedByName => text().nullable()();
+  TextColumn get voidedReason => text().nullable()();
   TextColumn get conflictCode => text().nullable()();
   TextColumn get conflictMessage => text().nullable()();
   TextColumn get resolutionText => text().nullable()();
@@ -328,8 +336,43 @@ class Promises extends Table {
   TextColumn get syncState => text().withDefault(const Constant('queued'))();
   BoolColumn get reminderScheduled => boolean().withDefault(const Constant(false))();
 
+  /// Who made the promise (v12, contract 1.31.0); null = me / not known. A colleague's promise on
+  /// a customer assigned to me stays here (it is mine to follow up) and says who made it.
+  TextColumn get createdByName => text().nullable()();
+
   @override
   Set<Column> get primaryKey => {clientId};
+}
+
+/// What a colleague of the branch did on a customer (v12, contract 1.31.0): their
+/// visits, promises and collections, with their name. Kept apart from the
+/// user's own `visits`, `promises` and `collections` so Today totals, cash in
+/// hand and "my promises" never count a colleague's work.
+@DataClassName('ColleagueActivityRow')
+class ColleagueActivities extends Table {
+  /// `<kind>:<server id>`.
+  TextColumn get id => text()();
+
+  /// `visit` | `promise` | `collection`.
+  TextColumn get kind => text()();
+  TextColumn get customerId => text()();
+  TextColumn get staffId => text()();
+  TextColumn get staffName => text().withDefault(const Constant(''))();
+
+  /// Visit check-in, promise created, or collection recorded.
+  DateTimeColumn get at => dateTime()();
+  TextColumn get outcome => text().nullable()();
+  IntColumn get amountPoisha => integer().nullable()();
+  TextColumn get method => text().nullable()();
+  TextColumn get promisedDate => text().nullable()();
+  TextColumn get status => text().nullable()();
+  TextColumn get note => text().nullable()();
+
+  /// A voided collection: `withdrawn` (by its collector) or `admin` (by the office).
+  TextColumn get voidedKind => text().nullable()();
+
+  @override
+  Set<Column> get primaryKey => {id};
 }
 
 @DataClassName('TagEventRow')

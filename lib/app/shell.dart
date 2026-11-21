@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../core/feature/feature_manifest.dart';
+import '../core/location/gps_status.dart';
 import '../core/providers.dart';
 import '../core/settings/ui_prefs.dart';
 import '../core/theme/app_theme.dart';
@@ -170,6 +171,7 @@ class _BranchBar extends StatelessWidget {
                     ),
             ),
             const Spacer(),
+            const GpsStatusIcon(),
             IconButton(
               icon: Badge(
                 isLabelVisible: notificationCount > 0,

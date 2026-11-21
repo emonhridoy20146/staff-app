@@ -149,7 +149,15 @@ class _PermissionsPrimerScreenState extends ConsumerState<PermissionsPrimerScree
       case PermissionResult.permanentlyDenied:
         setState(() => _permanentlyDenied.add(id));
       case PermissionResult.denied:
-        break;
+        if (id == 'battery') await _openBatterySettings();
+    }
+  }
+
+  Future<void> _openBatterySettings() async {
+    try {
+      await const MethodChannel('com.howlader.staff/permissions').invokeMethod('openBatterySettings');
+    } catch (_) {
+      await _openAppSettings();
     }
   }
 
@@ -162,7 +170,7 @@ class _PermissionsPrimerScreenState extends ConsumerState<PermissionsPrimerScree
     }
   }
 
-  bool get _allGranted => _ids.every(_granted.contains);
+  bool get _allGranted => _ids.where((id) => id != 'battery').every(_granted.contains);
 
   @override
   Widget build(BuildContext context) {

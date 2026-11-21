@@ -5,6 +5,7 @@ import 'package:drift/drift.dart';
 import '../../../../core/api/api_models.dart';
 import '../../../../core/api/field_api.dart';
 import '../../../../core/db/app_database.dart';
+import '../../../../core/db/colleague_activity.dart';
 import '../../../../core/sync/sync_handlers.dart';
 import '../../../../core/time/clock.dart';
 import '../domain/collection_rules.dart';
@@ -104,11 +105,35 @@ class CollectionPullHandler implements PullHandler {
     if (clientId == null) return;
     final conflict = d['conflict'] as Json?;
     final resolution = d['resolution'] as Json?;
+    // A colleague's collection (FR-M-057): kept apart so cash in hand and Today totals stay mine.
+    final collector = d['collector'] as Json?;
+    final staffId = collector?['id'] as String?;
+    if (isColleague(me: await savedUserId(db), staffId: staffId)) {
+      final customer = d['customer'] as Json?;
+      await upsertColleagueActivity(
+        db,
+        kind: 'collection',
+        serverId: id,
+        customerId: (customer?['id'] as String?) ?? '',
+        staffId: staffId!,
+        staffName: (collector?['name'] as String?) ?? '',
+        at: DateTime.parse((d['recordedAt'] as String?) ?? (d['receivedAt'] as String)).toUtc(),
+        amountPoisha: (d['amountPoisha'] as num?)?.toInt(),
+        method: d['method'] as String?,
+        status: d['status'] as String?,
+        voidedKind: (d['voided'] as Json?)?['kind'] as String?,
+      );
+      return;
+    }
     await (db.update(db.collections)..where((t) => t.clientId.equals(clientId))).write(
       CollectionsCompanion(
         serverId: Value(id),
         status: Value((d['status'] as String?) ?? 'received'),
         erpReceiptNo: Value(d['erpReceiptNo'] as String?),
+        previousAmountPoisha: Value(((d['edited'] as Json?)?['previousAmountPoisha'] as num?)?.toInt()),
+        voidedKind: Value((d['voided'] as Json?)?['kind'] as String?),
+        voidedByName: Value((d['voided'] as Json?)?['byName'] as String?),
+        voidedReason: Value((d['voided'] as Json?)?['reason'] as String?),
         conflictCode: Value(conflict?['code'] as String?),
         conflictMessage: Value(conflict == null ? null : jsonEncode(conflict['message'])),
         resolutionText: Value(resolution == null ? null : '${resolution['action']}: ${resolution['reason'] ?? ''}'),
@@ -121,6 +146,7 @@ class CollectionPullHandler implements PullHandler {
   @override
   Future<void> delete(AppDatabase db, String id, {String? reason}) async {
     // Own collections are never deleted by pull; kept 60 days locally.
+    await deleteColleagueActivity(db, 'collection', id);
   }
 }
 

@@ -76,6 +76,19 @@ class DutySettings {
   final List<int> weeklyOff;
   final List<BreakWindow> breakWindows;
 
+  /// Office start / end of the business day as UTC instants; [dhakaMidnightUtc]
+  /// is 00:00 Dhaka of that day in UTC.
+  DateTime startAt(DateTime dhakaMidnightUtc) => dhakaMidnightUtc.add(_clock(start));
+  DateTime endAt(DateTime dhakaMidnightUtc) => dhakaMidnightUtc.add(_clock(end));
+
+  /// Minutes worked past the office end: until [lastOut], or [now] while the
+  /// staff member is still on duty. 0 before work starts or before the end.
+  int overtimeMin({required DateTime? firstIn, required DateTime? lastOut, required DateTime dhakaMidnightUtc, required DateTime now}) {
+    if (firstIn == null) return 0;
+    final over = (lastOut ?? now).difference(endAt(dhakaMidnightUtc)).inMinutes;
+    return over > 0 ? over : 0;
+  }
+
   /// The windows of [businessDate] (`YYYY-MM-DD`, Dhaka).
   List<BreakWindow> windowsOn(String businessDate) {
     final weekday = DateTime.parse(businessDate).weekday % 7; // Dart: Mon = 1 … Sun = 7

@@ -9,6 +9,8 @@ import 'package:uuid/uuid.dart';
 
 import '../../../core/api/api_models.dart';
 import '../../../core/db/app_database.dart';
+import '../../../core/db/colleague_activity.dart';
+import '../../../core/feature/feature_manifest.dart';
 import '../../../core/location/location_engine.dart';
 import '../../../core/media/media.dart';
 import '../../../core/providers.dart';
@@ -146,6 +148,22 @@ class LocationProposalPullHandler implements PullHandler {
     final clientId = (d['clientId'] as String?) ?? id;
     final status = (d['status'] as String?) ?? 'pending';
     final reason = d['decisionReason'] as String?;
+    // Since 1.31.0 the feed carries the whole branch's pins: a colleague's goes to the colleague table (FR-M-057).
+    final proposer = d['proposer'] as Json?;
+    if (isColleague(me: await savedUserId(db), staffId: proposer?['id'] as String?) && d['customerId'] != null) {
+      await upsertColleagueActivity(
+        db,
+        kind: 'pin',
+        serverId: id,
+        customerId: d['customerId'] as String,
+        staffId: proposer!['id'] as String,
+        staffName: (proposer['name'] as String?) ?? '',
+        at: DateTime.tryParse('${d['createdAt']}')?.toUtc() ?? DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
+        status: status,
+        note: reason,
+      );
+      return;
+    }
     final updated = await (db.update(
       db.locationProposals,
     )..where((t) => t.clientId.equals(clientId))).write(LocationProposalsCompanion(status: Value(status), decisionReason: Value(reason), syncState: const Value('synced')));
@@ -228,4 +246,27 @@ GeoFix? _phoneOf(LocationProposalRow p) {
     mock: d['mock'] == true,
     fixAt: DateTime.tryParse('${d['fixAt']}') ?? DateTime.utc(1970),
   );
+}
+
+/// Pins on a customer's timeline (FR-M-057): mine and my colleagues', each with who set or proposed it.
+Stream<List<TimelineEntry>> watchPinTimeline(AppDatabase db, AppLocalizations l, Fmt f, String customerId, String? myName) {
+  String title(String status) => switch (status) {
+        'approved' => l.timelinePinSet,
+        'rejected' => l.timelinePinRejected,
+        _ => l.timelinePinPending,
+      };
+  final own = (db.select(db.locationProposals)..where((t) => t.customerId.equals(customerId))).watch();
+  return combineLatest2(own, watchColleagueActivities(db, customerId, 'pin'), (mine, others) => [
+        for (final p in others)
+          TimelineEntry(at: p.at, icon: Icons.location_on_rounded, title: title(p.status ?? 'pending'), subtitle: [f.dateTime(p.at), l.timelinePinBy(p.staffName), if (p.note != null) p.note!].join(' · ')),
+        // My own proposals carry no time of their own on this phone: the UUIDv7 id holds it, so only the name and state show.
+        for (final p in mine)
+          TimelineEntry(at: _uuidV7Time(p.clientId), icon: Icons.location_on_rounded, title: title(p.status), subtitle: [if (myName != null) l.timelinePinBy(myName), if (p.decisionReason != null) p.decisionReason!].join(' · ')),
+      ]);
+}
+
+DateTime _uuidV7Time(String id) {
+  final hex = id.replaceAll('-', '');
+  final ms = hex.length >= 12 ? int.tryParse(hex.substring(0, 12), radix: 16) : null;
+  return ms == null ? DateTime.fromMillisecondsSinceEpoch(0, isUtc: true) : DateTime.fromMillisecondsSinceEpoch(ms, isUtc: true);
 }

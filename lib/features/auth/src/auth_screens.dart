@@ -290,7 +290,13 @@ class _PinScreenState extends ConsumerState<PinScreen> {
             SizedBox(
               height: 48,
               child: Center(
-                child: _error == null ? null : Text(_error!, textAlign: TextAlign.center, style: t.bodyMedium!.copyWith(color: cs.error)),
+                child: _busy && _error == null
+                    ? Row(mainAxisSize: MainAxisSize.min, children: [
+                        const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2.5)),
+                        const SizedBox(width: Space.s12),
+                        Text(l.pinChecking, style: t.bodyMedium!.copyWith(color: cs.onSurfaceVariant)),
+                      ])
+                    : (_error == null ? null : Text(_error!, textAlign: TextAlign.center, style: t.bodyMedium!.copyWith(color: cs.error))),
               ),
             ),
             PinPad(
