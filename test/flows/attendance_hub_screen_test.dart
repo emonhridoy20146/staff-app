@@ -3,7 +3,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:staff_app/app/app.dart';
 import 'package:staff_app/app/router.dart';
-import 'package:staff_app/core/providers.dart';
 
 import 'helpers.dart';
 
