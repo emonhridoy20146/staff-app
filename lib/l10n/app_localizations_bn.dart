@@ -2424,6 +2424,15 @@ class AppLocalizationsBn extends AppLocalizations {
   String get phonePending => 'সার্ভারে পাঠানোর অপেক্ষায়';
 
   @override
+  String get receiptView => 'রসিদ';
+
+  @override
+  String get receiptOpenCustomer => 'গ্রাহক খুলুন';
+
+  @override
+  String get receiptNotOnPhone => 'এই রসিদ এই ফোনে নেই';
+
+  @override
   String get cashInHandOpen => 'কোন আদায়ের টাকা হাতে আছে';
 
   @override

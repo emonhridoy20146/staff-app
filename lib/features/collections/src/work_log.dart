@@ -24,6 +24,8 @@ Stream<List<WorkLogEntry>> watchCollectionWorkLog(BuildContext context, WidgetRe
           title: l.timelineCollection(f.money(r.amountPoisha)),
           subtitle: r.receiptNo,
           customerId: r.customerId,
+          // a tap shows the receipt; the receipt has a button to the customer
+          route: '/receipt/${r.clientId}',
           amountPoisha: r.amountPoisha,
           pending: r.status != 'posted' && r.status != 'resolved_posted',
         ),

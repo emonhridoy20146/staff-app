@@ -2430,6 +2430,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get phonePending => 'Waiting to be sent to the server';
 
   @override
+  String get receiptView => 'Receipt';
+
+  @override
+  String get receiptOpenCustomer => 'Open customer';
+
+  @override
+  String get receiptNotOnPhone => 'This receipt is not on this phone';
+
+  @override
   String get cashInHandOpen => 'Which collections is this cash from?';
 
   @override

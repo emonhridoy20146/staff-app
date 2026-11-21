@@ -4295,6 +4295,24 @@ abstract class AppLocalizations {
   /// **'Waiting to be sent to the server'**
   String get phonePending;
 
+  /// No description provided for @receiptView.
+  ///
+  /// In en, this message translates to:
+  /// **'Receipt'**
+  String get receiptView;
+
+  /// No description provided for @receiptOpenCustomer.
+  ///
+  /// In en, this message translates to:
+  /// **'Open customer'**
+  String get receiptOpenCustomer;
+
+  /// No description provided for @receiptNotOnPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'This receipt is not on this phone'**
+  String get receiptNotOnPhone;
+
   /// No description provided for @cashInHandOpen.
   ///
   /// In en, this message translates to:

@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 Contract pinned: field-api `openapi.yaml` **1.27.0** (1.22.0 → 1.27.0, additive: 1.23.0 extra phone numbers, 1.24.0 this month on a customer and invoice counts, 1.25.0 duty hours per branch with break windows, overtime and late absences, 1.26.0 the collection board, 1.27.0 cash in hand by collection; `docs/contract/openapi.yaml`). The collection board needs the server at 1.26.0; on an older server its tab says it could not be loaded and the branch ranking still works. Adding phone numbers needs 1.23.0; break windows and the late-days setting need 1.25.0; everything else works with 1.22.0.
+### Added (owner request 2026-11-21: the receipt of any collection, later too; FR-M-050)
+- **A receipt screen for every collection on the phone** (`/receipt/:clientId`): the same receipt the customer saw, with "রসিদ শেয়ার" (the phone's share sheet sends it, saves it or prints it) and "গ্রাহক খুলুন". Works offline.
+- Opened by a tap on a collection in **Today's Work** (any day) and by the new "রসিদ" button on a collection in the **customer's timeline**. Until now the receipt was shown once, right after collecting.
+- The receipt is shared as an image, as before. A PDF file needs two new packages and is left for when the build tools are available here.
 ### Added (owner request 2026-11-21: where my cash on hand came from; FR-M-049, field-api FR-CASH-007, contract 1.27.0)
 - **"কোন আদায়ের টাকা হাতে আছে"** on the cash card (Me): a list of the cash collections not yet covered by a deposit, newest first, each with the customer, the invoice, the receipt number, the time and the amount still in hand ("মোট …-এর বাকি" when a deposit covered part of it). A tap opens the customer. The total and deposits waiting for verification are on top.
 - A deposit pays off the oldest collections first (the server's rule, said under the list). Online; when this phone still holds unsent money the screen says that it is not in the list.

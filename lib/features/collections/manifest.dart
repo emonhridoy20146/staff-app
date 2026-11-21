@@ -40,6 +40,7 @@ final collectionsManifest = FeatureManifest(
   permissions: const [Perm.collectionRecord, Perm.collectionView],
   routes: [
     GoRoute(path: '/collect', builder: (_, _) => const CustomerPickerScreen()),
+    GoRoute(path: '/receipt/:clientId', builder: (_, s) => ReceiptScreen(clientId: s.pathParameters['clientId']!)),
     GoRoute(path: '/collect/success/:clientId', builder: (_, s) => CollectSuccessScreen(clientId: s.pathParameters['clientId']!)),
     GoRoute(path: '/collect/:customerId', builder: (_, s) => CollectFlowScreen(customerId: s.pathParameters['customerId']!)),
   ],
@@ -72,6 +73,10 @@ final collectionsManifest = FeatureManifest(
                 title: l.timelineCollection(f.money(r.amountPoisha)),
                 subtitle: '${f.dateTime(r.recordedAt)} · ${r.receiptNo}',
                 statusChip: Builder(builder: (c) => collectionStatusChip(c, r.status, r.syncState)),
+                // FR-M-050: the receipt of this collection, to show, send or print again
+                trailing: Builder(
+                  builder: (c) => TextButton.icon(onPressed: () => c.push('/receipt/${r.clientId}'), icon: const Icon(Icons.receipt_long_rounded), label: Text(l.receiptView)),
+                ),
               ),
           ];
         });

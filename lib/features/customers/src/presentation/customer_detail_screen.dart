@@ -968,6 +968,8 @@ class _TimelineState extends ConsumerState<_Timeline> {
                               ?entries[i].statusChip,
                             ]),
                             if (entries[i].subtitle != null) Text(entries[i].subtitle!, style: t.bodyMedium!.copyWith(color: cs.onSurfaceVariant)),
+                            // an entry's own action (e.g. the receipt of a collection)
+                            if (entries[i].trailing != null) Align(alignment: AlignmentDirectional.centerStart, child: entries[i].trailing),
                           ],
                         ),
                       ),
