@@ -37,7 +37,9 @@ String outcomeLabel(AppLocalizations l, String o) => switch (o) {
       'customer_dead' => l.visitOutcomeDead,
       'runaway' => l.visitOutcomeRunaway,
       'product_returned_request' => l.visitOutcomeReturn,
-      _ => l.visitOutcomeOther,
+      'other' => l.visitOutcomeOther,
+      // Contract: a value this app does not know yet is shown as its code.
+      _ => o,
     };
 
 IconData outcomeIcon(String o) => switch (o) {

@@ -2,10 +2,12 @@
 
 ## [Unreleased]
 
-### Added (owner request 2026-11-22: visit outcome "Runaway"; FR-M-064, contract 1.41.0)
+### Added (owner request 2026-11-22: visit outcome "Runaway"; FR-M-064, master FR-VIS-006, contract 1.41.0)
 - **New visit outcome "পলাতক / Runaway"** (the customer has absconded) in the visit outcome picker, after "Customer died". Its label and running-person icon (`directions_run_rounded`) show wherever a visit outcome is shown: the customer timeline, Today's Work and other staff's activity.
 - Sent as `outcome: runaway` in the `visit` mutation (and accepted by `visit_checkout`'s optional `outcome`); field-api adds `runaway` to `VisitOutcome` in contract 1.41.0. The local `visits.outcome` and `colleague_activities.outcome` columns are plain text, so no schema change. An older server refuses the value and the visit stays in Problems until field-api 1.41.0 is live.
-- Tests: `test/features/visit_outcome_test.dart` (in the picker, bn/en labels, own icon).
+- A visit outcome the app does not know yet now shows as its code instead of "Other" (contract 1.41.0 rule for clients).
+- Contract pinned at field-api 1.41.0 (`docs/contract/openapi.yaml`).
+- Tests: `test/features/visit_outcome_test.dart` (in the picker, bn/en labels, own icon, unknown value shown as its code).
 
 ### Fixed (owner report 2026-11-22: customer search under the keyboard; branch names too big)
 - **Customer search with the keyboard open:** a large blank band covered the filtered customers. Cause: the app shell (`lib/app/shell.dart`) rebuilt the tabs' `MediaQuery` from its own context, above its `Scaffold`, which put the keyboard inset back after the shell had already made room for it, so each tab's `Scaffold` shrank for the keyboard a second time. The shell now reads the `MediaQuery` inside its body (a `Builder`), so the list fills the space between the search field and the keyboard and scrolls. This applies to every tab.

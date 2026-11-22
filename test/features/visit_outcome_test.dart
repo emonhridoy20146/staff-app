@@ -4,8 +4,8 @@ import 'package:staff_app/features/visits/visits.dart';
 import 'package:staff_app/features/visits/src/visits.dart' show visitOutcomes;
 import 'package:staff_app/l10n/app_localizations.dart';
 
-/// FR-M-064: visit outcomes follow the contract's `VisitOutcome` enum,
-/// including `runaway` (পলাতক, field-api contract 1.41.0).
+/// FR-M-064 (master FR-VIS-006): visit outcomes follow the contract's
+/// `VisitOutcome` enum, including `runaway` (পলাতক, field-api contract 1.41.0).
 void main() {
   final bn = lookupAppLocalizations(const Locale('bn'));
   final en = lookupAppLocalizations(const Locale('en'));
@@ -19,6 +19,12 @@ void main() {
   test('runaway has its own label in bn and en', () {
     expect(outcomeLabel(bn, 'runaway'), 'পলাতক');
     expect(outcomeLabel(en, 'runaway'), 'Runaway');
+  });
+
+  test('an outcome this app does not know shows as its raw code', () {
+    expect(outcomeLabel(en, 'something_new'), 'something_new');
+    expect(outcomeLabel(bn, 'something_new'), 'something_new');
+    expect(outcomeLabel(en, 'other'), en.visitOutcomeOther);
   });
 
   test('runaway has its own icon', () {
