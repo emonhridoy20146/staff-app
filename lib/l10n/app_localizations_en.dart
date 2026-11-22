@@ -3574,4 +3574,38 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get placeMoveSend => 'Send to the office';
+
+  @override
+  String get placeMoveNow => 'Move';
+
+  @override
+  String get placeMoveNowHint =>
+      'Move the map until the pin sits on the right spot. The marker moves as soon as you save; this needs internet.';
+
+  @override
+  String get placeMoveNowSave => 'Move here';
+
+  @override
+  String get placeMovedNow =>
+      'Moved. Everyone sees it at the new spot after their next sync.';
+
+  @override
+  String get placeMoveNeedsInternet =>
+      'No internet. Moving a place needs internet; nothing was changed.';
+
+  @override
+  String get placeMoveStale =>
+      'Someone changed this place just now. It has been reloaded; check it and move again.';
+
+  @override
+  String get placeMoveDeleted =>
+      'This place was removed from the map, so it cannot be moved.';
+
+  @override
+  String get placeMoveNotSynced =>
+      'This place has not reached the server yet. Sync first, then move it.';
+
+  @override
+  String get placeMoveNotAllowed =>
+      'You are not allowed to move places any more.';
 }

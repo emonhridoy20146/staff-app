@@ -2171,5 +2171,14 @@
   "placeMoveReason": "Why? (optional)",
   "placeMoveSent": "Sent to the office. The marker moves when they approve.",
   "placeMoveDragFirst": "Move the map first",
-  "placeMoveSend": "Send to the office"
+  "placeMoveSend": "Send to the office",
+  "placeMoveNow": "Move",
+  "placeMoveNowHint": "Move the map until the pin sits on the right spot. The marker moves as soon as you save; this needs internet.",
+  "placeMoveNowSave": "Move here",
+  "placeMovedNow": "Moved. Everyone sees it at the new spot after their next sync.",
+  "placeMoveNeedsInternet": "No internet. Moving a place needs internet; nothing was changed.",
+  "placeMoveStale": "Someone changed this place just now. It has been reloaded; check it and move again.",
+  "placeMoveDeleted": "This place was removed from the map, so it cannot be moved.",
+  "placeMoveNotSynced": "This place has not reached the server yet. Sync first, then move it.",
+  "placeMoveNotAllowed": "You are not allowed to move places any more."
 }

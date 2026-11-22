@@ -6259,6 +6259,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Send to the office'**
   String get placeMoveSend;
+
+  /// No description provided for @placeMoveNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Move'**
+  String get placeMoveNow;
+
+  /// No description provided for @placeMoveNowHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Move the map until the pin sits on the right spot. The marker moves as soon as you save; this needs internet.'**
+  String get placeMoveNowHint;
+
+  /// No description provided for @placeMoveNowSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Move here'**
+  String get placeMoveNowSave;
+
+  /// No description provided for @placeMovedNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Moved. Everyone sees it at the new spot after their next sync.'**
+  String get placeMovedNow;
+
+  /// No description provided for @placeMoveNeedsInternet.
+  ///
+  /// In en, this message translates to:
+  /// **'No internet. Moving a place needs internet; nothing was changed.'**
+  String get placeMoveNeedsInternet;
+
+  /// No description provided for @placeMoveStale.
+  ///
+  /// In en, this message translates to:
+  /// **'Someone changed this place just now. It has been reloaded; check it and move again.'**
+  String get placeMoveStale;
+
+  /// No description provided for @placeMoveDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'This place was removed from the map, so it cannot be moved.'**
+  String get placeMoveDeleted;
+
+  /// No description provided for @placeMoveNotSynced.
+  ///
+  /// In en, this message translates to:
+  /// **'This place has not reached the server yet. Sync first, then move it.'**
+  String get placeMoveNotSynced;
+
+  /// No description provided for @placeMoveNotAllowed.
+  ///
+  /// In en, this message translates to:
+  /// **'You are not allowed to move places any more.'**
+  String get placeMoveNotAllowed;
 }
 
 class _AppLocalizationsDelegate

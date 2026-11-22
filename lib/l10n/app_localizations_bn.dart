@@ -3557,4 +3557,37 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get placeMoveSend => 'অফিসে পাঠান';
+
+  @override
+  String get placeMoveNow => 'সরান';
+
+  @override
+  String get placeMoveNowHint =>
+      'পিনটি সঠিক জায়গায় না বসা পর্যন্ত ম্যাপ সরান। সংরক্ষণ করলেই মার্কার সরে যাবে; এর জন্য ইন্টারনেট লাগবে।';
+
+  @override
+  String get placeMoveNowSave => 'এখানে সরান';
+
+  @override
+  String get placeMovedNow =>
+      'সরানো হয়েছে। পরের সিঙ্কের পর সবাই নতুন জায়গায় দেখবেন।';
+
+  @override
+  String get placeMoveNeedsInternet =>
+      'ইন্টারনেট নেই। জায়গা সরাতে ইন্টারনেট লাগে; কিছুই বদলায়নি।';
+
+  @override
+  String get placeMoveStale =>
+      'এইমাত্র কেউ জায়গাটি বদলেছেন। নতুন করে আনা হয়েছে; দেখে আবার সরান।';
+
+  @override
+  String get placeMoveDeleted =>
+      'জায়গাটি ম্যাপ থেকে সরিয়ে ফেলা হয়েছে, তাই এটি সরানো যাবে না।';
+
+  @override
+  String get placeMoveNotSynced =>
+      'জায়গাটি এখনো সার্ভারে পৌঁছায়নি। আগে সিঙ্ক করুন, তারপর সরান।';
+
+  @override
+  String get placeMoveNotAllowed => 'আপনার আর জায়গা সরানোর অনুমতি নেই।';
 }

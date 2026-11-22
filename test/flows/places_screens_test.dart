@@ -22,8 +22,9 @@ void main() {
     }
   }
 
-  Future<Harness> start(WidgetTester t, {double textScale = 1}) async {
+  Future<Harness> start(WidgetTester t, {double textScale = 1, bool manager = false}) async {
     final h = Harness();
+    h.api.placeManager = manager;
     h.api.addPlace('pl-9', name: 'নতুন বাজার', icon: 'market', lat: 22.7072, lng: 90.3452, by: const {'id': 'u-fs-002', 'name': 'সুমন মিয়া'});
     await t.runAsync(h.signIn);
     t.view.physicalSize = const Size(412, 892) * 2;
@@ -86,6 +87,7 @@ void main() {
     expect(find.text('যোগ করেছেন সুমন মিয়া'), findsOneWidget);
     expect(find.byKey(const Key('place-edit')), findsNothing);
     expect(find.byKey(const Key('place-move')), findsOneWidget);
+    expect(find.text('সরাতে বলুন'), findsOneWidget); // field staff: a request, as before
   });
 
   testWidgets('ask to move: the map moves under the pin, the request waits for the office', (t) async {
@@ -106,6 +108,47 @@ void main() {
     final row = await t.runAsync(() => db.select(db.mapPlaces).getSingle());
     expect(row!.lat, 22.7072); // the marker stays where it was
     expect(row.moveReason ?? row.pendingMoveJson, isNotNull);
+  });
+
+  testWidgets('office user (place.manage): "সরান" moves the marker at once, no request, no reason field', (t) async {
+    final h = await start(t, manager: true);
+    await t.tap(marker('নতুন বাজার'));
+    await settle(t);
+    expect(find.text('সরাতে বলুন'), findsNothing);
+    expect(find.widgetWithText(FilledButton, 'সরান'), findsOneWidget);
+    await t.tap(find.byKey(const Key('place-move')));
+    await settle(t);
+    expect(find.byKey(const Key('place-move-reason')), findsNothing);
+    await t.drag(find.byType(FlutterMap).last, const Offset(-120, 80));
+    await settle(t);
+    expect(find.text('এখানে সরান'), findsOneWidget);
+    await t.tap(find.byKey(const Key('place-move-send')));
+    await settle(t, rounds: 12);
+    expect(find.text('সরানো হয়েছে। পরের সিঙ্কের পর সবাই নতুন জায়গায় দেখবেন।'), findsOneWidget);
+    final db = h.read(databaseProvider);
+    final row = await t.runAsync(() => db.select(db.mapPlaces).getSingle());
+    expect(row!.lat, isNot(22.7072)); // moved on the phone at once
+    expect([row.moveState, row.pendingMoveJson, row.version], ['none', null, 2]);
+    final queued = await t.runAsync(() => db.select(db.outbox).get());
+    expect(queued!.where((o) => o.entity.startsWith('place')), isEmpty);
+  });
+
+  testWidgets('office user offline: the screen stays and says internet is needed', (t) async {
+    final h = await start(t, manager: true);
+    await t.tap(marker('নতুন বাজার'));
+    await settle(t);
+    await t.tap(find.byKey(const Key('place-move')));
+    await settle(t);
+    await t.drag(find.byType(FlutterMap).last, const Offset(-120, 80));
+    await settle(t);
+    h.api.offline = true;
+    await t.tap(find.byKey(const Key('place-move-send')));
+    await settle(t, rounds: 12);
+    expect(find.text('ইন্টারনেট নেই। জায়গা সরাতে ইন্টারনেট লাগে; কিছুই বদলায়নি।'), findsOneWidget);
+    expect(find.byKey(const Key('place-move-send')), findsOneWidget); // still on the move screen
+    final db = h.read(databaseProvider);
+    final row = await t.runAsync(() => db.select(db.mapPlaces).getSingle());
+    expect(row!.lat, 22.7072);
   });
 
   testWidgets('labels and sheet still fit at 130 % text (FR-M accessibility)', (t) async {

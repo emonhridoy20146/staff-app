@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../core/api/api_models.dart';
+import '../../../core/api/field_api.dart';
 import '../../../core/db/app_database.dart';
 import '../../../core/providers.dart';
 import '../../../core/sync/sync_handlers.dart';
@@ -20,7 +21,8 @@ import '../../auth/auth.dart';
 /// mutation; the server id comes back with the push result and the next pull.
 /// I may change the words of places I made (`place_edit`) and ask the office
 /// to move any place (`place_move_request`): the marker moves only when the
-/// office approves.
+/// office approves. An office user (`place.manage`) moves a place at once
+/// instead, online only (`PATCH /places/{id}`, ADR-M29).
 
 /// The fixed icon list, in the order the picker shows them.
 const placeIcons = ['shop', 'market', 'mosque', 'school', 'bank', 'hospital', 'bus_stop', 'office', 'landmark', 'other'];
@@ -162,6 +164,24 @@ final placeProvider = StreamProvider.family<MapPlace?, String>((ref, id) {
   return (db.select(db.mapPlaces)..where((t) => t.localId.equals(id))).watchSingleOrNull().map((r) => r == null ? null : MapPlace(r));
 });
 
+/// Why an office user's direct move did not happen (ADR-M29).
+enum PlaceMoveError { offline, notSynced, stale, deleted, outside, notAllowed, failed }
+
+/// Maps the server's answer to `PATCH /places/{id}` (contract 1.38.0/1.42.0) to what the user is told.
+PlaceMoveError placeMoveErrorOf(ApiException e) {
+  if (e.isNetwork) return PlaceMoveError.offline;
+  final d = e.problem?.details;
+  final why = d?['reason'] ?? d?['rule'];
+  return switch (e.statusCode) {
+    412 => PlaceMoveError.stale,
+    403 => PlaceMoveError.notAllowed,
+    404 => PlaceMoveError.deleted,
+    409 when why == 'PLACE_DELETED' => PlaceMoveError.deleted,
+    422 when why == 'OUTSIDE_BANGLADESH' => PlaceMoveError.outside,
+    _ => PlaceMoveError.failed,
+  };
+}
+
 /// Saving is local first; the outbox sends it (offline-first, CLAUDE.md §2.1).
 class PlaceService {
   PlaceService(this._ref);
@@ -265,6 +285,37 @@ class PlaceService {
     });
     if (queued) unawaited(_ref.read(syncEngineProvider).kick(reason: 'place'));
     return queued;
+  }
+
+  /// FR-PLC-003 by the office (owner decision 2026-11-22, ADR-M29): a holder of `place.manage` moves the
+  /// marker at once, no request. Online only, like the other office decisions: the server checks the
+  /// version, the permission and the point, and closes any open move request. The row on the phone
+  /// changes only after the server says yes (from its answer, through the pull handler), so there is
+  /// never a "waiting for the office" state and nothing to undo. Null when moved, otherwise why not.
+  /// On 412 the place is reloaded from the server so the user sees what changed and can move again.
+  Future<PlaceMoveError?> moveNow(String localId, {required double lat, required double lng}) async {
+    final db = _ref.read(databaseProvider);
+    final row = await (db.select(db.mapPlaces)..where((t) => t.localId.equals(localId))).getSingleOrNull();
+    if (row == null) return PlaceMoveError.deleted;
+    final id = row.serverId;
+    if (id == null) return PlaceMoveError.notSynced;
+    final api = _ref.read(fieldApiProvider);
+    final Json place;
+    try {
+      place = await api.movePlace(id, lat: lat, lng: lng, version: row.version > 0 ? row.version : null);
+    } on ApiException catch (e) {
+      final err = placeMoveErrorOf(e);
+      if (err == PlaceMoveError.stale) {
+        try {
+          await PlacePullHandler().upsert(db, id, await api.getPlace(id));
+        } on ApiException {
+          // The reload is a courtesy; the next sync brings the place anyway.
+        }
+      }
+      return err;
+    }
+    await PlacePullHandler().upsert(db, id, place);
+    return null;
   }
 
   /// How a mutation names the place: by server id, or by my clientId while the create is not synced.

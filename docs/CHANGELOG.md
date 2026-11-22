@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+### Changed (owner decision 2026-11-22: the office moves a place at once; FR-M-063, master FR-PLC-003, ADR-M29, contract 1.42.0)
+- **"সরান / Move" for office users:** a holder of `place.manage` (super admin, branch manager; from the server snapshot, new `Perm.placeManage`) sees "সরান" instead of "সরাতে বলুন" on any place that is on the server, also while a request is open. The move screen has no reason field and saves with "এখানে সরান": `PATCH /places/{id}` with `location` and `If-Match` (new `FieldApi.movePlace`, `getPlace`; `PlaceService.moveNow`). The marker moves when the server says yes (the answer goes through the `place` pull handler); there is no "waiting for the office" state, and the server closes any open request.
+- **Online only** (ADR-M08 exception like ADR-M23): contract 1.42.0's `place_edit` mutation does not carry `location`, so nothing is queued. Offline, the screen stays and says internet is needed; a stale version (412) reloads the place and asks to move again; a removed place (409 `PLACE_DELETED`/404), a point outside Bangladesh (422) and a missing permission (403) are told in words (bn + en).
+- **Field staff: no change** — "সরাতে বলুন" still sends a `place_move_request` that the office approves.
+- Fake API: `PATCH`/`GET /places/{id}`, `placeManager` and `officeMovesPlace` test hooks.
+- Tests: `places_flow_test.dart` (moves at once with no outbox entry and no request, closes an open request, offline/412 reload/outside/403/removed, unsynced place), `places_screens_test.dart` ("সরান" for office users with the row moved and nothing queued, offline message, field staff still see "সরাতে বলুন").
+
 ### Changed (CI, owner decision 2026-11-22)
 - **A pull request builds the APK only when it can break the Android build:** `pubspec.yaml`/`pubspec.lock`, `android/`, `config/`, the workflows or build config (new `changes` job, plain `git diff`, no third-party action). Other pull requests run the tests only, about 8 minutes faster; a skipped `apk` job counts as passed.
 - **Main always builds the APK** and publishes the numbered test release, as before. New **"Run workflow" button** (`workflow_dispatch`) builds an APK from any branch on demand (published as a release when run on main). The release-key guard is unchanged.

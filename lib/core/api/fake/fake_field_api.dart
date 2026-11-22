@@ -49,7 +49,9 @@ class FakeFieldApi implements HttpClientAdapter {
   String staffPinApproval = 'when_missing'; // customers.staffPinApproval (1.11.0)
   /// Signed-in user holds `customer.location.approve` (office user, 1.39.0).
   bool pinApprover = false;
-  List<String> get _permissions => [...permissions, if (pinApprover) 'customer.location.approve'];
+  /// Signed-in user holds `place.manage` (super admin, branch manager): moves places at once.
+  bool placeManager = false;
+  List<String> get _permissions => [...permissions, if (pinApprover) 'customer.location.approve', if (placeManager) 'place.manage'];
 
   /// My daily target (1.10.0). The demo shows the leaderboard; the real
   /// default of reports.leaderboardVisibleToStaff is false.
@@ -245,10 +247,47 @@ class FakeFieldApi implements HttpClientAdapter {
     serverChange('place', id, next);
   }
 
+  /// Tests: another office user moves a place directly (its version goes up; this phone does not know yet).
+  void officeMovesPlace(String id, {required double lat, required double lng}) {
+    final p = _places[id]!;
+    final next = {...p, 'location': {'lat': lat, 'lng': lng}, 'pendingMove': null, 'version': (p['version'] as int) + 1, 'updatedAt': clock.nowUtc().toIso8601String()};
+    _places[id] = next;
+    serverChange('place', id, next);
+  }
+
   /// Tests / demo: the office removes a place.
   void deletePlace(String id) {
     _places[id] = {..._places[id]!, 'status': 'deleted'};
     serverChange('place', id, const {}, op: 'delete');
+  }
+
+  /// `PATCH /places/{id}` with `location` (contract 1.38.0): a direct move by place.manage. Closes an open move
+  /// request as rejected ("moved by the office"). Stale `If-Match` → 412.
+  (int, Json) _movePlaceDirect(String id, Json body, String? ifMatch) {
+    final p = _places[id];
+    if (p == null) return (404, _problem(404, 'NOT_FOUND', 'No such place'));
+    if (!placeManager) return (403, _problem(403, 'FORBIDDEN', 'place.manage needed'));
+    if (p['status'] == 'deleted') return (409, {..._problem(409, 'INVALID_STATE', 'Place deleted'), 'details': {'reason': 'PLACE_DELETED'}});
+    if (ifMatch != null && ifMatch != 'W/"${p['version']}"') return (412, _problem(412, 'PRECONDITION_FAILED', 'Stale version'));
+    final to = body['location'] as Json;
+    final lat = (to['lat'] as num).toDouble(), lng = (to['lng'] as num).toDouble();
+    if (lat < 20.5 || lat > 26.7 || lng < 88.0 || lng > 92.7) {
+      return (422, {..._problem(422, 'BUSINESS_RULE', 'Outside Bangladesh'), 'details': {'rule': 'OUTSIDE_BANGLADESH'}});
+    }
+    final at = clock.nowUtc().toIso8601String();
+    final pm = p['pendingMove'] as Json?;
+    final next = {
+      ...p,
+      'location': {'lat': lat, 'lng': lng},
+      'pendingMove': null,
+      if (pm != null) 'lastMoveDecision': {'decision': 'reject', 'by': _me, 'at': at, 'reason': 'moved by the office', 'requestedBy': pm['requestedBy']},
+      'version': (p['version'] as int) + 1,
+      'updatedAt': at,
+      'updatedBy': _me,
+    };
+    _places[id] = next;
+    serverChange('place', id, next);
+    return (200, next);
   }
 
   /// The server's rules for the three place mutations (FR-PLC-002..004).
@@ -790,6 +829,15 @@ class FakeFieldApi implements HttpClientAdapter {
           final r = _coworkRoute(o.method, path, body);
           if (r is (int, Json)) return _json(r.$1, r.$2);
           return _json(200, r);
+        }
+        final pl = RegExp(r'^/places/([^/]+)$').firstMatch(path);
+        if (pl != null && o.method == 'PATCH' && (body as Json?)?['location'] != null) {
+          final r = _movePlaceDirect(Uri.decodeComponent(pl.group(1)!), body!, o.headers['If-Match'] as String?);
+          return _json(r.$1, r.$2);
+        }
+        if (pl != null && o.method == 'GET') {
+          final p = _places[Uri.decodeComponent(pl.group(1)!)];
+          return p == null || p['status'] == 'deleted' ? _json(404, _problem(404, 'NOT_FOUND', 'No such place')) : _json(200, p);
         }
         final cr = RegExp(r'^/customers/([^/]+)/refresh$').firstMatch(path);
         if (cr != null) {

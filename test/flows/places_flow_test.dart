@@ -7,6 +7,7 @@ import 'helpers.dart';
 
 /// Master FR-PLC-002..005 (contract 1.38.0): a place is added offline, changed before it was sent,
 /// gets its server id from the sync; a move request waits for the office, whose decision comes back.
+/// An office user (place.manage) moves a place at once, online only (FR-PLC-003, ADR-M29).
 void main() {
   late Harness h;
   setUp(() => h = Harness());
@@ -120,5 +121,81 @@ void main() {
     expect((await rows()).where((r) => r.serverId == 'pl-1'), isEmpty);
     bank = (await rows()).first;
     expect(bank.serverId, 'pl-2');
+  });
+
+  test('an office user (place.manage) moves a place at once: no outbox entry, no request, the row moves', () async {
+    h.api.placeManager = true;
+    h.api.addPlace('pl-9', name: 'নতুন বাজার', icon: 'market', lat: 22.7045, lng: 90.3725, by: const {'id': 'u-fs-002', 'name': 'সুমন মিয়া'});
+    await h.signIn();
+    final svc = h.read(placeServiceProvider);
+    final before = (await rows()).single;
+
+    expect(await svc.moveNow(before.localId, lat: 22.7052, lng: 90.3731), isNull);
+    final p = (await rows()).single;
+    expect([p.lat, p.lng, p.version, p.moveState, p.pendingMoveJson], [22.7052, 90.3731, 2, 'none', null]);
+    expect(MapPlace(p).movePending, isFalse);
+    expect(await outbox('place_move_request'), isEmpty);
+    expect(await outbox('place_edit'), isEmpty);
+
+    // The next sync agrees with the phone.
+    await sync();
+    expect([(await rows()).single.lat, (await rows()).single.lng], [22.7052, 90.3731]);
+  });
+
+  test('a direct move closes the open move request on the server', () async {
+    h.api.placeManager = true;
+    h.api.addPlace('pl-9', name: 'নতুন বাজার', icon: 'market', lat: 22.7045, lng: 90.3725);
+    await h.signIn();
+    final svc = h.read(placeServiceProvider);
+    // A move request is open (it reaches the phone with the sync).
+    await svc.requestMove((await rows()).single.localId, lat: 22.71, lng: 90.38);
+    await sync();
+    expect(MapPlace((await rows()).single).movePending, isTrue);
+
+    expect(await svc.moveNow((await rows()).single.localId, lat: 22.7052, lng: 90.3731), isNull);
+    final p = MapPlace((await rows()).single);
+    expect([p.row.lat, p.movePending, p.lastDecision?['decision']], [22.7052, false, 'reject']);
+  });
+
+  test('direct move refusals: offline, stale version (reloaded), removed, outside Bangladesh, no permission', () async {
+    h.api.placeManager = true;
+    h.api.addPlace('pl-1', name: 'সোনালী ব্যাংক', icon: 'bank', lat: 22.70, lng: 90.37);
+    await h.signIn();
+    final svc = h.read(placeServiceProvider);
+    final id = (await rows()).single.localId;
+
+    h.api.offline = true;
+    expect(await svc.moveNow(id, lat: 22.71, lng: 90.38), PlaceMoveError.offline);
+    expect((await rows()).single.lat, 22.70); // nothing changed on the phone
+    h.api.offline = false;
+
+    // Another office user moved it meanwhile: 412, and the phone reloads the place.
+    h.api.officeMovesPlace('pl-1', lat: 22.705, lng: 90.375);
+    expect(await svc.moveNow(id, lat: 22.71, lng: 90.38), PlaceMoveError.stale);
+    var p = (await rows()).single;
+    expect([p.lat, p.version], [22.705, 2]);
+    // Moving again with the fresh version works.
+    expect(await svc.moveNow(id, lat: 22.71, lng: 90.38), isNull);
+    expect((await rows()).single.lat, 22.71);
+
+    expect(await svc.moveNow(id, lat: 51.5, lng: -0.12), PlaceMoveError.outside);
+
+    h.api.placeManager = false;
+    expect(await svc.moveNow(id, lat: 22.72, lng: 90.38), PlaceMoveError.notAllowed);
+    h.api.placeManager = true;
+
+    h.api.deletePlace('pl-1');
+    expect(await svc.moveNow(id, lat: 22.72, lng: 90.38), PlaceMoveError.deleted);
+    p = (await rows()).single;
+    expect(p.lat, 22.71);
+  });
+
+  test('a place not on the server yet cannot be moved directly', () async {
+    h.api.placeManager = true;
+    await h.signIn();
+    h.api.offline = true;
+    final svc = h.read(placeServiceProvider);
+    final id = await svc.create(name: 'করিম স্টোর', icon: 'shop', lat: 22.7012, lng: 90.3711);
+    expect(await svc.moveNow(id, lat: 22.71, lng: 90.38), PlaceMoveError.notSynced);
   });
 }
