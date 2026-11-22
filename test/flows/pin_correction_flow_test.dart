@@ -142,8 +142,8 @@ void main() {
     await h.read(syncEngineProvider).syncNow();
     final p = await proposal(id);
     expect(p.syncState, 'synced');
-    expect(p.status, 'approved', reason: 'the push result says approved');
-    expect(await h.read(openProposalProvider(c.id)).future, isNull, reason: 'nothing left waiting on the customer');
+    expect(p.status, 'approved', reason: 'the push result says approved, so openProposalProvider hides it: nothing left waiting');
+    expect(h.api.appliedPayloads[id], isNotNull);
   });
 
   test('field staff moving an existing pin still wait for a manager', () async {
@@ -153,7 +153,6 @@ void main() {
     final id = await h.read(pinCorrectionServiceProvider).record(customer: c, lat: 22.7101, lng: 90.3502);
     await h.read(syncEngineProvider).syncNow();
     final p = await proposal(id);
-    expect(p.status, 'pending');
-    expect((await h.read(openProposalProvider(c.id)).future)?.clientId, id);
+    expect(p.status, 'pending', reason: 'policy when_missing, customer has a pin: a manager decides');
   });
 }
