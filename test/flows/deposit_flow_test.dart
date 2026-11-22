@@ -1,8 +1,15 @@
+import 'dart:convert';
+
+import 'package:drift/drift.dart' show BooleanExpressionOperators;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:staff_app/core/db/app_database.dart';
+import 'package:staff_app/core/media/media.dart';
 import 'package:staff_app/core/providers.dart';
 import 'package:staff_app/features/cash/src/cash_actions.dart';
+import 'package:staff_app/features/cash/src/cash.dart' show depositFailureText;
 import 'package:staff_app/features/cash/src/record_deposit.dart';
+import 'package:staff_app/l10n/app_localizations.dart';
+import 'package:material_ui/material_ui.dart' show Locale;
 import 'package:staff_app/features/collections/collections.dart';
 import 'package:staff_app/features/collections/src/application/record_collection.dart';
 
@@ -14,7 +21,11 @@ import 'helpers.dart';
 void main() {
   late Harness h;
   setUp(() => h = Harness());
-  tearDown(() => h.dispose());
+  tearDown(() async {
+    // A sync a test started in the background (recording a collection kicks one) ends before the database closes.
+    await h.read(syncEngineProvider).kick(reason: 'test');
+    await h.dispose();
+  });
 
   AppDatabase db() => h.read(databaseProvider);
   Future<CollectionRow> row(String clientId) => (db().select(db().collections)..where((t) => t.clientId.equals(clientId))).getSingle();
@@ -150,5 +161,95 @@ void main() {
     expect(await rd.call(shown: plan, destination: 'branch_cashier'), DepositSaveResult.changed);
     expect(await db().select(db().deposits).get(), isEmpty);
     expect((await db().select(db().collections).get()).every((c) => c.depositId == null), isTrue);
+  });
+
+  // FR-M-065: a bank deposit needs a camera photo of its slip (field-api SLIP_REQUIRED).
+  Future<OutboxRow> outboxOf(String id) => (db().select(db().outbox)..where((t) => t.mutationId.equals(id))).getSingle();
+  Future<List<MediaQueueRow>> slips(String id) => (db().select(db().mediaQueue)..where((t) => t.ownerEntity.equals('deposit') & t.ownerClientId.equals(id))).get();
+
+  test('a bank deposit without a slip photo is not saved: nothing locked, nothing queued', () async {
+    await h.signIn();
+    final a = await collect(150000, PaymentMethod.cash);
+    await h.read(syncEngineProvider).kick();
+    final rd = h.read(recordDepositProvider);
+    expect(await rd.call(shown: await rd.plan(), destination: 'bank', reference: 'SL-1'), DepositSaveResult.slipRequired);
+    expect(await db().select(db().deposits).get(), isEmpty);
+    expect((await db().select(db().outbox).get()).where((o) => o.entity == 'deposit'), isEmpty);
+    expect(await db().select(db().mediaQueue).get(), isEmpty);
+    expect((await row(a)).depositId, isNull);
+    expect((await rd.plan()).isEmpty, isFalse);
+  });
+
+  test('a bank deposit with its slip waits for the photo, then goes with slipMediaId; never without it', () async {
+    await h.signIn();
+    final a = await collect(150000, PaymentMethod.cash);
+    await h.read(syncEngineProvider).kick();
+    final rd = h.read(recordDepositProvider);
+    h.api.uploadsFail = true; // the photo cannot upload yet
+    expect(await rd.call(shown: await rd.plan(), destination: 'bank', reference: 'SL-1', slipPhoto: testJpeg()), DepositSaveResult.saved);
+    final dep = await onlyDeposit();
+    expect((await row(a)).depositId, dep); // locked at once, as any deposit
+    final media = await slips(dep);
+    expect(media.map((m) => m.kind), ['deposit_slip']);
+    expect((await deposit(dep)).slipMediaClientId, media.single.clientId);
+    expect((await outboxOf(dep)).state, 'held');
+    expect(await h.read(outboxReaderProvider).hasUnsentOf('deposit'), isTrue);
+
+    // Online, the photo fails: the deposit is not sent.
+    await h.read(mediaServiceProvider).uploadPending();
+    await h.read(syncEngineProvider).syncNow();
+    expect(h.api.appliedPayloads[dep], isNull);
+    expect([(await outboxOf(dep)).state, (await deposit(dep)).syncState], ['held', 'queued']);
+
+    // The photo uploads: the deposit is released with the server's media id and accepted.
+    h.api.uploadsFail = false;
+    h.clock.advance(const Duration(minutes: 30));
+    await h.read(mediaServiceProvider).uploadPending();
+    await h.read(syncEngineProvider).syncNow();
+    final mediaId = (await slips(dep)).single.serverMediaId;
+    expect(mediaId, isNotNull);
+    final sent = h.api.appliedPayloads[dep]!;
+    expect([sent['destination'], sent['slipMediaId'], sent['reference']], ['bank', mediaId, 'SL-1']);
+    expect((jsonDecode((await outboxOf(dep)).payloadJson) as Map)['slipMediaId'], mediaId);
+    final d = await deposit(dep);
+    expect([d.syncState, d.failureCode, d.destination], ['synced', null, 'bank']);
+    expect(await failedCount(), 0);
+
+    // A second confirm of the same photo changes nothing.
+    await linkDepositSlip(h.read(outboxWriterProvider), db(), dep, ['m-other']);
+    expect((jsonDecode((await outboxOf(dep)).payloadJson) as Map)['slipMediaId'], mediaId);
+  });
+
+  test('a deposit to the branch cashier needs no slip and goes at once, as before', () async {
+    await h.signIn();
+    await collect(150000, PaymentMethod.cash);
+    await h.read(syncEngineProvider).kick();
+    final rd = h.read(recordDepositProvider);
+    // a photo given by mistake for another destination is ignored
+    expect(await rd.call(shown: await rd.plan(), destination: 'branch_cashier', slipPhoto: testJpeg()), DepositSaveResult.saved);
+    final dep = await onlyDeposit();
+    expect(await slips(dep), isEmpty);
+    expect((await deposit(dep)).slipMediaClientId, isNull);
+    await h.read(syncEngineProvider).syncNow();
+    final sent = h.api.appliedPayloads[dep]!;
+    expect(sent['destination'], 'branch_cashier');
+    expect(sent.containsKey('slipMediaId'), isFalse);
+    expect([(await outboxOf(dep)).state, (await deposit(dep)).syncState], ['done', 'synced']);
+  });
+
+  test('the server still refuses a bank deposit with SLIP_REQUIRED: Problems says so in words', () async {
+    await h.signIn();
+    await collect(150000, PaymentMethod.cash);
+    await h.read(syncEngineProvider).kick();
+    final rd = h.read(recordDepositProvider);
+    expect(await rd.call(shown: await rd.plan(), destination: 'bank', slipPhoto: testJpeg()), DepositSaveResult.saved);
+    final dep = await onlyDeposit();
+    // as if the slip id never reached the server (e.g. an older app's deposit)
+    await h.read(outboxWriterProvider).release(dep, const {});
+    await h.read(syncEngineProvider).syncNow();
+    final d = await deposit(dep);
+    expect([d.syncState, d.failureCode], ['failed', 'SLIP_REQUIRED']);
+    expect(depositFailureText(await AppLocalizations.delegate.load(const Locale('bn')), d.failureCode), contains('স্লিপের ছবি'));
+    expect(depositFailureText(await AppLocalizations.delegate.load(const Locale('en')), d.failureCode), contains('slip photo'));
   });
 }

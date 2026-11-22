@@ -6,7 +6,7 @@ import 'src/cash.dart';
 import 'src/cash_in_hand.dart';
 
 /// Cash: on hand vs limit (offline-aware), deposits (FR-CASH-001…003, 006;
-/// FR-M-008). Deposit slip photo is added with the media queue (phase 1b).
+/// FR-M-008, FR-M-059). A bank deposit carries a camera photo of its slip (FR-M-065).
 final cashManifest = FeatureManifest(
   name: 'cash',
   flag: 'module.cash',

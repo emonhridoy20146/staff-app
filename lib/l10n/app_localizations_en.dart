@@ -3343,6 +3343,23 @@ class AppLocalizationsEn extends AppLocalizations {
       'A deposit is still waiting to be sent, so nothing in hand can be changed or deleted now.';
 
   @override
+  String get cashSlipTitle => 'Bank deposit slip';
+
+  @override
+  String get cashSlipNeeded =>
+      'A bank deposit needs a photo of the deposit slip. Camera only.';
+
+  @override
+  String get cashSlipTake => 'Take a photo of the slip';
+
+  @override
+  String get cashSlipRetake => 'Retake';
+
+  @override
+  String get cashSlipUploading =>
+      'The deposit is sent once its slip photo is uploaded.';
+
+  @override
   String get cashInHandNonCashTitle =>
       'Mobile / bank collections (go with the deposit)';
 
@@ -3364,7 +3381,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get depositFailedSlip =>
-      'Not deposited: a bank deposit needs a photo of the slip. Deposit to the branch cashier or the manager.';
+      'Not deposited: the server got no slip photo for this bank deposit. Deposit again and take a photo of the slip, or deposit to the branch cashier or the manager.';
 
   @override
   String get depositFailedChanged =>

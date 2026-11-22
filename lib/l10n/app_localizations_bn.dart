@@ -3332,6 +3332,22 @@ class AppLocalizationsBn extends AppLocalizations {
       'একটি জমা এখনো পাঠানো বাকি, তাই এখন হাতের কোনো আদায় বদলানো বা মোছা যাবে না।';
 
   @override
+  String get cashSlipTitle => 'ব্যাংক জমা স্লিপ';
+
+  @override
+  String get cashSlipNeeded =>
+      'ব্যাংকে জমার জন্য জমা স্লিপের ছবি লাগবে। শুধু ক্যামেরা দিয়ে।';
+
+  @override
+  String get cashSlipTake => 'স্লিপের ছবি তুলুন';
+
+  @override
+  String get cashSlipRetake => 'আবার তুলুন';
+
+  @override
+  String get cashSlipUploading => 'স্লিপের ছবি আপলোড হলেই জমা পাঠানো হবে।';
+
+  @override
   String get cashInHandNonCashTitle => 'মোবাইল / ব্যাংক আদায় (জমার সাথে যাবে)';
 
   @override
@@ -3351,7 +3367,7 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get depositFailedSlip =>
-      'জমা হয়নি: ব্যাংকে জমার জন্য স্লিপের ছবি লাগে। শাখার ক্যাশিয়ার বা ম্যানেজারের কাছে জমা দিন।';
+      'জমা হয়নি: এই ব্যাংক জমার স্লিপের ছবি সার্ভারে পৌঁছায়নি। আবার জমা দিন ও স্লিপের ছবি তুলুন, অথবা শাখার ক্যাশিয়ার বা ম্যানেজারের কাছে জমা দিন।';
 
   @override
   String get depositFailedChanged =>

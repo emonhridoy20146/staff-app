@@ -44,6 +44,9 @@ DepositPlan planDeposit({required int cashOnHandPoisha, required Iterable<({Stri
   return DepositPlan(cashPoisha: cashOnHandPoisha < 0 ? 0 : cashOnHandPoisha, cashCount: cashCount, nonCashPoisha: nonCash, nonCashCount: nonCashCount);
 }
 
+/// A bank deposit needs a photo of the slip (field-api `SLIP_REQUIRED`); other destinations do not.
+bool depositNeedsSlip(String destination) => destination == 'bank';
+
 /// Why the server refused a deposit; each has its own message in Problems.
 enum DepositFailure { mustBeAll, exceedsOnHand, nothing, slipRequired, changed, other }
 
