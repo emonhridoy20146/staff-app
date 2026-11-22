@@ -2080,5 +2080,13 @@
   "depositAgain": "Deposit again",
   "collectWhichInvoice": "Which invoice",
   "collectInvoiceCount": "{count} open invoices for this customer — pick the right one",
-  "@collectInvoiceCount": {"placeholders": {"count": {"type": "String"}}}
+  "@collectInvoiceCount": {"placeholders": {"count": {"type": "String"}}},
+  "customerRefresh": "Reload from server",
+  "customerRefreshDone": "Updated from the server",
+  "customerRefreshOffline": "Needs internet. Showing the data saved on this phone.",
+  "customerRefreshBusy": "The ERP is busy. Try again in a minute.",
+  "customerRefreshNotFound": "The server no longer has this customer for you. The data on this phone is kept.",
+  "customerRefreshDenied": "You don't have permission to reload this customer.",
+  "customerRefreshFailed": "Couldn't reload. Showing the saved data. Code: {code}",
+  "@customerRefreshFailed": {"placeholders": {"code": {"type": "String"}}}
 }

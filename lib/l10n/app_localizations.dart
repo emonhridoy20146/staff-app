@@ -5929,6 +5929,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count} open invoices for this customer — pick the right one'**
   String collectInvoiceCount(String count);
+
+  /// No description provided for @customerRefresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Reload from server'**
+  String get customerRefresh;
+
+  /// No description provided for @customerRefreshDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Updated from the server'**
+  String get customerRefreshDone;
+
+  /// No description provided for @customerRefreshOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'Needs internet. Showing the data saved on this phone.'**
+  String get customerRefreshOffline;
+
+  /// No description provided for @customerRefreshBusy.
+  ///
+  /// In en, this message translates to:
+  /// **'The ERP is busy. Try again in a minute.'**
+  String get customerRefreshBusy;
+
+  /// No description provided for @customerRefreshNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'The server no longer has this customer for you. The data on this phone is kept.'**
+  String get customerRefreshNotFound;
+
+  /// No description provided for @customerRefreshDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'You don\'t have permission to reload this customer.'**
+  String get customerRefreshDenied;
+
+  /// No description provided for @customerRefreshFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t reload. Showing the saved data. Code: {code}'**
+  String customerRefreshFailed(String code);
 }
 
 class _AppLocalizationsDelegate

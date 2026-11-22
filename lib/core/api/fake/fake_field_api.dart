@@ -33,6 +33,9 @@ class FakeFieldApi implements HttpClientAdapter {
   /// Test hooks.
   bool offline = false;
   bool expireCursor = false;
+
+  /// `POST /customers/{id}/refresh` calls (FR-M-063 tests).
+  int customerRefreshCalls = 0;
   bool upgradeRequired = false;
   bool uploadsFail = false; // the storage host refuses photos (e.g. a misconfigured server)
   String trackingProvider = 'free'; // admin setting location.trackingProvider
@@ -679,6 +682,7 @@ class FakeFieldApi implements HttpClientAdapter {
         }
         final cr = RegExp(r'^/customers/([^/]+)/refresh$').firstMatch(path);
         if (cr != null) {
+          customerRefreshCalls++;
           final last = _log.lastWhere((c) => c.entity == 'customer' && c.id == cr.group(1));
           return _json(200, {...last.data!, 'erpFetchedAt': clock.nowUtc().toIso8601String()});
         }
