@@ -5,6 +5,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:staff_app/app/app.dart';
 import 'package:staff_app/app/router.dart';
 import 'package:staff_app/core/providers.dart';
+import 'package:staff_app/features/customers/customers.dart';
 
 import 'helpers.dart';
 
@@ -69,5 +70,55 @@ void main() {
     await t.pumpWidget(const SizedBox.shrink());
     h.container.dispose();
     await t.pump(const Duration(milliseconds: 50));
+  });
+
+  Future<void> openPinOfPinnedCustomer(WidgetTester t, Harness h) async {
+    await t.runAsync(h.signIn);
+    t.view.physicalSize = const Size(412, 892) * 2;
+    t.view.devicePixelRatio = 2;
+    addTearDown(t.view.reset);
+    await t.pumpWidget(UncontrolledProviderScope(container: h.container, child: const FieldApp(watchConnectivity: false)));
+    await settle(t);
+    final c = (await t.runAsync(() => h.read(customerRepositoryProvider).watchAll().first))!.firstWhere((c) => c.pinUsable);
+    h.read(routerProvider).go('/customers/${c.id}/pin');
+    await settle(t);
+    expect(find.byType(FlutterMap), findsOneWidget);
+  }
+
+  Future<void> close(WidgetTester t, Harness h) async {
+    await t.pumpWidget(const SizedBox.shrink());
+    h.container.dispose();
+    await t.pump(const Duration(milliseconds: 50));
+  }
+
+  testWidgets('a user who can approve pins sees "Set pin" and no manager step, even for a customer with a pin', (t) async {
+    final h = Harness();
+    h.api.staffPinApproval = 'always';
+    h.api.pinApprover = true;
+    await openPinOfPinnedCustomer(t, h);
+
+    expect(find.text('পিন বসান'), findsOneWidget);
+    expect(find.text('অনুমোদনের জন্য পাঠান'), findsNothing);
+    expect(find.text('আপনি পিন অনুমোদন করতে পারেন: পাঠানোর সাথে সাথে পিন বসে যাবে।'), findsOneWidget);
+    expect(find.text('নতুন পিন বসার আগে ম্যানেজার দেখে নেবেন।'), findsNothing);
+
+    await t.tap(find.text('পিন বসান'));
+    await settle(t, rounds: 3);
+    expect(find.text('সেভ হয়েছে। পাঠানোর সাথে সাথে পিন বসে যাবে।'), findsOneWidget);
+    await close(t, h);
+  });
+
+  testWidgets('field staff moving an existing pin send it for approval', (t) async {
+    final h = Harness();
+    await openPinOfPinnedCustomer(t, h);
+
+    expect(find.text('অনুমোদনের জন্য পাঠান'), findsOneWidget);
+    expect(find.text('পিন বসান'), findsNothing);
+    expect(find.text('নতুন পিন বসার আগে ম্যানেজার দেখে নেবেন।'), findsOneWidget);
+
+    await t.tap(find.text('অনুমোদনের জন্য পাঠান'));
+    await settle(t, rounds: 3);
+    expect(find.text('পাঠানো হয়েছে। ম্যানেজার অনুমোদন দিলে পিন বদলাবে।'), findsOneWidget);
+    await close(t, h);
   });
 }

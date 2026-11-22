@@ -7,6 +7,7 @@ import 'package:material_ui/material_ui.dart';
 abstract final class Perm {
   static const customerView = 'customer.view';
   static const customerLocationPropose = 'customer.location.propose';
+  static const customerLocationApprove = 'customer.location.approve';
   static const customerPhoneManage = 'customer.phone.manage';
   static const tagView = 'tag.view';
   static const tagSet = 'tag.set';
@@ -28,7 +29,7 @@ abstract final class Perm {
   static const placeCreate = 'place.create';
 
   static const all = [
-    customerView, customerLocationPropose, customerPhoneManage, tagView, tagSet, collectionRecord, collectionView, //
+    customerView, customerLocationPropose, customerLocationApprove, customerPhoneManage, tagView, tagSet, collectionRecord, collectionView, //
     cashView, cashDepositRecord, visitRecord, visitView, noteCreate, noteView, promiseCreate,
     promiseView, attendanceRecord, leaveRequest, handoverRequest, coworkUse, placeView, placeCreate,
   ];

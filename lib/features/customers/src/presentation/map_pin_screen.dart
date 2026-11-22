@@ -127,13 +127,14 @@ class _MapPinScreenState extends ConsumerState<MapPinScreen> {
     final tiles = ref.watch(tileConfigProvider);
     final tilesOn = ref.watch(mapTilesEnabledProvider);
     final policy = ref.watch(staffPinApprovalProvider);
+    final approver = ref.watch(canApprovePinsProvider);
     final c = ref.watch(customerProvider(widget.customerId)).value;
     if (c == null) return const Scaffold(body: Center(child: CircularProgressIndicator()));
 
     final old = c.hasPin ? LatLng(c.row.lat!, c.row.lng!) : null;
     final start = _start ??= old ?? (_phone != null ? LatLng(_phone!.lat, _phone!.lng) : null) ?? _fallback;
     final p = _point ?? start;
-    final check = checkMapPin(lat: p.latitude, lng: p.longitude, phone: _phone, customerHasUsablePin: c.pinUsable, policy: policy);
+    final check = checkMapPin(lat: p.latitude, lng: p.longitude, phone: _phone, customerHasUsablePin: c.pinUsable, policy: policy, canApprove: approver);
     final movedM = old == null ? null : distanceMeters(old.latitude, old.longitude, p.latitude, p.longitude);
 
     return Scaffold(
@@ -250,7 +251,7 @@ class _MapPinScreenState extends ConsumerState<MapPinScreen> {
                       InfoBanner(
                         icon: check.appliesAtOnce ? Icons.bolt_rounded : Icons.verified_user_rounded,
                         tone: check.appliesAtOnce ? BannerTone.success : BannerTone.info,
-                        text: check.appliesAtOnce ? l.pinWillApply : l.pinNeedsManager,
+                        text: !check.appliesAtOnce ? l.pinNeedsManager : (approver ? l.pinWillApplyApprover : l.pinWillApply),
                       ),
                     const SizedBox(height: Space.s8),
                     Row(

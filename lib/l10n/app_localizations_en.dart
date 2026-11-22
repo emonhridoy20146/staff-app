@@ -1797,6 +1797,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'This customer has no location yet: the pin is set as soon as it is sent.';
 
   @override
+  String get pinWillApplyApprover =>
+      'You can approve pins: the pin is set as soon as it is sent.';
+
+  @override
   String get pinNeedsManager =>
       'A manager checks the new pin before it changes.';
 

@@ -44,13 +44,22 @@ class MapPinCheck {
 }
 
 /// Mirrors field-api `proposeLocation` (method `map`): outside Bangladesh is
-/// refused; the pin applies at once only under `when_missing`, for a customer
-/// without a usable pin, and when the phone's location is not mocked.
-MapPinCheck checkMapPin({required double lat, required double lng, required GeoFix? phone, required bool customerHasUsablePin, required StaffPinApproval policy}) {
+/// refused; a mocked phone location never applies at once. Otherwise the pin
+/// applies at once when the user can approve pins ([canApprove]: holds
+/// `customer.location.approve`, contract 1.39.0, FR-CUS-020), or under
+/// `when_missing` for a customer without a usable pin.
+MapPinCheck checkMapPin({
+  required double lat,
+  required double lng,
+  required GeoFix? phone,
+  required bool customerHasUsablePin,
+  required StaffPinApproval policy,
+  bool canApprove = false,
+}) {
   final mock = phone?.mock ?? false;
   return MapPinCheck(
     outside: !insideBangladesh(lat, lng),
-    appliesAtOnce: policy == StaffPinApproval.whenMissing && !customerHasUsablePin && !mock,
+    appliesAtOnce: !mock && (canApprove || (policy == StaffPinApproval.whenMissing && !customerHasUsablePin)),
     phoneDistanceM: phone == null ? null : distanceMeters(phone.lat, phone.lng, lat, lng),
     phoneMock: mock,
   );

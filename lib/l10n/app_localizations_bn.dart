@@ -1797,6 +1797,10 @@ class AppLocalizationsBn extends AppLocalizations {
       'এই কাস্টমারের লোকেশন নেই: পাঠানোর সাথে সাথে পিন বসে যাবে।';
 
   @override
+  String get pinWillApplyApprover =>
+      'আপনি পিন অনুমোদন করতে পারেন: পাঠানোর সাথে সাথে পিন বসে যাবে।';
+
+  @override
   String get pinNeedsManager => 'নতুন পিন বসার আগে ম্যানেজার দেখে নেবেন।';
 
   @override

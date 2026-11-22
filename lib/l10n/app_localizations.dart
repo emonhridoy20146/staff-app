@@ -3254,6 +3254,12 @@ abstract class AppLocalizations {
   /// **'This customer has no location yet: the pin is set as soon as it is sent.'**
   String get pinWillApply;
 
+  /// No description provided for @pinWillApplyApprover.
+  ///
+  /// In en, this message translates to:
+  /// **'You can approve pins: the pin is set as soon as it is sent.'**
+  String get pinWillApplyApprover;
+
   /// No description provided for @pinNeedsManager.
   ///
   /// In en, this message translates to:
