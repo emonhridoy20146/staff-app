@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+### Added (owner request 2026-11-22: reload on the customer page; FR-M-063, ADR-M27)
+- **Reload button and pull-to-refresh on the customer page.** Both ask the server for this customer now (`POST /customers/{id}/refresh`, already in the contract): ERP balance, invoices, installment lines and payments are stored like a pull, then a sync runs so queued work goes out. The top-bar button turns into a spinner while it runs. Messages (bn/en): "সার্ভার থেকে হালনাগাদ হয়েছে / Updated from the server"; offline "ইন্টারনেট লাগবে। ফোনে রাখা তথ্য দেখানো হচ্ছে। / Needs internet. Showing the data saved on this phone."; ERP busy (503/429); no longer yours (404, the phone's data is kept); no permission (403); otherwise the error code.
+- Nothing unsynced is touched: the answer goes through the same `customer` pull handler as sync (pending field amounts and numbers typed on the phone are kept); the outbox is not changed.
+- Fixed: on a narrow phone in English the "This month" card's title row overflowed when the invoice count line was long; the count now wraps.
+- Fake API counts `customerRefreshCalls`. Tests: `test/flows/customer_detail_refresh_test.dart` (button, pull down, offline keeps data and outbox, English).
+
 ### Changed (owner report 2026-11-22: "App not installed" over an older build; ADR-M26)
 - **A build on `main` without the release key now fails** (`apk` job, step "Decode keystore") instead of publishing a debug-signed APK. A debug key is generated anew on each CI run, so such APKs have a different signature every time and Android refuses them as an update. Other branches still build, with a warning.
 - `tool/make_release_keystore.sh`: one-time helper to make the key and the four `STAFF_*` secret values (asks for the password; refuses to overwrite an existing key; output git-ignored: `*.jks`, `*.b64`).

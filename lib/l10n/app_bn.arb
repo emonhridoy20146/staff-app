@@ -971,5 +971,12 @@
   "depositFailedBack": "আদায়গুলো আবার আপনার হাতে আছে, বদলানোও যাবে। আবার জমা দিন।",
   "depositAgain": "আবার জমা দিন",
   "collectWhichInvoice": "কোন ইনভয়েসের টাকা",
-  "collectInvoiceCount": "এই গ্রাহকের {count}টি খোলা ইনভয়েস — সঠিকটি বেছে নিন"
+  "collectInvoiceCount": "এই গ্রাহকের {count}টি খোলা ইনভয়েস — সঠিকটি বেছে নিন",
+  "customerRefresh": "সার্ভার থেকে আবার লোড করুন",
+  "customerRefreshDone": "সার্ভার থেকে হালনাগাদ হয়েছে",
+  "customerRefreshOffline": "ইন্টারনেট লাগবে। ফোনে রাখা তথ্য দেখানো হচ্ছে।",
+  "customerRefreshBusy": "ইআরপি এখন ব্যস্ত। এক মিনিট পরে আবার চেষ্টা করুন।",
+  "customerRefreshNotFound": "সার্ভারে এই গ্রাহক আর আপনার তালিকায় নেই। ফোনের তথ্য রাখা আছে।",
+  "customerRefreshDenied": "এই গ্রাহক আবার লোড করার অনুমতি আপনার নেই।",
+  "customerRefreshFailed": "আবার লোড করা যায়নি। রাখা তথ্য দেখানো হচ্ছে। কোড: {code}"
 }
