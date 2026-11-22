@@ -66,4 +66,14 @@ docs/         spec (01–09), CHANGELOG
 
 ## Release signing
 
-Never in the repo. CI reads `STAFF_KEYSTORE_B64`, `STAFF_KEYSTORE_PASSWORD`, `STAFF_KEY_ALIAS`, `STAFF_KEY_PASSWORD` from repository secrets (see `.github/workflows/ci.yml`). Without them the release APK is debug-signed (fine for testing, not for Play).
+Never in the repo. CI reads `STAFF_KEYSTORE_B64`, `STAFF_KEYSTORE_PASSWORD`, `STAFF_KEY_ALIAS`, `STAFF_KEY_PASSWORD` from repository secrets (see `.github/workflows/ci.yml`).
+
+**Every APK must be signed with the same key**, otherwise a phone answers "App not installed" when you install a new build over the old one (a debug key is new on every CI run). So a build on `main` without the secrets **fails** instead of publishing a debug-signed APK; other branches build with a warning.
+
+One-time setup, on your own machine:
+
+```bash
+tool/make_release_keystore.sh        # asks for a password; prints the four secrets to add on GitHub
+```
+
+Keep `staff-release.jks` and its password safe (a lost key means no phone can ever be updated, only reinstalled). A phone that has a build signed with another key needs one uninstall (sync first, so nothing unsent is lost); after that every update installs over it. Android's `ANDROID_ID`, which the device id is derived from (ADR-M25), depends on the signing key, so the key must never change.

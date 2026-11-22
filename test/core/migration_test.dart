@@ -5,7 +5,7 @@ import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:staff_app/core/db/app_database.dart';
 
-/// Every released schema upgrades to the current one (v10, 0.13.x) and
+/// Every released schema upgrades to the current one (v14, contract 1.35.0) and
 /// existing rows survive.
 void main() {
   test('migrates a 0.1.0 database to the current schema without losing outbox rows', () async {
@@ -39,7 +39,7 @@ void main() {
     await v1.close();
 
     final v2 = AppDatabase(NativeDatabase(file));
-    expect(v2.schemaVersion, 13);
+    expect(v2.schemaVersion, 14);
     expect(await v2.select(v2.coworkSessions).get(), isEmpty);
     final props = await v2.select(v2.locationProposals).get();
     expect(props.single.decisionReason, isNull);
@@ -283,7 +283,7 @@ void main() {
     await v8.close();
 
     final v9 = AppDatabase(NativeDatabase(file));
-    expect(v9.schemaVersion, 13);
+    expect(v9.schemaVersion, 14);
     expect(await v9.select(v9.tasks).get(), isEmpty);
     // The new table works, with its defaults.
     await v9.into(v9.tasks).insert(TasksCompanion.insert(serverId: 't-1', title: 'কাজ', createdAt: DateTime.utc(2026, 11, 18)));
@@ -316,7 +316,7 @@ void main() {
     await v9.close();
 
     final v10 = AppDatabase(NativeDatabase(file));
-    expect(v10.schemaVersion, 13);
+    expect(v10.schemaVersion, 14);
     final day = (await v10.select(v10.attendanceDays).get()).single;
     expect(day.businessDate, '2026-11-20');
     expect(day.lateMin, 25);
@@ -351,7 +351,7 @@ void main() {
     await v10.close();
 
     final v11 = AppDatabase(NativeDatabase(file));
-    expect(v11.schemaVersion, 13);
+    expect(v11.schemaVersion, 14);
     final line = (await v11.select(v11.scheduleLines).get()).single;
     expect([line.seq, line.amountPoisha, line.paidPoisha], [1, 500000, 500000]);
     expect(line.paidOn, isNull);
@@ -376,7 +376,7 @@ void main() {
     await v11.close();
 
     final v12 = AppDatabase(NativeDatabase(file));
-    expect(v12.schemaVersion, 13);
+    expect(v12.schemaVersion, 14);
     expect(await v12.select(v12.colleagueActivities).get(), isEmpty);
     expect((await v12.select(v12.outbox).get()).single.mutationId, 'col-11');
     expect((await v12.select(v12.promises).get()).single.clientId, 'pr-1');
@@ -390,6 +390,7 @@ void main() {
     final v12 = AppDatabase(NativeDatabase(file));
     await v12.customStatement('SELECT 1');
     // That build had the colleagues table but not the later columns.
+    await _dropV14(v12);
     await v12.customStatement('ALTER TABLE promises DROP COLUMN created_by_name');
     for (final c in ['previous_amount_poisha', 'voided_kind', 'voided_by_name', 'voided_reason']) {
       await v12.customStatement('ALTER TABLE collections DROP COLUMN $c');
@@ -401,7 +402,7 @@ void main() {
     await v12.close();
 
     final v13 = AppDatabase(NativeDatabase(file));
-    expect(v13.schemaVersion, 13);
+    expect(v13.schemaVersion, 14);
     expect((await v13.select(v13.promises).get()).single.createdByName, isNull);
     expect(await v13.select(v13.collections).get(), isEmpty);
     expect(await v13.select(v13.colleagueActivities).get(), isEmpty);
@@ -409,10 +410,49 @@ void main() {
     await v13.close();
     await dir.delete(recursive: true);
   });
+  test('migrates a schema 13 database: deposit columns are added, an unsent deposit, its outbox row and the collections stay', () async {
+    final dir = await Directory.systemTemp.createTemp('mig13');
+    final file = File('${dir.path}/app.db');
+    final v13 = AppDatabase(NativeDatabase(file));
+    await v13.customStatement('SELECT 1');
+    await _dropV14(v13);
+    await v13.customStatement(
+        'INSERT INTO collections (client_id, customer_id, customer_name, customer_code, amount_poisha, method, receipt_no, recorded_at, device_time, business_date, status, sync_state) '
+
+        "VALUES ('col-13', 'c-1', 'A', 'C-1', 150000, 'bkash', 'R-13', 0, 0, '2026-11-15', 'received', 'synced')");
+    await v13.customStatement("INSERT INTO deposits (client_id, amount_poisha, destination, deposited_at, status, sync_state) VALUES ('dep-13', 300000, 'branch_cashier', 0, 'pending', 'queued')");
+    await v13.customStatement("INSERT INTO outbox (mutation_id, entity, op, payload_json, created_at) VALUES ('dep-13', 'deposit', 'create', '{}', 0)");
+    await v13.customStatement('PRAGMA user_version = 13');
+    await v13.close();
+
+    final v14 = AppDatabase(NativeDatabase(file));
+    expect(v14.schemaVersion, 14);
+    final c = (await v14.select(v14.collections).get()).single;
+    expect([c.clientId, c.amountPoisha, c.depositId, c.depositedAt], ['col-13', 150000, null, null]);
+    final d = (await v14.select(v14.deposits).get()).single;
+    expect([d.clientId, d.amountPoisha, d.syncState, d.collectionCount, d.nonCashPoisha, d.nonCashCount, d.failureCode], ['dep-13', 300000, 'queued', null, null, null, null]);
+    final ob = (await v14.select(v14.outbox).get()).single;
+    expect([ob.mutationId, ob.state], ['dep-13', 'pending']);
+    await v14.close();
+    await dir.delete(recursive: true);
+  });
+}
+
+/// What schema 14 (contract 1.35.0, FR-M-059) added: the deposit that handed a collection in, and
+/// what a deposit took besides cash.
+Future<void> _dropV14(AppDatabase db) async {
+  for (final c in ['deposit_id', 'deposited_at']) {
+    await db.customStatement('ALTER TABLE collections DROP COLUMN $c');
+  }
+  for (final c in ['collection_count', 'non_cash_poisha', 'non_cash_count', 'failure_code']) {
+    await db.customStatement('ALTER TABLE deposits DROP COLUMN $c');
+  }
 }
 
 /// What schema 12 (contract 1.31.0) added: colleagues' visits, promises and collections.
+/// A file older than 12 has nothing of 14 either.
 Future<void> _dropV12(AppDatabase db) async {
+  await _dropV14(db);
   await db.customStatement('DROP TABLE colleague_activities');
   await db.customStatement('ALTER TABLE promises DROP COLUMN created_by_name');
   for (final c in ['previous_amount_poisha', 'voided_kind', 'voided_by_name', 'voided_reason']) {

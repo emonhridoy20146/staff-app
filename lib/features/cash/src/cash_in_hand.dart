@@ -9,6 +9,9 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/ui/common.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../core/db/app_database.dart';
+import '../../collections/collections.dart';
+import 'cash.dart' show unsentDepositProvider;
 import 'cash_actions.dart';
 import 'cash_in_hand_data.dart';
 
@@ -54,6 +57,10 @@ class _CashInHandScreenState extends ConsumerState<CashInHandScreen> {
     // Cash this phone has taken or handed in that the server has not counted yet.
     final local = ref.watch(cashOnHandProvider).value;
     final unsent = local != null && local.onHand != local.serverOnHand;
+    // FR-M-059: a deposit saved here and not sent yet locks everything in hand; so does a deposit per line.
+    final depositWaiting = ref.watch(unsentDepositProvider).value ?? false;
+    final locked = ref.watch(depositLockedIdsProvider).value ?? const <String>{};
+    final nonCash = ref.watch(nonCashInHandProvider).value ?? const <CollectionRow>[];
     return Scaffold(
       backgroundColor: cs.surfaceContainerLowest,
       appBar: AppBar(title: Text(l.cashInHandTitle)),
@@ -62,6 +69,10 @@ class _CashInHandScreenState extends ConsumerState<CashInHandScreen> {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(Space.screen, Space.s16, Space.screen, Space.s32),
           children: [
+            if (depositWaiting) ...[
+              InfoBanner(icon: Icons.lock_clock_rounded, tone: BannerTone.info, text: l.cashDepositWaitingLock),
+              const SizedBox(height: Space.cardGap),
+            ],
             if (d == null && _loading)
               const Padding(padding: EdgeInsets.all(Space.s48), child: Center(child: CircularProgressIndicator()))
             else if (d == null)
@@ -97,7 +108,7 @@ class _CashInHandScreenState extends ConsumerState<CashInHandScreen> {
                   child: Column(children: [
                     for (var i = 0; i < d.items.length; i++) ...[
                       if (i > 0) const Divider(height: 1, indent: Space.s16, endIndent: Space.s16),
-                      _Tile(item: d.items[i], lang: lang, onChanged: _load),
+                      _Tile(item: d.items[i], lang: lang, onChanged: _load, locked: depositWaiting || locked.contains(d.items[i].collectionId)),
                     ],
                   ]),
                 ),
@@ -105,6 +116,22 @@ class _CashInHandScreenState extends ConsumerState<CashInHandScreen> {
                 const SizedBox(height: Space.s12),
                 Text(l.cashInHandMore(f.num(d.notListed)), style: t.bodySmall!.copyWith(color: cs.onSurfaceVariant)),
               ],
+            ],
+            // FR-M-059: mobile banking and bank money also stays in hand until the deposit; from this phone's copy.
+            if (nonCash.isNotEmpty) ...[
+              SectionHeader(l.cashInHandNonCashTitle, count: f.num(nonCash.length)),
+              Card(
+                margin: EdgeInsets.zero,
+                clipBehavior: Clip.antiAlias,
+                child: Column(children: [
+                  for (var i = 0; i < nonCash.length; i++) ...[
+                    if (i > 0) const Divider(height: 1, indent: Space.s16, endIndent: Space.s16),
+                    _LocalTile(row: nonCash[i], locked: depositWaiting),
+                  ],
+                ]),
+              ),
+            ],
+            if (d != null) ...[
               const SizedBox(height: Space.s12),
               Text(l.cashInHandHow, style: t.bodySmall!.copyWith(color: cs.onSurfaceVariant)),
             ],
@@ -116,10 +143,13 @@ class _CashInHandScreenState extends ConsumerState<CashInHandScreen> {
 }
 
 class _Tile extends ConsumerWidget {
-  const _Tile({required this.item, required this.lang, required this.onChanged});
+  const _Tile({required this.item, required this.lang, required this.onChanged, required this.locked});
   final CashInHandItem item;
   final String lang;
   final Future<void> Function() onChanged;
+
+  /// Handed in by a deposit this phone has saved (FR-M-059): no change, no delete.
+  final bool locked;
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l = AppLocalizations.of(context);
@@ -145,16 +175,72 @@ class _Tile extends ConsumerWidget {
           if (item.partly) Text(l.cashInHandPartOf(f.money(item.amountPoisha)), style: t.bodySmall!.copyWith(color: cs.onSurfaceVariant)),
         ]),
         // Until a deposit covers it, the cash can still be changed or deleted (FR-M-058).
-        if (!item.partly && item.collectionId.isNotEmpty)
-          PopupMenuButton<String>(
-            tooltip: '',
-            onSelected: (v) => v == 'edit' ? _edit(context, ref) : _delete(context, ref),
-            itemBuilder: (_) => [
-              PopupMenuItem(value: 'edit', child: ListTile(leading: const Icon(Icons.edit_rounded), title: Text(l.cashActionEdit), contentPadding: EdgeInsets.zero)),
-              PopupMenuItem(value: 'delete', child: ListTile(leading: const Icon(Icons.delete_outline_rounded), title: Text(l.cashActionDelete), contentPadding: EdgeInsets.zero)),
-            ],
+        if (!item.partly && item.collectionId.isNotEmpty && !locked)
+          _ActionsMenu(
+            target: _Target(collectionId: item.collectionId, customerId: item.customerId ?? '', amountPoisha: item.amountPoisha, customerName: item.nameOf(lang)),
+            onChanged: onChanged,
           ),
       ]),
+    );
+  }
+}
+
+/// A mobile banking or bank collection still in hand, from this phone's copy (FR-M-059).
+class _LocalTile extends ConsumerWidget {
+  const _LocalTile({required this.row, required this.locked});
+  final CollectionRow row;
+  final bool locked;
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context);
+    final f = ref.watch(fmtProvider);
+    final t = Theme.of(context).textTheme;
+    final cs = Theme.of(context).colorScheme;
+    final method = PaymentMethodX.fromWire(row.method);
+    final serverId = row.serverId;
+    return ListTile(
+      onTap: () => context.push('/customers/${row.customerId}'),
+      minTileHeight: Sizes.row2,
+      leading: Icon(methodIcon(method), color: methodColor(method)),
+      title: Text(row.customerName.isNotEmpty ? row.customerName : row.customerCode, style: t.bodyLarge, maxLines: 1, overflow: TextOverflow.ellipsis),
+      subtitle: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
+        Text([methodLabel(l, method), f.dateTime(row.recordedAt)].join(' · '), style: t.bodySmall!.copyWith(color: cs.onSurfaceVariant), maxLines: 1, overflow: TextOverflow.ellipsis),
+        Text(serverId == null ? l.cashInHandNotSent : row.receiptNo, style: AppTheme.tabular(t.bodySmall!).copyWith(color: cs.onSurfaceVariant), maxLines: 2, overflow: TextOverflow.ellipsis),
+      ]),
+      trailing: Row(mainAxisSize: MainAxisSize.min, children: [
+        Text(f.money(row.amountPoisha), style: AppTheme.tabular(t.titleMedium!)),
+        // Until the deposit hands it in, it can be changed or deleted like cash (online, once sent).
+        if (serverId != null && !locked)
+          _ActionsMenu(target: _Target(collectionId: serverId, customerId: row.customerId, amountPoisha: row.amountPoisha, customerName: row.customerName), onChanged: () async {}),
+      ]),
+    );
+  }
+}
+
+class _Target {
+  const _Target({required this.collectionId, required this.customerId, required this.amountPoisha, required this.customerName});
+  final String collectionId;
+  final String customerId;
+  final int amountPoisha;
+  final String customerName;
+}
+
+/// Change / Delete of a collection still in hand (FR-M-058, any method since FR-M-059).
+class _ActionsMenu extends ConsumerWidget {
+  const _ActionsMenu({required this.target, required this.onChanged});
+  final _Target target;
+  final Future<void> Function() onChanged;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context);
+    return PopupMenuButton<String>(
+      tooltip: '',
+      onSelected: (v) => v == 'edit' ? _edit(context, ref) : _delete(context, ref),
+      itemBuilder: (_) => [
+        PopupMenuItem(value: 'edit', child: ListTile(leading: const Icon(Icons.edit_rounded), title: Text(l.cashActionEdit), contentPadding: EdgeInsets.zero)),
+        PopupMenuItem(value: 'delete', child: ListTile(leading: const Icon(Icons.delete_outline_rounded), title: Text(l.cashActionDelete), contentPadding: EdgeInsets.zero)),
+      ],
     );
   }
 
@@ -175,7 +261,7 @@ class _Tile extends ConsumerWidget {
 
   Future<void> _edit(BuildContext context, WidgetRef ref) async {
     final l = AppLocalizations.of(context);
-    final amount = TextEditingController(text: item.amountPoisha % 100 == 0 ? '${item.amountPoisha ~/ 100}' : (item.amountPoisha / 100).toStringAsFixed(2));
+    final amount = TextEditingController(text: target.amountPoisha % 100 == 0 ? '${target.amountPoisha ~/ 100}' : (target.amountPoisha / 100).toStringAsFixed(2));
     final note = TextEditingController();
     final payer = TextEditingController();
     final ok = await showDialog<bool>(
@@ -199,11 +285,11 @@ class _Tile extends ConsumerWidget {
     );
     if (ok != true || !context.mounted) return;
     final poisha = parseMoneyInput(amount.text);
-    final changed = poisha != null && poisha > 0 && poisha != item.amountPoisha ? poisha : null;
+    final changed = poisha != null && poisha > 0 && poisha != target.amountPoisha ? poisha : null;
     final n = note.text.trim().isEmpty ? null : note.text.trim();
     final p = payer.text.trim().isEmpty ? null : payer.text.trim();
     if (changed == null && n == null && p == null) return;
-    final err = await ref.read(cashActionsServiceProvider).edit(item.collectionId, customerId: item.customerId ?? '', oldAmountPoisha: item.amountPoisha, amountPoisha: changed, note: n, payerName: p);
+    final err = await ref.read(cashActionsServiceProvider).edit(target.collectionId, customerId: target.customerId, oldAmountPoisha: target.amountPoisha, amountPoisha: changed, note: n, payerName: p);
     if (!context.mounted) return;
     _say(context, err);
     if (err == null) await onChanged();
@@ -218,7 +304,7 @@ class _Tile extends ConsumerWidget {
       builder: (c) => AlertDialog(
         title: Text(l.cashDeleteTitle),
         content: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(l.cashDeleteBody(f.money(item.amountPoisha), item.nameOf(lang))),
+          Text(l.cashDeleteBody(f.money(target.amountPoisha), target.customerName)),
           const SizedBox(height: Space.s12),
           TextField(controller: reason, decoration: InputDecoration(labelText: l.cashDeleteReason)),
         ]),
@@ -229,7 +315,7 @@ class _Tile extends ConsumerWidget {
       ),
     );
     if (ok != true || !context.mounted) return;
-    final err = await ref.read(cashActionsServiceProvider).withdraw(item.collectionId, customerId: item.customerId ?? '', amountPoisha: item.amountPoisha, reason: reason.text.trim().isEmpty ? null : reason.text.trim());
+    final err = await ref.read(cashActionsServiceProvider).withdraw(target.collectionId, customerId: target.customerId, amountPoisha: target.amountPoisha, reason: reason.text.trim().isEmpty ? null : reason.text.trim());
     if (!context.mounted) return;
     _say(context, err);
     if (err == null) await onChanged();

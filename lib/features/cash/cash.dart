@@ -2,4 +2,4 @@
 library;
 
 export 'manifest.dart';
-export 'src/cash.dart' show CashMeter, CashCard, showDepositSheet;
+export 'src/cash.dart' show CashMeter, CashCard, showDepositSheet, depositByClientIdProvider, depositFailureText;

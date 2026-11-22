@@ -193,6 +193,9 @@ class FieldApi {
         (d) => (d as List).cast<Json>(),
       );
 
+  /// Today's day with its events (contract 1.36.0): restores attendance after a reinstall.
+  Future<Json> myAttendanceToday() => _call(() => _dio.get<dynamic>('/attendance/me/today'), (d) => d as Json);
+
   /// My shift, or the branch default (`id: default`).
   Future<Json> myShift() => _call(() => _dio.get<dynamic>('/attendance/me/shift'), (d) => d as Json);
 

@@ -37,7 +37,10 @@ class FakeFieldApi implements HttpClientAdapter {
   bool uploadsFail = false; // the storage host refuses photos (e.g. a misconfigured server)
   String trackingProvider = 'free'; // admin setting location.trackingProvider
   bool selfieRequired = true; // attendance.selfieRequired (master switch)
-  List<String> selfieEvents = const ['work_in', 'break_start', 'break_end', 'work_out']; // attendance.selfieEvents
+  /// Events the server already has for today (`GET /attendance/me/today`, 1.36.0).
+  List<Json> todayAttendanceEvents = [];
+  int meTodayCalls = 0;
+  List<String>? selfieEvents = const ['work_in', 'work_out']; // attendance.selfieEvents (server default since 1.36.0); null = not sent
   int pushCalls = 0;
   int coworkMaxMembers = 5; // cowork.maxMembers, counts the requester
   String staffPinApproval = 'when_missing'; // customers.staffPinApproval (1.11.0)
@@ -79,12 +82,16 @@ class FakeFieldApi implements HttpClientAdapter {
   var _mustChange = true;
   var _cashOnHand = 820000; // ৳8,200 from yesterday
 
-  /// Cash collections the server has taken, oldest first (1.27.0): the
-  /// newest of them add up to [_cashOnHand].
-  late final List<Json> _cashRows = [
-    {'collectionId': 'col-y1', 'customerId': 'c-1002', 'erpPlanId': 'INV-2291', 'amountPoisha': 500000, 'receiptNo': 'BRL01-FS014-000118', 'recordedAt': clock.nowUtc().subtract(const Duration(hours: 22)).toIso8601String()},
-    {'collectionId': 'col-y2', 'customerId': 'c-1005', 'erpPlanId': 'INV-2317', 'amountPoisha': 450000, 'receiptNo': 'BRL01-FS014-000119', 'recordedAt': clock.nowUtc().subtract(const Duration(hours: 20)).toIso8601String()},
+  /// Every collection the server has taken from me, oldest first (1.27.0, 1.35.0). The newest cash
+  /// ones not handed in by a deposit add up to [_cashOnHand]; `depositId` is set by a deposit.
+  late final List<Json> _srvCollections = [
+    {'collectionId': 'col-y1', 'customerId': 'c-1002', 'erpPlanId': 'INV-2291', 'amountPoisha': 500000, 'method': 'cash', 'status': 'received', 'receiptNo': 'BRL01-FS014-000118', 'recordedAt': clock.nowUtc().subtract(const Duration(hours: 22)).toIso8601String()},
+    {'collectionId': 'col-y2', 'customerId': 'c-1005', 'erpPlanId': 'INV-2317', 'amountPoisha': 450000, 'method': 'cash', 'status': 'received', 'receiptNo': 'BRL01-FS014-000119', 'recordedAt': clock.nowUtc().subtract(const Duration(hours: 20)).toIso8601String()},
   ];
+
+  /// Cash collections still in hand on the server (not voided, not handed in by a 1.35.0 deposit).
+  Iterable<Json> get _cashRows => _srvCollections.where((c) => c['method'] == 'cash' && c['status'] == 'received' && c['depositId'] == null);
+  var _depositSeq = 0;
   final _limit = 5000000; // ৳50,000
 
   static const user = {
@@ -116,7 +123,7 @@ class FakeFieldApi implements HttpClientAdapter {
 
   Json get _settings => {
         'dutyStart': '09:00',
-        'dutyEnd': '18:00',
+        'dutyEnd': '21:00',
         'lateGraceMin': 15,
         'maxBreakMin': 60,
         'cashWarnPct': 80,
@@ -127,7 +134,7 @@ class FakeFieldApi implements HttpClientAdapter {
         'hotline': '০১৭০০-০০০০০০',
         'location.trackingProvider': trackingProvider,
         'attendance.selfieRequired': selfieRequired,
-        'attendance.selfieEvents': selfieEvents,
+        if (selfieEvents != null) 'attendance.selfieEvents': selfieEvents,
         'cowork.maxMembers': coworkMaxMembers,
         'customers.staffPinApproval': staffPinApproval,
         'cowork.visitCredit': 1.0,
@@ -291,6 +298,16 @@ class FakeFieldApi implements HttpClientAdapter {
       return _leave[i];
     }
     return (404, _problem(404, 'NOT_FOUND', 'No route'));
+  }
+
+  /// Tests / demo: the office voids one of my collections (by the phone's clientId), e.g. while a
+  /// deposit is still on the phone; the cash leaves my hand.
+  void officeVoid(String clientId) {
+    final c = _srvCollections.firstWhere((x) => x['clientId'] == clientId);
+    if (c['method'] == 'cash' && c['depositId'] == null) _cashOnHand -= _inHandOf(c);
+    c['status'] = 'voided';
+    c['voided'] = {'by': 'u-bm-001', 'byName': 'মোস্তফা কামাল', 'at': clock.nowUtc().toIso8601String(), 'reason': 'ভুল এন্ট্রি', 'kind': 'admin'};
+    _collectionChanged(c);
   }
 
   /// Simulates an office-side change (e.g. a new handover) for demos/tests.
@@ -616,6 +633,11 @@ class FakeFieldApi implements HttpClientAdapter {
           serverChange('customer', c['id'] as String, {...c, 'phones': [for (final d in next) d['number']], 'phoneDetails': next});
           return _json(200, {});
         }
+        final cw = RegExp(r'^/collections/([^/]+)(/withdraw)?$').firstMatch(path);
+        if (cw != null && ((o.method == 'POST' && cw.group(2) != null) || (o.method == 'PATCH' && cw.group(2) == null))) {
+          final r = _changeCollection(cw.group(1)!, withdraw: cw.group(2) != null, body: (body as Json?) ?? const {});
+          return _json(r.$1, r.$2);
+        }
         if (o.method == 'GET' && path == '/cash/me/collections') {
           return _json(200, _cashInHand());
         }
@@ -646,6 +668,10 @@ class FakeFieldApi implements HttpClientAdapter {
           ]..sort((a, b) => (a['date'] as String).compareTo(b['date'] as String)));
         }
         if (o.method == 'GET' && path == '/attendance/me/shift') return _json(200, myShift);
+        if (o.method == 'GET' && path == '/attendance/me/today') {
+          meTodayCalls++;
+          return _json(200, {'status': todayAttendanceEvents.isEmpty ? 'not_started' : 'on_duty', 'events': todayAttendanceEvents});
+        }
         if (path.startsWith('/cowork/')) {
           final r = _coworkRoute(o.method, path, body);
           if (r is (int, Json)) return _json(r.$1, r.$2);
@@ -801,7 +827,7 @@ class FakeFieldApi implements HttpClientAdapter {
   Json _cashInHand() {
     var left = _cashOnHand;
     final items = <Json>[];
-    for (final c in _cashRows.reversed) {
+    for (final c in _cashRows.toList().reversed) {
       if (left <= 0) break;
       final amount = c['amountPoisha'] as int;
       final at = (c['recordedAt'] as String?) ?? clock.nowUtc().toIso8601String();
@@ -851,6 +877,87 @@ class FakeFieldApi implements HttpClientAdapter {
         'amountAchievement': r['ach'], 'presentDays': r['present'], 'eligible': rank != null, 'me': r['userId'] == user['id'],
       };
 
+  Json _rule(String rule, [Json extra = const {}]) => {..._problem(422, 'BUSINESS_RULE', 'Business rule'), 'details': {'rule': rule, ...extra}};
+
+  /// The part of a cash collection still in hand (older cash is handed in first, 1.27.0).
+  int _inHandOf(Json c) {
+    var left = _cashOnHand;
+    for (final r in _cashRows.toList().reversed) {
+      final amount = r['amountPoisha'] as int;
+      final part = left < amount ? left : amount;
+      if (identical(r, c)) return part;
+      left -= part;
+    }
+    return 0;
+  }
+
+  /// The collection as the change feed carries it (contract `Collection`, 1.35.0 deposit fields).
+  void _collectionChanged(Json c) {
+    if (c['clientId'] == null) return; // made before this phone (seed): not on the phone
+    serverChange('collection', c['collectionId'] as String, {
+      ...c,
+      'id': c['collectionId'],
+      'collector': {'id': user['id'], 'name': _nameOf(user['id']! as String)},
+      'receivedAt': c['recordedAt'],
+    });
+  }
+
+  /// 1.35.0: change (PATCH) or withdraw a collection of any method until a deposit hands it in.
+  (int, Json) _changeCollection(String id, {required bool withdraw, required Json body}) {
+    final c = _srvCollections.where((x) => x['collectionId'] == id).firstOrNull;
+    if (c == null) return (404, _problem(404, 'NOT_FOUND', 'Collection not found'));
+    Json state(String reason) => {..._problem(409, 'INVALID_STATE', 'Invalid state'), 'details': {'reason': reason, 'status': c['status']}};
+    if (withdraw && c['status'] == 'voided') return (200, c);
+    if (c['status'] != 'received') return (409, state(withdraw ? 'ALREADY_POSTED_OR_CLOSED' : 'NOT_EDITABLE'));
+    final amount = c['amountPoisha'] as int;
+    if (c['depositId'] != null || (c['method'] == 'cash' && _inHandOf(c) < amount)) return (409, state('COVERED_BY_DEPOSIT'));
+    if (withdraw) {
+      if (c['method'] == 'cash') _cashOnHand -= amount;
+      c['status'] = 'voided';
+      c['voided'] = {'by': user['id'], 'byName': _nameOf(user['id']! as String), 'at': clock.nowUtc().toIso8601String(), 'reason': body['reason'] ?? 'Withdrawn by the collector', 'kind': 'withdrawn'};
+    } else {
+      final next = (body['amountPoisha'] as int?) ?? amount;
+      if (c['method'] == 'cash') _cashOnHand += next - amount;
+      if (next != amount) c['edited'] = {'count': 1, 'at': clock.nowUtc().toIso8601String(), 'by': user['id'], 'previousAmountPoisha': (c['edited'] as Json?)?['previousAmountPoisha'] ?? amount};
+      c['amountPoisha'] = next;
+      if (body.containsKey('note')) c['note'] = body['note'];
+      if (body.containsKey('payerName')) c['payerName'] = body['payerName'];
+    }
+    _collectionChanged(c);
+    return (200, c);
+  }
+
+  /// 1.35.0 (FR-CASH-010): a deposit hands in all the cash and every other collection not handed in
+  /// yet; it is `submitted` and final, and each collection then goes to the ERP.
+  Json _deposit(String mutationId, Json payload) {
+    final amount = payload['amountPoisha'] as int;
+    if (payload['destination'] == 'bank' && payload['slipMediaId'] == null) {
+      return {'mutationId': mutationId, 'result': 'rejected', 'error': _rule('SLIP_REQUIRED')};
+    }
+    if (amount > _cashOnHand) return {'mutationId': mutationId, 'result': 'rejected', 'error': _rule('DEPOSIT_EXCEEDS_ON_HAND', {'onHandPoisha': _cashOnHand})};
+    if (amount < _cashOnHand) return {'mutationId': mutationId, 'result': 'rejected', 'error': _rule('DEPOSIT_MUST_BE_ALL', {'onHandPoisha': _cashOnHand})};
+    final cash = _cashOnHand > 0 ? [for (final c in _cashRows.toList()) if (_inHandOf(c) > 0) c] : const <Json>[];
+    final other = _srvCollections.where((c) => c['method'] != 'cash' && c['status'] == 'received' && c['depositId'] == null).toList();
+    if (cash.isEmpty && other.isEmpty) return {'mutationId': mutationId, 'result': 'rejected', 'error': _rule('NOTHING_TO_DEPOSIT')};
+    final id = 'dep-${++_depositSeq}';
+    final at = clock.nowUtc().toIso8601String();
+    for (final c in [...cash, ...other]) {
+      c['depositId'] = id;
+      c['depositedAt'] = at;
+      // ERP posting is on in the demo: it goes at once.
+      c['status'] = 'posted';
+      c['erpReceiptNo'] = 'ERP-${c['receiptNo']}';
+      _collectionChanged(c);
+    }
+    _cashOnHand = 0;
+    final nonCash = other.fold<int>(0, (n, c) => n + (c['amountPoisha'] as int));
+    serverChange('deposit', id, {
+      ...payload, 'id': id, 'userId': user['id'], 'status': 'submitted',
+      'collectionCount': cash.length + other.length, 'nonCashPoisha': nonCash, 'nonCashCount': other.length,
+    });
+    return {'mutationId': mutationId, 'result': 'applied', 'entityId': id, 'status': 'submitted'};
+  }
+
   Json _push(Json req) {
     final results = <Json>[];
     for (final raw in (req['mutations'] as List)) {
@@ -892,12 +999,14 @@ class FakeFieldApi implements HttpClientAdapter {
           'result': 'rejected',
           'error': _problem(400, 'VALIDATION_FAILED', 'amountPoisha must be ≥ 1'),
         };
+      } else if (entity == 'deposit') {
+        r = _deposit(id, payload);
       } else {
         r = {'mutationId': id, 'result': 'applied', 'entityId': '$entity-$id', 'status': entity == 'collection' ? 'received' : 'ok'};
         if (entity == 'collection' && payload['method'] == 'cash') _cashOnHand += payload['amountPoisha'] as int;
-        if (entity == 'collection' && payload['method'] == 'cash') _cashRows.add({...payload, 'collectionId': '$entity-$id'});
+        // 1.35.0: recording sends nothing to the ERP; it stays in my hand until a deposit.
+        if (entity == 'collection') _srvCollections.add({...payload, 'collectionId': '$entity-$id', 'status': 'received', 'depositId': null, 'depositedAt': null});
         if (entity == 'collection') _collectedToday += payload['amountPoisha'] as int;
-        if (entity == 'deposit') _cashOnHand -= payload['amountPoisha'] as int;
         if (entity == 'attendance_event' && payload['type'] == 'work_out') _leaveCoworkOnWorkOut();
         if (entity == 'broadcast_ack') {
           final bid = payload['broadcastId'] as String;

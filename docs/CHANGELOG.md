@@ -2,6 +2,30 @@
 
 ## [Unreleased]
 
+### Changed (owner report 2026-11-22: "App not installed" over an older build; ADR-M26)
+- **A build on `main` without the release key now fails** (`apk` job, step "Decode keystore") instead of publishing a debug-signed APK. A debug key is generated anew on each CI run, so such APKs have a different signature every time and Android refuses them as an update. Other branches still build, with a warning.
+- `tool/make_release_keystore.sh`: one-time helper to make the key and the four `STAFF_*` secret values (asks for the password; refuses to overwrite an existing key; output git-ignored: `*.jks`, `*.b64`).
+- README "Release signing" explains the rule, the one-time uninstall for phones that have a differently signed build, and that the key must never change.
+
+### Changed (owner request 2026-11-22: reinstall, attendance, break photo, default shift; FR-M-060, FR-M-061, ADR-M25, contract 1.36.0)
+- **A reinstall no longer needs a new device approval.** The device id is now derived from Android's ANDROID_ID (UUID v5, name `bd.howlader.staff_app/device/<ANDROID_ID>`), read through the existing `com.howlader.staff/permissions` channel (`androidId`). The same phone gives the same id after uninstall and install. A phone that already has an id keeps it. Without a usable ANDROID_ID a random id is used as before.
+- **Attendance survives a reinstall.** After each successful sync, if the phone has no attendance event today, it asks `GET /attendance/me/today` (1.36.0, once per day per app run) and stores the events under their own clientId as already sent (no outbox entry). Duty, breaks and tracking then show the real state; staff are not asked to work in again. The phone's own events always win.
+- **No photo at breaks by default.** Without `attendance.selfieEvents` from the server the app asks for a photo only at work-in and work-out (server default since 1.36.0).
+- **Which invoice is always in view** on the collect screen (FR-M-062): a labelled choice "কোন ইনভয়েসের টাকা / Which invoice" with the number of open invoices, or the single invoice shown read-only.
+- **No shift data: 09:00–21:00** (was 09:00–18:00) in `DutySettings` and `MyShift` fallbacks.
+
+### Changed (owner request 2026-11-22: deposit everything, then it goes to the ERP; FR-M-059, ADR-M24, contract 1.35.0, schema 14)
+- **Every collection stays in your hand until you deposit, whatever the method.** Change and Delete on the cash-in-hand screen now also cover bKash, Nagad, Rocket, bank and other mobile collections (new section "মোবাইল / ব্যাংক আদায় (জমার সাথে যাবে)", from the phone's copy; online, as before, ADR-M23). The server no longer answers `NOT_CASH`.
+- **One "সব জমা দিন / Deposit everything" action.** No amount to type: the deposit takes all the cash in hand (fixed) and every mobile/bank collection not handed in. Before saving, a confirm says: "এই ৳X নগদ ও ৳Y মোবাইল/ব্যাংক (মোট N টি আদায়) জমা দিলে অনলাইনে থাকলে সাথে সাথে ইআরপিতে পেমেন্ট হিসেবে চলে যাবে। জমার পর আর বদলানো বা মুছে ফেলা যাবে না।" (offline: as soon as the phone is online). If the money in hand changed between the confirm and the save, nothing is saved and the sheet asks again.
+- **After the deposit nothing can be changed or deleted.** The collections lock on the phone the moment the deposit is saved (offline too; `collections.deposit_id`), and the server's `depositId` replaces it on pull. While a deposit is unsent, the cash-in-hand screen says so and offers no Change/Delete. A collection handed in reads "জমা হয়েছে / Deposited" on the timeline until the ERP posts it.
+- **Deposit history:** `submitted` reads "জমা হয়েছে / Deposited" (final) with "N collections · mobile/bank ৳Y". "Waiting for verification" is gone (the saved message, the cash-in-hand line about earlier deposits). Older pending, verified, rejected and deleted deposits still show.
+- **A deposit the server refuses** (`DEPOSIT_MUST_BE_ALL`, `DEPOSIT_EXCEEDS_ON_HAND`, `NOTHING_TO_DEPOSIT`, `SLIP_REQUIRED`, `STATUS_CHANGED`) stays in Problems with the reason in words and "the collections are back in your hand", with a "আবার জমা দিন" button instead of Retry. Its lock is taken off and cash on hand counts the money again. Nothing is deleted.
+- **Local DB schema 14:** `collections.deposit_id`, `deposited_at`; `deposits.collection_count`, `non_cash_poisha`, `non_cash_count`, `failure_code`. Migration tested from every released schema.
+- Fake API follows 1.35.0 (deposit-all rules and refusals, `submitted`, `depositId` on collections, PATCH and withdraw for any method, `officeVoid` for tests).
+- Tests: `test/features/deposit_rules_test.dart`, `test/features/deposit_confirm_test.dart` (bn/en, online/offline), `test/flows/deposit_flow_test.dart` (edit/delete a mobile collection, deposit → locked, a pull keeps the lock, a refused deposit → Problems and unlocked, confirm vs save), `test/core/migration_test.dart`.
+- Contract copy `docs/contract/openapi.yaml` updated to **1.35.0**. **Needs field-api 1.35.0**; an older server keeps verifying deposits and accepts part deposits.
+- Known gap (unchanged): the deposit sheet still has no slip photo, so a bank deposit is refused with `SLIP_REQUIRED` (now explained in Problems).
+
 ### Fixed (owner report 2026-11-22: a co-work request could not be cancelled; FR-CW-002, contract 1.34.0)
 - **The person who asked can cancel a co-work request.** Before, leaving took the requester out but the invitation stayed open for the others, so the request was never withdrawn. The server (1.34.0) now ends a session as soon as no accepted member is left. In the app the button reads "Cancel request" while nobody has accepted (the confirmation says it is withdrawn for everyone), and "Leave group" warns that the group ends when only two are in it. The office can end a co-work from the admin panel; the phone learns it on the next pull.
 - Tests: `test/flows/cowork_flow_test.dart` (cancel before anyone accepts; leave with one partner). Contract copy 1.34.0.

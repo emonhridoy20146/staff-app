@@ -69,7 +69,7 @@ class MyShift {
   factory MyShift.fromJson(Json j) => MyShift(
         name: (j['name'] as String?) ?? '',
         start: (j['start'] as String?) ?? '09:00',
-        end: (j['end'] as String?) ?? '18:00',
+        end: (j['end'] as String?) ?? '21:00',
         weeklyOff: [for (final d in (j['weeklyOff'] as List?) ?? const [5]) (d as num).toInt()],
         isDefault: j['id'] == 'default',
         lateGraceMin: ((j['lateGraceMin'] as num?) ?? 15).toInt(),

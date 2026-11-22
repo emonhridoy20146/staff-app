@@ -1937,13 +1937,13 @@ abstract class AppLocalizations {
   /// No description provided for @cashDeposit.
   ///
   /// In en, this message translates to:
-  /// **'Record deposit'**
+  /// **'Deposit everything'**
   String get cashDeposit;
 
   /// No description provided for @cashDepositTitle.
   ///
   /// In en, this message translates to:
-  /// **'Cash deposit'**
+  /// **'Deposit everything in hand'**
   String get cashDepositTitle;
 
   /// No description provided for @cashDepositTo.
@@ -1979,7 +1979,7 @@ abstract class AppLocalizations {
   /// No description provided for @cashDepositSaved.
   ///
   /// In en, this message translates to:
-  /// **'Deposit saved · waiting for verification'**
+  /// **'Deposited · it goes to the ERP'**
   String get cashDepositSaved;
 
   /// No description provided for @cashDeposits.
@@ -4685,7 +4685,7 @@ abstract class AppLocalizations {
   /// No description provided for @cashInHandPendingDeposits.
   ///
   /// In en, this message translates to:
-  /// **'{amount} handed in, waiting to be verified'**
+  /// **'{amount} handed in by earlier deposits'**
   String cashInHandPendingDeposits(String amount);
 
   /// No description provided for @cashInHandUnsent.
@@ -4709,7 +4709,7 @@ abstract class AppLocalizations {
   /// No description provided for @cashInHandHow.
   ///
   /// In en, this message translates to:
-  /// **'A deposit pays off your oldest collections first, so the cash on hand is your newest collections. Tap a line to open the customer.'**
+  /// **'A deposit hands in all the cash and every mobile or bank collection you hold at once, and they then go to the ERP. Until you deposit, each line can be changed or deleted; after it, nothing can. Tap a line to open the customer.'**
   String get cashInHandHow;
 
   /// No description provided for @cashActionEdit.
@@ -4793,7 +4793,7 @@ abstract class AppLocalizations {
   /// No description provided for @cashActionCovered.
   ///
   /// In en, this message translates to:
-  /// **'A deposit already covers this cash, so it cannot be changed. Ask the office.'**
+  /// **'This collection is already deposited, so it cannot be changed or deleted.'**
   String get cashActionCovered;
 
   /// No description provided for @cashActionNotEditable.
@@ -5767,6 +5767,168 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'GPS must be turned on to end work.'**
   String get gpsRequiredForWorkOut;
+
+  /// No description provided for @statusDeposited.
+  ///
+  /// In en, this message translates to:
+  /// **'Deposited'**
+  String get statusDeposited;
+
+  /// No description provided for @statusDepositFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Not deposited'**
+  String get statusDepositFailed;
+
+  /// No description provided for @cashDepositCash.
+  ///
+  /// In en, this message translates to:
+  /// **'Cash (all you hold)'**
+  String get cashDepositCash;
+
+  /// No description provided for @cashDepositNonCash.
+  ///
+  /// In en, this message translates to:
+  /// **'Mobile / bank'**
+  String get cashDepositNonCash;
+
+  /// No description provided for @cashDepositNonCashCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} collections'**
+  String cashDepositNonCashCount(String count);
+
+  /// No description provided for @cashDepositTotalCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} collections in all'**
+  String cashDepositTotalCount(String count);
+
+  /// No description provided for @cashDepositAllHint.
+  ///
+  /// In en, this message translates to:
+  /// **'No part deposits: all the cash you hold and every mobile or bank collection go together, and then go to the ERP.'**
+  String get cashDepositAllHint;
+
+  /// No description provided for @cashDepositNothing.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing in hand to deposit.'**
+  String get cashDepositNothing;
+
+  /// No description provided for @cashDepositSubmit.
+  ///
+  /// In en, this message translates to:
+  /// **'Deposit'**
+  String get cashDepositSubmit;
+
+  /// No description provided for @cashDepositConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm the deposit'**
+  String get cashDepositConfirmTitle;
+
+  /// No description provided for @cashDepositConfirmOnline.
+  ///
+  /// In en, this message translates to:
+  /// **'Depositing {cash} cash and {nonCash} mobile/bank ({count} collections) sends them to the ERP as payments right away when online. After the deposit they cannot be changed or deleted.'**
+  String cashDepositConfirmOnline(String cash, String nonCash, String count);
+
+  /// No description provided for @cashDepositConfirmOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'There is no internet now. Depositing {cash} cash and {nonCash} mobile/bank ({count} collections) sends them to the ERP as payments as soon as the phone is online. After the deposit they cannot be changed or deleted.'**
+  String cashDepositConfirmOffline(String cash, String nonCash, String count);
+
+  /// No description provided for @cashDepositChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'The money in hand just changed. Check it and deposit again.'**
+  String get cashDepositChanged;
+
+  /// No description provided for @cashDepositLine.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} collections · mobile/bank {amount}'**
+  String cashDepositLine(String count, String amount);
+
+  /// No description provided for @cashDepositWaitingLock.
+  ///
+  /// In en, this message translates to:
+  /// **'A deposit is still waiting to be sent, so nothing in hand can be changed or deleted now.'**
+  String get cashDepositWaitingLock;
+
+  /// No description provided for @cashInHandNonCashTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Mobile / bank collections (go with the deposit)'**
+  String get cashInHandNonCashTitle;
+
+  /// No description provided for @cashInHandNotSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Not sent yet; it can be changed once it is sent'**
+  String get cashInHandNotSent;
+
+  /// No description provided for @depositFailedMustBeAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Not deposited: the server says you hold more cash than this deposit (something changed meanwhile). A deposit must take all of it.'**
+  String get depositFailedMustBeAll;
+
+  /// No description provided for @depositFailedExceeds.
+  ///
+  /// In en, this message translates to:
+  /// **'Not deposited: the server says you hold less cash than this deposit (a collection was left out or changed).'**
+  String get depositFailedExceeds;
+
+  /// No description provided for @depositFailedNothing.
+  ///
+  /// In en, this message translates to:
+  /// **'Not deposited: there was nothing in hand to deposit.'**
+  String get depositFailedNothing;
+
+  /// No description provided for @depositFailedSlip.
+  ///
+  /// In en, this message translates to:
+  /// **'Not deposited: a bank deposit needs a photo of the slip. Deposit to the branch cashier or the manager.'**
+  String get depositFailedSlip;
+
+  /// No description provided for @depositFailedChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'Not deposited: a collection was changed or cancelled while it was being deposited.'**
+  String get depositFailedChanged;
+
+  /// No description provided for @depositFailedOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Not deposited ({code}).'**
+  String depositFailedOther(String code);
+
+  /// No description provided for @depositFailedBack.
+  ///
+  /// In en, this message translates to:
+  /// **'The collections are back in your hand and can be changed. Deposit again.'**
+  String get depositFailedBack;
+
+  /// No description provided for @depositAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Deposit again'**
+  String get depositAgain;
+
+  /// No description provided for @collectWhichInvoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Which invoice'**
+  String get collectWhichInvoice;
+
+  /// No description provided for @collectInvoiceCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} open invoices for this customer — pick the right one'**
+  String collectInvoiceCount(String count);
 }
 
 class _AppLocalizationsDelegate

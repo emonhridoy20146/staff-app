@@ -39,13 +39,20 @@ jobs:
           cache: true
       - run: flutter pub get
       - run: dart run build_runner build --delete-conflicting-outputs
-      - name: Decode keystore (only if the secret exists)
+      - name: Decode keystore (main must have one)
         env:
           KEYSTORE_B64: ${{ secrets.STAFF_KEYSTORE_B64 }}
+          IS_MAIN_PUSH: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }}
         run: |
           if [ -n "$KEYSTORE_B64" ]; then
             echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/staff.jks"
             echo "STAFF_KEYSTORE_PATH=$RUNNER_TEMP/staff.jks" >> "$GITHUB_ENV"
+          elif [ "$IS_MAIN_PUSH" = "true" ]; then
+            # A debug key is new on every CI run, so a phone refuses such an APK over the previous one ("App not installed").
+            echo "::error title=No release key::STAFF_KEYSTORE_B64 is not set, so main would publish an APK that cannot update an installed app. Make the key once with tool/make_release_keystore.sh and add the four STAFF_* secrets (README, Release signing)."
+            exit 1
+          else
+            echo "::warning title=Debug-signed APK::No STAFF_KEYSTORE_B64 secret: this APK is debug-signed and installs on a phone only after uninstalling the previous build."
           fi
       - name: Build live APK
         env:

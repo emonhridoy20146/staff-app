@@ -6018,6 +6018,28 @@ class $CollectionsTable extends Collections
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _depositIdMeta = const VerificationMeta(
+    'depositId',
+  );
+  @override
+  late final GeneratedColumn<String> depositId = GeneratedColumn<String>(
+    'deposit_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _depositedAtMeta = const VerificationMeta(
+    'depositedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> depositedAt = GeneratedColumn<DateTime>(
+    'deposited_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _conflictCodeMeta = const VerificationMeta(
     'conflictCode',
   );
@@ -6105,6 +6127,8 @@ class $CollectionsTable extends Collections
     voidedKind,
     voidedByName,
     voidedReason,
+    depositId,
+    depositedAt,
     conflictCode,
     conflictMessage,
     resolutionText,
@@ -6347,6 +6371,21 @@ class $CollectionsTable extends Collections
         ),
       );
     }
+    if (data.containsKey('deposit_id')) {
+      context.handle(
+        _depositIdMeta,
+        depositId.isAcceptableOrUnknown(data['deposit_id']!, _depositIdMeta),
+      );
+    }
+    if (data.containsKey('deposited_at')) {
+      context.handle(
+        _depositedAtMeta,
+        depositedAt.isAcceptableOrUnknown(
+          data['deposited_at']!,
+          _depositedAtMeta,
+        ),
+      );
+    }
     if (data.containsKey('conflict_code')) {
       context.handle(
         _conflictCodeMeta,
@@ -6507,6 +6546,14 @@ class $CollectionsTable extends Collections
         DriftSqlType.string,
         data['${effectivePrefix}voided_reason'],
       ),
+      depositId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}deposit_id'],
+      ),
+      depositedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}deposited_at'],
+      ),
       conflictCode: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}conflict_code'],
@@ -6572,6 +6619,13 @@ class CollectionRow extends DataClass implements Insertable<CollectionRow> {
   final String? voidedKind;
   final String? voidedByName;
   final String? voidedReason;
+
+  /// The deposit that handed it in (v14, contract 1.35.0, FR-M-059): the local deposit's clientId
+  /// from the moment the deposit is saved on this phone (so it locks at once, offline too), then
+  /// the server's `depositId` on pull. Null = still in my hand: may be changed or deleted.
+  /// Cleared again when the server refuses that deposit (the collection is back in hand).
+  final String? depositId;
+  final DateTime? depositedAt;
   final String? conflictCode;
   final String? conflictMessage;
   final String? resolutionText;
@@ -6606,6 +6660,8 @@ class CollectionRow extends DataClass implements Insertable<CollectionRow> {
     this.voidedKind,
     this.voidedByName,
     this.voidedReason,
+    this.depositId,
+    this.depositedAt,
     this.conflictCode,
     this.conflictMessage,
     this.resolutionText,
@@ -6674,6 +6730,12 @@ class CollectionRow extends DataClass implements Insertable<CollectionRow> {
     }
     if (!nullToAbsent || voidedReason != null) {
       map['voided_reason'] = Variable<String>(voidedReason);
+    }
+    if (!nullToAbsent || depositId != null) {
+      map['deposit_id'] = Variable<String>(depositId);
+    }
+    if (!nullToAbsent || depositedAt != null) {
+      map['deposited_at'] = Variable<DateTime>(depositedAt);
     }
     if (!nullToAbsent || conflictCode != null) {
       map['conflict_code'] = Variable<String>(conflictCode);
@@ -6745,6 +6807,12 @@ class CollectionRow extends DataClass implements Insertable<CollectionRow> {
       voidedReason: voidedReason == null && nullToAbsent
           ? const Value.absent()
           : Value(voidedReason),
+      depositId: depositId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(depositId),
+      depositedAt: depositedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(depositedAt),
       conflictCode: conflictCode == null && nullToAbsent
           ? const Value.absent()
           : Value(conflictCode),
@@ -6799,6 +6867,8 @@ class CollectionRow extends DataClass implements Insertable<CollectionRow> {
       voidedKind: serializer.fromJson<String?>(json['voidedKind']),
       voidedByName: serializer.fromJson<String?>(json['voidedByName']),
       voidedReason: serializer.fromJson<String?>(json['voidedReason']),
+      depositId: serializer.fromJson<String?>(json['depositId']),
+      depositedAt: serializer.fromJson<DateTime?>(json['depositedAt']),
       conflictCode: serializer.fromJson<String?>(json['conflictCode']),
       conflictMessage: serializer.fromJson<String?>(json['conflictMessage']),
       resolutionText: serializer.fromJson<String?>(json['resolutionText']),
@@ -6838,6 +6908,8 @@ class CollectionRow extends DataClass implements Insertable<CollectionRow> {
       'voidedKind': serializer.toJson<String?>(voidedKind),
       'voidedByName': serializer.toJson<String?>(voidedByName),
       'voidedReason': serializer.toJson<String?>(voidedReason),
+      'depositId': serializer.toJson<String?>(depositId),
+      'depositedAt': serializer.toJson<DateTime?>(depositedAt),
       'conflictCode': serializer.toJson<String?>(conflictCode),
       'conflictMessage': serializer.toJson<String?>(conflictMessage),
       'resolutionText': serializer.toJson<String?>(resolutionText),
@@ -6875,6 +6947,8 @@ class CollectionRow extends DataClass implements Insertable<CollectionRow> {
     Value<String?> voidedKind = const Value.absent(),
     Value<String?> voidedByName = const Value.absent(),
     Value<String?> voidedReason = const Value.absent(),
+    Value<String?> depositId = const Value.absent(),
+    Value<DateTime?> depositedAt = const Value.absent(),
     Value<String?> conflictCode = const Value.absent(),
     Value<String?> conflictMessage = const Value.absent(),
     Value<String?> resolutionText = const Value.absent(),
@@ -6919,6 +6993,8 @@ class CollectionRow extends DataClass implements Insertable<CollectionRow> {
     voidedKind: voidedKind.present ? voidedKind.value : this.voidedKind,
     voidedByName: voidedByName.present ? voidedByName.value : this.voidedByName,
     voidedReason: voidedReason.present ? voidedReason.value : this.voidedReason,
+    depositId: depositId.present ? depositId.value : this.depositId,
+    depositedAt: depositedAt.present ? depositedAt.value : this.depositedAt,
     conflictCode: conflictCode.present ? conflictCode.value : this.conflictCode,
     conflictMessage: conflictMessage.present
         ? conflictMessage.value
@@ -6991,6 +7067,10 @@ class CollectionRow extends DataClass implements Insertable<CollectionRow> {
       voidedReason: data.voidedReason.present
           ? data.voidedReason.value
           : this.voidedReason,
+      depositId: data.depositId.present ? data.depositId.value : this.depositId,
+      depositedAt: data.depositedAt.present
+          ? data.depositedAt.value
+          : this.depositedAt,
       conflictCode: data.conflictCode.present
           ? data.conflictCode.value
           : this.conflictCode,
@@ -7036,6 +7116,8 @@ class CollectionRow extends DataClass implements Insertable<CollectionRow> {
           ..write('voidedKind: $voidedKind, ')
           ..write('voidedByName: $voidedByName, ')
           ..write('voidedReason: $voidedReason, ')
+          ..write('depositId: $depositId, ')
+          ..write('depositedAt: $depositedAt, ')
           ..write('conflictCode: $conflictCode, ')
           ..write('conflictMessage: $conflictMessage, ')
           ..write('resolutionText: $resolutionText, ')
@@ -7075,6 +7157,8 @@ class CollectionRow extends DataClass implements Insertable<CollectionRow> {
     voidedKind,
     voidedByName,
     voidedReason,
+    depositId,
+    depositedAt,
     conflictCode,
     conflictMessage,
     resolutionText,
@@ -7113,6 +7197,8 @@ class CollectionRow extends DataClass implements Insertable<CollectionRow> {
           other.voidedKind == this.voidedKind &&
           other.voidedByName == this.voidedByName &&
           other.voidedReason == this.voidedReason &&
+          other.depositId == this.depositId &&
+          other.depositedAt == this.depositedAt &&
           other.conflictCode == this.conflictCode &&
           other.conflictMessage == this.conflictMessage &&
           other.resolutionText == this.resolutionText &&
@@ -7149,6 +7235,8 @@ class CollectionsCompanion extends UpdateCompanion<CollectionRow> {
   final Value<String?> voidedKind;
   final Value<String?> voidedByName;
   final Value<String?> voidedReason;
+  final Value<String?> depositId;
+  final Value<DateTime?> depositedAt;
   final Value<String?> conflictCode;
   final Value<String?> conflictMessage;
   final Value<String?> resolutionText;
@@ -7184,6 +7272,8 @@ class CollectionsCompanion extends UpdateCompanion<CollectionRow> {
     this.voidedKind = const Value.absent(),
     this.voidedByName = const Value.absent(),
     this.voidedReason = const Value.absent(),
+    this.depositId = const Value.absent(),
+    this.depositedAt = const Value.absent(),
     this.conflictCode = const Value.absent(),
     this.conflictMessage = const Value.absent(),
     this.resolutionText = const Value.absent(),
@@ -7220,6 +7310,8 @@ class CollectionsCompanion extends UpdateCompanion<CollectionRow> {
     this.voidedKind = const Value.absent(),
     this.voidedByName = const Value.absent(),
     this.voidedReason = const Value.absent(),
+    this.depositId = const Value.absent(),
+    this.depositedAt = const Value.absent(),
     this.conflictCode = const Value.absent(),
     this.conflictMessage = const Value.absent(),
     this.resolutionText = const Value.absent(),
@@ -7265,6 +7357,8 @@ class CollectionsCompanion extends UpdateCompanion<CollectionRow> {
     Expression<String>? voidedKind,
     Expression<String>? voidedByName,
     Expression<String>? voidedReason,
+    Expression<String>? depositId,
+    Expression<DateTime>? depositedAt,
     Expression<String>? conflictCode,
     Expression<String>? conflictMessage,
     Expression<String>? resolutionText,
@@ -7303,6 +7397,8 @@ class CollectionsCompanion extends UpdateCompanion<CollectionRow> {
       if (voidedKind != null) 'voided_kind': voidedKind,
       if (voidedByName != null) 'voided_by_name': voidedByName,
       if (voidedReason != null) 'voided_reason': voidedReason,
+      if (depositId != null) 'deposit_id': depositId,
+      if (depositedAt != null) 'deposited_at': depositedAt,
       if (conflictCode != null) 'conflict_code': conflictCode,
       if (conflictMessage != null) 'conflict_message': conflictMessage,
       if (resolutionText != null) 'resolution_text': resolutionText,
@@ -7341,6 +7437,8 @@ class CollectionsCompanion extends UpdateCompanion<CollectionRow> {
     Value<String?>? voidedKind,
     Value<String?>? voidedByName,
     Value<String?>? voidedReason,
+    Value<String?>? depositId,
+    Value<DateTime?>? depositedAt,
     Value<String?>? conflictCode,
     Value<String?>? conflictMessage,
     Value<String?>? resolutionText,
@@ -7377,6 +7475,8 @@ class CollectionsCompanion extends UpdateCompanion<CollectionRow> {
       voidedKind: voidedKind ?? this.voidedKind,
       voidedByName: voidedByName ?? this.voidedByName,
       voidedReason: voidedReason ?? this.voidedReason,
+      depositId: depositId ?? this.depositId,
+      depositedAt: depositedAt ?? this.depositedAt,
       conflictCode: conflictCode ?? this.conflictCode,
       conflictMessage: conflictMessage ?? this.conflictMessage,
       resolutionText: resolutionText ?? this.resolutionText,
@@ -7473,6 +7573,12 @@ class CollectionsCompanion extends UpdateCompanion<CollectionRow> {
     if (voidedReason.present) {
       map['voided_reason'] = Variable<String>(voidedReason.value);
     }
+    if (depositId.present) {
+      map['deposit_id'] = Variable<String>(depositId.value);
+    }
+    if (depositedAt.present) {
+      map['deposited_at'] = Variable<DateTime>(depositedAt.value);
+    }
     if (conflictCode.present) {
       map['conflict_code'] = Variable<String>(conflictCode.value);
     }
@@ -7525,6 +7631,8 @@ class CollectionsCompanion extends UpdateCompanion<CollectionRow> {
           ..write('voidedKind: $voidedKind, ')
           ..write('voidedByName: $voidedByName, ')
           ..write('voidedReason: $voidedReason, ')
+          ..write('depositId: $depositId, ')
+          ..write('depositedAt: $depositedAt, ')
           ..write('conflictCode: $conflictCode, ')
           ..write('conflictMessage: $conflictMessage, ')
           ..write('resolutionText: $resolutionText, ')
@@ -8475,6 +8583,50 @@ class $DepositsTable extends Deposits
     requiredDuringInsert: false,
     defaultValue: const Constant('queued'),
   );
+  static const VerificationMeta _collectionCountMeta = const VerificationMeta(
+    'collectionCount',
+  );
+  @override
+  late final GeneratedColumn<int> collectionCount = GeneratedColumn<int>(
+    'collection_count',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _nonCashPoishaMeta = const VerificationMeta(
+    'nonCashPoisha',
+  );
+  @override
+  late final GeneratedColumn<int> nonCashPoisha = GeneratedColumn<int>(
+    'non_cash_poisha',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _nonCashCountMeta = const VerificationMeta(
+    'nonCashCount',
+  );
+  @override
+  late final GeneratedColumn<int> nonCashCount = GeneratedColumn<int>(
+    'non_cash_count',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _failureCodeMeta = const VerificationMeta(
+    'failureCode',
+  );
+  @override
+  late final GeneratedColumn<String> failureCode = GeneratedColumn<String>(
+    'failure_code',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     clientId,
@@ -8487,6 +8639,10 @@ class $DepositsTable extends Deposits
     status,
     rejectReason,
     syncState,
+    collectionCount,
+    nonCashPoisha,
+    nonCashCount,
+    failureCode,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -8583,6 +8739,42 @@ class $DepositsTable extends Deposits
         syncState.isAcceptableOrUnknown(data['sync_state']!, _syncStateMeta),
       );
     }
+    if (data.containsKey('collection_count')) {
+      context.handle(
+        _collectionCountMeta,
+        collectionCount.isAcceptableOrUnknown(
+          data['collection_count']!,
+          _collectionCountMeta,
+        ),
+      );
+    }
+    if (data.containsKey('non_cash_poisha')) {
+      context.handle(
+        _nonCashPoishaMeta,
+        nonCashPoisha.isAcceptableOrUnknown(
+          data['non_cash_poisha']!,
+          _nonCashPoishaMeta,
+        ),
+      );
+    }
+    if (data.containsKey('non_cash_count')) {
+      context.handle(
+        _nonCashCountMeta,
+        nonCashCount.isAcceptableOrUnknown(
+          data['non_cash_count']!,
+          _nonCashCountMeta,
+        ),
+      );
+    }
+    if (data.containsKey('failure_code')) {
+      context.handle(
+        _failureCodeMeta,
+        failureCode.isAcceptableOrUnknown(
+          data['failure_code']!,
+          _failureCodeMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -8632,6 +8824,22 @@ class $DepositsTable extends Deposits
         DriftSqlType.string,
         data['${effectivePrefix}sync_state'],
       )!,
+      collectionCount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}collection_count'],
+      ),
+      nonCashPoisha: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}non_cash_poisha'],
+      ),
+      nonCashCount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}non_cash_count'],
+      ),
+      failureCode: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}failure_code'],
+      ),
     );
   }
 
@@ -8652,6 +8860,17 @@ class DepositRow extends DataClass implements Insertable<DepositRow> {
   final String status;
   final String? rejectReason;
   final String syncState;
+
+  /// v14 (contract 1.35.0): what the deposit handed in besides [amountPoisha] (cash): the number of
+  /// collections, and the mobile banking / bank money and its count. The phone's estimate at save
+  /// time, then the server's on pull; null on deposits from before 1.35.0.
+  final int? collectionCount;
+  final int? nonCashPoisha;
+  final int? nonCashCount;
+
+  /// v14: why the server refused this deposit (`details.rule` / `details.reason`, else the error
+  /// code, e.g. `DEPOSIT_MUST_BE_ALL`); null unless [syncState] is `failed`.
+  final String? failureCode;
   const DepositRow({
     required this.clientId,
     this.serverId,
@@ -8663,6 +8882,10 @@ class DepositRow extends DataClass implements Insertable<DepositRow> {
     required this.status,
     this.rejectReason,
     required this.syncState,
+    this.collectionCount,
+    this.nonCashPoisha,
+    this.nonCashCount,
+    this.failureCode,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -8685,6 +8908,18 @@ class DepositRow extends DataClass implements Insertable<DepositRow> {
       map['reject_reason'] = Variable<String>(rejectReason);
     }
     map['sync_state'] = Variable<String>(syncState);
+    if (!nullToAbsent || collectionCount != null) {
+      map['collection_count'] = Variable<int>(collectionCount);
+    }
+    if (!nullToAbsent || nonCashPoisha != null) {
+      map['non_cash_poisha'] = Variable<int>(nonCashPoisha);
+    }
+    if (!nullToAbsent || nonCashCount != null) {
+      map['non_cash_count'] = Variable<int>(nonCashCount);
+    }
+    if (!nullToAbsent || failureCode != null) {
+      map['failure_code'] = Variable<String>(failureCode);
+    }
     return map;
   }
 
@@ -8708,6 +8943,18 @@ class DepositRow extends DataClass implements Insertable<DepositRow> {
           ? const Value.absent()
           : Value(rejectReason),
       syncState: Value(syncState),
+      collectionCount: collectionCount == null && nullToAbsent
+          ? const Value.absent()
+          : Value(collectionCount),
+      nonCashPoisha: nonCashPoisha == null && nullToAbsent
+          ? const Value.absent()
+          : Value(nonCashPoisha),
+      nonCashCount: nonCashCount == null && nullToAbsent
+          ? const Value.absent()
+          : Value(nonCashCount),
+      failureCode: failureCode == null && nullToAbsent
+          ? const Value.absent()
+          : Value(failureCode),
     );
   }
 
@@ -8729,6 +8976,10 @@ class DepositRow extends DataClass implements Insertable<DepositRow> {
       status: serializer.fromJson<String>(json['status']),
       rejectReason: serializer.fromJson<String?>(json['rejectReason']),
       syncState: serializer.fromJson<String>(json['syncState']),
+      collectionCount: serializer.fromJson<int?>(json['collectionCount']),
+      nonCashPoisha: serializer.fromJson<int?>(json['nonCashPoisha']),
+      nonCashCount: serializer.fromJson<int?>(json['nonCashCount']),
+      failureCode: serializer.fromJson<String?>(json['failureCode']),
     );
   }
   @override
@@ -8745,6 +8996,10 @@ class DepositRow extends DataClass implements Insertable<DepositRow> {
       'status': serializer.toJson<String>(status),
       'rejectReason': serializer.toJson<String?>(rejectReason),
       'syncState': serializer.toJson<String>(syncState),
+      'collectionCount': serializer.toJson<int?>(collectionCount),
+      'nonCashPoisha': serializer.toJson<int?>(nonCashPoisha),
+      'nonCashCount': serializer.toJson<int?>(nonCashCount),
+      'failureCode': serializer.toJson<String?>(failureCode),
     };
   }
 
@@ -8759,6 +9014,10 @@ class DepositRow extends DataClass implements Insertable<DepositRow> {
     String? status,
     Value<String?> rejectReason = const Value.absent(),
     String? syncState,
+    Value<int?> collectionCount = const Value.absent(),
+    Value<int?> nonCashPoisha = const Value.absent(),
+    Value<int?> nonCashCount = const Value.absent(),
+    Value<String?> failureCode = const Value.absent(),
   }) => DepositRow(
     clientId: clientId ?? this.clientId,
     serverId: serverId.present ? serverId.value : this.serverId,
@@ -8772,6 +9031,14 @@ class DepositRow extends DataClass implements Insertable<DepositRow> {
     status: status ?? this.status,
     rejectReason: rejectReason.present ? rejectReason.value : this.rejectReason,
     syncState: syncState ?? this.syncState,
+    collectionCount: collectionCount.present
+        ? collectionCount.value
+        : this.collectionCount,
+    nonCashPoisha: nonCashPoisha.present
+        ? nonCashPoisha.value
+        : this.nonCashPoisha,
+    nonCashCount: nonCashCount.present ? nonCashCount.value : this.nonCashCount,
+    failureCode: failureCode.present ? failureCode.value : this.failureCode,
   );
   DepositRow copyWithCompanion(DepositsCompanion data) {
     return DepositRow(
@@ -8795,6 +9062,18 @@ class DepositRow extends DataClass implements Insertable<DepositRow> {
           ? data.rejectReason.value
           : this.rejectReason,
       syncState: data.syncState.present ? data.syncState.value : this.syncState,
+      collectionCount: data.collectionCount.present
+          ? data.collectionCount.value
+          : this.collectionCount,
+      nonCashPoisha: data.nonCashPoisha.present
+          ? data.nonCashPoisha.value
+          : this.nonCashPoisha,
+      nonCashCount: data.nonCashCount.present
+          ? data.nonCashCount.value
+          : this.nonCashCount,
+      failureCode: data.failureCode.present
+          ? data.failureCode.value
+          : this.failureCode,
     );
   }
 
@@ -8810,7 +9089,11 @@ class DepositRow extends DataClass implements Insertable<DepositRow> {
           ..write('depositedAt: $depositedAt, ')
           ..write('status: $status, ')
           ..write('rejectReason: $rejectReason, ')
-          ..write('syncState: $syncState')
+          ..write('syncState: $syncState, ')
+          ..write('collectionCount: $collectionCount, ')
+          ..write('nonCashPoisha: $nonCashPoisha, ')
+          ..write('nonCashCount: $nonCashCount, ')
+          ..write('failureCode: $failureCode')
           ..write(')'))
         .toString();
   }
@@ -8827,6 +9110,10 @@ class DepositRow extends DataClass implements Insertable<DepositRow> {
     status,
     rejectReason,
     syncState,
+    collectionCount,
+    nonCashPoisha,
+    nonCashCount,
+    failureCode,
   );
   @override
   bool operator ==(Object other) =>
@@ -8841,7 +9128,11 @@ class DepositRow extends DataClass implements Insertable<DepositRow> {
           other.depositedAt == this.depositedAt &&
           other.status == this.status &&
           other.rejectReason == this.rejectReason &&
-          other.syncState == this.syncState);
+          other.syncState == this.syncState &&
+          other.collectionCount == this.collectionCount &&
+          other.nonCashPoisha == this.nonCashPoisha &&
+          other.nonCashCount == this.nonCashCount &&
+          other.failureCode == this.failureCode);
 }
 
 class DepositsCompanion extends UpdateCompanion<DepositRow> {
@@ -8855,6 +9146,10 @@ class DepositsCompanion extends UpdateCompanion<DepositRow> {
   final Value<String> status;
   final Value<String?> rejectReason;
   final Value<String> syncState;
+  final Value<int?> collectionCount;
+  final Value<int?> nonCashPoisha;
+  final Value<int?> nonCashCount;
+  final Value<String?> failureCode;
   final Value<int> rowid;
   const DepositsCompanion({
     this.clientId = const Value.absent(),
@@ -8867,6 +9162,10 @@ class DepositsCompanion extends UpdateCompanion<DepositRow> {
     this.status = const Value.absent(),
     this.rejectReason = const Value.absent(),
     this.syncState = const Value.absent(),
+    this.collectionCount = const Value.absent(),
+    this.nonCashPoisha = const Value.absent(),
+    this.nonCashCount = const Value.absent(),
+    this.failureCode = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   DepositsCompanion.insert({
@@ -8880,6 +9179,10 @@ class DepositsCompanion extends UpdateCompanion<DepositRow> {
     this.status = const Value.absent(),
     this.rejectReason = const Value.absent(),
     this.syncState = const Value.absent(),
+    this.collectionCount = const Value.absent(),
+    this.nonCashPoisha = const Value.absent(),
+    this.nonCashCount = const Value.absent(),
+    this.failureCode = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : clientId = Value(clientId),
        amountPoisha = Value(amountPoisha),
@@ -8896,6 +9199,10 @@ class DepositsCompanion extends UpdateCompanion<DepositRow> {
     Expression<String>? status,
     Expression<String>? rejectReason,
     Expression<String>? syncState,
+    Expression<int>? collectionCount,
+    Expression<int>? nonCashPoisha,
+    Expression<int>? nonCashCount,
+    Expression<String>? failureCode,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -8909,6 +9216,10 @@ class DepositsCompanion extends UpdateCompanion<DepositRow> {
       if (status != null) 'status': status,
       if (rejectReason != null) 'reject_reason': rejectReason,
       if (syncState != null) 'sync_state': syncState,
+      if (collectionCount != null) 'collection_count': collectionCount,
+      if (nonCashPoisha != null) 'non_cash_poisha': nonCashPoisha,
+      if (nonCashCount != null) 'non_cash_count': nonCashCount,
+      if (failureCode != null) 'failure_code': failureCode,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -8924,6 +9235,10 @@ class DepositsCompanion extends UpdateCompanion<DepositRow> {
     Value<String>? status,
     Value<String?>? rejectReason,
     Value<String>? syncState,
+    Value<int?>? collectionCount,
+    Value<int?>? nonCashPoisha,
+    Value<int?>? nonCashCount,
+    Value<String?>? failureCode,
     Value<int>? rowid,
   }) {
     return DepositsCompanion(
@@ -8937,6 +9252,10 @@ class DepositsCompanion extends UpdateCompanion<DepositRow> {
       status: status ?? this.status,
       rejectReason: rejectReason ?? this.rejectReason,
       syncState: syncState ?? this.syncState,
+      collectionCount: collectionCount ?? this.collectionCount,
+      nonCashPoisha: nonCashPoisha ?? this.nonCashPoisha,
+      nonCashCount: nonCashCount ?? this.nonCashCount,
+      failureCode: failureCode ?? this.failureCode,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -8974,6 +9293,18 @@ class DepositsCompanion extends UpdateCompanion<DepositRow> {
     if (syncState.present) {
       map['sync_state'] = Variable<String>(syncState.value);
     }
+    if (collectionCount.present) {
+      map['collection_count'] = Variable<int>(collectionCount.value);
+    }
+    if (nonCashPoisha.present) {
+      map['non_cash_poisha'] = Variable<int>(nonCashPoisha.value);
+    }
+    if (nonCashCount.present) {
+      map['non_cash_count'] = Variable<int>(nonCashCount.value);
+    }
+    if (failureCode.present) {
+      map['failure_code'] = Variable<String>(failureCode.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -8993,6 +9324,10 @@ class DepositsCompanion extends UpdateCompanion<DepositRow> {
           ..write('status: $status, ')
           ..write('rejectReason: $rejectReason, ')
           ..write('syncState: $syncState, ')
+          ..write('collectionCount: $collectionCount, ')
+          ..write('nonCashPoisha: $nonCashPoisha, ')
+          ..write('nonCashCount: $nonCashCount, ')
+          ..write('failureCode: $failureCode, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -24161,6 +24496,8 @@ typedef $$CollectionsTableCreateCompanionBuilder =
       Value<String?> voidedKind,
       Value<String?> voidedByName,
       Value<String?> voidedReason,
+      Value<String?> depositId,
+      Value<DateTime?> depositedAt,
       Value<String?> conflictCode,
       Value<String?> conflictMessage,
       Value<String?> resolutionText,
@@ -24198,6 +24535,8 @@ typedef $$CollectionsTableUpdateCompanionBuilder =
       Value<String?> voidedKind,
       Value<String?> voidedByName,
       Value<String?> voidedReason,
+      Value<String?> depositId,
+      Value<DateTime?> depositedAt,
       Value<String?> conflictCode,
       Value<String?> conflictMessage,
       Value<String?> resolutionText,
@@ -24352,6 +24691,16 @@ class $$CollectionsTableFilterComposer
 
   ColumnFilters<String> get voidedReason => $composableBuilder(
     column: $table.voidedReason,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get depositId => $composableBuilder(
+    column: $table.depositId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get depositedAt => $composableBuilder(
+    column: $table.depositedAt,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -24530,6 +24879,16 @@ class $$CollectionsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get depositId => $composableBuilder(
+    column: $table.depositId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get depositedAt => $composableBuilder(
+    column: $table.depositedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get conflictCode => $composableBuilder(
     column: $table.conflictCode,
     builder: (column) => ColumnOrderings(column),
@@ -24681,6 +25040,14 @@ class $$CollectionsTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<String> get depositId =>
+      $composableBuilder(column: $table.depositId, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get depositedAt => $composableBuilder(
+    column: $table.depositedAt,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<String> get conflictCode => $composableBuilder(
     column: $table.conflictCode,
     builder: (column) => column,
@@ -24762,6 +25129,8 @@ class $$CollectionsTableTableManager
                 Value<String?> voidedKind = const Value.absent(),
                 Value<String?> voidedByName = const Value.absent(),
                 Value<String?> voidedReason = const Value.absent(),
+                Value<String?> depositId = const Value.absent(),
+                Value<DateTime?> depositedAt = const Value.absent(),
                 Value<String?> conflictCode = const Value.absent(),
                 Value<String?> conflictMessage = const Value.absent(),
                 Value<String?> resolutionText = const Value.absent(),
@@ -24797,6 +25166,8 @@ class $$CollectionsTableTableManager
                 voidedKind: voidedKind,
                 voidedByName: voidedByName,
                 voidedReason: voidedReason,
+                depositId: depositId,
+                depositedAt: depositedAt,
                 conflictCode: conflictCode,
                 conflictMessage: conflictMessage,
                 resolutionText: resolutionText,
@@ -24834,6 +25205,8 @@ class $$CollectionsTableTableManager
                 Value<String?> voidedKind = const Value.absent(),
                 Value<String?> voidedByName = const Value.absent(),
                 Value<String?> voidedReason = const Value.absent(),
+                Value<String?> depositId = const Value.absent(),
+                Value<DateTime?> depositedAt = const Value.absent(),
                 Value<String?> conflictCode = const Value.absent(),
                 Value<String?> conflictMessage = const Value.absent(),
                 Value<String?> resolutionText = const Value.absent(),
@@ -24869,6 +25242,8 @@ class $$CollectionsTableTableManager
                 voidedKind: voidedKind,
                 voidedByName: voidedByName,
                 voidedReason: voidedReason,
+                depositId: depositId,
+                depositedAt: depositedAt,
                 conflictCode: conflictCode,
                 conflictMessage: conflictMessage,
                 resolutionText: resolutionText,
@@ -25373,6 +25748,10 @@ typedef $$DepositsTableCreateCompanionBuilder = DepositsCompanion Function({
   Value<String> status,
   Value<String?> rejectReason,
   Value<String> syncState,
+  Value<int?> collectionCount,
+  Value<int?> nonCashPoisha,
+  Value<int?> nonCashCount,
+  Value<String?> failureCode,
   Value<int> rowid,
 });
 typedef $$DepositsTableUpdateCompanionBuilder = DepositsCompanion Function({
@@ -25386,6 +25765,10 @@ typedef $$DepositsTableUpdateCompanionBuilder = DepositsCompanion Function({
   Value<String> status,
   Value<String?> rejectReason,
   Value<String> syncState,
+  Value<int?> collectionCount,
+  Value<int?> nonCashPoisha,
+  Value<int?> nonCashCount,
+  Value<String?> failureCode,
   Value<int> rowid,
 });
 
@@ -25445,6 +25828,26 @@ class $$DepositsTableFilterComposer
 
   ColumnFilters<String> get syncState => $composableBuilder(
     column: $table.syncState,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get collectionCount => $composableBuilder(
+    column: $table.collectionCount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get nonCashPoisha => $composableBuilder(
+    column: $table.nonCashPoisha,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get nonCashCount => $composableBuilder(
+    column: $table.nonCashCount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get failureCode => $composableBuilder(
+    column: $table.failureCode,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -25507,6 +25910,26 @@ class $$DepositsTableOrderingComposer
     column: $table.syncState,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<int> get collectionCount => $composableBuilder(
+    column: $table.collectionCount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get nonCashPoisha => $composableBuilder(
+    column: $table.nonCashPoisha,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get nonCashCount => $composableBuilder(
+    column: $table.nonCashCount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get failureCode => $composableBuilder(
+    column: $table.failureCode,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$DepositsTableAnnotationComposer
@@ -25557,6 +25980,26 @@ class $$DepositsTableAnnotationComposer
 
   GeneratedColumn<String> get syncState =>
       $composableBuilder(column: $table.syncState, builder: (column) => column);
+
+  GeneratedColumn<int> get collectionCount => $composableBuilder(
+    column: $table.collectionCount,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get nonCashPoisha => $composableBuilder(
+    column: $table.nonCashPoisha,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get nonCashCount => $composableBuilder(
+    column: $table.nonCashCount,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get failureCode => $composableBuilder(
+    column: $table.failureCode,
+    builder: (column) => column,
+  );
 }
 
 class $$DepositsTableTableManager
@@ -25600,6 +26043,10 @@ class $$DepositsTableTableManager
                 Value<String> status = const Value.absent(),
                 Value<String?> rejectReason = const Value.absent(),
                 Value<String> syncState = const Value.absent(),
+                Value<int?> collectionCount = const Value.absent(),
+                Value<int?> nonCashPoisha = const Value.absent(),
+                Value<int?> nonCashCount = const Value.absent(),
+                Value<String?> failureCode = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => DepositsCompanion(
                 clientId: clientId,
@@ -25612,6 +26059,10 @@ class $$DepositsTableTableManager
                 status: status,
                 rejectReason: rejectReason,
                 syncState: syncState,
+                collectionCount: collectionCount,
+                nonCashPoisha: nonCashPoisha,
+                nonCashCount: nonCashCount,
+                failureCode: failureCode,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -25626,6 +26077,10 @@ class $$DepositsTableTableManager
                 Value<String> status = const Value.absent(),
                 Value<String?> rejectReason = const Value.absent(),
                 Value<String> syncState = const Value.absent(),
+                Value<int?> collectionCount = const Value.absent(),
+                Value<int?> nonCashPoisha = const Value.absent(),
+                Value<int?> nonCashCount = const Value.absent(),
+                Value<String?> failureCode = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => DepositsCompanion.insert(
                 clientId: clientId,
@@ -25638,6 +26093,10 @@ class $$DepositsTableTableManager
                 status: status,
                 rejectReason: rejectReason,
                 syncState: syncState,
+                collectionCount: collectionCount,
+                nonCashPoisha: nonCashPoisha,
+                nonCashCount: nonCashCount,
+                failureCode: failureCode,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

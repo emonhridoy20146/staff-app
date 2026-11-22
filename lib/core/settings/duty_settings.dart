@@ -30,7 +30,7 @@ Duration _clock(String hhmm) {
 class DutySettings {
   const DutySettings({
     this.start = '09:00',
-    this.end = '18:00',
+    this.end = '21:00',
     this.lateGraceMin = 15,
     this.maxBreakMin = 60,
     this.weeklyOff = const [5],
@@ -54,7 +54,7 @@ class DutySettings {
     final windows = s['breakWindows'];
     return DutySettings(
       start: time('start', 'dutyStart', '09:00'),
-      end: time('end', 'dutyEnd', '18:00'),
+      end: time('end', 'dutyEnd', '21:00'),
       lateGraceMin: minutes('lateGraceMin', 15),
       maxBreakMin: minutes('maxBreakMin', 60),
       weeklyOff: off is List ? [for (final d in off) if (d is num && d >= 0 && d <= 6) d.toInt()] : const [5],

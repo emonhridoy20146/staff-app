@@ -55,6 +55,8 @@ Phases match `field-api/docs/09-progress.md`. Start each phase against the Prism
 | Cash on hand by collection: customer, invoice, receipt per line (FR-M-049, contract 1.27.0) | ✅ 2026-11-21, unit tests; device check pending |
 | Receipt of any collection from Today's Work and the customer timeline (FR-M-050) | ✅ 2026-11-21, CI only; device check pending |
 | Remove an added phone number from the customer page, online (FR-M-053) | ✅ 2026-11-21, CI only; device check pending |
+| Same device id after a reinstall (ANDROID_ID); attendance restored from the server after a reinstall; no photo at breaks by default; 09:00–21:00 without shift data (FR-M-060, FR-M-061, ADR-M25, contract 1.36.0) | 🚧 2026-11-22, unit + flow tests; needs field-api 1.36.0; device check pending (reinstall on a real phone) |
+| Deposit everything; collections of any method editable until deposited; locked after; refused deposit in Problems (FR-M-059, ADR-M24, contract 1.35.0, schema 14) | 🚧 2026-11-22, unit + widget + flow tests; needs field-api 1.35.0; device check pending; bank slip photo still missing (a bank deposit is refused `SLIP_REQUIRED`) |
 | Co-work: the requester can cancel; a group of one ends (contract 1.34.0) | ✅ 2026-11-22, CI only; device check pending |
 | Cash in hand: change or delete until deposited; other staff's work list; PIN progress (FR-M-058, ADR-M23, contract 1.32.0) | 🚧 2026-11-22, CI only; needs field-api 1.32.0; device check pending |
 | Who did it: colleagues' visits, promises, collections and pins with the staff name; schema 12 (FR-M-057, ADR-M22) | 🚧 2026-11-22, CI only; needs field-api 1.31.0; device check pending |
