@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Changed (owner report 2026-11-22: "App not installed" over an older build; ADR-M26)
+- **A build on `main` without the release key now fails** (`apk` job, step "Decode keystore") instead of publishing a debug-signed APK. A debug key is generated anew on each CI run, so such APKs have a different signature every time and Android refuses them as an update. Other branches still build, with a warning.
+- `tool/make_release_keystore.sh`: one-time helper to make the key and the four `STAFF_*` secret values (asks for the password; refuses to overwrite an existing key; output git-ignored: `*.jks`, `*.b64`).
+- README "Release signing" explains the rule, the one-time uninstall for phones that have a differently signed build, and that the key must never change.
+
 ### Changed (owner request 2026-11-22: reinstall, attendance, break photo, default shift; FR-M-060, FR-M-061, ADR-M25, contract 1.36.0)
 - **A reinstall no longer needs a new device approval.** The device id is now derived from Android's ANDROID_ID (UUID v5, name `bd.howlader.staff_app/device/<ANDROID_ID>`), read through the existing `com.howlader.staff/permissions` channel (`androidId`). The same phone gives the same id after uninstall and install. A phone that already has an id keeps it. Without a usable ANDROID_ID a random id is used as before.
 - **Attendance survives a reinstall.** After each successful sync, if the phone has no attendance event today, it asks `GET /attendance/me/today` (1.36.0, once per day per app run) and stores the events under their own clientId as already sent (no outbox entry). Duty, breaks and tracking then show the real state; staff are not asked to work in again. The phone's own events always win.

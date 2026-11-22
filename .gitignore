@@ -55,6 +55,7 @@ app.*.map.json
 android/key.properties
 *.jks
 *.keystore
+*.b64
 
 # Golden diff output of a failed screenshot run (never commit)
 test/screenshots/failures/
