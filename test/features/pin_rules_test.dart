@@ -5,8 +5,8 @@ import 'package:staff_app/features/customers/src/domain/map_pin.dart';
 GeoFix fix({double lat = 22.70, double lng = 90.35, double acc = 12, bool mock = false}) =>
     GeoFix(lat: lat, lng: lng, accuracyM: acc, fixAt: DateTime.utc(2026, 11, 15, 4), mock: mock);
 
-MapPinCheck check({double lat = 22.7, double lng = 90.35, GeoFix? phone, bool hasPin = false, StaffPinApproval policy = StaffPinApproval.whenMissing}) =>
-    checkMapPin(lat: lat, lng: lng, phone: phone, customerHasUsablePin: hasPin, policy: policy);
+MapPinCheck check({double lat = 22.7, double lng = 90.35, GeoFix? phone, bool hasPin = false, StaffPinApproval policy = StaffPinApproval.whenMissing, bool approver = false}) =>
+    checkMapPin(lat: lat, lng: lng, phone: phone, customerHasUsablePin: hasPin, policy: policy, canApprove: approver);
 
 void main() {
   group('map pin rules mirror field-api 1.11.0 (FR-CUS-011)', () {
@@ -22,6 +22,19 @@ void main() {
       expect(mock.appliesAtOnce, isFalse);
       expect(mock.phoneMock, isTrue);
       expect(check(policy: StaffPinApproval.always, phone: fix()).appliesAtOnce, isFalse);
+    });
+
+    test('a user who can approve pins (customer.location.approve, 1.39.0) sets the pin at once whatever the policy', () {
+      expect(check(approver: true, hasPin: true, phone: fix()).appliesAtOnce, isTrue, reason: 'moving an existing pin');
+      expect(check(approver: true, policy: StaffPinApproval.always, hasPin: true).appliesAtOnce, isTrue, reason: 'policy always');
+      expect(check(approver: true).appliesAtOnce, isTrue);
+      expect(check(approver: true, phone: fix(mock: true)).appliesAtOnce, isFalse, reason: 'a mocked phone still waits');
+    });
+
+    test('field staff (no approve key) still send a proposal when the rules say so', () {
+      expect(check(hasPin: true, phone: fix()).appliesAtOnce, isFalse);
+      expect(check(policy: StaffPinApproval.always).appliesAtOnce, isFalse);
+      expect(check().appliesAtOnce, isTrue, reason: 'no usable pin under when_missing is unchanged');
     });
 
     test('outside Bangladesh cannot be sent', () {

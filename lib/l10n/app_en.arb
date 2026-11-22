@@ -1060,6 +1060,7 @@
   "pinPhoneUnknown": "Your own location is not known yet.",
   "pinPhoneMock": "Your phone reports a fake location, so a manager checks this pin.",
   "pinWillApply": "This customer has no location yet: the pin is set as soon as it is sent.",
+  "pinWillApplyApprover": "You can approve pins: the pin is set as soon as it is sent.",
   "pinNeedsManager": "A manager checks the new pin before it changes.",
   "pinPhotoOptional": "Photo of the house or shop (optional)",
   "pinSubmitApply": "Set pin",

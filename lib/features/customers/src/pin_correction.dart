@@ -13,6 +13,7 @@ import '../../../core/db/colleague_activity.dart';
 import '../../../core/feature/feature_manifest.dart';
 import '../../../core/location/location_engine.dart';
 import '../../../core/media/media.dart';
+import '../../../core/permissions/permission_service.dart';
 import '../../../core/providers.dart';
 import '../../../core/settings/ui_prefs.dart';
 import '../../../core/sync/outbox.dart';
@@ -36,6 +37,11 @@ import 'domain/map_pin.dart';
 
 /// The branch's `customers.staffPinApproval`; missing → `when_missing`.
 final staffPinApprovalProvider = Provider<StaffPinApproval>((ref) => StaffPinApproval.parse(ref.watch(serverSettingsProvider)['customers.staffPinApproval']));
+
+/// The user may approve pins (`customer.location.approve` in the server
+/// snapshot: super admin, branch manager). Since field-api 1.39.0 the server
+/// sets such a user's pin at once whatever the policy (FR-CUS-020).
+final canApprovePinsProvider = Provider<bool>((ref) => ref.watch(accessProvider).can(Perm.customerLocationApprove));
 
 /// Saves the proposal on the phone. With a photo, the photo is queued and
 /// the `location_proposal` mutation follows once the photo is confirmed
@@ -222,8 +228,13 @@ class PinProposalStatus extends ConsumerWidget {
     // Not sent yet, and the server will set it at once (customer had no pin).
     final c = ref.watch(customerProvider(customerId)).value;
     final policy = ref.watch(staffPinApprovalProvider);
+    final approver = ref.watch(canApprovePinsProvider);
     final appliesWhenSent =
-        !rejected && !failed && p.syncState != 'synced' && c != null && checkMapPin(lat: p.lat, lng: p.lng, phone: _phoneOf(p), customerHasUsablePin: c.pinUsable, policy: policy).appliesAtOnce;
+        !rejected &&
+        !failed &&
+        p.syncState != 'synced' &&
+        c != null &&
+        checkMapPin(lat: p.lat, lng: p.lng, phone: _phoneOf(p), customerHasUsablePin: c.pinUsable, policy: policy, canApprove: approver).appliesAtOnce;
     return Padding(
       padding: const EdgeInsets.only(top: Space.s12),
       child: InfoBanner(

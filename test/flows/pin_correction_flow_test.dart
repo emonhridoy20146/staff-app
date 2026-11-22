@@ -131,4 +131,28 @@ void main() {
       'note': 'Gate',
     });
   });
+
+  test('a user who can approve pins moves an existing pin at once, even under policy always (1.39.0)', () async {
+    h.api.staffPinApproval = 'always';
+    h.api.pinApprover = true;
+    await h.signIn();
+    expect(h.read(canApprovePinsProvider), isTrue, reason: 'from the server snapshot');
+    final c = (await h.read(customerRepositoryProvider).watchAll().first).firstWhere((c) => c.pinUsable);
+    final id = await h.read(pinCorrectionServiceProvider).record(customer: c, lat: 22.7101, lng: 90.3502);
+    await h.read(syncEngineProvider).syncNow();
+    final p = await proposal(id);
+    expect(p.syncState, 'synced');
+    expect(p.status, 'approved', reason: 'the push result says approved, so openProposalProvider hides it: nothing left waiting');
+    expect(h.api.appliedPayloads[id], isNotNull);
+  });
+
+  test('field staff moving an existing pin still wait for a manager', () async {
+    await h.signIn();
+    expect(h.read(canApprovePinsProvider), isFalse);
+    final c = (await h.read(customerRepositoryProvider).watchAll().first).firstWhere((c) => c.pinUsable);
+    final id = await h.read(pinCorrectionServiceProvider).record(customer: c, lat: 22.7101, lng: 90.3502);
+    await h.read(syncEngineProvider).syncNow();
+    final p = await proposal(id);
+    expect(p.status, 'pending', reason: 'policy when_missing, customer has a pin: a manager decides');
+  });
 }
