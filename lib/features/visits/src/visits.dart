@@ -25,7 +25,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../cowork/cowork.dart';
 import '../../customers/customers.dart';
 
-const visitOutcomes = ['paid', 'partial_paid', 'promised', 'not_home', 'refused', 'shifted_address', 'customer_dead', 'product_returned_request', 'other'];
+const visitOutcomes = ['paid', 'partial_paid', 'promised', 'not_home', 'refused', 'shifted_address', 'customer_dead', 'runaway', 'product_returned_request', 'other'];
 
 String outcomeLabel(AppLocalizations l, String o) => switch (o) {
       'paid' => l.visitOutcomePaid,
@@ -35,8 +35,11 @@ String outcomeLabel(AppLocalizations l, String o) => switch (o) {
       'refused' => l.visitOutcomeRefused,
       'shifted_address' => l.visitOutcomeShifted,
       'customer_dead' => l.visitOutcomeDead,
+      'runaway' => l.visitOutcomeRunaway,
       'product_returned_request' => l.visitOutcomeReturn,
-      _ => l.visitOutcomeOther,
+      'other' => l.visitOutcomeOther,
+      // Contract: a value this app does not know yet is shown as its code.
+      _ => o,
     };
 
 IconData outcomeIcon(String o) => switch (o) {
@@ -47,6 +50,7 @@ IconData outcomeIcon(String o) => switch (o) {
       'refused' => Icons.block_rounded,
       'shifted_address' => Icons.moving_rounded,
       'customer_dead' => Icons.sentiment_very_dissatisfied_rounded,
+      'runaway' => Icons.directions_run_rounded,
       'product_returned_request' => Icons.assignment_return_rounded,
       _ => Icons.more_horiz_rounded,
     };

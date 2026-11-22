@@ -883,6 +883,9 @@ class AppLocalizationsBn extends AppLocalizations {
   String get visitOutcomeDead => 'গ্রাহক মারা গেছেন';
 
   @override
+  String get visitOutcomeRunaway => 'পলাতক';
+
+  @override
   String get visitOutcomeReturn => 'পণ্য ফেরত দিতে চান';
 
   @override

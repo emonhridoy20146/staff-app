@@ -59,6 +59,7 @@ Phases match `field-api/docs/09-progress.md`. Start each phase against the Prism
 | Customer page: reload button and pull down refresh this customer from the server (ERP figures, invoices, payments), then sync; offline says internet is needed and keeps the saved data (FR-M-063, ADR-M27) | 🚧 2026-11-22, flow tests (button, pull, offline, English); device check pending |
 | Deposit everything; collections of any method editable until deposited; locked after; refused deposit in Problems (FR-M-059, ADR-M24, contract 1.35.0, schema 14) | 🚧 2026-11-22, unit + widget + flow tests; needs field-api 1.35.0; device check pending; bank slip photo still missing (a bank deposit is refused `SLIP_REQUIRED`) |
 | Co-work: the requester can cancel; a group of one ends (contract 1.34.0) | ✅ 2026-11-22, CI only; device check pending |
+| Visit outcome "পলাতক / Runaway" (FR-M-064, contract 1.41.0) | 🚧 2026-11-22, unit test; needs field-api 1.41.0 |
 | Cash in hand: change or delete until deposited; other staff's work list; PIN progress (FR-M-058, ADR-M23, contract 1.32.0) | 🚧 2026-11-22, CI only; needs field-api 1.32.0; device check pending |
 | Who did it: colleagues' visits, promises, collections and pins with the staff name; schema 12 (FR-M-057, ADR-M22) | 🚧 2026-11-22, CI only; needs field-api 1.31.0; device check pending |
 | One on-duty notification instead of two (FR-M-056, ADR-M21) | ✅ 2026-11-21, CI only; **device check needed** |
