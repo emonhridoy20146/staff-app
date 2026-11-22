@@ -259,6 +259,7 @@
   "visitOutcomeRefused": "দিতে অস্বীকার",
   "visitOutcomeShifted": "ঠিকানা বদলেছেন",
   "visitOutcomeDead": "গ্রাহক মারা গেছেন",
+  "visitOutcomeRunaway": "পলাতক",
   "visitOutcomeReturn": "পণ্য ফেরত দিতে চান",
   "visitOutcomeOther": "অন্যান্য",
   "visitTakePhoto": "ছবি তুলুন",

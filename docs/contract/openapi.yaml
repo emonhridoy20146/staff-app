@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Howlader Field Operations API
-  version: 1.38.0
+  version: 1.41.0
   description: |
     Contract owned by field-api. Consumers (admin-web, staff-app) generate types from this file.
     Conventions (auth, pagination, idempotency, errors) are described in docs/05-api-contract.md.
@@ -153,7 +153,7 @@ paths:
       security: []
       operationId: health
       responses:
-        '200': { description: OK, content: { application/json: { schema: { type: object, properties: { status: { type: string, enum: [ok, degraded] }, version: { type: string }, contract: { type: string, description: 'API contract version this build implements; use it to check a deploy (added in 1.20.1)' }, mongo: { type: string }, erp: { type: string }, storage: { type: string, enum: [s3, db, memory], description: 'Added in 1.21.0. Where photos and exports are kept (ADR-039); memory = this instance only, phone uploads fail.' }, cloudStorage: { type: string, enum: [cloudinary, none], description: 'Added in 1.37.0 (ADR-050). cloudinary = CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET are set and photos are copied there.' } } } } } }
+        '200': { description: OK, content: { application/json: { schema: { type: object, properties: { status: { type: string, enum: [ok, degraded] }, version: { type: string }, contract: { type: string, description: 'API contract version this build implements; use it to check a deploy (added in 1.20.1)' }, mongo: { type: string }, erp: { type: string }, storage: { type: string, enum: [s3, db, memory, cloudinary], description: 'Added in 1.21.0. Where photos and exports are kept (ADR-039); memory = this instance only, phone uploads fail. cloudinary (1.40.0, ADR-053) = the phone''s upload goes through the API straight to Cloudinary, MongoDB when Cloudinary fails; exports and voice notes in MongoDB.' }, cloudStorage: { type: string, enum: [cloudinary, none], description: 'Added in 1.37.0 (ADR-050). cloudinary = CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET are set and photos are copied there.' } } } } } }
   /system/erp-status:
     get:
       tags: [system]
@@ -600,6 +600,11 @@ paths:
         Both must be inside Bangladesh. When the customer has no usable pin and the branch setting `customers.staffPinApproval` is
         `when_missing` (default) the pin is applied at once and the answer is `status: approved`; otherwise it waits for a manager
         (`pending`). A mock `deviceGeo` never applies at once.
+        1.39.0 (FR-CUS-020, ADR-052): when the caller holds `customer.location.approve` for the customer's branch (super admin, branch
+        manager by default, or anyone granted the key) the pin applies at once whatever the policy and whether or not the customer had a
+        pin: the answer is `status: approved, direct: true`, it is stored and audited like `POST /customers/{id}/location`
+        (`customer.location.set`, decided by the caller) and no inbox item is raised. A map pin with a mock `deviceGeo` stays a pending
+        proposal (flagged `deviceMock`) even then; a mock `gps` fix is refused as before. Field staff behave as before.
       parameters: [ { $ref: '#/components/parameters/Id' } ]
       requestBody:
         required: true
@@ -619,6 +624,8 @@ paths:
         '201': { description: Created, content: { application/json: { schema: { $ref: '#/components/schemas/PinResult' } } } }
         '200': { description: Replay of the same clientId, content: { application/json: { schema: { $ref: '#/components/schemas/PinResult' } } } }
         '404': { $ref: '#/components/responses/Problem' }
+        '400': { $ref: '#/components/responses/Problem' }
+        '403': { $ref: '#/components/responses/Problem' }
         '422': { description: 'BUSINESS_RULE: LOW_ACCURACY, MOCK_LOCATION (gps only), OUTSIDE_BANGLADESH', content: { application/problem+json: { schema: { $ref: '#/components/schemas/Problem' } } } }
   /customers/{id}/location:
     post:
@@ -1576,10 +1583,12 @@ paths:
       operationId: storagePut
       summary: Upload target of a presigned URL when the server keeps files itself (ADR-039)
       description: |
-        Only exists when the server has no S3 (`STORAGE_DRIVER=db`, the default on Vercel test deployments).
+        Only exists when the server keeps files itself (`STORAGE_DRIVER=db`, the default on Vercel test deployments
+        without Cloudinary) or sends them on to Cloudinary (`STORAGE_DRIVER=cloudinary`, 1.40.0, ADR-053).
         Clients never build this URL: they PUT to `uploadUrl` from `/media/upload-url` as for S3. No bearer
         token; the signature in the path is the permission and expires after 5 minutes. The body must match
-        the signed content type, size and sha256.
+        the signed content type, size and sha256. With `cloudinary` a photo is uploaded to Cloudinary before the
+        answer; if Cloudinary fails it is kept in MongoDB and still answers 200 (copied later by the outbox).
       security: []
       requestBody:
         required: true
@@ -2802,7 +2811,7 @@ components:
             createdAt: { type: string }
             expiresAt: { type: string }
             summary: { type: object, properties: { customers: { type: integer }, outstandingPoisha: { type: integer }, overdue: { type: integer }, openPromises: { type: integer }, openConflicts: { type: integer } } }
-    VisitOutcome: { type: string, enum: [paid, partial_paid, promised, not_home, refused, shifted_address, customer_dead, product_returned_request, other] }
+    VisitOutcome: { type: string, enum: [paid, partial_paid, promised, not_home, refused, shifted_address, customer_dead, product_returned_request, runaway, other], description: 'runaway (1.41.0, FR-VIS-006) = the customer has absconded and cannot be found (bn পলাতক). Clients must show an unknown value as its raw code, never fail.' }
     VisitCreate:
       type: object
       required: [clientId, customerId, checkInAt, geo, outcome]
@@ -3069,6 +3078,7 @@ components:
       properties:
         id: { type: string }
         status: { type: string, enum: [pending, approved, rejected], description: '`approved` when it was applied at once' }
+        direct: { type: boolean, description: 'Added in 1.39.0. true = applied at once because the caller may approve pins in that branch (no manager step); the app says "Pin updated" instead of "Sent for approval"' }
     PhoneDetail:
       type: object
       description: Added in 1.23.0. One phone number of a customer and where it came from

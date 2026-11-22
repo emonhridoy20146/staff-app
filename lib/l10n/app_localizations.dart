@@ -1652,6 +1652,12 @@ abstract class AppLocalizations {
   /// **'Customer died'**
   String get visitOutcomeDead;
 
+  /// No description provided for @visitOutcomeRunaway.
+  ///
+  /// In en, this message translates to:
+  /// **'Runaway'**
+  String get visitOutcomeRunaway;
+
   /// No description provided for @visitOutcomeReturn.
   ///
   /// In en, this message translates to:

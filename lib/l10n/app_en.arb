@@ -521,6 +521,7 @@
   "visitOutcomeRefused": "Refused",
   "visitOutcomeShifted": "Moved address",
   "visitOutcomeDead": "Customer died",
+  "visitOutcomeRunaway": "Runaway",
   "visitOutcomeReturn": "Wants to return product",
   "visitOutcomeOther": "Other",
   "visitTakePhoto": "Take photo",

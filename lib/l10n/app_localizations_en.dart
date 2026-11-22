@@ -883,6 +883,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get visitOutcomeDead => 'Customer died';
 
   @override
+  String get visitOutcomeRunaway => 'Runaway';
+
+  @override
   String get visitOutcomeReturn => 'Wants to return product';
 
   @override
