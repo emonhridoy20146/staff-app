@@ -1904,6 +1904,20 @@ class AppLocalizationsEn extends AppLocalizations {
       'After you leave, your next visits count as single visits. Earlier co-work visits stay as they are.';
 
   @override
+  String get coworkLeaveEndsConfirm =>
+      'Only two of you are in the group, so it ends when you leave. Earlier co-work visits stay as they are.';
+
+  @override
+  String get coworkCancelRequest => 'Cancel request';
+
+  @override
+  String get coworkCancelConfirm =>
+      'Nobody has accepted yet. The request is withdrawn for everyone you asked.';
+
+  @override
+  String get coworkCancelled => 'Request cancelled';
+
+  @override
   String get coworkStartTitle => 'Work with a colleague';
 
   @override

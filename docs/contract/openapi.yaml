@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Howlader Field Operations API
-  version: 1.33.0
+  version: 1.34.0
   description: |
     Contract owned by field-api. Consumers (admin-web, staff-app) generate types from this file.
     Conventions (auth, pagination, idempotency, errors) are described in docs/05-api-contract.md.
@@ -1089,10 +1089,25 @@ paths:
     post:
       tags: [cowork]
       operationId: leaveCowork
-      description: 'Leave a session (1.9.0). Idempotent. Recording work-out leaves automatically.'
+      description: 'Leave a session (1.9.0). Idempotent. Recording work-out leaves automatically. The person who asked may leave before or after anyone accepts; since 1.34.0 (FR-CW-006) a session with nobody accepted left ends at once, so an unanswered request is cancelled this way, and a later respond answers 409 SESSION_ENDED.'
       parameters: [ { $ref: '#/components/parameters/Id' } ]
       responses:
         '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/CoworkSession' } } } }
+  /cowork/sessions/{id}/end:
+    post:
+      tags: [cowork]
+      operationId: endCoworkSession
+      description: |
+        cowork.manage (1.34.0, FR-CW-006). An office user ends an open session with a reason: status `ended`, `endedAt` now,
+        `endedBy` and `endReason` set. Branch scope; out of scope is 404. Idempotent: a session that is already over is returned
+        as it is. Everyone who was accepted or still invited gets notification `cowork.ended` and the session on their next pull.
+        Joint visits already recorded keep their credit. Audited as `cowork.ended_by_office`.
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      requestBody: { required: true, content: { application/json: { schema: { type: object, required: [reason], properties: { reason: { type: string, minLength: 5, maxLength: 500 } } } } } }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/CoworkSession' } } } }
+        '400': { $ref: '#/components/responses/Problem' }
+        '404': { $ref: '#/components/responses/Problem' }
   /cowork/sessions:
     get:
       tags: [cowork]
@@ -2612,6 +2627,8 @@ components:
         members: { type: array, items: { $ref: '#/components/schemas/CoworkMember' } }
         createdAt: { type: string, format: date-time }
         endedAt: { type: [string, 'null'] }
+        endedBy: { type: object, description: 'The office user who ended the session (1.34.0, FR-CW-006); absent when it ended by itself (people left, the day was over)', properties: { id: { type: string }, name: { type: string } } }
+        endReason: { type: [string, 'null'], description: "The office user's reason (1.34.0); present with endedBy" }
         visitsCount: { type: integer, description: 'Co-work visits recorded in this session (manager list and detail only)' }
     TaskStatus: { type: string, enum: [open, resolve_requested, resolved, cancelled], description: '1.20.0. open → resolve_requested (staff) → resolved (admin verifies) or back to open (admin rejects with a reason); cancelled by an admin.' }
     TaskCounts:

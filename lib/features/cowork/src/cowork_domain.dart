@@ -68,6 +68,13 @@ class CoworkSession {
 
   int get occupied => members.where((m) => m.occupies).length;
 
+  /// Nobody has accepted yet and I am the only one in: leaving withdraws the
+  /// request for everyone (the server ends a session with no accepted member).
+  bool leavingCancels(String me) => (memberOf(me)?.isAccepted ?? false) && partnersOf(me).isEmpty;
+
+  /// I have exactly one partner and nobody is still invited: the group ends when I leave.
+  bool leavingEnds(String me) => (memberOf(me)?.isAccepted ?? false) && partnersOf(me).length == 1 && waitingOn(me).isEmpty;
+
   String? nameOf(String userId) => memberOf(userId)?.name;
 }
 

@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Fixed (owner report 2026-11-22: a co-work request could not be cancelled; FR-CW-002, contract 1.34.0)
+- **The person who asked can cancel a co-work request.** Before, leaving took the requester out but the invitation stayed open for the others, so the request was never withdrawn. The server (1.34.0) now ends a session as soon as no accepted member is left. In the app the button reads "Cancel request" while nobody has accepted (the confirmation says it is withdrawn for everyone), and "Leave group" warns that the group ends when only two are in it. The office can end a co-work from the admin panel; the phone learns it on the next pull.
+- Tests: `test/flows/cowork_flow_test.dart` (cancel before anyone accepts; leave with one partner). Contract copy 1.34.0.
+
 ### Fixed (owner report: error in the app after test builds; schema 13)
 - **A phone that ran a test build from the middle of schema 12 stopped with "no such column".** Schema 12 grew while it was built (who made a promise, edited and voided collections), so such a phone had version 12 but some columns missing and the migration did not run again. Schema 13 runs one idempotent step that adds whatever is missing and nothing else. Test `test/core/migration_test.dart` (a middle-of-12 phone) plus every older version.
 

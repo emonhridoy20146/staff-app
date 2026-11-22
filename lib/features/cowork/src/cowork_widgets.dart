@@ -208,14 +208,18 @@ class _CoworkGroupCardState extends ConsumerState<CoworkGroupCard> {
 
   Future<void> _leave() async {
     final l = AppLocalizations.of(context);
+    final me = ref.read(myUserIdProvider) ?? '';
+    // Nobody accepted yet: this withdraws the request. One partner only: the group ends.
+    final cancels = widget.session.leavingCancels(me);
+    final ends = widget.session.leavingEnds(me);
     final ok = await showDialog<bool>(
       context: context,
       builder: (d) => AlertDialog(
-        title: Text(l.coworkLeave),
-        content: Text(l.coworkLeaveConfirm),
+        title: Text(cancels ? l.coworkCancelRequest : l.coworkLeave),
+        content: Text(cancels ? l.coworkCancelConfirm : (ends ? l.coworkLeaveEndsConfirm : l.coworkLeaveConfirm)),
         actions: [
           TextButton(onPressed: () => Navigator.of(d).pop(false), child: Text(l.actionCancel)),
-          FilledButton(onPressed: () => Navigator.of(d).pop(true), child: Text(l.coworkLeave)),
+          FilledButton(onPressed: () => Navigator.of(d).pop(true), child: Text(cancels ? l.coworkCancelRequest : l.coworkLeave)),
         ],
       ),
     );
@@ -224,7 +228,7 @@ class _CoworkGroupCardState extends ConsumerState<CoworkGroupCard> {
     final r = await ref.read(coworkServiceProvider).leave(widget.session.id);
     if (!mounted) return;
     setState(() => _busy = false);
-    _snackFor(context, r, l.coworkLeft);
+    _snackFor(context, r, cancels ? l.coworkCancelled : l.coworkLeft);
   }
 
   @override
@@ -270,8 +274,8 @@ class _CoworkGroupCardState extends ConsumerState<CoworkGroupCard> {
           Expanded(
             child: OutlinedButton.icon(
               onPressed: _busy ? null : _leave,
-              icon: const Icon(Icons.logout_rounded),
-              label: Text(l.coworkLeave),
+              icon: Icon(s.leavingCancels(me) ? Icons.close_rounded : Icons.logout_rounded),
+              label: Text(s.leavingCancels(me) ? l.coworkCancelRequest : l.coworkLeave),
             ),
           ),
           if (widget.showAdd && seats > 0) ...[

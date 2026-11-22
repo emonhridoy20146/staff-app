@@ -3428,6 +3428,30 @@ abstract class AppLocalizations {
   /// **'After you leave, your next visits count as single visits. Earlier co-work visits stay as they are.'**
   String get coworkLeaveConfirm;
 
+  /// No description provided for @coworkLeaveEndsConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Only two of you are in the group, so it ends when you leave. Earlier co-work visits stay as they are.'**
+  String get coworkLeaveEndsConfirm;
+
+  /// No description provided for @coworkCancelRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel request'**
+  String get coworkCancelRequest;
+
+  /// No description provided for @coworkCancelConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Nobody has accepted yet. The request is withdrawn for everyone you asked.'**
+  String get coworkCancelConfirm;
+
+  /// No description provided for @coworkCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Request cancelled'**
+  String get coworkCancelled;
+
   /// No description provided for @coworkStartTitle.
   ///
   /// In en, this message translates to:

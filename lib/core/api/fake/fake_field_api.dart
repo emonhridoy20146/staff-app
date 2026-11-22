@@ -335,7 +335,7 @@ class FakeFieldApi implements HttpClientAdapter {
     final members = _members(s);
     final accepted = members.where((m) => m['status'] == 'accepted').length;
     final invited = members.where((m) => m['status'] == 'invited').length;
-    if (s['status'] == 'open' && accepted < 2 && invited == 0) {
+    if (s['status'] == 'open' && (accepted == 0 || (accepted < 2 && invited == 0))) {
       s = {...s, 'status': 'ended', 'endedAt': clock.nowUtc().toIso8601String()};
     }
     _cowork[s['id'] as String] = s;

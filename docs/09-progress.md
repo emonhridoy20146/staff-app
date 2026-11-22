@@ -55,6 +55,7 @@ Phases match `field-api/docs/09-progress.md`. Start each phase against the Prism
 | Cash on hand by collection: customer, invoice, receipt per line (FR-M-049, contract 1.27.0) | ✅ 2026-11-21, unit tests; device check pending |
 | Receipt of any collection from Today's Work and the customer timeline (FR-M-050) | ✅ 2026-11-21, CI only; device check pending |
 | Remove an added phone number from the customer page, online (FR-M-053) | ✅ 2026-11-21, CI only; device check pending |
+| Co-work: the requester can cancel; a group of one ends (contract 1.34.0) | ✅ 2026-11-22, CI only; device check pending |
 | Cash in hand: change or delete until deposited; other staff's work list; PIN progress (FR-M-058, ADR-M23, contract 1.32.0) | 🚧 2026-11-22, CI only; needs field-api 1.32.0; device check pending |
 | Who did it: colleagues' visits, promises, collections and pins with the staff name; schema 12 (FR-M-057, ADR-M22) | 🚧 2026-11-22, CI only; needs field-api 1.31.0; device check pending |
 | One on-duty notification instead of two (FR-M-056, ADR-M21) | ✅ 2026-11-21, CI only; **device check needed** |

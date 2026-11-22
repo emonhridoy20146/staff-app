@@ -170,4 +170,33 @@ void main() {
     expect(coworkSeatsLeft(null, 5), 4);
     expect(coworkSeatsLeft(null, 1), 0);
   });
+
+  test('the person who asked can cancel before anyone accepts: the request is withdrawn for everyone', () async {
+    await h.signIn();
+    await h.read(attendanceServiceProvider).record(AttendanceEventType.workIn);
+    final svc = h.read(coworkServiceProvider);
+    expect((await svc.request(clientId: svc.newRequestId(), toUserIds: ['u-fs-020'])).ok, isTrue);
+    final s = (await mine()).active!;
+    expect(s.leavingCancels(me), isTrue, reason: 'nobody accepted yet');
+    expect(s.leavingEnds(me), isFalse);
+
+    expect((await svc.leave(s.id)).ok, isTrue);
+    final after = (await sessions()).single;
+    expect(after.open, isFalse, reason: 'no accepted member is left, the invitation does not stay open');
+    expect((await mine()).active, isNull);
+  });
+
+  test('with one partner the group ends when I leave; with an invitation still open it would not', () async {
+    await h.signIn();
+    await h.read(attendanceServiceProvider).record(AttendanceEventType.workIn);
+    final sid = h.api.coworkInviteFrom('u-fs-020');
+    await sync();
+    final svc = h.read(coworkServiceProvider);
+    expect((await svc.respond(sid, accept: true)).ok, isTrue);
+    final s = (await mine()).active!;
+    expect(s.leavingCancels(me), isFalse, reason: 'someone is working with me');
+    expect(s.leavingEnds(me), isTrue);
+    expect((await svc.leave(sid)).ok, isTrue);
+    expect((await sessions()).single.open, isFalse);
+  });
 }

@@ -1901,6 +1901,20 @@ class AppLocalizationsBn extends AppLocalizations {
       'গ্রুপ ছাড়লে এরপরের ভিজিট আপনার একক ভিজিট হিসেবে গণ্য হবে। আগের কো-ওয়ার্ক ভিজিট আগের মতোই থাকবে।';
 
   @override
+  String get coworkLeaveEndsConfirm =>
+      'গ্রুপে আপনারা মাত্র দুজন, তাই আপনি ছাড়লে গ্রুপ শেষ হয়ে যাবে। আগের কো-ওয়ার্ক ভিজিট আগের মতোই থাকবে।';
+
+  @override
+  String get coworkCancelRequest => 'অনুরোধ বাতিল';
+
+  @override
+  String get coworkCancelConfirm =>
+      'এখনো কেউ রাজি হয়নি। যাদের অনুরোধ করেছিলেন, সবার জন্য অনুরোধটি তুলে নেওয়া হবে।';
+
+  @override
+  String get coworkCancelled => 'অনুরোধ বাতিল হয়েছে';
+
+  @override
   String get coworkStartTitle => 'সহকর্মীর সাথে কাজ করুন';
 
   @override
