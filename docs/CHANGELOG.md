@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Fixed (owner report 2026-11-22: customer search under the keyboard; branch names too big)
+- **Customer search with the keyboard open:** a large blank band covered the filtered customers. Cause: the app shell (`lib/app/shell.dart`) rebuilt the tabs' `MediaQuery` from its own context, above its `Scaffold`, which put the keyboard inset back after the shell had already made room for it, so each tab's `Scaffold` shrank for the keyboard a second time. The shell now reads the `MediaQuery` inside its body (a `Builder`), so the list fills the space between the search field and the keyboard and scrolls. This applies to every tab.
+- **Branch picker in the top bar:** branch names use `labelMedium` (was `titleSmall`), one line with "…" when long; picker rows keep the 48 dp target (`Sizes.minTarget`).
+- Test: `test/flows/customer_search_keyboard_test.dart` (keyboard open via `tester.view.viewInsets`: a filtered row lies below the field, above the keyboard, the list reaches the keyboard, and the row is hit-testable).
+
 ### Added (owner request 2026-11-22: reload on the customer page; FR-M-063, ADR-M27)
 - **Reload button and pull-to-refresh on the customer page.** Both ask the server for this customer now (`POST /customers/{id}/refresh`, already in the contract): ERP balance, invoices, installment lines and payments are stored like a pull, then a sync runs so queued work goes out. The top-bar button turns into a spinner while it runs. Messages (bn/en): "সার্ভার থেকে হালনাগাদ হয়েছে / Updated from the server"; offline "ইন্টারনেট লাগবে। ফোনে রাখা তথ্য দেখানো হচ্ছে। / Needs internet. Showing the data saved on this phone."; ERP busy (503/429); no longer yours (404, the phone's data is kept); no permission (403); otherwise the error code.
 - Nothing unsynced is touched: the answer goes through the same `customer` pull handler as sync (pending field amounts and numbers typed on the phone are kept); the outbox is not changed.
