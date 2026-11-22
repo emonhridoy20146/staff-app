@@ -34,6 +34,8 @@ Canonical values: `admin-web/docs/03-design-guide.md §2`. Repeated here for the
 
 **Pay state (v1.1, field-api `PayState`, ADR-035):** the colour of a customer's map pin and pay-state badge, worst first: bad = tagged bad or the full term is over with money left (glyph `!`); missedMany = 2+ installments missed (glyph = number missed); missedOne = one missed (glyph 1); dueToday = due today, nothing missed (dot); onTrack = everything due so far paid (check); paidOff = nothing left (check). The pin has the map-pin shape (round head, point on the spot), the pin colour as body with a 1.25 outline in the fg colour, a white face and the glyph in the fg colour; clusters take the worst state. admin-web uses these on its customer map since contract 1.14.0; the app's map still uses `status.*` glyph markers (§5.6) until it is moved to pay state.
 
+**Map places (FR-M-063, contract 1.38.0):** a 40 dp round marker (semantic `info` bg with a 2 dp `info` fg ring and the kind's Material icon in fg; `warning` while a move waits for the office) inside a 48 dp tap target, with the place's name always shown to its right in a `surface` label (`labelLarge`, `outlineVariant` border, `Radii.sm`, one line, ellipsis). The marker's semantics label reads name and kind. No new tokens.
+
 ## 3. Material 3 theme
 
 ### 3.1 ColorScheme (light)

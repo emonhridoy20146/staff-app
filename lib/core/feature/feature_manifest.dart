@@ -136,6 +136,19 @@ class AlertSourceDef {
   final List<AppAlert> Function(Ref ref) read;
 }
 
+/// Extension point: a layer a feature draws on the customer map (e.g. map
+/// places, FR-PLC-001). [layer] returns a flutter_map layer widget (it may
+/// watch providers through [WidgetRef], so it stays live and works offline);
+/// [onLongPress] is offered a long press on the map (the first layer that has
+/// one takes it). The map screen never reads the feature's tables itself.
+class MapLayerDef {
+  const MapLayerDef({required this.id, required this.layer, this.permission, this.onLongPress});
+  final String id;
+  final String? permission;
+  final Widget Function(BuildContext context, WidgetRef ref) layer;
+  final void Function(BuildContext context, WidgetRef ref, double lat, double lng)? onLongPress;
+}
+
 /// Feature module manifest (04-architecture §3). Each feature folder
 /// `lib/features/<name>/` exports exactly one manifest from its barrel and
 /// is listed once in `lib/app/features.dart`.
@@ -153,6 +166,7 @@ class FeatureManifest {
     this.timelineSources = const [],
     this.workLogSources = const [],
     this.alertSources = const [],
+    this.mapLayers = const [],
   });
 
   final String name;
@@ -171,6 +185,7 @@ class FeatureManifest {
   final List<TimelineSourceDef> timelineSources;
   final List<WorkLogSourceDef> workLogSources;
   final List<AlertSourceDef> alertSources;
+  final List<MapLayerDef> mapLayers;
 }
 
 /// The registered manifests (overridden at bootstrap from

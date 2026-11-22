@@ -21813,6 +21813,1406 @@ class ColleagueActivitiesCompanion
   }
 }
 
+class $MapPlacesTable extends MapPlaces
+    with TableInfo<$MapPlacesTable, PlaceRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $MapPlacesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _localIdMeta = const VerificationMeta(
+    'localId',
+  );
+  @override
+  late final GeneratedColumn<String> localId = GeneratedColumn<String>(
+    'local_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _serverIdMeta = const VerificationMeta(
+    'serverId',
+  );
+  @override
+  late final GeneratedColumn<String> serverId = GeneratedColumn<String>(
+    'server_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
+  );
+  static const VerificationMeta _clientIdMeta = const VerificationMeta(
+    'clientId',
+  );
+  @override
+  late final GeneratedColumn<String> clientId = GeneratedColumn<String>(
+    'client_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _branchIdMeta = const VerificationMeta(
+    'branchId',
+  );
+  @override
+  late final GeneratedColumn<String> branchId = GeneratedColumn<String>(
+    'branch_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _iconMeta = const VerificationMeta('icon');
+  @override
+  late final GeneratedColumn<String> icon = GeneratedColumn<String>(
+    'icon',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _noteMeta = const VerificationMeta('note');
+  @override
+  late final GeneratedColumn<String> note = GeneratedColumn<String>(
+    'note',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _latMeta = const VerificationMeta('lat');
+  @override
+  late final GeneratedColumn<double> lat = GeneratedColumn<double>(
+    'lat',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _lngMeta = const VerificationMeta('lng');
+  @override
+  late final GeneratedColumn<double> lng = GeneratedColumn<double>(
+    'lng',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _versionMeta = const VerificationMeta(
+    'version',
+  );
+  @override
+  late final GeneratedColumn<int> version = GeneratedColumn<int>(
+    'version',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _createdByIdMeta = const VerificationMeta(
+    'createdById',
+  );
+  @override
+  late final GeneratedColumn<String> createdById = GeneratedColumn<String>(
+    'created_by_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdByNameMeta = const VerificationMeta(
+    'createdByName',
+  );
+  @override
+  late final GeneratedColumn<String> createdByName = GeneratedColumn<String>(
+    'created_by_name',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _pendingMoveJsonMeta = const VerificationMeta(
+    'pendingMoveJson',
+  );
+  @override
+  late final GeneratedColumn<String> pendingMoveJson = GeneratedColumn<String>(
+    'pending_move_json',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _lastDecisionJsonMeta = const VerificationMeta(
+    'lastDecisionJson',
+  );
+  @override
+  late final GeneratedColumn<String> lastDecisionJson = GeneratedColumn<String>(
+    'last_decision_json',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createStateMeta = const VerificationMeta(
+    'createState',
+  );
+  @override
+  late final GeneratedColumn<String> createState = GeneratedColumn<String>(
+    'create_state',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('synced'),
+  );
+  static const VerificationMeta _createMutationIdMeta = const VerificationMeta(
+    'createMutationId',
+  );
+  @override
+  late final GeneratedColumn<String> createMutationId = GeneratedColumn<String>(
+    'create_mutation_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _editStateMeta = const VerificationMeta(
+    'editState',
+  );
+  @override
+  late final GeneratedColumn<String> editState = GeneratedColumn<String>(
+    'edit_state',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('none'),
+  );
+  static const VerificationMeta _editMutationIdMeta = const VerificationMeta(
+    'editMutationId',
+  );
+  @override
+  late final GeneratedColumn<String> editMutationId = GeneratedColumn<String>(
+    'edit_mutation_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _moveStateMeta = const VerificationMeta(
+    'moveState',
+  );
+  @override
+  late final GeneratedColumn<String> moveState = GeneratedColumn<String>(
+    'move_state',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('none'),
+  );
+  static const VerificationMeta _moveMutationIdMeta = const VerificationMeta(
+    'moveMutationId',
+  );
+  @override
+  late final GeneratedColumn<String> moveMutationId = GeneratedColumn<String>(
+    'move_mutation_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _moveLatMeta = const VerificationMeta(
+    'moveLat',
+  );
+  @override
+  late final GeneratedColumn<double> moveLat = GeneratedColumn<double>(
+    'move_lat',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _moveLngMeta = const VerificationMeta(
+    'moveLng',
+  );
+  @override
+  late final GeneratedColumn<double> moveLng = GeneratedColumn<double>(
+    'move_lng',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _moveReasonMeta = const VerificationMeta(
+    'moveReason',
+  );
+  @override
+  late final GeneratedColumn<String> moveReason = GeneratedColumn<String>(
+    'move_reason',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _errorCodeMeta = const VerificationMeta(
+    'errorCode',
+  );
+  @override
+  late final GeneratedColumn<String> errorCode = GeneratedColumn<String>(
+    'error_code',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    localId,
+    serverId,
+    clientId,
+    branchId,
+    name,
+    icon,
+    note,
+    lat,
+    lng,
+    version,
+    createdById,
+    createdByName,
+    pendingMoveJson,
+    lastDecisionJson,
+    updatedAt,
+    createState,
+    createMutationId,
+    editState,
+    editMutationId,
+    moveState,
+    moveMutationId,
+    moveLat,
+    moveLng,
+    moveReason,
+    errorCode,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'map_places';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<PlaceRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('local_id')) {
+      context.handle(
+        _localIdMeta,
+        localId.isAcceptableOrUnknown(data['local_id']!, _localIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_localIdMeta);
+    }
+    if (data.containsKey('server_id')) {
+      context.handle(
+        _serverIdMeta,
+        serverId.isAcceptableOrUnknown(data['server_id']!, _serverIdMeta),
+      );
+    }
+    if (data.containsKey('client_id')) {
+      context.handle(
+        _clientIdMeta,
+        clientId.isAcceptableOrUnknown(data['client_id']!, _clientIdMeta),
+      );
+    }
+    if (data.containsKey('branch_id')) {
+      context.handle(
+        _branchIdMeta,
+        branchId.isAcceptableOrUnknown(data['branch_id']!, _branchIdMeta),
+      );
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('icon')) {
+      context.handle(
+        _iconMeta,
+        icon.isAcceptableOrUnknown(data['icon']!, _iconMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_iconMeta);
+    }
+    if (data.containsKey('note')) {
+      context.handle(
+        _noteMeta,
+        note.isAcceptableOrUnknown(data['note']!, _noteMeta),
+      );
+    }
+    if (data.containsKey('lat')) {
+      context.handle(
+        _latMeta,
+        lat.isAcceptableOrUnknown(data['lat']!, _latMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_latMeta);
+    }
+    if (data.containsKey('lng')) {
+      context.handle(
+        _lngMeta,
+        lng.isAcceptableOrUnknown(data['lng']!, _lngMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_lngMeta);
+    }
+    if (data.containsKey('version')) {
+      context.handle(
+        _versionMeta,
+        version.isAcceptableOrUnknown(data['version']!, _versionMeta),
+      );
+    }
+    if (data.containsKey('created_by_id')) {
+      context.handle(
+        _createdByIdMeta,
+        createdById.isAcceptableOrUnknown(
+          data['created_by_id']!,
+          _createdByIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('created_by_name')) {
+      context.handle(
+        _createdByNameMeta,
+        createdByName.isAcceptableOrUnknown(
+          data['created_by_name']!,
+          _createdByNameMeta,
+        ),
+      );
+    }
+    if (data.containsKey('pending_move_json')) {
+      context.handle(
+        _pendingMoveJsonMeta,
+        pendingMoveJson.isAcceptableOrUnknown(
+          data['pending_move_json']!,
+          _pendingMoveJsonMeta,
+        ),
+      );
+    }
+    if (data.containsKey('last_decision_json')) {
+      context.handle(
+        _lastDecisionJsonMeta,
+        lastDecisionJson.isAcceptableOrUnknown(
+          data['last_decision_json']!,
+          _lastDecisionJsonMeta,
+        ),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    if (data.containsKey('create_state')) {
+      context.handle(
+        _createStateMeta,
+        createState.isAcceptableOrUnknown(
+          data['create_state']!,
+          _createStateMeta,
+        ),
+      );
+    }
+    if (data.containsKey('create_mutation_id')) {
+      context.handle(
+        _createMutationIdMeta,
+        createMutationId.isAcceptableOrUnknown(
+          data['create_mutation_id']!,
+          _createMutationIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('edit_state')) {
+      context.handle(
+        _editStateMeta,
+        editState.isAcceptableOrUnknown(data['edit_state']!, _editStateMeta),
+      );
+    }
+    if (data.containsKey('edit_mutation_id')) {
+      context.handle(
+        _editMutationIdMeta,
+        editMutationId.isAcceptableOrUnknown(
+          data['edit_mutation_id']!,
+          _editMutationIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('move_state')) {
+      context.handle(
+        _moveStateMeta,
+        moveState.isAcceptableOrUnknown(data['move_state']!, _moveStateMeta),
+      );
+    }
+    if (data.containsKey('move_mutation_id')) {
+      context.handle(
+        _moveMutationIdMeta,
+        moveMutationId.isAcceptableOrUnknown(
+          data['move_mutation_id']!,
+          _moveMutationIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('move_lat')) {
+      context.handle(
+        _moveLatMeta,
+        moveLat.isAcceptableOrUnknown(data['move_lat']!, _moveLatMeta),
+      );
+    }
+    if (data.containsKey('move_lng')) {
+      context.handle(
+        _moveLngMeta,
+        moveLng.isAcceptableOrUnknown(data['move_lng']!, _moveLngMeta),
+      );
+    }
+    if (data.containsKey('move_reason')) {
+      context.handle(
+        _moveReasonMeta,
+        moveReason.isAcceptableOrUnknown(data['move_reason']!, _moveReasonMeta),
+      );
+    }
+    if (data.containsKey('error_code')) {
+      context.handle(
+        _errorCodeMeta,
+        errorCode.isAcceptableOrUnknown(data['error_code']!, _errorCodeMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {localId};
+  @override
+  PlaceRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PlaceRow(
+      localId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}local_id'],
+      )!,
+      serverId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}server_id'],
+      ),
+      clientId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}client_id'],
+      ),
+      branchId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}branch_id'],
+      ),
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      icon: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}icon'],
+      )!,
+      note: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}note'],
+      ),
+      lat: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}lat'],
+      )!,
+      lng: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}lng'],
+      )!,
+      version: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}version'],
+      )!,
+      createdById: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}created_by_id'],
+      ),
+      createdByName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}created_by_name'],
+      ),
+      pendingMoveJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}pending_move_json'],
+      ),
+      lastDecisionJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}last_decision_json'],
+      ),
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      ),
+      createState: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}create_state'],
+      )!,
+      createMutationId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}create_mutation_id'],
+      ),
+      editState: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}edit_state'],
+      )!,
+      editMutationId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}edit_mutation_id'],
+      ),
+      moveState: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}move_state'],
+      )!,
+      moveMutationId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}move_mutation_id'],
+      ),
+      moveLat: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}move_lat'],
+      ),
+      moveLng: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}move_lng'],
+      ),
+      moveReason: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}move_reason'],
+      ),
+      errorCode: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}error_code'],
+      ),
+    );
+  }
+
+  @override
+  $MapPlacesTable createAlias(String alias) {
+    return $MapPlacesTable(attachedDatabase, alias);
+  }
+}
+
+class PlaceRow extends DataClass implements Insertable<PlaceRow> {
+  final String localId;
+  final String? serverId;
+
+  /// My clientId for a place I made (also the server's `clientId`).
+  final String? clientId;
+  final String? branchId;
+  final String name;
+
+  /// shop | market | mosque | school | bank | hospital | bus_stop | office | landmark | other
+  final String icon;
+  final String? note;
+  final double lat;
+  final double lng;
+  final int version;
+  final String? createdById;
+  final String? createdByName;
+
+  /// The server's open move request (PlacePendingMove JSON) or null.
+  final String? pendingMoveJson;
+
+  /// The server's latest approve/reject (PlaceMoveDecision JSON) or null.
+  final String? lastDecisionJson;
+  final DateTime? updatedAt;
+
+  /// My create: synced | queued | failed.
+  final String createState;
+  final String? createMutationId;
+
+  /// My last change of name / icon / note: none | queued | failed.
+  final String editState;
+  final String? editMutationId;
+
+  /// My move request: none | queued | sent | failed (the server's `pendingMove` takes over once sent).
+  final String moveState;
+  final String? moveMutationId;
+  final double? moveLat;
+  final double? moveLng;
+  final String? moveReason;
+
+  /// Problem code of a refused create / edit / move (shown on the place).
+  final String? errorCode;
+  const PlaceRow({
+    required this.localId,
+    this.serverId,
+    this.clientId,
+    this.branchId,
+    required this.name,
+    required this.icon,
+    this.note,
+    required this.lat,
+    required this.lng,
+    required this.version,
+    this.createdById,
+    this.createdByName,
+    this.pendingMoveJson,
+    this.lastDecisionJson,
+    this.updatedAt,
+    required this.createState,
+    this.createMutationId,
+    required this.editState,
+    this.editMutationId,
+    required this.moveState,
+    this.moveMutationId,
+    this.moveLat,
+    this.moveLng,
+    this.moveReason,
+    this.errorCode,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['local_id'] = Variable<String>(localId);
+    if (!nullToAbsent || serverId != null) {
+      map['server_id'] = Variable<String>(serverId);
+    }
+    if (!nullToAbsent || clientId != null) {
+      map['client_id'] = Variable<String>(clientId);
+    }
+    if (!nullToAbsent || branchId != null) {
+      map['branch_id'] = Variable<String>(branchId);
+    }
+    map['name'] = Variable<String>(name);
+    map['icon'] = Variable<String>(icon);
+    if (!nullToAbsent || note != null) {
+      map['note'] = Variable<String>(note);
+    }
+    map['lat'] = Variable<double>(lat);
+    map['lng'] = Variable<double>(lng);
+    map['version'] = Variable<int>(version);
+    if (!nullToAbsent || createdById != null) {
+      map['created_by_id'] = Variable<String>(createdById);
+    }
+    if (!nullToAbsent || createdByName != null) {
+      map['created_by_name'] = Variable<String>(createdByName);
+    }
+    if (!nullToAbsent || pendingMoveJson != null) {
+      map['pending_move_json'] = Variable<String>(pendingMoveJson);
+    }
+    if (!nullToAbsent || lastDecisionJson != null) {
+      map['last_decision_json'] = Variable<String>(lastDecisionJson);
+    }
+    if (!nullToAbsent || updatedAt != null) {
+      map['updated_at'] = Variable<DateTime>(updatedAt);
+    }
+    map['create_state'] = Variable<String>(createState);
+    if (!nullToAbsent || createMutationId != null) {
+      map['create_mutation_id'] = Variable<String>(createMutationId);
+    }
+    map['edit_state'] = Variable<String>(editState);
+    if (!nullToAbsent || editMutationId != null) {
+      map['edit_mutation_id'] = Variable<String>(editMutationId);
+    }
+    map['move_state'] = Variable<String>(moveState);
+    if (!nullToAbsent || moveMutationId != null) {
+      map['move_mutation_id'] = Variable<String>(moveMutationId);
+    }
+    if (!nullToAbsent || moveLat != null) {
+      map['move_lat'] = Variable<double>(moveLat);
+    }
+    if (!nullToAbsent || moveLng != null) {
+      map['move_lng'] = Variable<double>(moveLng);
+    }
+    if (!nullToAbsent || moveReason != null) {
+      map['move_reason'] = Variable<String>(moveReason);
+    }
+    if (!nullToAbsent || errorCode != null) {
+      map['error_code'] = Variable<String>(errorCode);
+    }
+    return map;
+  }
+
+  MapPlacesCompanion toCompanion(bool nullToAbsent) {
+    return MapPlacesCompanion(
+      localId: Value(localId),
+      serverId: serverId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(serverId),
+      clientId: clientId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(clientId),
+      branchId: branchId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(branchId),
+      name: Value(name),
+      icon: Value(icon),
+      note: note == null && nullToAbsent ? const Value.absent() : Value(note),
+      lat: Value(lat),
+      lng: Value(lng),
+      version: Value(version),
+      createdById: createdById == null && nullToAbsent
+          ? const Value.absent()
+          : Value(createdById),
+      createdByName: createdByName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(createdByName),
+      pendingMoveJson: pendingMoveJson == null && nullToAbsent
+          ? const Value.absent()
+          : Value(pendingMoveJson),
+      lastDecisionJson: lastDecisionJson == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastDecisionJson),
+      updatedAt: updatedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(updatedAt),
+      createState: Value(createState),
+      createMutationId: createMutationId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(createMutationId),
+      editState: Value(editState),
+      editMutationId: editMutationId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(editMutationId),
+      moveState: Value(moveState),
+      moveMutationId: moveMutationId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(moveMutationId),
+      moveLat: moveLat == null && nullToAbsent
+          ? const Value.absent()
+          : Value(moveLat),
+      moveLng: moveLng == null && nullToAbsent
+          ? const Value.absent()
+          : Value(moveLng),
+      moveReason: moveReason == null && nullToAbsent
+          ? const Value.absent()
+          : Value(moveReason),
+      errorCode: errorCode == null && nullToAbsent
+          ? const Value.absent()
+          : Value(errorCode),
+    );
+  }
+
+  factory PlaceRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return PlaceRow(
+      localId: serializer.fromJson<String>(json['localId']),
+      serverId: serializer.fromJson<String?>(json['serverId']),
+      clientId: serializer.fromJson<String?>(json['clientId']),
+      branchId: serializer.fromJson<String?>(json['branchId']),
+      name: serializer.fromJson<String>(json['name']),
+      icon: serializer.fromJson<String>(json['icon']),
+      note: serializer.fromJson<String?>(json['note']),
+      lat: serializer.fromJson<double>(json['lat']),
+      lng: serializer.fromJson<double>(json['lng']),
+      version: serializer.fromJson<int>(json['version']),
+      createdById: serializer.fromJson<String?>(json['createdById']),
+      createdByName: serializer.fromJson<String?>(json['createdByName']),
+      pendingMoveJson: serializer.fromJson<String?>(json['pendingMoveJson']),
+      lastDecisionJson: serializer.fromJson<String?>(json['lastDecisionJson']),
+      updatedAt: serializer.fromJson<DateTime?>(json['updatedAt']),
+      createState: serializer.fromJson<String>(json['createState']),
+      createMutationId: serializer.fromJson<String?>(json['createMutationId']),
+      editState: serializer.fromJson<String>(json['editState']),
+      editMutationId: serializer.fromJson<String?>(json['editMutationId']),
+      moveState: serializer.fromJson<String>(json['moveState']),
+      moveMutationId: serializer.fromJson<String?>(json['moveMutationId']),
+      moveLat: serializer.fromJson<double?>(json['moveLat']),
+      moveLng: serializer.fromJson<double?>(json['moveLng']),
+      moveReason: serializer.fromJson<String?>(json['moveReason']),
+      errorCode: serializer.fromJson<String?>(json['errorCode']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'localId': serializer.toJson<String>(localId),
+      'serverId': serializer.toJson<String?>(serverId),
+      'clientId': serializer.toJson<String?>(clientId),
+      'branchId': serializer.toJson<String?>(branchId),
+      'name': serializer.toJson<String>(name),
+      'icon': serializer.toJson<String>(icon),
+      'note': serializer.toJson<String?>(note),
+      'lat': serializer.toJson<double>(lat),
+      'lng': serializer.toJson<double>(lng),
+      'version': serializer.toJson<int>(version),
+      'createdById': serializer.toJson<String?>(createdById),
+      'createdByName': serializer.toJson<String?>(createdByName),
+      'pendingMoveJson': serializer.toJson<String?>(pendingMoveJson),
+      'lastDecisionJson': serializer.toJson<String?>(lastDecisionJson),
+      'updatedAt': serializer.toJson<DateTime?>(updatedAt),
+      'createState': serializer.toJson<String>(createState),
+      'createMutationId': serializer.toJson<String?>(createMutationId),
+      'editState': serializer.toJson<String>(editState),
+      'editMutationId': serializer.toJson<String?>(editMutationId),
+      'moveState': serializer.toJson<String>(moveState),
+      'moveMutationId': serializer.toJson<String?>(moveMutationId),
+      'moveLat': serializer.toJson<double?>(moveLat),
+      'moveLng': serializer.toJson<double?>(moveLng),
+      'moveReason': serializer.toJson<String?>(moveReason),
+      'errorCode': serializer.toJson<String?>(errorCode),
+    };
+  }
+
+  PlaceRow copyWith({
+    String? localId,
+    Value<String?> serverId = const Value.absent(),
+    Value<String?> clientId = const Value.absent(),
+    Value<String?> branchId = const Value.absent(),
+    String? name,
+    String? icon,
+    Value<String?> note = const Value.absent(),
+    double? lat,
+    double? lng,
+    int? version,
+    Value<String?> createdById = const Value.absent(),
+    Value<String?> createdByName = const Value.absent(),
+    Value<String?> pendingMoveJson = const Value.absent(),
+    Value<String?> lastDecisionJson = const Value.absent(),
+    Value<DateTime?> updatedAt = const Value.absent(),
+    String? createState,
+    Value<String?> createMutationId = const Value.absent(),
+    String? editState,
+    Value<String?> editMutationId = const Value.absent(),
+    String? moveState,
+    Value<String?> moveMutationId = const Value.absent(),
+    Value<double?> moveLat = const Value.absent(),
+    Value<double?> moveLng = const Value.absent(),
+    Value<String?> moveReason = const Value.absent(),
+    Value<String?> errorCode = const Value.absent(),
+  }) => PlaceRow(
+    localId: localId ?? this.localId,
+    serverId: serverId.present ? serverId.value : this.serverId,
+    clientId: clientId.present ? clientId.value : this.clientId,
+    branchId: branchId.present ? branchId.value : this.branchId,
+    name: name ?? this.name,
+    icon: icon ?? this.icon,
+    note: note.present ? note.value : this.note,
+    lat: lat ?? this.lat,
+    lng: lng ?? this.lng,
+    version: version ?? this.version,
+    createdById: createdById.present ? createdById.value : this.createdById,
+    createdByName: createdByName.present
+        ? createdByName.value
+        : this.createdByName,
+    pendingMoveJson: pendingMoveJson.present
+        ? pendingMoveJson.value
+        : this.pendingMoveJson,
+    lastDecisionJson: lastDecisionJson.present
+        ? lastDecisionJson.value
+        : this.lastDecisionJson,
+    updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
+    createState: createState ?? this.createState,
+    createMutationId: createMutationId.present
+        ? createMutationId.value
+        : this.createMutationId,
+    editState: editState ?? this.editState,
+    editMutationId: editMutationId.present
+        ? editMutationId.value
+        : this.editMutationId,
+    moveState: moveState ?? this.moveState,
+    moveMutationId: moveMutationId.present
+        ? moveMutationId.value
+        : this.moveMutationId,
+    moveLat: moveLat.present ? moveLat.value : this.moveLat,
+    moveLng: moveLng.present ? moveLng.value : this.moveLng,
+    moveReason: moveReason.present ? moveReason.value : this.moveReason,
+    errorCode: errorCode.present ? errorCode.value : this.errorCode,
+  );
+  PlaceRow copyWithCompanion(MapPlacesCompanion data) {
+    return PlaceRow(
+      localId: data.localId.present ? data.localId.value : this.localId,
+      serverId: data.serverId.present ? data.serverId.value : this.serverId,
+      clientId: data.clientId.present ? data.clientId.value : this.clientId,
+      branchId: data.branchId.present ? data.branchId.value : this.branchId,
+      name: data.name.present ? data.name.value : this.name,
+      icon: data.icon.present ? data.icon.value : this.icon,
+      note: data.note.present ? data.note.value : this.note,
+      lat: data.lat.present ? data.lat.value : this.lat,
+      lng: data.lng.present ? data.lng.value : this.lng,
+      version: data.version.present ? data.version.value : this.version,
+      createdById: data.createdById.present
+          ? data.createdById.value
+          : this.createdById,
+      createdByName: data.createdByName.present
+          ? data.createdByName.value
+          : this.createdByName,
+      pendingMoveJson: data.pendingMoveJson.present
+          ? data.pendingMoveJson.value
+          : this.pendingMoveJson,
+      lastDecisionJson: data.lastDecisionJson.present
+          ? data.lastDecisionJson.value
+          : this.lastDecisionJson,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      createState: data.createState.present
+          ? data.createState.value
+          : this.createState,
+      createMutationId: data.createMutationId.present
+          ? data.createMutationId.value
+          : this.createMutationId,
+      editState: data.editState.present ? data.editState.value : this.editState,
+      editMutationId: data.editMutationId.present
+          ? data.editMutationId.value
+          : this.editMutationId,
+      moveState: data.moveState.present ? data.moveState.value : this.moveState,
+      moveMutationId: data.moveMutationId.present
+          ? data.moveMutationId.value
+          : this.moveMutationId,
+      moveLat: data.moveLat.present ? data.moveLat.value : this.moveLat,
+      moveLng: data.moveLng.present ? data.moveLng.value : this.moveLng,
+      moveReason: data.moveReason.present
+          ? data.moveReason.value
+          : this.moveReason,
+      errorCode: data.errorCode.present ? data.errorCode.value : this.errorCode,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PlaceRow(')
+          ..write('localId: $localId, ')
+          ..write('serverId: $serverId, ')
+          ..write('clientId: $clientId, ')
+          ..write('branchId: $branchId, ')
+          ..write('name: $name, ')
+          ..write('icon: $icon, ')
+          ..write('note: $note, ')
+          ..write('lat: $lat, ')
+          ..write('lng: $lng, ')
+          ..write('version: $version, ')
+          ..write('createdById: $createdById, ')
+          ..write('createdByName: $createdByName, ')
+          ..write('pendingMoveJson: $pendingMoveJson, ')
+          ..write('lastDecisionJson: $lastDecisionJson, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('createState: $createState, ')
+          ..write('createMutationId: $createMutationId, ')
+          ..write('editState: $editState, ')
+          ..write('editMutationId: $editMutationId, ')
+          ..write('moveState: $moveState, ')
+          ..write('moveMutationId: $moveMutationId, ')
+          ..write('moveLat: $moveLat, ')
+          ..write('moveLng: $moveLng, ')
+          ..write('moveReason: $moveReason, ')
+          ..write('errorCode: $errorCode')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hashAll([
+    localId,
+    serverId,
+    clientId,
+    branchId,
+    name,
+    icon,
+    note,
+    lat,
+    lng,
+    version,
+    createdById,
+    createdByName,
+    pendingMoveJson,
+    lastDecisionJson,
+    updatedAt,
+    createState,
+    createMutationId,
+    editState,
+    editMutationId,
+    moveState,
+    moveMutationId,
+    moveLat,
+    moveLng,
+    moveReason,
+    errorCode,
+  ]);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PlaceRow &&
+          other.localId == this.localId &&
+          other.serverId == this.serverId &&
+          other.clientId == this.clientId &&
+          other.branchId == this.branchId &&
+          other.name == this.name &&
+          other.icon == this.icon &&
+          other.note == this.note &&
+          other.lat == this.lat &&
+          other.lng == this.lng &&
+          other.version == this.version &&
+          other.createdById == this.createdById &&
+          other.createdByName == this.createdByName &&
+          other.pendingMoveJson == this.pendingMoveJson &&
+          other.lastDecisionJson == this.lastDecisionJson &&
+          other.updatedAt == this.updatedAt &&
+          other.createState == this.createState &&
+          other.createMutationId == this.createMutationId &&
+          other.editState == this.editState &&
+          other.editMutationId == this.editMutationId &&
+          other.moveState == this.moveState &&
+          other.moveMutationId == this.moveMutationId &&
+          other.moveLat == this.moveLat &&
+          other.moveLng == this.moveLng &&
+          other.moveReason == this.moveReason &&
+          other.errorCode == this.errorCode);
+}
+
+class MapPlacesCompanion extends UpdateCompanion<PlaceRow> {
+  final Value<String> localId;
+  final Value<String?> serverId;
+  final Value<String?> clientId;
+  final Value<String?> branchId;
+  final Value<String> name;
+  final Value<String> icon;
+  final Value<String?> note;
+  final Value<double> lat;
+  final Value<double> lng;
+  final Value<int> version;
+  final Value<String?> createdById;
+  final Value<String?> createdByName;
+  final Value<String?> pendingMoveJson;
+  final Value<String?> lastDecisionJson;
+  final Value<DateTime?> updatedAt;
+  final Value<String> createState;
+  final Value<String?> createMutationId;
+  final Value<String> editState;
+  final Value<String?> editMutationId;
+  final Value<String> moveState;
+  final Value<String?> moveMutationId;
+  final Value<double?> moveLat;
+  final Value<double?> moveLng;
+  final Value<String?> moveReason;
+  final Value<String?> errorCode;
+  final Value<int> rowid;
+  const MapPlacesCompanion({
+    this.localId = const Value.absent(),
+    this.serverId = const Value.absent(),
+    this.clientId = const Value.absent(),
+    this.branchId = const Value.absent(),
+    this.name = const Value.absent(),
+    this.icon = const Value.absent(),
+    this.note = const Value.absent(),
+    this.lat = const Value.absent(),
+    this.lng = const Value.absent(),
+    this.version = const Value.absent(),
+    this.createdById = const Value.absent(),
+    this.createdByName = const Value.absent(),
+    this.pendingMoveJson = const Value.absent(),
+    this.lastDecisionJson = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.createState = const Value.absent(),
+    this.createMutationId = const Value.absent(),
+    this.editState = const Value.absent(),
+    this.editMutationId = const Value.absent(),
+    this.moveState = const Value.absent(),
+    this.moveMutationId = const Value.absent(),
+    this.moveLat = const Value.absent(),
+    this.moveLng = const Value.absent(),
+    this.moveReason = const Value.absent(),
+    this.errorCode = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  MapPlacesCompanion.insert({
+    required String localId,
+    this.serverId = const Value.absent(),
+    this.clientId = const Value.absent(),
+    this.branchId = const Value.absent(),
+    required String name,
+    required String icon,
+    this.note = const Value.absent(),
+    required double lat,
+    required double lng,
+    this.version = const Value.absent(),
+    this.createdById = const Value.absent(),
+    this.createdByName = const Value.absent(),
+    this.pendingMoveJson = const Value.absent(),
+    this.lastDecisionJson = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.createState = const Value.absent(),
+    this.createMutationId = const Value.absent(),
+    this.editState = const Value.absent(),
+    this.editMutationId = const Value.absent(),
+    this.moveState = const Value.absent(),
+    this.moveMutationId = const Value.absent(),
+    this.moveLat = const Value.absent(),
+    this.moveLng = const Value.absent(),
+    this.moveReason = const Value.absent(),
+    this.errorCode = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : localId = Value(localId),
+       name = Value(name),
+       icon = Value(icon),
+       lat = Value(lat),
+       lng = Value(lng);
+  static Insertable<PlaceRow> custom({
+    Expression<String>? localId,
+    Expression<String>? serverId,
+    Expression<String>? clientId,
+    Expression<String>? branchId,
+    Expression<String>? name,
+    Expression<String>? icon,
+    Expression<String>? note,
+    Expression<double>? lat,
+    Expression<double>? lng,
+    Expression<int>? version,
+    Expression<String>? createdById,
+    Expression<String>? createdByName,
+    Expression<String>? pendingMoveJson,
+    Expression<String>? lastDecisionJson,
+    Expression<DateTime>? updatedAt,
+    Expression<String>? createState,
+    Expression<String>? createMutationId,
+    Expression<String>? editState,
+    Expression<String>? editMutationId,
+    Expression<String>? moveState,
+    Expression<String>? moveMutationId,
+    Expression<double>? moveLat,
+    Expression<double>? moveLng,
+    Expression<String>? moveReason,
+    Expression<String>? errorCode,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (localId != null) 'local_id': localId,
+      if (serverId != null) 'server_id': serverId,
+      if (clientId != null) 'client_id': clientId,
+      if (branchId != null) 'branch_id': branchId,
+      if (name != null) 'name': name,
+      if (icon != null) 'icon': icon,
+      if (note != null) 'note': note,
+      if (lat != null) 'lat': lat,
+      if (lng != null) 'lng': lng,
+      if (version != null) 'version': version,
+      if (createdById != null) 'created_by_id': createdById,
+      if (createdByName != null) 'created_by_name': createdByName,
+      if (pendingMoveJson != null) 'pending_move_json': pendingMoveJson,
+      if (lastDecisionJson != null) 'last_decision_json': lastDecisionJson,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (createState != null) 'create_state': createState,
+      if (createMutationId != null) 'create_mutation_id': createMutationId,
+      if (editState != null) 'edit_state': editState,
+      if (editMutationId != null) 'edit_mutation_id': editMutationId,
+      if (moveState != null) 'move_state': moveState,
+      if (moveMutationId != null) 'move_mutation_id': moveMutationId,
+      if (moveLat != null) 'move_lat': moveLat,
+      if (moveLng != null) 'move_lng': moveLng,
+      if (moveReason != null) 'move_reason': moveReason,
+      if (errorCode != null) 'error_code': errorCode,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  MapPlacesCompanion copyWith({
+    Value<String>? localId,
+    Value<String?>? serverId,
+    Value<String?>? clientId,
+    Value<String?>? branchId,
+    Value<String>? name,
+    Value<String>? icon,
+    Value<String?>? note,
+    Value<double>? lat,
+    Value<double>? lng,
+    Value<int>? version,
+    Value<String?>? createdById,
+    Value<String?>? createdByName,
+    Value<String?>? pendingMoveJson,
+    Value<String?>? lastDecisionJson,
+    Value<DateTime?>? updatedAt,
+    Value<String>? createState,
+    Value<String?>? createMutationId,
+    Value<String>? editState,
+    Value<String?>? editMutationId,
+    Value<String>? moveState,
+    Value<String?>? moveMutationId,
+    Value<double?>? moveLat,
+    Value<double?>? moveLng,
+    Value<String?>? moveReason,
+    Value<String?>? errorCode,
+    Value<int>? rowid,
+  }) {
+    return MapPlacesCompanion(
+      localId: localId ?? this.localId,
+      serverId: serverId ?? this.serverId,
+      clientId: clientId ?? this.clientId,
+      branchId: branchId ?? this.branchId,
+      name: name ?? this.name,
+      icon: icon ?? this.icon,
+      note: note ?? this.note,
+      lat: lat ?? this.lat,
+      lng: lng ?? this.lng,
+      version: version ?? this.version,
+      createdById: createdById ?? this.createdById,
+      createdByName: createdByName ?? this.createdByName,
+      pendingMoveJson: pendingMoveJson ?? this.pendingMoveJson,
+      lastDecisionJson: lastDecisionJson ?? this.lastDecisionJson,
+      updatedAt: updatedAt ?? this.updatedAt,
+      createState: createState ?? this.createState,
+      createMutationId: createMutationId ?? this.createMutationId,
+      editState: editState ?? this.editState,
+      editMutationId: editMutationId ?? this.editMutationId,
+      moveState: moveState ?? this.moveState,
+      moveMutationId: moveMutationId ?? this.moveMutationId,
+      moveLat: moveLat ?? this.moveLat,
+      moveLng: moveLng ?? this.moveLng,
+      moveReason: moveReason ?? this.moveReason,
+      errorCode: errorCode ?? this.errorCode,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (localId.present) {
+      map['local_id'] = Variable<String>(localId.value);
+    }
+    if (serverId.present) {
+      map['server_id'] = Variable<String>(serverId.value);
+    }
+    if (clientId.present) {
+      map['client_id'] = Variable<String>(clientId.value);
+    }
+    if (branchId.present) {
+      map['branch_id'] = Variable<String>(branchId.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (icon.present) {
+      map['icon'] = Variable<String>(icon.value);
+    }
+    if (note.present) {
+      map['note'] = Variable<String>(note.value);
+    }
+    if (lat.present) {
+      map['lat'] = Variable<double>(lat.value);
+    }
+    if (lng.present) {
+      map['lng'] = Variable<double>(lng.value);
+    }
+    if (version.present) {
+      map['version'] = Variable<int>(version.value);
+    }
+    if (createdById.present) {
+      map['created_by_id'] = Variable<String>(createdById.value);
+    }
+    if (createdByName.present) {
+      map['created_by_name'] = Variable<String>(createdByName.value);
+    }
+    if (pendingMoveJson.present) {
+      map['pending_move_json'] = Variable<String>(pendingMoveJson.value);
+    }
+    if (lastDecisionJson.present) {
+      map['last_decision_json'] = Variable<String>(lastDecisionJson.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (createState.present) {
+      map['create_state'] = Variable<String>(createState.value);
+    }
+    if (createMutationId.present) {
+      map['create_mutation_id'] = Variable<String>(createMutationId.value);
+    }
+    if (editState.present) {
+      map['edit_state'] = Variable<String>(editState.value);
+    }
+    if (editMutationId.present) {
+      map['edit_mutation_id'] = Variable<String>(editMutationId.value);
+    }
+    if (moveState.present) {
+      map['move_state'] = Variable<String>(moveState.value);
+    }
+    if (moveMutationId.present) {
+      map['move_mutation_id'] = Variable<String>(moveMutationId.value);
+    }
+    if (moveLat.present) {
+      map['move_lat'] = Variable<double>(moveLat.value);
+    }
+    if (moveLng.present) {
+      map['move_lng'] = Variable<double>(moveLng.value);
+    }
+    if (moveReason.present) {
+      map['move_reason'] = Variable<String>(moveReason.value);
+    }
+    if (errorCode.present) {
+      map['error_code'] = Variable<String>(errorCode.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('MapPlacesCompanion(')
+          ..write('localId: $localId, ')
+          ..write('serverId: $serverId, ')
+          ..write('clientId: $clientId, ')
+          ..write('branchId: $branchId, ')
+          ..write('name: $name, ')
+          ..write('icon: $icon, ')
+          ..write('note: $note, ')
+          ..write('lat: $lat, ')
+          ..write('lng: $lng, ')
+          ..write('version: $version, ')
+          ..write('createdById: $createdById, ')
+          ..write('createdByName: $createdByName, ')
+          ..write('pendingMoveJson: $pendingMoveJson, ')
+          ..write('lastDecisionJson: $lastDecisionJson, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('createState: $createState, ')
+          ..write('createMutationId: $createMutationId, ')
+          ..write('editState: $editState, ')
+          ..write('editMutationId: $editMutationId, ')
+          ..write('moveState: $moveState, ')
+          ..write('moveMutationId: $moveMutationId, ')
+          ..write('moveLat: $moveLat, ')
+          ..write('moveLng: $moveLng, ')
+          ..write('moveReason: $moveReason, ')
+          ..write('errorCode: $errorCode, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -21851,6 +23251,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $KvSettingsTable kvSettings = $KvSettingsTable(this);
   late final $ColleagueActivitiesTable colleagueActivities =
       $ColleagueActivitiesTable(this);
+  late final $MapPlacesTable mapPlaces = $MapPlacesTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -21885,6 +23286,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     notifications,
     kvSettings,
     colleagueActivities,
+    mapPlaces,
   ];
 }
 
@@ -32334,6 +33736,605 @@ typedef $$ColleagueActivitiesTableProcessedTableManager =
       ColleagueActivityRow,
       PrefetchHooks Function()
     >;
+typedef $$MapPlacesTableCreateCompanionBuilder = MapPlacesCompanion Function({
+  required String localId,
+  Value<String?> serverId,
+  Value<String?> clientId,
+  Value<String?> branchId,
+  required String name,
+  required String icon,
+  Value<String?> note,
+  required double lat,
+  required double lng,
+  Value<int> version,
+  Value<String?> createdById,
+  Value<String?> createdByName,
+  Value<String?> pendingMoveJson,
+  Value<String?> lastDecisionJson,
+  Value<DateTime?> updatedAt,
+  Value<String> createState,
+  Value<String?> createMutationId,
+  Value<String> editState,
+  Value<String?> editMutationId,
+  Value<String> moveState,
+  Value<String?> moveMutationId,
+  Value<double?> moveLat,
+  Value<double?> moveLng,
+  Value<String?> moveReason,
+  Value<String?> errorCode,
+  Value<int> rowid,
+});
+typedef $$MapPlacesTableUpdateCompanionBuilder = MapPlacesCompanion Function({
+  Value<String> localId,
+  Value<String?> serverId,
+  Value<String?> clientId,
+  Value<String?> branchId,
+  Value<String> name,
+  Value<String> icon,
+  Value<String?> note,
+  Value<double> lat,
+  Value<double> lng,
+  Value<int> version,
+  Value<String?> createdById,
+  Value<String?> createdByName,
+  Value<String?> pendingMoveJson,
+  Value<String?> lastDecisionJson,
+  Value<DateTime?> updatedAt,
+  Value<String> createState,
+  Value<String?> createMutationId,
+  Value<String> editState,
+  Value<String?> editMutationId,
+  Value<String> moveState,
+  Value<String?> moveMutationId,
+  Value<double?> moveLat,
+  Value<double?> moveLng,
+  Value<String?> moveReason,
+  Value<String?> errorCode,
+  Value<int> rowid,
+});
+
+class $$MapPlacesTableFilterComposer
+    extends Composer<_$AppDatabase, $MapPlacesTable> {
+  $$MapPlacesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get localId => $composableBuilder(
+    column: $table.localId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get serverId => $composableBuilder(
+    column: $table.serverId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get clientId => $composableBuilder(
+    column: $table.clientId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get branchId => $composableBuilder(
+    column: $table.branchId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get icon => $composableBuilder(
+    column: $table.icon,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get lat => $composableBuilder(
+    column: $table.lat,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get lng => $composableBuilder(
+    column: $table.lng,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get createdById => $composableBuilder(
+    column: $table.createdById,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get createdByName => $composableBuilder(
+    column: $table.createdByName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get pendingMoveJson => $composableBuilder(
+    column: $table.pendingMoveJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get lastDecisionJson => $composableBuilder(
+    column: $table.lastDecisionJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get createState => $composableBuilder(
+    column: $table.createState,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get createMutationId => $composableBuilder(
+    column: $table.createMutationId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get editState => $composableBuilder(
+    column: $table.editState,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get editMutationId => $composableBuilder(
+    column: $table.editMutationId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get moveState => $composableBuilder(
+    column: $table.moveState,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get moveMutationId => $composableBuilder(
+    column: $table.moveMutationId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get moveLat => $composableBuilder(
+    column: $table.moveLat,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get moveLng => $composableBuilder(
+    column: $table.moveLng,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get moveReason => $composableBuilder(
+    column: $table.moveReason,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get errorCode => $composableBuilder(
+    column: $table.errorCode,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$MapPlacesTableOrderingComposer
+    extends Composer<_$AppDatabase, $MapPlacesTable> {
+  $$MapPlacesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get localId => $composableBuilder(
+    column: $table.localId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get serverId => $composableBuilder(
+    column: $table.serverId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get clientId => $composableBuilder(
+    column: $table.clientId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get branchId => $composableBuilder(
+    column: $table.branchId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get icon => $composableBuilder(
+    column: $table.icon,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get lat => $composableBuilder(
+    column: $table.lat,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get lng => $composableBuilder(
+    column: $table.lng,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get createdById => $composableBuilder(
+    column: $table.createdById,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get createdByName => $composableBuilder(
+    column: $table.createdByName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get pendingMoveJson => $composableBuilder(
+    column: $table.pendingMoveJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get lastDecisionJson => $composableBuilder(
+    column: $table.lastDecisionJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get createState => $composableBuilder(
+    column: $table.createState,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get createMutationId => $composableBuilder(
+    column: $table.createMutationId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get editState => $composableBuilder(
+    column: $table.editState,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get editMutationId => $composableBuilder(
+    column: $table.editMutationId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get moveState => $composableBuilder(
+    column: $table.moveState,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get moveMutationId => $composableBuilder(
+    column: $table.moveMutationId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get moveLat => $composableBuilder(
+    column: $table.moveLat,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get moveLng => $composableBuilder(
+    column: $table.moveLng,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get moveReason => $composableBuilder(
+    column: $table.moveReason,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get errorCode => $composableBuilder(
+    column: $table.errorCode,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$MapPlacesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $MapPlacesTable> {
+  $$MapPlacesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get localId =>
+      $composableBuilder(column: $table.localId, builder: (column) => column);
+
+  GeneratedColumn<String> get serverId =>
+      $composableBuilder(column: $table.serverId, builder: (column) => column);
+
+  GeneratedColumn<String> get clientId =>
+      $composableBuilder(column: $table.clientId, builder: (column) => column);
+
+  GeneratedColumn<String> get branchId =>
+      $composableBuilder(column: $table.branchId, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get icon =>
+      $composableBuilder(column: $table.icon, builder: (column) => column);
+
+  GeneratedColumn<String> get note =>
+      $composableBuilder(column: $table.note, builder: (column) => column);
+
+  GeneratedColumn<double> get lat =>
+      $composableBuilder(column: $table.lat, builder: (column) => column);
+
+  GeneratedColumn<double> get lng =>
+      $composableBuilder(column: $table.lng, builder: (column) => column);
+
+  GeneratedColumn<int> get version =>
+      $composableBuilder(column: $table.version, builder: (column) => column);
+
+  GeneratedColumn<String> get createdById => $composableBuilder(
+    column: $table.createdById,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get createdByName => $composableBuilder(
+    column: $table.createdByName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get pendingMoveJson => $composableBuilder(
+    column: $table.pendingMoveJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get lastDecisionJson => $composableBuilder(
+    column: $table.lastDecisionJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get createState => $composableBuilder(
+    column: $table.createState,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get createMutationId => $composableBuilder(
+    column: $table.createMutationId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get editState =>
+      $composableBuilder(column: $table.editState, builder: (column) => column);
+
+  GeneratedColumn<String> get editMutationId => $composableBuilder(
+    column: $table.editMutationId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get moveState =>
+      $composableBuilder(column: $table.moveState, builder: (column) => column);
+
+  GeneratedColumn<String> get moveMutationId => $composableBuilder(
+    column: $table.moveMutationId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get moveLat =>
+      $composableBuilder(column: $table.moveLat, builder: (column) => column);
+
+  GeneratedColumn<double> get moveLng =>
+      $composableBuilder(column: $table.moveLng, builder: (column) => column);
+
+  GeneratedColumn<String> get moveReason => $composableBuilder(
+    column: $table.moveReason,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get errorCode =>
+      $composableBuilder(column: $table.errorCode, builder: (column) => column);
+}
+
+class $$MapPlacesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $MapPlacesTable,
+          PlaceRow,
+          $$MapPlacesTableFilterComposer,
+          $$MapPlacesTableOrderingComposer,
+          $$MapPlacesTableAnnotationComposer,
+          $$MapPlacesTableCreateCompanionBuilder,
+          $$MapPlacesTableUpdateCompanionBuilder,
+          (PlaceRow, BaseReferences<_$AppDatabase, $MapPlacesTable, PlaceRow>),
+          PlaceRow,
+          PrefetchHooks Function()
+        > {
+  $$MapPlacesTableTableManager(_$AppDatabase db, $MapPlacesTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$MapPlacesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$MapPlacesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$MapPlacesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> localId = const Value.absent(),
+                Value<String?> serverId = const Value.absent(),
+                Value<String?> clientId = const Value.absent(),
+                Value<String?> branchId = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> icon = const Value.absent(),
+                Value<String?> note = const Value.absent(),
+                Value<double> lat = const Value.absent(),
+                Value<double> lng = const Value.absent(),
+                Value<int> version = const Value.absent(),
+                Value<String?> createdById = const Value.absent(),
+                Value<String?> createdByName = const Value.absent(),
+                Value<String?> pendingMoveJson = const Value.absent(),
+                Value<String?> lastDecisionJson = const Value.absent(),
+                Value<DateTime?> updatedAt = const Value.absent(),
+                Value<String> createState = const Value.absent(),
+                Value<String?> createMutationId = const Value.absent(),
+                Value<String> editState = const Value.absent(),
+                Value<String?> editMutationId = const Value.absent(),
+                Value<String> moveState = const Value.absent(),
+                Value<String?> moveMutationId = const Value.absent(),
+                Value<double?> moveLat = const Value.absent(),
+                Value<double?> moveLng = const Value.absent(),
+                Value<String?> moveReason = const Value.absent(),
+                Value<String?> errorCode = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => MapPlacesCompanion(
+                localId: localId,
+                serverId: serverId,
+                clientId: clientId,
+                branchId: branchId,
+                name: name,
+                icon: icon,
+                note: note,
+                lat: lat,
+                lng: lng,
+                version: version,
+                createdById: createdById,
+                createdByName: createdByName,
+                pendingMoveJson: pendingMoveJson,
+                lastDecisionJson: lastDecisionJson,
+                updatedAt: updatedAt,
+                createState: createState,
+                createMutationId: createMutationId,
+                editState: editState,
+                editMutationId: editMutationId,
+                moveState: moveState,
+                moveMutationId: moveMutationId,
+                moveLat: moveLat,
+                moveLng: moveLng,
+                moveReason: moveReason,
+                errorCode: errorCode,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String localId,
+                Value<String?> serverId = const Value.absent(),
+                Value<String?> clientId = const Value.absent(),
+                Value<String?> branchId = const Value.absent(),
+                required String name,
+                required String icon,
+                Value<String?> note = const Value.absent(),
+                required double lat,
+                required double lng,
+                Value<int> version = const Value.absent(),
+                Value<String?> createdById = const Value.absent(),
+                Value<String?> createdByName = const Value.absent(),
+                Value<String?> pendingMoveJson = const Value.absent(),
+                Value<String?> lastDecisionJson = const Value.absent(),
+                Value<DateTime?> updatedAt = const Value.absent(),
+                Value<String> createState = const Value.absent(),
+                Value<String?> createMutationId = const Value.absent(),
+                Value<String> editState = const Value.absent(),
+                Value<String?> editMutationId = const Value.absent(),
+                Value<String> moveState = const Value.absent(),
+                Value<String?> moveMutationId = const Value.absent(),
+                Value<double?> moveLat = const Value.absent(),
+                Value<double?> moveLng = const Value.absent(),
+                Value<String?> moveReason = const Value.absent(),
+                Value<String?> errorCode = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => MapPlacesCompanion.insert(
+                localId: localId,
+                serverId: serverId,
+                clientId: clientId,
+                branchId: branchId,
+                name: name,
+                icon: icon,
+                note: note,
+                lat: lat,
+                lng: lng,
+                version: version,
+                createdById: createdById,
+                createdByName: createdByName,
+                pendingMoveJson: pendingMoveJson,
+                lastDecisionJson: lastDecisionJson,
+                updatedAt: updatedAt,
+                createState: createState,
+                createMutationId: createMutationId,
+                editState: editState,
+                editMutationId: editMutationId,
+                moveState: moveState,
+                moveMutationId: moveMutationId,
+                moveLat: moveLat,
+                moveLng: moveLng,
+                moveReason: moveReason,
+                errorCode: errorCode,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$MapPlacesTable, PlaceRow>(table),
+                  BaseReferences<_$AppDatabase, $MapPlacesTable, PlaceRow>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$MapPlacesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $MapPlacesTable,
+      PlaceRow,
+      $$MapPlacesTableFilterComposer,
+      $$MapPlacesTableOrderingComposer,
+      $$MapPlacesTableAnnotationComposer,
+      $$MapPlacesTableCreateCompanionBuilder,
+      $$MapPlacesTableUpdateCompanionBuilder,
+      (PlaceRow, BaseReferences<_$AppDatabase, $MapPlacesTable, PlaceRow>),
+      PlaceRow,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -32396,4 +34397,6 @@ class $AppDatabaseManager {
       $$KvSettingsTableTableManager(_db, _db.kvSettings);
   $$ColleagueActivitiesTableTableManager get colleagueActivities =>
       $$ColleagueActivitiesTableTableManager(_db, _db.colleagueActivities);
+  $$MapPlacesTableTableManager get mapPlaces =>
+      $$MapPlacesTableTableManager(_db, _db.mapPlaces);
 }

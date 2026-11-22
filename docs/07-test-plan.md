@@ -39,6 +39,7 @@ Devices (minimum set): **Xiaomi Redmi (MIUI/HyperOS, 2–3 GB)**, **Samsung Gala
 - [ ] Airplane mode full day simulation (20 actions), then sync on 2G/EDGE (developer network throttling or real SIM)
 - [ ] Network flaps during upload; no duplicates (verify in admin)
 - [ ] App force-stopped and phone rebooted with queue → queue intact
+- [ ] Places (FR-M-063): long-press the map in airplane mode, add a place, edit it, ask to move a colleague's place; back online they reach the admin panel once each; labels readable on a 5" phone at 130 % text
 - [ ] Storage nearly full → photo capture shows clear error, data still saved
 **Money**
 - [ ] Collection flow ≤ 15 s for experienced user; amount in words correct for 1, 15, 101, 1,000, 1,00,000, 12,50,500

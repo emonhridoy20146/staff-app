@@ -5929,6 +5929,282 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count} open invoices for this customer — pick the right one'**
   String collectInvoiceCount(String count);
+
+  /// No description provided for @placeIconShop.
+  ///
+  /// In en, this message translates to:
+  /// **'Shop'**
+  String get placeIconShop;
+
+  /// No description provided for @placeIconMarket.
+  ///
+  /// In en, this message translates to:
+  /// **'Market'**
+  String get placeIconMarket;
+
+  /// No description provided for @placeIconMosque.
+  ///
+  /// In en, this message translates to:
+  /// **'Mosque'**
+  String get placeIconMosque;
+
+  /// No description provided for @placeIconSchool.
+  ///
+  /// In en, this message translates to:
+  /// **'School'**
+  String get placeIconSchool;
+
+  /// No description provided for @placeIconBank.
+  ///
+  /// In en, this message translates to:
+  /// **'Bank'**
+  String get placeIconBank;
+
+  /// No description provided for @placeIconHospital.
+  ///
+  /// In en, this message translates to:
+  /// **'Hospital'**
+  String get placeIconHospital;
+
+  /// No description provided for @placeIconBusStop.
+  ///
+  /// In en, this message translates to:
+  /// **'Bus stop'**
+  String get placeIconBusStop;
+
+  /// No description provided for @placeIconOffice.
+  ///
+  /// In en, this message translates to:
+  /// **'Office'**
+  String get placeIconOffice;
+
+  /// No description provided for @placeIconLandmark.
+  ///
+  /// In en, this message translates to:
+  /// **'Landmark'**
+  String get placeIconLandmark;
+
+  /// No description provided for @placeIconOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get placeIconOther;
+
+  /// No description provided for @placeNewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New place on the map'**
+  String get placeNewTitle;
+
+  /// No description provided for @placeEditTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Change this place'**
+  String get placeEditTitle;
+
+  /// No description provided for @placeNewHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Everyone in your branch sees the name next to the marker.'**
+  String get placeNewHint;
+
+  /// No description provided for @placeName.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get placeName;
+
+  /// No description provided for @placeNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Karim Store'**
+  String get placeNameHint;
+
+  /// No description provided for @placeNameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Write a name'**
+  String get placeNameRequired;
+
+  /// No description provided for @placeKind.
+  ///
+  /// In en, this message translates to:
+  /// **'Kind of place'**
+  String get placeKind;
+
+  /// No description provided for @placeNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Note (optional)'**
+  String get placeNote;
+
+  /// No description provided for @placeNoteHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Blue gate, next to the tea stall'**
+  String get placeNoteHint;
+
+  /// No description provided for @placeAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to the map'**
+  String get placeAdd;
+
+  /// No description provided for @placeSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get placeSave;
+
+  /// No description provided for @placeSavedNew.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} is on the map'**
+  String placeSavedNew(String name);
+
+  /// No description provided for @placeSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved'**
+  String get placeSaved;
+
+  /// No description provided for @placeGone.
+  ///
+  /// In en, this message translates to:
+  /// **'This place is no longer on the map.'**
+  String get placeGone;
+
+  /// No description provided for @placeAddedByMe.
+  ///
+  /// In en, this message translates to:
+  /// **'You added this place'**
+  String get placeAddedByMe;
+
+  /// No description provided for @placeAddedBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Added by {name}'**
+  String placeAddedBy(String name);
+
+  /// No description provided for @placeWaitingToSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved on the phone; it is sent when there is internet.'**
+  String get placeWaitingToSend;
+
+  /// No description provided for @placeMoveQueued.
+  ///
+  /// In en, this message translates to:
+  /// **'Your move request is saved and is sent when there is internet. The marker stays until the office approves.'**
+  String get placeMoveQueued;
+
+  /// No description provided for @placeMovePending.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} asked to move it; waiting for the office.'**
+  String placeMovePending(String name);
+
+  /// No description provided for @placeMoveApproved.
+  ///
+  /// In en, this message translates to:
+  /// **'The office moved it as asked.'**
+  String get placeMoveApproved;
+
+  /// No description provided for @placeMoveRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'The office did not move it: {reason}'**
+  String placeMoveRejected(String reason);
+
+  /// No description provided for @placeEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get placeEdit;
+
+  /// No description provided for @placeRequestMove.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask to move'**
+  String get placeRequestMove;
+
+  /// No description provided for @placeUpdatedAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Last change {at}'**
+  String placeUpdatedAt(String at);
+
+  /// No description provided for @placeErrMovePending.
+  ///
+  /// In en, this message translates to:
+  /// **'Someone else already asked to move it.'**
+  String get placeErrMovePending;
+
+  /// No description provided for @placeErrMoveTooShort.
+  ///
+  /// In en, this message translates to:
+  /// **'The new point is almost the same as the old one.'**
+  String get placeErrMoveTooShort;
+
+  /// No description provided for @placeErrOutside.
+  ///
+  /// In en, this message translates to:
+  /// **'This point is outside Bangladesh.'**
+  String get placeErrOutside;
+
+  /// No description provided for @placeErrNotOwner.
+  ///
+  /// In en, this message translates to:
+  /// **'Only the person who added it or the office can change it.'**
+  String get placeErrNotOwner;
+
+  /// No description provided for @placeErrGeneric.
+  ///
+  /// In en, this message translates to:
+  /// **'The server did not accept this change.'**
+  String get placeErrGeneric;
+
+  /// No description provided for @placeMoveTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Move {name}'**
+  String placeMoveTitle(String name);
+
+  /// No description provided for @placeMoveHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Move the map until the pin sits on the right spot.'**
+  String get placeMoveHint;
+
+  /// No description provided for @placeMoveDistance.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} m from where it is now'**
+  String placeMoveDistance(String n);
+
+  /// No description provided for @placeMoveReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Why? (optional)'**
+  String get placeMoveReason;
+
+  /// No description provided for @placeMoveSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Sent to the office. The marker moves when they approve.'**
+  String get placeMoveSent;
+
+  /// No description provided for @placeMoveDragFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Move the map first'**
+  String get placeMoveDragFirst;
+
+  /// No description provided for @placeMoveSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Send to the office'**
+  String get placeMoveSend;
 }
 
 class _AppLocalizationsDelegate

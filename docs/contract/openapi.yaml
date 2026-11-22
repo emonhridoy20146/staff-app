@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Howlader Field Operations API
-  version: 1.36.0
+  version: 1.38.0
   description: |
     Contract owned by field-api. Consumers (admin-web, staff-app) generate types from this file.
     Conventions (auth, pagination, idempotency, errors) are described in docs/05-api-contract.md.
@@ -36,6 +36,7 @@ tags:
   - name: reports
   - name: targets
   - name: tasks
+  - name: places
   - name: audit
 
 paths:
@@ -152,7 +153,7 @@ paths:
       security: []
       operationId: health
       responses:
-        '200': { description: OK, content: { application/json: { schema: { type: object, properties: { status: { type: string, enum: [ok, degraded] }, version: { type: string }, contract: { type: string, description: 'API contract version this build implements; use it to check a deploy (added in 1.20.1)' }, mongo: { type: string }, erp: { type: string }, storage: { type: string, enum: [s3, db, memory], description: 'Added in 1.21.0. Where photos and exports are kept (ADR-039); memory = this instance only, phone uploads fail.' } } } } } }
+        '200': { description: OK, content: { application/json: { schema: { type: object, properties: { status: { type: string, enum: [ok, degraded] }, version: { type: string }, contract: { type: string, description: 'API contract version this build implements; use it to check a deploy (added in 1.20.1)' }, mongo: { type: string }, erp: { type: string }, storage: { type: string, enum: [s3, db, memory], description: 'Added in 1.21.0. Where photos and exports are kept (ADR-039); memory = this instance only, phone uploads fail.' }, cloudStorage: { type: string, enum: [cloudinary, none], description: 'Added in 1.37.0 (ADR-050). cloudinary = CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET are set and photos are copied there.' } } } } } }
   /system/erp-status:
     get:
       tags: [system]
@@ -1103,7 +1104,7 @@ paths:
       description: |
         cowork.manage (1.34.0, FR-CW-006). An office user ends an open session with a reason: status `ended`, `endedAt` now,
         `endedBy` and `endReason` set. Branch scope; out of scope is 404. Idempotent: a session that is already over is returned
-        as it is. Everyone who was accepted or still invited gets notification `cowork.ended` and the session on their next pull.
+        as it is. Everyone who was accepted or still invited gets notification `cowork.ended` and the session on their next pull. (Cancelling a request is different: when the asker leaves and invitees have not answered, they get `cowork.cancelled`, 1.37.1.)
         Joint visits already recorded keep their credit. Audited as `cowork.ended_by_office`.
       parameters: [ { $ref: '#/components/parameters/Id' } ]
       requestBody: { required: true, content: { application/json: { schema: { type: object, required: [reason], properties: { reason: { type: string, minLength: 5, maxLength: 500 } } } } } }
@@ -1240,6 +1241,115 @@ paths:
             schema: { type: object, properties: { note: { type: string, maxLength: 1000 } } }
       responses:
         '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Task' } } } }
+  /places:
+    get:
+      tags: [places]
+      operationId: listPlaces
+      description: |
+        Map places in scope (1.38.0, FR-PLC-001/004): text markers staff and the office put on the map (shop, market, mosque…), newest first.
+        Permission place.view. Scope: the caller's branches; super admin all. `status=deleted` needs place.manage (403 otherwise).
+        Use `bbox` for the visible map area; `pendingMove=true` lists only places with an open move request.
+      parameters:
+        - { $ref: '#/components/parameters/BranchId' }
+        - { name: q, in: query, schema: { type: string, maxLength: 60 }, description: 'Words in the name or note, any case' }
+        - { name: icon, in: query, schema: { $ref: '#/components/schemas/PlaceIcon' } }
+        - { name: bbox, in: query, schema: { type: string }, description: 'minLng,minLat,maxLng,maxLat' }
+        - { name: pendingMove, in: query, schema: { type: boolean } }
+        - { name: status, in: query, schema: { type: string, enum: [active, deleted], default: active } }
+        - { name: limit, in: query, schema: { type: integer, default: 200, minimum: 1, maximum: 1000 } }
+        - { $ref: '#/components/parameters/Cursor' }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: object, required: [items, nextCursor], properties: { items: { type: array, items: { $ref: '#/components/schemas/Place' } }, nextCursor: { type: [string, 'null'] } } } } } }
+    post:
+      tags: [places]
+      operationId: createPlace
+      description: |
+        Put a place on the map (1.38.0, FR-PLC-002). Visible to everyone in the branch at once, no approval. Idempotent by clientId per caller
+        (a repeat answers 200). Permission place.create. `branchId` defaults to the caller's first branch and must be one the caller can see.
+        Offline phones use the sync mutation `place` with the same body. 422 BUSINESS_RULE: OUTSIDE_BANGLADESH, PLACE_INVALID_BRANCH.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PlaceCreate' }
+      responses:
+        '201': { description: Created, content: { application/json: { schema: { $ref: '#/components/schemas/Place' } } } }
+        '200': { description: Replay of the same clientId, content: { application/json: { schema: { $ref: '#/components/schemas/Place' } } } }
+  /places/move-requests:
+    get:
+      tags: [places]
+      operationId: listPlaceMoveRequests
+      description: 'Open move requests in scope, oldest first (1.38.0, FR-PLC-005): the office queue. Permission place.manage.'
+      parameters:
+        - { $ref: '#/components/parameters/BranchId' }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: object, required: [items], properties: { items: { type: array, items: { $ref: '#/components/schemas/Place' } } } } } } }
+  /places/{id}:
+    get:
+      tags: [places]
+      operationId: getPlace
+      description: 'One place with its history (1.38.0). Permission place.view; out of scope is 404; a deleted place is 404 unless the caller has place.manage.'
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Place' } } } }
+    patch:
+      tags: [places]
+      operationId: editPlace
+      description: |
+        Change name, icon or note (1.38.0, FR-PLC-003). Permission place.create: a field staff member edits only the places they created; other places
+        and `location` (a direct move) need place.manage (403 otherwise). A direct move closes an open move request as rejected ("moved by the office").
+        `If-Match: W/"<version>"` is optional; a stale version is 412. Offline phones use the sync mutation `place_edit`.
+        409 INVALID_STATE: PLACE_DELETED. 422 BUSINESS_RULE: OUTSIDE_BANGLADESH.
+      parameters: [ { $ref: '#/components/parameters/Id' }, { $ref: '#/components/parameters/IfMatch' } ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PlaceUpdate' }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Place' } } } }
+    delete:
+      tags: [places]
+      operationId: deletePlace
+      description: 'Remove a place from the map (1.38.0, FR-PLC-006). Soft delete: the row and its history are kept (status deleted); an open move request is closed. Idempotent. Permission place.manage. Audited.'
+      parameters:
+        - { $ref: '#/components/parameters/Id' }
+        - { name: reason, in: query, schema: { type: string, maxLength: 200 } }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Place' } } } }
+  /places/{id}/move-request:
+    post:
+      tags: [places]
+      operationId: requestPlaceMove
+      description: |
+        Ask the office to move a place's marker (1.38.0, FR-PLC-004). Any place in scope, not only own ones. The marker stays where it is until an
+        office user with place.manage approves; they get an inbox item and a notification. One open request per place. Idempotent by clientId
+        (a repeat answers 200). Permission place.create. Offline phones use the sync mutation `place_move_request`.
+        409 INVALID_STATE: MOVE_PENDING (someone else's request is open), PLACE_DELETED. 422 BUSINESS_RULE: OUTSIDE_BANGLADESH, MOVE_TOO_SHORT (under 5 m).
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PlaceMoveRequestCreate' }
+      responses:
+        '201': { description: Requested, content: { application/json: { schema: { $ref: '#/components/schemas/Place' } } } }
+        '200': { description: Replay of the same clientId, content: { application/json: { schema: { $ref: '#/components/schemas/Place' } } } }
+  /places/{id}/move-request/decision:
+    post:
+      tags: [places]
+      operationId: decidePlaceMove
+      description: |
+        Approve (the marker moves to the requested point) or reject (it stays; reason of at least 5 characters required) an open move request
+        (1.38.0, FR-PLC-005). The requester is notified either way. Permission place.manage. 409 INVALID_STATE: NO_PENDING_MOVE. 422 REASON_REQUIRED.
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Decision' }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Place' } } } }
   /targets:
     get:
       tags: [targets]
@@ -1371,6 +1481,7 @@ paths:
     post:
       tags: [media]
       operationId: createUploadUrl
+      description: 'Presigned PUT to the server''s store (S3 or `db`). Since 1.37.0 the server copies a confirmed photo to Cloudinary in the background when Cloudinary is configured (ADR-050); the phone protocol is unchanged. 409 `INVALID_STATE` reason `MEDIA_DELETED` when the same file was uploaded before and an admin deleted it.'
       requestBody:
         required: true
         content:
@@ -1403,8 +1514,60 @@ paths:
       tags: [media]
       operationId: mediaUrl
       parameters: [ { $ref: '#/components/parameters/Id' }, { name: variant, in: query, schema: { type: string, enum: [original, thumb] } } ]
+      description: |
+        A link that works for 5 minutes. Since 1.37.0 (ADR-050) a photo copied to Cloudinary is served as a signed private
+        Cloudinary download link (`api.cloudinary.com/v1_1/<cloud>/image/download?...&expires_at=...`); until it is copied, or
+        when Cloudinary is not configured, the link points at the server's own store as before. Clients just open `url`.
+        A photo deleted by an admin (FR-MED-003/004) answers 404 `NOT_FOUND` with `details.reason = MEDIA_DELETED`,
+        `details.deletedAt` and `details.deletedByName`.
       responses:
         '200': { description: Signed GET URL (5 min), content: { application/json: { schema: { type: object, properties: { url: { type: string }, expiresAt: { type: string } } } } } }
+        '404': { $ref: '#/components/responses/Problem' }
+        '409': { $ref: '#/components/responses/Problem' }
+  /media/purge/preview:
+    get:
+      tags: [media]
+      operationId: mediaPurgePreview
+      description: |
+        media.delete (1.37.0, FR-MED-003). Photos taken before the first day (Asia/Dhaka) of month `before`, per month, with
+        their count and size. Kinds: selfie, visit_photo, location_proof; deposit_slip and refund_proof (money proofs) only
+        with `includeMoneyProofs=true`. Voice notes are never included. `suggest` is true from the 5th of the month on when
+        there is something to delete (the admin panel shows an alert). Branch scope: a super admin sees all.
+      parameters:
+        - { name: before, in: query, schema: { type: string, pattern: '^\d{4}-\d{2}$' }, description: 'YYYY-MM, default the current Dhaka month (= every earlier month). Not later than the current month.' }
+        - { name: includeMoneyProofs, in: query, schema: { type: boolean, default: false } }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/MediaPurgePreview' } } } }
+        '400': { $ref: '#/components/responses/Problem' }
+        '403': { $ref: '#/components/responses/Problem' }
+        '422': { $ref: '#/components/responses/Problem' }
+  /media/purge:
+    post:
+      tags: [media]
+      operationId: mediaPurge
+      description: |
+        media.delete (1.37.0, FR-MED-003). Deletes the photos the preview counts, at most 200 per call, oldest first, and
+        returns how many were deleted and how many remain; call again until `remaining` is 0. `confirmText` must be exactly
+        `DELETE <before>` (e.g. `DELETE 2026-11`), else 422 `BUSINESS_RULE` rule `CONFIRM_TEXT_MISMATCH` and nothing is deleted.
+        A deleted photo is marked `deleted` at once (its link answers 404 `MEDIA_DELETED`) and its files are removed from
+        Cloudinary and from the server's store (retried in the background if a store is down). One audit entry
+        (`media.purged`) per call with the counts. Branch scope: a super admin deletes in every branch.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [before, confirmText]
+              properties:
+                before: { type: string, pattern: '^\d{4}-\d{2}$' }
+                includeMoneyProofs: { type: boolean, default: false }
+                confirmText: { type: string, maxLength: 40 }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/MediaPurgeResult' } } } }
+        '400': { $ref: '#/components/responses/Problem' }
+        '403': { $ref: '#/components/responses/Problem' }
+        '422': { $ref: '#/components/responses/Problem' }
 
   /storage/o:
     parameters: [ { name: t, in: query, required: true, schema: { type: string, maxLength: 4096 }, description: Signed grant (key, method, expiry; for PUT also type, size and sha256) } ]
@@ -1536,6 +1699,40 @@ paths:
       parameters: [ { name: userId, in: query, required: true, schema: { type: string } }, { name: date, in: query, required: true, schema: { type: string, format: date } } ]
       responses:
         '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/AttendanceEvent' } } } } }
+  /attendance/photos/delete:
+    post:
+      tags: [attendance]
+      operationId: deleteAttendancePhotos
+      description: |
+        media.delete (1.37.0, FR-MED-004). Deletes the attendance photos of one staff member on one business date. Each
+        event that had a photo gets `selfieDeleted { at, by, byName }` and `selfieMediaId: null`; the photo files are removed
+        from Cloudinary and from the server's store. Branch scope: a user outside the caller's branches is 404. A day without
+        photos answers `deleted: 0`. Audited as `attendance.photos_deleted`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [userId, date]
+              properties:
+                userId: { type: string }
+                date: { type: string, format: date }
+                reason: { type: string, maxLength: 500 }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [deleted, events]
+                properties:
+                  deleted: { type: integer, description: Number of photos deleted }
+                  events: { type: array, items: { $ref: '#/components/schemas/AttendanceEvent' } }
+        '400': { $ref: '#/components/responses/Problem' }
+        '403': { $ref: '#/components/responses/Problem' }
+        '404': { $ref: '#/components/responses/Problem' }
   /attendance/me/today:
     get:
       tags: [attendance]
@@ -2658,6 +2855,91 @@ components:
         endedBy: { type: object, description: 'The office user who ended the session (1.34.0, FR-CW-006); absent when it ended by itself (people left, the day was over)', properties: { id: { type: string }, name: { type: string } } }
         endReason: { type: [string, 'null'], description: "The office user's reason (1.34.0); present with endedBy" }
         visitsCount: { type: integer, description: 'Co-work visits recorded in this session (manager list and detail only)' }
+    PlaceIcon: { type: string, enum: [shop, market, mosque, school, bank, hospital, bus_stop, office, landmark, other], description: '1.38.0. A short fixed list; the clients draw their own symbol for each.' }
+    PlaceLocation:
+      type: object
+      required: [lat, lng]
+      properties: { lat: { type: number, minimum: -90, maximum: 90 }, lng: { type: number, minimum: -180, maximum: 180 } }
+    PlacePerson:
+      type: object
+      required: [id, name]
+      properties: { id: { type: string }, name: { type: string } }
+    PlaceCreate:
+      type: object
+      required: [clientId, name, icon, location]
+      properties:
+        clientId: { type: string, format: uuid, description: 'Made on the device; the same clientId again is a replay' }
+        name: { type: string, minLength: 1, maxLength: 60, description: 'The text shown next to the marker' }
+        icon: { $ref: '#/components/schemas/PlaceIcon' }
+        note: { type: string, maxLength: 200 }
+        location: { $ref: '#/components/schemas/PlaceLocation' }
+        branchId: { type: string, description: 'Default: the caller''s first branch' }
+    PlaceUpdate:
+      type: object
+      minProperties: 1
+      properties:
+        name: { type: string, minLength: 1, maxLength: 60 }
+        icon: { $ref: '#/components/schemas/PlaceIcon' }
+        note: { type: [string, 'null'], maxLength: 200 }
+        location: { $ref: '#/components/schemas/PlaceLocation', description: 'Direct move; needs place.manage' }
+    PlaceMoveRequestCreate:
+      type: object
+      required: [clientId, location]
+      properties:
+        clientId: { type: string, format: uuid }
+        location: { $ref: '#/components/schemas/PlaceLocation' }
+        reason: { type: string, maxLength: 200, description: 'Why it should move (shown to the office)' }
+    PlacePendingMove:
+      type: object
+      required: [location, requestedBy, requestedAt, reason, distanceM]
+      properties:
+        location: { $ref: '#/components/schemas/PlaceLocation' }
+        requestedBy: { $ref: '#/components/schemas/PlacePerson' }
+        requestedAt: { type: string, format: date-time }
+        reason: { type: [string, 'null'] }
+        distanceM: { type: integer, description: 'How far the marker would move' }
+    PlaceMoveDecision:
+      type: object
+      required: [decision, by, at, reason, requestedBy]
+      properties:
+        decision: { type: string, enum: [approve, reject] }
+        by: { $ref: '#/components/schemas/PlacePerson' }
+        at: { type: string, format: date-time }
+        reason: { type: [string, 'null'] }
+        requestedBy: { $ref: '#/components/schemas/PlacePerson' }
+    PlaceEvent:
+      type: object
+      required: [type, by, at]
+      properties:
+        type: { type: string, enum: [created, edited, moved, move_requested, move_approved, move_rejected, deleted] }
+        by: { $ref: '#/components/schemas/PlacePerson' }
+        at: { type: string, format: date-time }
+        note: { type: [string, 'null'] }
+        from: { oneOf: [ { $ref: '#/components/schemas/PlaceLocation' }, { type: 'null' } ] }
+        to: { oneOf: [ { $ref: '#/components/schemas/PlaceLocation' }, { type: 'null' } ] }
+    Place:
+      type: object
+      description: 'A text marker on the map (1.38.0, FR-PLC-001). Sync entity `place`, sent to every device of its branch. Not linked to a customer and not a tracking point.'
+      required: [id, clientId, branchId, name, icon, note, location, status, version, pendingMove, lastMoveDecision, createdBy, updatedBy, createdAt, updatedAt, events]
+      properties:
+        id: { type: string }
+        clientId: { type: [string, 'null'], description: 'The creator''s clientId, so the creating device can match its offline row' }
+        branchId: { type: string }
+        name: { type: string }
+        icon: { $ref: '#/components/schemas/PlaceIcon' }
+        note: { type: [string, 'null'] }
+        location: { $ref: '#/components/schemas/PlaceLocation' }
+        status: { type: string, enum: [active, deleted] }
+        version: { type: integer, description: 'Goes up by one on every change; send it as If-Match: W/"<version>"' }
+        pendingMove: { oneOf: [ { $ref: '#/components/schemas/PlacePendingMove' }, { type: 'null' } ] }
+        lastMoveDecision: { oneOf: [ { $ref: '#/components/schemas/PlaceMoveDecision' }, { type: 'null' } ], description: 'The latest approve or reject, so the requester sees the reason' }
+        createdBy: { $ref: '#/components/schemas/PlacePerson' }
+        updatedBy: { $ref: '#/components/schemas/PlacePerson' }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+        deletedAt: { type: [string, 'null'], format: date-time }
+        deleteReason: { type: [string, 'null'] }
+        events: { type: array, description: 'History, newest last, at most the latest 50', items: { $ref: '#/components/schemas/PlaceEvent' } }
     TaskStatus: { type: string, enum: [open, resolve_requested, resolved, cancelled], description: '1.20.0. open → resolve_requested (staff) → resolved (admin verifies) or back to open (admin rejects with a reason); cancelled by an admin.' }
     TaskCounts:
       type: object
@@ -2914,10 +3196,42 @@ components:
         type: { type: string, enum: [work_in, break_start, break_end, work_out] }
         at: { type: string, format: date-time }
         geo: { type: [object, 'null'], properties: { lat: { type: number }, lng: { type: number }, accuracyM: { type: number }, mock: { type: boolean } } }
-        selfieMediaId: { type: [string, 'null'] }
+        selfieMediaId: { type: [string, 'null'], description: 'null when there was no photo or an admin deleted it (see selfieDeleted)' }
+        selfieDeleted:
+          type: [object, 'null']
+          description: '1.37.0 (FR-MED-004): set when an admin deleted the photo of this event; show "Deleted by admin <byName> · <at>" where the photo was'
+          required: [at, by, byName]
+          properties:
+            at: { type: string, format: date-time }
+            by: { type: string }
+            byName: { type: string }
         flags: { type: array, items: { type: string }, description: 'e.g. no_selfie, no_location, mock_location, clock_skew, late_sync' }
         source: { type: string, enum: [app, correction, system] }
         replaced: { type: boolean, description: 'true when a correction replaced this event; it no longer counts in the day' }
+    MediaPurgePreview:
+      type: object
+      description: 1.37.0 (FR-MED-003)
+      required: [before, cutoff, today, kinds, includeMoneyProofs, months, total, suggest]
+      properties:
+        before: { type: string, description: YYYY-MM }
+        cutoff: { type: string, format: date-time, description: 'First instant of month `before` in Asia/Dhaka; photos created earlier count' }
+        today: { type: string, format: date, description: Dhaka business date }
+        kinds: { type: array, items: { type: string } }
+        includeMoneyProofs: { type: boolean }
+        months:
+          type: array
+          description: Oldest first
+          items: { type: object, required: [month, count, bytes], properties: { month: { type: string, description: YYYY-MM (Dhaka) }, count: { type: integer }, bytes: { type: integer } } }
+        total: { type: object, required: [count, bytes], properties: { count: { type: integer }, bytes: { type: integer } } }
+        suggest: { type: boolean, description: 'true from the 5th of the month on when there is something to delete' }
+    MediaPurgeResult:
+      type: object
+      description: 1.37.0 (FR-MED-003)
+      required: [deleted, remaining, bytes]
+      properties:
+        deleted: { type: integer }
+        bytes: { type: integer, description: Size of the photos deleted by this call }
+        remaining: { type: integer, description: 'Photos still to delete for the same request; call again while > 0' }
     LocationPoint:
       type: object
       required: [t, lat, lng, acc]
@@ -2950,7 +3264,7 @@ components:
       required: [mutationId, entity, op, payload]
       properties:
         mutationId: { type: string, format: uuid }
-        entity: { type: string, enum: [visit, collection, note, promise, promise_cancel, deposit, attendance_event, tag, location_proposal, visit_checkout, handover_decision, cash_closing, contact_attempt, broadcast_ack, task_resolve_request, attendance_selfie, customer_phone, collection_withdraw, collection_edit], description: 'collection_withdraw (1.32.0) payload { collectionId | clientId, reason? }: same as POST /collections/{id}/withdraw; needs collection.withdraw; send it after the collection (dependsOn). collection_edit (1.32.0) payload { collectionId | clientId, amountPoisha?, note?, payerName? }: same as PATCH /collections/{id}; needs collection.edit; a repeat with the same values is a replay. customer_phone (1.23.0) payload { customerId, phones: [{ number, label? }] }: same body as POST /customers/{id}/phones; needs permission customer.phone.manage; a repeat adds nothing. attendance_selfie (1.21.0) payload { eventClientId, selfieMediaId }: adds the photo to an attendance event that was sent before its photo uploaded; send it after that event (dependsOn).' }
+        entity: { type: string, enum: [visit, collection, note, promise, promise_cancel, deposit, attendance_event, tag, location_proposal, visit_checkout, handover_decision, cash_closing, contact_attempt, broadcast_ack, task_resolve_request, attendance_selfie, customer_phone, collection_withdraw, collection_edit, place, place_edit, place_move_request], description: 'place, place_edit, place_move_request (1.38.0): see the payload description. collection_withdraw (1.32.0) payload { collectionId | clientId, reason? }: same as POST /collections/{id}/withdraw; needs collection.withdraw; send it after the collection (dependsOn). collection_edit (1.32.0) payload { collectionId | clientId, amountPoisha?, note?, payerName? }: same as PATCH /collections/{id}; needs collection.edit; a repeat with the same values is a replay. customer_phone (1.23.0) payload { customerId, phones: [{ number, label? }] }: same body as POST /customers/{id}/phones; needs permission customer.phone.manage; a repeat adds nothing. attendance_selfie (1.21.0) payload { eventClientId, selfieMediaId }: adds the photo to an attendance event that was sent before its photo uploaded; send it after that event (dependsOn).' }
         op: { type: string, enum: [create, update] }
         payload:
           type: object
@@ -2967,6 +3281,9 @@ components:
             tag payload may carry `ifMatch` (customer version).
             1.12.0: broadcast_ack → { broadcastId, at? } (when the staff tapped "read"; kept between sending and now).
             1.20.0: task_resolve_request → { taskId, note?, requestedAt? } (the staff member says the task is done; idempotent, a repeat is a replay). Needs permission task.work.
+            1.38.0: place → PlaceCreate (same as POST /places; needs place.create; the result entityId is the server id) ·
+            place_edit → { placeId | placeClientId, name?, icon?, note? } (same as PATCH /places/{id} without location; placeClientId = the clientId of a place this user created, for edits made before the create was synced) ·
+            place_move_request → { placeId | placeClientId, clientId, location, reason? } (same as POST /places/{id}/move-request). Both need place.create.
             Every mutation is idempotent by mutationId; the same id with a different payload is rejected with IDEMPOTENCY_MISMATCH.
         createdAt: { type: string, format: date-time }
     SyncPushRequest:
@@ -2999,7 +3316,7 @@ components:
       type: object
       properties:
         seq: { type: integer }
-        entity: { type: string, enum: [customer, collection, visit, note, promise, tag, handover, assignment, area, deposit, attendance_day, notification, broadcast, setting, contact_attempt, location_proposal, cowork_session, task] }
+        entity: { type: string, enum: [customer, collection, visit, note, promise, tag, handover, assignment, area, deposit, attendance_day, notification, broadcast, setting, contact_attempt, location_proposal, cowork_session, task, place] }
         op: { type: string, enum: [upsert, delete] }
         id: { type: string }
         data:
@@ -3013,6 +3330,7 @@ components:
             contact_attempt → ContactAttempt · location_proposal → OwnLocationProposal (1.7.0; sent only to the staff member who proposed, on create and on the manager's decision) ·
             cowork_session → CoworkSession (1.9.0; sent to every invited or member user on each change)
             task → Task (1.20.0; sent to the assignee on every change; the bootstrap snapshot holds open tasks and those closed in the last 30 days)
+            place → Place (1.38.0; sent to every device of the place's branch on every change; a deleted place arrives as op=delete reason=deleted; the bootstrap snapshot holds the active places of the user's branches)
         reason: { type: string }
     ContactAttemptCreate:
       type: object
