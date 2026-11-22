@@ -2089,5 +2089,86 @@
   "customerRefreshNotFound": "The server no longer has this customer for you. The data on this phone is kept.",
   "customerRefreshDenied": "You don't have permission to reload this customer.",
   "customerRefreshFailed": "Couldn't reload. Showing the saved data. Code: {code}",
-  "@customerRefreshFailed": {"placeholders": {"code": {"type": "String"}}}
+  "@customerRefreshFailed": {"placeholders": {"code": {"type": "String"}}},
+  "placeIconShop": "Shop",
+  "placeIconMarket": "Market",
+  "placeIconMosque": "Mosque",
+  "placeIconSchool": "School",
+  "placeIconBank": "Bank",
+  "placeIconHospital": "Hospital",
+  "placeIconBusStop": "Bus stop",
+  "placeIconOffice": "Office",
+  "placeIconLandmark": "Landmark",
+  "placeIconOther": "Other",
+  "placeNewTitle": "New place on the map",
+  "placeEditTitle": "Change this place",
+  "placeNewHint": "Everyone in your branch sees the name next to the marker.",
+  "placeName": "Name",
+  "placeNameHint": "e.g. Karim Store",
+  "placeNameRequired": "Write a name",
+  "placeKind": "Kind of place",
+  "placeNote": "Note (optional)",
+  "placeNoteHint": "e.g. Blue gate, next to the tea stall",
+  "placeAdd": "Add to the map",
+  "placeSave": "Save",
+  "placeSavedNew": "{name} is on the map",
+  "@placeSavedNew": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "placeSaved": "Saved",
+  "placeGone": "This place is no longer on the map.",
+  "placeAddedByMe": "You added this place",
+  "placeAddedBy": "Added by {name}",
+  "@placeAddedBy": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "placeWaitingToSend": "Saved on the phone; it is sent when there is internet.",
+  "placeMoveQueued": "Your move request is saved and is sent when there is internet. The marker stays until the office approves.",
+  "placeMovePending": "{name} asked to move it; waiting for the office.",
+  "@placeMovePending": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "placeMoveApproved": "The office moved it as asked.",
+  "placeMoveRejected": "The office did not move it: {reason}",
+  "@placeMoveRejected": {
+    "placeholders": {
+      "reason": { "type": "String" }
+    }
+  },
+  "placeEdit": "Edit",
+  "placeRequestMove": "Ask to move",
+  "placeUpdatedAt": "Last change {at}",
+  "@placeUpdatedAt": {
+    "placeholders": {
+      "at": { "type": "String" }
+    }
+  },
+  "placeErrMovePending": "Someone else already asked to move it.",
+  "placeErrMoveTooShort": "The new point is almost the same as the old one.",
+  "placeErrOutside": "This point is outside Bangladesh.",
+  "placeErrNotOwner": "Only the person who added it or the office can change it.",
+  "placeErrGeneric": "The server did not accept this change.",
+  "placeMoveTitle": "Move {name}",
+  "@placeMoveTitle": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "placeMoveHint": "Move the map until the pin sits on the right spot.",
+  "placeMoveDistance": "{n} m from where it is now",
+  "@placeMoveDistance": {
+    "placeholders": {
+      "n": { "type": "String" }
+    }
+  },
+  "placeMoveReason": "Why? (optional)",
+  "placeMoveSent": "Sent to the office. The marker moves when they approve.",
+  "placeMoveDragFirst": "Move the map first",
+  "placeMoveSend": "Send to the office"
 }

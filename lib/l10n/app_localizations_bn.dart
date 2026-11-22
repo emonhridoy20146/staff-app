@@ -3399,4 +3399,158 @@ class AppLocalizationsBn extends AppLocalizations {
   String customerRefreshFailed(String code) {
     return 'আবার লোড করা যায়নি। রাখা তথ্য দেখানো হচ্ছে। কোড: $code';
   }
+
+  @override
+  String get placeIconShop => 'দোকান';
+
+  @override
+  String get placeIconMarket => 'বাজার';
+
+  @override
+  String get placeIconMosque => 'মসজিদ';
+
+  @override
+  String get placeIconSchool => 'স্কুল';
+
+  @override
+  String get placeIconBank => 'ব্যাংক';
+
+  @override
+  String get placeIconHospital => 'হাসপাতাল';
+
+  @override
+  String get placeIconBusStop => 'বাস স্ট্যান্ড';
+
+  @override
+  String get placeIconOffice => 'অফিস';
+
+  @override
+  String get placeIconLandmark => 'চিহ্ন';
+
+  @override
+  String get placeIconOther => 'অন্যান্য';
+
+  @override
+  String get placeNewTitle => 'ম্যাপে নতুন জায়গা';
+
+  @override
+  String get placeEditTitle => 'জায়গাটি বদলান';
+
+  @override
+  String get placeNewHint => 'আপনার শাখার সবাই মার্কারের পাশে নামটি দেখবেন।';
+
+  @override
+  String get placeName => 'নাম';
+
+  @override
+  String get placeNameHint => 'যেমন: করিম স্টোর';
+
+  @override
+  String get placeNameRequired => 'একটি নাম লিখুন';
+
+  @override
+  String get placeKind => 'জায়গার ধরন';
+
+  @override
+  String get placeNote => 'নোট (ইচ্ছা হলে)';
+
+  @override
+  String get placeNoteHint => 'যেমন: নীল গেট, চায়ের দোকানের পাশে';
+
+  @override
+  String get placeAdd => 'ম্যাপে যোগ করুন';
+
+  @override
+  String get placeSave => 'সংরক্ষণ করুন';
+
+  @override
+  String placeSavedNew(String name) {
+    return '$name ম্যাপে যোগ হয়েছে';
+  }
+
+  @override
+  String get placeSaved => 'সংরক্ষিত হয়েছে';
+
+  @override
+  String get placeGone => 'এই জায়গাটি আর ম্যাপে নেই।';
+
+  @override
+  String get placeAddedByMe => 'আপনি এই জায়গাটি যোগ করেছেন';
+
+  @override
+  String placeAddedBy(String name) {
+    return 'যোগ করেছেন $name';
+  }
+
+  @override
+  String get placeWaitingToSend => 'ফোনে সংরক্ষিত; ইন্টারনেট পেলে পাঠানো হবে।';
+
+  @override
+  String get placeMoveQueued =>
+      'আপনার সরানোর অনুরোধ সংরক্ষিত, ইন্টারনেট পেলে পাঠানো হবে। অফিস অনুমোদন না দেওয়া পর্যন্ত মার্কার আগের জায়গায় থাকবে।';
+
+  @override
+  String placeMovePending(String name) {
+    return '$name সরাতে বলেছেন; অফিসের অনুমোদনের অপেক্ষায়।';
+  }
+
+  @override
+  String get placeMoveApproved => 'অফিস অনুরোধ মতো সরিয়েছে।';
+
+  @override
+  String placeMoveRejected(String reason) {
+    return 'অফিস সরায়নি: $reason';
+  }
+
+  @override
+  String get placeEdit => 'সম্পাদনা';
+
+  @override
+  String get placeRequestMove => 'সরাতে বলুন';
+
+  @override
+  String placeUpdatedAt(String at) {
+    return 'শেষ পরিবর্তন $at';
+  }
+
+  @override
+  String get placeErrMovePending => 'অন্য কেউ আগেই সরাতে বলেছেন।';
+
+  @override
+  String get placeErrMoveTooShort => 'নতুন জায়গা প্রায় আগের জায়গাতেই।';
+
+  @override
+  String get placeErrOutside => 'এই জায়গাটি বাংলাদেশের বাইরে।';
+
+  @override
+  String get placeErrNotOwner =>
+      'যিনি যোগ করেছেন বা অফিস ছাড়া কেউ বদলাতে পারবেন না।';
+
+  @override
+  String get placeErrGeneric => 'সার্ভার এই পরিবর্তন গ্রহণ করেনি।';
+
+  @override
+  String placeMoveTitle(String name) {
+    return '$name সরান';
+  }
+
+  @override
+  String get placeMoveHint => 'পিনটি সঠিক জায়গায় না বসা পর্যন্ত ম্যাপ সরান।';
+
+  @override
+  String placeMoveDistance(String n) {
+    return 'এখনকার জায়গা থেকে $n মিটার';
+  }
+
+  @override
+  String get placeMoveReason => 'কেন? (ইচ্ছা হলে)';
+
+  @override
+  String get placeMoveSent => 'অফিসে পাঠানো হয়েছে। অনুমোদন দিলে মার্কার সরবে।';
+
+  @override
+  String get placeMoveDragFirst => 'আগে ম্যাপ সরান';
+
+  @override
+  String get placeMoveSend => 'অফিসে পাঠান';
 }

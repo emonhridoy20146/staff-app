@@ -43,13 +43,14 @@ part 'app_database.g.dart';
     Notifications,
     KvSettings,
     ColleagueActivities,
+    MapPlaces,
   ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 14;
+  int get schemaVersion => 15;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -169,6 +170,11 @@ class AppDatabase extends _$AppDatabase {
             for (final c in [deposits.collectionCount, deposits.nonCashPoisha, deposits.nonCashCount, deposits.failureCode]) {
               await _ensureColumn(m, deposits, c);
             }
+          }
+          // v15 (contract 1.38.0, FR-PLC-001): places on the map. A new table only; nothing else moves.
+          // The places arrive with the next pull (the server sends the branch's places in the snapshot).
+          if (from < 15) {
+            if (!await _hasTable('map_places')) await m.createTable(mapPlaces);
           }
         },
         beforeOpen: (details) async {

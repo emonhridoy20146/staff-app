@@ -3411,4 +3411,163 @@ class AppLocalizationsEn extends AppLocalizations {
   String customerRefreshFailed(String code) {
     return 'Couldn\'t reload. Showing the saved data. Code: $code';
   }
+
+  @override
+  String get placeIconShop => 'Shop';
+
+  @override
+  String get placeIconMarket => 'Market';
+
+  @override
+  String get placeIconMosque => 'Mosque';
+
+  @override
+  String get placeIconSchool => 'School';
+
+  @override
+  String get placeIconBank => 'Bank';
+
+  @override
+  String get placeIconHospital => 'Hospital';
+
+  @override
+  String get placeIconBusStop => 'Bus stop';
+
+  @override
+  String get placeIconOffice => 'Office';
+
+  @override
+  String get placeIconLandmark => 'Landmark';
+
+  @override
+  String get placeIconOther => 'Other';
+
+  @override
+  String get placeNewTitle => 'New place on the map';
+
+  @override
+  String get placeEditTitle => 'Change this place';
+
+  @override
+  String get placeNewHint =>
+      'Everyone in your branch sees the name next to the marker.';
+
+  @override
+  String get placeName => 'Name';
+
+  @override
+  String get placeNameHint => 'e.g. Karim Store';
+
+  @override
+  String get placeNameRequired => 'Write a name';
+
+  @override
+  String get placeKind => 'Kind of place';
+
+  @override
+  String get placeNote => 'Note (optional)';
+
+  @override
+  String get placeNoteHint => 'e.g. Blue gate, next to the tea stall';
+
+  @override
+  String get placeAdd => 'Add to the map';
+
+  @override
+  String get placeSave => 'Save';
+
+  @override
+  String placeSavedNew(String name) {
+    return '$name is on the map';
+  }
+
+  @override
+  String get placeSaved => 'Saved';
+
+  @override
+  String get placeGone => 'This place is no longer on the map.';
+
+  @override
+  String get placeAddedByMe => 'You added this place';
+
+  @override
+  String placeAddedBy(String name) {
+    return 'Added by $name';
+  }
+
+  @override
+  String get placeWaitingToSend =>
+      'Saved on the phone; it is sent when there is internet.';
+
+  @override
+  String get placeMoveQueued =>
+      'Your move request is saved and is sent when there is internet. The marker stays until the office approves.';
+
+  @override
+  String placeMovePending(String name) {
+    return '$name asked to move it; waiting for the office.';
+  }
+
+  @override
+  String get placeMoveApproved => 'The office moved it as asked.';
+
+  @override
+  String placeMoveRejected(String reason) {
+    return 'The office did not move it: $reason';
+  }
+
+  @override
+  String get placeEdit => 'Edit';
+
+  @override
+  String get placeRequestMove => 'Ask to move';
+
+  @override
+  String placeUpdatedAt(String at) {
+    return 'Last change $at';
+  }
+
+  @override
+  String get placeErrMovePending => 'Someone else already asked to move it.';
+
+  @override
+  String get placeErrMoveTooShort =>
+      'The new point is almost the same as the old one.';
+
+  @override
+  String get placeErrOutside => 'This point is outside Bangladesh.';
+
+  @override
+  String get placeErrNotOwner =>
+      'Only the person who added it or the office can change it.';
+
+  @override
+  String get placeErrGeneric => 'The server did not accept this change.';
+
+  @override
+  String placeMoveTitle(String name) {
+    return 'Move $name';
+  }
+
+  @override
+  String get placeMoveHint =>
+      'Move the map until the pin sits on the right spot.';
+
+  @override
+  String placeMoveDistance(String n) {
+    return '$n m from where it is now';
+  }
+
+  @override
+  String get placeMoveReason => 'Why? (optional)';
+
+  @override
+  String get placeMoveSent =>
+      'Sent to the office. The marker moves when they approve.';
+
+  @override
+  String get placeMoveDragFirst => 'Move the map first';
+
+  @override
+  String get placeMoveSend => 'Send to the office';
 }

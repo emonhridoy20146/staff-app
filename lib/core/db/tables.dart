@@ -697,3 +697,60 @@ class KvSettings extends Table {
   @override
   Set<Column> get primaryKey => {key};
 }
+
+// ── map places (schema 15, contract 1.38.0, master FR-PLC-001..006) ─────────
+/// A text marker on the map that everyone of the branch sees (a shop, a
+/// mosque...). Made on the phone first (`place` mutation) or received from
+/// the server (sync entity `place`). [localId] is the place's own id on this
+/// phone: the server id for places that came from the server, the clientId
+/// for my own until the server answers. Never deleted while unsent.
+@DataClassName('PlaceRow')
+class MapPlaces extends Table {
+  @override
+  String get tableName => 'map_places';
+
+  TextColumn get localId => text()();
+  TextColumn get serverId => text().nullable().unique()();
+
+  /// My clientId for a place I made (also the server's `clientId`).
+  TextColumn get clientId => text().nullable()();
+  TextColumn get branchId => text().nullable()();
+  TextColumn get name => text()();
+
+  /// shop | market | mosque | school | bank | hospital | bus_stop | office | landmark | other
+  TextColumn get icon => text()();
+  TextColumn get note => text().nullable()();
+  RealColumn get lat => real()();
+  RealColumn get lng => real()();
+  IntColumn get version => integer().withDefault(const Constant(0))();
+  TextColumn get createdById => text().nullable()();
+  TextColumn get createdByName => text().nullable()();
+
+  /// The server's open move request (PlacePendingMove JSON) or null.
+  TextColumn get pendingMoveJson => text().nullable()();
+
+  /// The server's latest approve/reject (PlaceMoveDecision JSON) or null.
+  TextColumn get lastDecisionJson => text().nullable()();
+  DateTimeColumn get updatedAt => dateTime().nullable()();
+
+  /// My create: synced | queued | failed.
+  TextColumn get createState => text().withDefault(const Constant('synced'))();
+  TextColumn get createMutationId => text().nullable()();
+
+  /// My last change of name / icon / note: none | queued | failed.
+  TextColumn get editState => text().withDefault(const Constant('none'))();
+  TextColumn get editMutationId => text().nullable()();
+
+  /// My move request: none | queued | sent | failed (the server's `pendingMove` takes over once sent).
+  TextColumn get moveState => text().withDefault(const Constant('none'))();
+  TextColumn get moveMutationId => text().nullable()();
+  RealColumn get moveLat => real().nullable()();
+  RealColumn get moveLng => real().nullable()();
+  TextColumn get moveReason => text().nullable()();
+
+  /// Problem code of a refused create / edit / move (shown on the place).
+  TextColumn get errorCode => text().nullable()();
+
+  @override
+  Set<Column> get primaryKey => {localId};
+}

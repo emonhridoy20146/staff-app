@@ -86,6 +86,7 @@ LocationEngine spike (ADR-009) → duty-aware tracking, adaptive sampling, filte
 | OEM battery guide screen | ☐ |
 | Battery level in heartbeat | ☐ blocked (`battery_plus` dependency conflict) |
 | Real-device checks (battery, OEM killing, reboot) | ☐ needs phones |
+| Places on the map: long-press add, labels, own edit, move request, offline (FR-M-063, contract 1.38.0) | ✅ flow + widget tests; ☐ real phone check |
 
 ## Phase 3 — Reports in app
 My performance, targets progress, day route suggestion.

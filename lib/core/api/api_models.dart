@@ -208,6 +208,7 @@ class SyncMutation {
     'task_resolve_request', // 1.20.0
     'attendance_selfie', // 1.21.0
     'customer_phone', // 1.23.0
+    'place', 'place_edit', 'place_move_request', // 1.38.0
   };
 }
 

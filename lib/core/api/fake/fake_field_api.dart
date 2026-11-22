@@ -114,14 +114,14 @@ class FakeFieldApi implements HttpClientAdapter {
     'branch.view', 'customer.view', 'customer.location.propose', 'customer.phone.manage', 'tag.view', 'tag.set', //
     'collection.record', 'collection.view', 'cash.view', 'cash.deposit.record', 'assignment.view',
     'visit.record', 'visit.view', 'note.create', 'note.view', 'promise.create', 'promise.view',
-    'attendance.record', 'leave.request', 'cowork.use', 'task.work',
+    'attendance.record', 'leave.request', 'cowork.use', 'task.work', 'place.view', 'place.create',
   ];
 
   static const flags = {
     'module.customers': true, 'module.tags': true, 'module.collections': true, 'module.cash': true, //
     'module.visits': true, 'module.notes': true, 'module.promises': true, 'module.attendance': true,
     'module.handovers': true, 'module.location': true, 'module.notifications': true, 'module.sync': true,
-    'module.cowork': true, 'module.targets': true, 'module.reports': true, 'module.tasks': true, 'module.microfinance': false,
+    'module.cowork': true, 'module.targets': true, 'module.reports': true, 'module.tasks': true, 'module.places': true, 'module.microfinance': false,
   };
 
   Json get _settings => {
@@ -203,6 +203,114 @@ class FakeFieldApi implements HttpClientAdapter {
     };
     _notices[id] = b;
     serverChange('broadcast', id, b);
+  }
+
+  // ── map places (contract 1.38.0) ───────────────────────────────────────────
+
+  final _places = <String, Json>{};
+  static const _office = {'id': 'u-bm-001', 'name': 'মোস্তফা কামাল'};
+  Json get _me => {'id': user['id'], 'name': _nameOf(user['id']! as String)};
+
+  /// Tests / demo: a place someone else (by default the office) put on the map.
+  void addPlace(String id, {required String name, String icon = 'shop', String? note, double lat = 22.7012, double lng = 90.3711, Json? by}) {
+    final at = clock.nowUtc().toIso8601String();
+    final who = by ?? _office;
+    final p = {
+      'id': id, 'clientId': null, 'branchId': 'br-01', 'name': name, 'icon': icon, 'note': note, 'location': {'lat': lat, 'lng': lng},
+      'status': 'active', 'version': 1, 'pendingMove': null, 'lastMoveDecision': null, 'createdBy': who, 'updatedBy': who,
+      'createdAt': at, 'updatedAt': at, 'deletedAt': null, 'deleteReason': null,
+      'events': [{'type': 'created', 'by': who, 'at': at, 'note': null, 'from': null, 'to': {'lat': lat, 'lng': lng}}],
+    };
+    _places[id] = p;
+    serverChange('place', id, p);
+  }
+
+  /// Tests / demo: the office approves or rejects the open move request of a place.
+  void decidePlaceMove(String id, {required bool approve, String? reason}) {
+    final p = _places[id]!;
+    final pm = p['pendingMove'] as Json;
+    final at = clock.nowUtc().toIso8601String();
+    final next = {
+      ...p,
+      if (approve) 'location': pm['location'],
+      'pendingMove': null,
+      'lastMoveDecision': {'decision': approve ? 'approve' : 'reject', 'by': _office, 'at': at, 'reason': reason, 'requestedBy': pm['requestedBy']},
+      'version': (p['version'] as int) + 1,
+      'updatedAt': at,
+    };
+    _places[id] = next;
+    serverChange('place', id, next);
+  }
+
+  /// Tests / demo: the office removes a place.
+  void deletePlace(String id) {
+    _places[id] = {..._places[id]!, 'status': 'deleted'};
+    serverChange('place', id, const {}, op: 'delete');
+  }
+
+  /// The server's rules for the three place mutations (FR-PLC-002..004).
+  Json _placeMutation(String mutationId, String entity, Json payload) {
+    Json? find() {
+      final pid = payload['placeId'] as String?;
+      if (pid != null) return _places[pid];
+      final cid = payload['placeClientId'] as String?;
+      return _places.values.where((p) => p['clientId'] == cid && (p['createdBy'] as Json)['id'] == user['id']).firstOrNull;
+    }
+
+    Json reject(int status, String code, String detail, {String? rule}) =>
+        {'mutationId': mutationId, 'result': 'rejected', 'error': {..._problem(status, code, detail), if (rule != null) 'details': {'rule': rule, 'reason': rule}}};
+    final at = clock.nowUtc().toIso8601String();
+    if (entity == 'place') {
+      final prior = _places.values.where((p) => p['clientId'] == payload['clientId']).firstOrNull;
+      if (prior != null) return {'mutationId': mutationId, 'result': 'replayed', 'entityId': prior['id']};
+      final loc = payload['location'] as Json;
+      final lat = (loc['lat'] as num).toDouble(), lng = (loc['lng'] as num).toDouble();
+      if (lat < 20.3 || lat > 26.8 || lng < 87.9 || lng > 92.8) return reject(422, 'BUSINESS_RULE', 'outside Bangladesh', rule: 'OUTSIDE_BANGLADESH');
+      final id = 'pl-${_places.length + 1}';
+      final p = {
+        'id': id, 'clientId': payload['clientId'], 'branchId': 'br-01', 'name': payload['name'], 'icon': payload['icon'], 'note': payload['note'],
+        'location': {'lat': lat, 'lng': lng}, 'status': 'active', 'version': 1, 'pendingMove': null, 'lastMoveDecision': null,
+        'createdBy': _me, 'updatedBy': _me, 'createdAt': at, 'updatedAt': at, 'deletedAt': null, 'deleteReason': null,
+        'events': [{'type': 'created', 'by': _me, 'at': at, 'note': null, 'from': null, 'to': {'lat': lat, 'lng': lng}}],
+      };
+      _places[id] = p;
+      serverChange('place', id, p);
+      return {'mutationId': mutationId, 'result': 'applied', 'entityId': id, 'version': 1};
+    }
+    final p = find();
+    if (p == null || p['status'] == 'deleted') return reject(404, 'NOT_FOUND', 'No such place');
+    final id = p['id'] as String;
+    if (entity == 'place_edit') {
+      if ((p['createdBy'] as Json)['id'] != user['id']) return reject(403, 'FORBIDDEN', 'not your place', rule: 'NOT_OWNER');
+      final next = {
+        ...p,
+        if (payload.containsKey('name')) 'name': payload['name'],
+        if (payload.containsKey('icon')) 'icon': payload['icon'],
+        if (payload.containsKey('note')) 'note': payload['note'],
+        'version': (p['version'] as int) + 1,
+        'updatedAt': at,
+        'updatedBy': _me,
+      };
+      _places[id] = next;
+      serverChange('place', id, next);
+      return {'mutationId': mutationId, 'result': 'applied', 'entityId': id, 'version': next['version']};
+    }
+    // place_move_request
+    final pm = p['pendingMove'] as Json?;
+    if (pm != null) {
+      if ((pm['requestedBy'] as Json)['id'] == user['id']) return {'mutationId': mutationId, 'result': 'replayed', 'entityId': id, 'status': 'pending'};
+      return reject(409, 'INVALID_STATE', 'Another move request is open', rule: 'MOVE_PENDING');
+    }
+    final to = payload['location'] as Json;
+    final next = {
+      ...p,
+      'pendingMove': {'location': to, 'requestedBy': _me, 'requestedAt': at, 'reason': payload['reason'], 'distanceM': 100},
+      'version': (p['version'] as int) + 1,
+      'updatedAt': at,
+    };
+    _places[id] = next;
+    serverChange('place', id, next);
+    return {'mutationId': mutationId, 'result': 'applied', 'entityId': id, 'status': 'pending'};
   }
 
   // ── tasks from the office (contract 1.20.0) ─────────────────────────────
@@ -1005,6 +1113,8 @@ class FakeFieldApi implements HttpClientAdapter {
         };
       } else if (entity == 'deposit') {
         r = _deposit(id, payload);
+      } else if (entity == 'place' || entity == 'place_edit' || entity == 'place_move_request') {
+        r = _placeMutation(id, entity, payload);
       } else {
         r = {'mutationId': id, 'result': 'applied', 'entityId': '$entity-$id', 'status': entity == 'collection' ? 'received' : 'ok'};
         if (entity == 'collection' && payload['method'] == 'cash') _cashOnHand += payload['amountPoisha'] as int;

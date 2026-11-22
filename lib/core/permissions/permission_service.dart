@@ -24,11 +24,13 @@ abstract final class Perm {
   static const leaveRequest = 'leave.request';
   static const handoverRequest = 'handover.request';
   static const coworkUse = 'cowork.use';
+  static const placeView = 'place.view';
+  static const placeCreate = 'place.create';
 
   static const all = [
     customerView, customerLocationPropose, customerPhoneManage, tagView, tagSet, collectionRecord, collectionView, //
     cashView, cashDepositRecord, visitRecord, visitView, noteCreate, noteView, promiseCreate,
-    promiseView, attendanceRecord, leaveRequest, handoverRequest, coworkUse,
+    promiseView, attendanceRecord, leaveRequest, handoverRequest, coworkUse, placeView, placeCreate,
   ];
 }
 

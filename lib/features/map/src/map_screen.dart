@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../core/feature/feature_manifest.dart';
 import '../../../core/permissions/permission_service.dart';
 import '../../../core/providers.dart';
 import '../../../core/settings/ui_prefs.dart';
@@ -67,6 +68,14 @@ class _CustomerMapScreenState extends ConsumerState<CustomerMapScreen> {
     final tiles = ref.watch(tileConfigProvider);
     final tilesOn = ref.watch(mapTilesEnabledProvider);
     final selected = pinned.where((c) => c.id == _selected).firstOrNull;
+    // Layers of other features (map places, FR-PLC-001), each behind its flag and permission.
+    final layers = [
+      for (final m in ref.watch(featureManifestsProvider))
+        if (access.flag(m.flag))
+          for (final x in m.mapLayers)
+            if (x.permission == null || access.can(x.permission!)) x,
+    ];
+    final longPress = layers.where((x) => x.onLongPress != null).firstOrNull;
 
     final LatLng center;
     if (fix != null) {
@@ -120,9 +129,10 @@ class _CustomerMapScreenState extends ConsumerState<CustomerMapScreen> {
         children: [
           FlutterMap(
             mapController: _map,
-            options: MapOptions(initialCenter: center, initialZoom: 14, maxZoom: tiles.maxZoom.toDouble(), backgroundColor: cs.surfaceContainer, onTap: (_, _) => setState(() => _selected = null)),
+            options: MapOptions(initialCenter: center, initialZoom: 14, maxZoom: tiles.maxZoom.toDouble(), backgroundColor: cs.surfaceContainer, onTap: (_, _) => setState(() => _selected = null), onLongPress: longPress == null ? null : (_, p) => longPress.onLongPress!(context, ref, p.latitude, p.longitude)),
             children: [
               if (tilesOn) TileLayer(urlTemplate: tiles.urlTemplate, subdomains: tiles.subdomains, userAgentPackageName: 'bd.howlader.field.staff'),
+              for (final x in layers) x.layer(context, ref),
               MarkerLayer(
                 markers: [
                   for (final c in sorted)
@@ -200,7 +210,9 @@ class _Controls extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(children: [
+        // A Wrap, not a Row: on a 412 dp phone the two did not fit side by side (88 px overflow); the sync
+        // chip now drops to its own line instead of being cut off.
+        Wrap(alignment: WrapAlignment.spaceBetween, crossAxisAlignment: WrapCrossAlignment.center, spacing: Space.s8, runSpacing: Space.s8, children: [
           Material(
             color: cs.surface,
             elevation: 2,
@@ -216,7 +228,6 @@ class _Controls extends ConsumerWidget {
               onSelectionChanged: (s) => ref.read(mapListModeProvider.notifier).state = s.first,
             ),
           ),
-          const Spacer(),
           SyncChip(onTap: () => context.push('/sync')),
         ]),
         const SizedBox(height: Space.s8),
@@ -330,7 +341,8 @@ class _NoPinChip extends ConsumerWidget {
               children: [
                 Icon(Icons.add_location_alt_rounded, size: 20, color: st.fg),
                 const SizedBox(width: Space.s8),
-                Text(l.mapNoPinCount(ref.watch(fmtProvider).num(count)), style: Theme.of(context).textTheme.titleSmall!.copyWith(color: st.fg)),
+                // Flexible: at 130 % text the label wrapped past the screen edge.
+                Flexible(child: Text(l.mapNoPinCount(ref.watch(fmtProvider).num(count)), style: Theme.of(context).textTheme.titleSmall!.copyWith(color: st.fg))),
                 const SizedBox(width: Space.s4),
                 Icon(Icons.chevron_right_rounded, size: 20, color: st.fg),
               ],
