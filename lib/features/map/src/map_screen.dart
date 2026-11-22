@@ -6,6 +6,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/feature/feature_manifest.dart';
+import '../../../core/map/map_defaults.dart';
 import '../../../core/permissions/permission_service.dart';
 import '../../../core/providers.dart';
 import '../../../core/settings/ui_prefs.dart';
@@ -69,21 +70,18 @@ class _CustomerMapScreenState extends ConsumerState<CustomerMapScreen> {
     final tilesOn = ref.watch(mapTilesEnabledProvider);
     final selected = pinned.where((c) => c.id == _selected).firstOrNull;
     // Layers of other features (map places, FR-PLC-001), each behind its flag and permission.
-    final layers = [
-      for (final m in ref.watch(featureManifestsProvider))
-        if (access.flag(m.flag))
-          for (final x in m.mapLayers)
-            if (x.permission == null || access.can(x.permission!)) x,
-    ];
+    final layers = ref.watch(mapLayersProvider);
     final longPress = layers.where((x) => x.onLongPress != null).firstOrNull;
 
-    final LatLng center;
+    // My position, else the middle of my pins, else the app's default (Galachipa, a wider view).
+    var center = defaultMapCenter;
+    var zoom = defaultMapZoom;
     if (fix != null) {
       center = LatLng(fix.lat, fix.lng);
+      zoom = 14;
     } else if (pinned.isNotEmpty) {
       center = LatLng(pinned.map((c) => c.row.lat!).reduce((a, b) => a + b) / pinned.length, pinned.map((c) => c.row.lng!).reduce((a, b) => a + b) / pinned.length);
-    } else {
-      center = const LatLng(22.7010, 90.3535); // Barishal
+      zoom = 14;
     }
 
     // Draw the most urgent pins last so they sit on top.
@@ -129,10 +127,10 @@ class _CustomerMapScreenState extends ConsumerState<CustomerMapScreen> {
         children: [
           FlutterMap(
             mapController: _map,
-            options: MapOptions(initialCenter: center, initialZoom: 14, maxZoom: tiles.maxZoom.toDouble(), backgroundColor: cs.surfaceContainer, onTap: (_, _) => setState(() => _selected = null), onLongPress: longPress == null ? null : (_, p) => longPress.onLongPress!(context, ref, p.latitude, p.longitude)),
+            options: MapOptions(initialCenter: center, initialZoom: zoom, maxZoom: tiles.maxZoom.toDouble(), backgroundColor: cs.surfaceContainer, onTap: (_, _) => setState(() => _selected = null), onLongPress: longPress == null ? null : (_, p) => longPress.onLongPress!(context, ref, p.latitude, p.longitude)),
             children: [
               if (tilesOn) TileLayer(urlTemplate: tiles.urlTemplate, subdomains: tiles.subdomains, userAgentPackageName: 'bd.howlader.field.staff'),
-              for (final x in layers) x.layer(context, ref),
+              for (final x in layers) x.layer(context, ref, MapLayerMode.interactive),
               MarkerLayer(
                 markers: [
                   for (final c in sorted)

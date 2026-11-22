@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../core/feature/feature_manifest.dart';
 import '../../../core/providers.dart';
 import '../../../core/settings/ui_prefs.dart';
 import '../../../core/theme/status_colors.dart';
@@ -40,38 +41,75 @@ String placeIconLabel(AppLocalizations l, String icon) => switch (icon) {
       _ => l.placeIconOther,
     };
 
-/// Marker size: a 40 dp round icon inside a 48 dp tap target, with the name to its right.
-const _markerW = 200.0;
-const _markerH = Sizes.minTarget;
-const _iconBox = 40.0;
+/// Google-Maps-style detail by zoom (owner decision 2026-11-22): far out no places at all, in the
+/// middle only the small square icon, close in the icon with its name.
+const placeIconMinZoom = 13.0;
+const placeLabelMinZoom = 16.0;
 
-/// FR-PLC-001: every place as an icon with its name always written next to it.
+/// How much of a place the map shows at [zoom].
+enum PlaceDetail { hidden, icon, label }
+
+PlaceDetail placeDetailAt(double zoom) => zoom < placeIconMinZoom
+    ? PlaceDetail.hidden
+    : zoom < placeLabelMinZoom
+        ? PlaceDetail.icon
+        : PlaceDetail.label;
+
+/// The square: 24 dp with small rounded corners and the kind's icon inside. Not the customer
+/// teardrop/round pin, so the two never look alike.
+const _square = Space.s24;
+const _squareIcon = Space.s16;
+
+/// Width of a marker with its name; the name is cut with … beyond it.
+const _labelW = 200.0;
+
+/// FR-PLC-001: every place on every map, as much as the zoom allows. [mode] reference (the
+/// pin-setting screen) draws the same markers but they take no touches. [exceptId] leaves one place
+/// out (the move screen draws that one itself).
 class PlacesLayer extends ConsumerWidget {
-  const PlacesLayer({super.key});
+  const PlacesLayer({super.key, this.mode = MapLayerMode.interactive, this.exceptId});
+  final MapLayerMode mode;
+  final String? exceptId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // MapCamera.of rebuilds this layer as the map zooms.
+    final detail = placeDetailAt(MapCamera.of(context).zoom);
+    if (detail == PlaceDetail.hidden) return const SizedBox.shrink();
     final places = ref.watch(placesProvider).value ?? const <MapPlace>[];
-    return MarkerLayer(
+    final tappable = mode == MapLayerMode.interactive;
+    final label = detail == PlaceDetail.label;
+    // A tappable marker keeps a 48 dp target around the square; a reference one is just the square.
+    final box = tappable ? Sizes.minTarget : _square;
+    final width = label ? _labelW : box;
+    final layer = MarkerLayer(
       markers: [
         for (final p in places)
-          Marker(
-            point: LatLng(p.row.lat, p.row.lng),
-            width: _markerW,
-            height: _markerH,
-            // The icon's centre sits on the point; the name runs to the right.
-            alignment: const Alignment((_markerW / 2 - _markerH / 2) / (_markerW / 2), 0),
-            child: PlaceMarker(place: p, onTap: () => showPlaceDetails(context, p.id)),
-          ),
+          if (p.id != exceptId)
+            Marker(
+              point: LatLng(p.row.lat, p.row.lng),
+              width: width,
+              height: box,
+              // The square's centre sits on the point; the name runs to the right.
+              alignment: label ? Alignment((width / 2 - box / 2) / (width / 2), 0) : Alignment.center,
+              child: PlaceMarker(place: p, showLabel: label, box: box, onTap: tappable ? () => showPlaceDetails(context, p.id) : null),
+            ),
       ],
     );
+    return tappable ? layer : IgnorePointer(child: layer);
   }
 }
 
 class PlaceMarker extends StatelessWidget {
-  const PlaceMarker({super.key, required this.place, required this.onTap});
+  const PlaceMarker({super.key, required this.place, this.onTap, this.showLabel = true, this.box = Sizes.minTarget});
   final MapPlace place;
-  final VoidCallback onTap;
+
+  /// Null on a reference map: nothing to tap.
+  final VoidCallback? onTap;
+  final bool showLabel;
+
+  /// Side of the area around the square (the tap target on an interactive map).
+  final double box;
 
   @override
   Widget build(BuildContext context) {
@@ -80,38 +118,38 @@ class PlaceMarker extends StatelessWidget {
     // Waiting for a move = warning colour; the details sheet says it in words too.
     final st = place.movePending ? sem.warning : sem.info;
     final t = Theme.of(context).textTheme;
+    final marker = Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        SizedBox(
+          width: box,
+          height: box,
+          child: Center(
+            child: Container(
+              key: const Key('place-square'),
+              width: _square,
+              height: _square,
+              decoration: BoxDecoration(color: st.bg, borderRadius: Radii.brSm, border: Border.all(color: st.fg, width: 1.5)),
+              child: Icon(placeIconData(place.icon), size: _squareIcon, color: st.fg),
+            ),
+          ),
+        ),
+        if (showLabel)
+          Flexible(
+            child: Container(
+              margin: const EdgeInsets.only(left: Space.s2),
+              padding: const EdgeInsets.symmetric(horizontal: Space.s4, vertical: Space.s2),
+              decoration: BoxDecoration(color: cs.surface.withValues(alpha: 0.92), borderRadius: Radii.brXs),
+              child: Text(place.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: t.labelMedium!.copyWith(color: cs.onSurface)),
+            ),
+          ),
+      ],
+    );
     return Semantics(
-      button: true,
+      button: onTap != null,
       label: '${place.name}, ${placeIconLabel(AppLocalizations.of(context), place.icon)}',
       excludeSemantics: true,
-      child: GestureDetector(
-        onTap: onTap,
-        behavior: HitTestBehavior.opaque,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            SizedBox(
-              width: _markerH,
-              height: _markerH,
-              child: Center(
-                child: Container(
-                  width: _iconBox,
-                  height: _iconBox,
-                  decoration: BoxDecoration(color: st.bg, shape: BoxShape.circle, border: Border.all(color: st.fg, width: 2)),
-                  child: Icon(placeIconData(place.icon), size: 22, color: st.fg),
-                ),
-              ),
-            ),
-            Flexible(
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: Space.s8, vertical: Space.s2),
-                decoration: BoxDecoration(color: cs.surface.withValues(alpha: 0.92), borderRadius: Radii.brSm, border: Border.all(color: cs.outlineVariant)),
-                child: Text(place.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: t.labelLarge!.copyWith(color: cs.onSurface)),
-              ),
-            ),
-          ],
-        ),
-      ),
+      child: onTap == null ? marker : GestureDetector(onTap: onTap, behavior: HitTestBehavior.opaque, child: marker),
     );
   }
 }
@@ -395,6 +433,7 @@ class _PlaceMoveScreenState extends ConsumerState<PlaceMoveScreen> {
               ),
               children: [
                 if (tilesOn) TileLayer(urlTemplate: tiles.urlTemplate, subdomains: tiles.subdomains, userAgentPackageName: 'bd.howlader.field.staff'),
+                PlacesLayer(mode: MapLayerMode.reference, exceptId: p.id),
                 MarkerLayer(markers: [
                   Marker(
                     point: here,

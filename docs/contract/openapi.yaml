@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Howlader Field Operations API
-  version: 1.41.0
+  version: 1.42.0
   description: |
     Contract owned by field-api. Consumers (admin-web, staff-app) generate types from this file.
     Conventions (auth, pagination, idempotency, errors) are described in docs/05-api-contract.md.
@@ -1253,8 +1253,9 @@ paths:
       tags: [places]
       operationId: listPlaces
       description: |
-        Map places in scope (1.38.0, FR-PLC-001/004): text markers staff and the office put on the map (shop, market, mosque…), newest first.
-        Permission place.view. Scope: the caller's branches; super admin all. `status=deleted` needs place.manage (403 otherwise).
+        Map places (1.38.0, FR-PLC-001/004): text markers staff and the office put on the map (shop, market, mosque…), newest first.
+        Permission place.view. 1.42.0 (ADR-054): places are shared landmarks for the whole area, so every caller sees the places of
+        every branch (no branch scope); `branchId` only narrows to places added from that branch. `status=deleted` needs place.manage (403 otherwise).
         Use `bbox` for the visible map area; `pendingMove=true` lists only places with an open move request.
       parameters:
         - { $ref: '#/components/parameters/BranchId' }
@@ -1271,9 +1272,10 @@ paths:
       tags: [places]
       operationId: createPlace
       description: |
-        Put a place on the map (1.38.0, FR-PLC-002). Visible to everyone in the branch at once, no approval. Idempotent by clientId per caller
-        (a repeat answers 200). Permission place.create. `branchId` defaults to the caller's first branch and must be one the caller can see.
-        Offline phones use the sync mutation `place` with the same body. 422 BUSINESS_RULE: OUTSIDE_BANGLADESH, PLACE_INVALID_BRANCH.
+        Put a place on the map (1.38.0, FR-PLC-002). Visible to everyone in every branch at once, no approval. Idempotent by clientId per caller
+        (a repeat answers 200). Permission place.create. 1.42.0 (ADR-054): no branch is needed; a `branchId` in the body is accepted and
+        ignored, and PLACE_INVALID_BRANCH is no longer returned. The place records the caller's first branch for information only.
+        Offline phones use the sync mutation `place` with the same body. 422 BUSINESS_RULE: OUTSIDE_BANGLADESH.
       requestBody:
         required: true
         content:
@@ -1286,7 +1288,7 @@ paths:
     get:
       tags: [places]
       operationId: listPlaceMoveRequests
-      description: 'Open move requests in scope, oldest first (1.38.0, FR-PLC-005): the office queue. Permission place.manage.'
+      description: 'Open move requests, oldest first (1.38.0, FR-PLC-005): the office queue. Permission place.manage. 1.42.0 (ADR-054): requests on places of every branch; `branchId` only narrows to places added from that branch.'
       parameters:
         - { $ref: '#/components/parameters/BranchId' }
       responses:
@@ -1295,7 +1297,7 @@ paths:
     get:
       tags: [places]
       operationId: getPlace
-      description: 'One place with its history (1.38.0). Permission place.view; out of scope is 404; a deleted place is 404 unless the caller has place.manage.'
+      description: 'One place with its history (1.38.0). Permission place.view; any branch''s place (1.42.0, ADR-054); a deleted place is 404 unless the caller has place.manage.'
       parameters: [ { $ref: '#/components/parameters/Id' } ]
       responses:
         '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Place' } } } }
@@ -1304,7 +1306,7 @@ paths:
       operationId: editPlace
       description: |
         Change name, icon or note (1.38.0, FR-PLC-003). Permission place.create: a field staff member edits only the places they created; other places
-        and `location` (a direct move) need place.manage (403 otherwise). A direct move closes an open move request as rejected ("moved by the office").
+        and `location` (a direct move) need place.manage (403 otherwise). 1.42.0 (ADR-054): place.manage works on the places of every branch. A direct move closes an open move request as rejected ("moved by the office").
         `If-Match: W/"<version>"` is optional; a stale version is 412. Offline phones use the sync mutation `place_edit`.
         409 INVALID_STATE: PLACE_DELETED. 422 BUSINESS_RULE: OUTSIDE_BANGLADESH.
       parameters: [ { $ref: '#/components/parameters/Id' }, { $ref: '#/components/parameters/IfMatch' } ]
@@ -1329,8 +1331,8 @@ paths:
       tags: [places]
       operationId: requestPlaceMove
       description: |
-        Ask the office to move a place's marker (1.38.0, FR-PLC-004). Any place in scope, not only own ones. The marker stays where it is until an
-        office user with place.manage approves; they get an inbox item and a notification. One open request per place. Idempotent by clientId
+        Ask the office to move a place's marker (1.38.0, FR-PLC-004). Any place of any branch (1.42.0), not only own ones. The marker stays where it is until an
+        office user with place.manage approves; every place.manage holder, in any branch (1.42.0, ADR-054), gets an inbox item and a notification. One open request per place. Idempotent by clientId
         (a repeat answers 200). Permission place.create. Offline phones use the sync mutation `place_move_request`.
         409 INVALID_STATE: MOVE_PENDING (someone else's request is open), PLACE_DELETED. 422 BUSINESS_RULE: OUTSIDE_BANGLADESH, MOVE_TOO_SHORT (under 5 m).
       parameters: [ { $ref: '#/components/parameters/Id' } ]
@@ -2882,7 +2884,7 @@ components:
         icon: { $ref: '#/components/schemas/PlaceIcon' }
         note: { type: string, maxLength: 200 }
         location: { $ref: '#/components/schemas/PlaceLocation' }
-        branchId: { type: string, description: 'Default: the caller''s first branch' }
+        branchId: { type: string, deprecated: true, description: '1.42.0 (ADR-054): ignored; a place belongs to no branch. Kept so older clients stay valid.' }
     PlaceUpdate:
       type: object
       minProperties: 1
@@ -2928,12 +2930,12 @@ components:
         to: { oneOf: [ { $ref: '#/components/schemas/PlaceLocation' }, { type: 'null' } ] }
     Place:
       type: object
-      description: 'A text marker on the map (1.38.0, FR-PLC-001). Sync entity `place`, sent to every device of its branch. Not linked to a customer and not a tracking point.'
+      description: 'A text marker on the map (1.38.0, FR-PLC-001). Sync entity `place`, sent to every device of every branch (1.42.0, ADR-054). Not linked to a customer and not a tracking point.'
       required: [id, clientId, branchId, name, icon, note, location, status, version, pendingMove, lastMoveDecision, createdBy, updatedBy, createdAt, updatedAt, events]
       properties:
         id: { type: string }
         clientId: { type: [string, 'null'], description: 'The creator''s clientId, so the creating device can match its offline row' }
-        branchId: { type: string }
+        branchId: { type: string, description: 'Informational (1.42.0, ADR-054): the first branch of the person who added it, empty when they have none. Not a scope: every branch sees every place.' }
         name: { type: string }
         icon: { $ref: '#/components/schemas/PlaceIcon' }
         note: { type: [string, 'null'] }
@@ -3340,7 +3342,7 @@ components:
             contact_attempt → ContactAttempt · location_proposal → OwnLocationProposal (1.7.0; sent only to the staff member who proposed, on create and on the manager's decision) ·
             cowork_session → CoworkSession (1.9.0; sent to every invited or member user on each change)
             task → Task (1.20.0; sent to the assignee on every change; the bootstrap snapshot holds open tasks and those closed in the last 30 days)
-            place → Place (1.38.0; sent to every device of the place's branch on every change; a deleted place arrives as op=delete reason=deleted; the bootstrap snapshot holds the active places of the user's branches)
+            place → Place (1.38.0; since 1.42.0 (ADR-054) sent to every device of every branch on every change; a deleted place arrives as op=delete reason=deleted; the bootstrap snapshot holds the active places of all branches. Devices whose cursor predates 1.42.0 get CURSOR_EXPIRED once and take a fresh snapshot)
         reason: { type: string }
     ContactAttemptCreate:
       type: object
@@ -3423,7 +3425,7 @@ components:
         nextCursor: { type: [string, 'null'] }
     InboxItem:
       type: object
-      properties: { id: { type: string }, type: { type: string, example: collection.conflict }, severity: { type: string, enum: [low, medium, high, critical] }, branchId: { type: string }, entity: { type: string }, entityId: { type: string }, summary: { $ref: '#/components/schemas/I18nText' }, status: { type: string, enum: [open, snoozed, resolved] }, createdAt: { type: string }, link: { type: string, example: '/collections/6750…' } }
+      properties: { id: { type: string }, type: { type: string, example: collection.conflict }, severity: { type: string, enum: [low, medium, high, critical] }, branchId: { type: string, description: '1.42.0: a `place.move_request` item is shown to every place.manage holder in any branch (ADR-054), whatever this branch is' }, entity: { type: string }, entityId: { type: string }, summary: { $ref: '#/components/schemas/I18nText' }, status: { type: string, enum: [open, snoozed, resolved] }, createdAt: { type: string }, link: { type: string, example: '/collections/6750…' } }
     DashboardOverview:
       type: object
       properties:

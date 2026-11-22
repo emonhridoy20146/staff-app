@@ -14,7 +14,8 @@ import '../../auth/auth.dart';
 /// Map places (master FR-PLC-001..006, contract 1.38.0, field-api ADR-051).
 ///
 /// A place is a name on the map with one of a few icons and an optional note,
-/// seen by everyone of the branch. Adding one works offline: the row is saved
+/// seen by all staff of all branches (contract 1.42.0: no branch on create).
+/// Adding one works offline: the row is saved
 /// here at once (its `localId` is my clientId) and sent as the `place`
 /// mutation; the server id comes back with the push result and the next pull.
 /// I may change the words of places I made (`place_edit`) and ask the office
@@ -65,7 +66,7 @@ class PlacePullHandler implements PullHandler {
 
   @override
   Future<void> delete(AppDatabase db, String id, {String? reason}) =>
-      // Removed by the office or out of my branches. Never drop something of mine that is still waiting to be sent.
+      // Removed by the office. Never drop something of mine that is still waiting to be sent.
       (db.delete(db.mapPlaces)..where((t) => t.serverId.equals(id) & t.createState.equals('queued').not() & t.editState.equals('queued').not() & t.moveState.equals('queued').not())).go();
 }
 
@@ -150,7 +151,7 @@ class MapPlace {
   }
 }
 
-/// Every place on the phone (they are all the branch's; the server sends nothing else).
+/// Every place on the phone (all branches' places; the server sends them all).
 final placesProvider = StreamProvider<List<MapPlace>>((ref) {
   final db = ref.watch(databaseProvider);
   return (db.select(db.mapPlaces)..orderBy([(t) => OrderingTerm.asc(t.name)])).watch().map((rows) => [for (final r in rows) MapPlace(r)]);
@@ -182,7 +183,6 @@ class PlaceService {
       await db.into(db.mapPlaces).insert(MapPlacesCompanion.insert(
             localId: clientId,
             clientId: Value(clientId),
-            branchId: Value(me?.branchIds.firstOrNull),
             name: name.trim(),
             icon: icon,
             note: Value(text),

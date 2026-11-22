@@ -8,8 +8,9 @@ import 'src/places_data.dart';
 import 'src/places_ui.dart';
 
 /// Map places (master FR-PLC-001..006, contract 1.38.0, field-api ADR-051): names on the map that
-/// OpenStreetMap lacks. Long-press the customer map to add one (works offline); tap one to see it,
-/// change my own, or ask the office to move it.
+/// OpenStreetMap lacks, shown on every map (customer map, pin setting) by zoom. Places of all branches
+/// are seen by all staff (contract 1.42.0). Long-press the customer map to add one (works offline);
+/// tap one to see it, change my own, or ask the office to move it.
 final placesManifest = FeatureManifest(
   name: 'places',
   flag: 'module.places',
@@ -18,7 +19,7 @@ final placesManifest = FeatureManifest(
   pullHandlers: [PlacePullHandler()],
   pushHandlers: [PlacePushHandler()],
   mapLayers: [
-    MapLayerDef(id: 'places', permission: Perm.placeView, layer: (_, _) => const PlacesLayer(), onLongPress: _longPress),
+    MapLayerDef(id: 'places', permission: Perm.placeView, layer: (_, _, mode) => PlacesLayer(mode: mode), onLongPress: _longPress),
   ],
 );
 

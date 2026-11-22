@@ -136,16 +136,28 @@ class AlertSourceDef {
   final List<AppAlert> Function(Ref ref) read;
 }
 
-/// Extension point: a layer a feature draws on the customer map (e.g. map
-/// places, FR-PLC-001). [layer] returns a flutter_map layer widget (it may
-/// watch providers through [WidgetRef], so it stays live and works offline);
-/// [onLongPress] is offered a long press on the map (the first layer that has
-/// one takes it). The map screen never reads the feature's tables itself.
+/// How a map uses a feature's layer.
+enum MapLayerMode {
+  /// A working map (the customer map): markers may be tapped.
+  interactive,
+
+  /// Landmarks for reference only (e.g. the pin-setting screen): nothing is
+  /// tappable, every touch goes to the map underneath.
+  reference,
+}
+
+/// Extension point: a layer a feature draws on every map of the app (e.g. map
+/// places, FR-PLC-001): the customer map, the pin-setting screen, and any
+/// other map. [layer] returns a flutter_map layer widget (it may watch
+/// providers through [WidgetRef] and the camera through `MapCamera.of`, so it
+/// stays live and works offline); [onLongPress] is offered a long press on an
+/// interactive map (the first layer that has one takes it). Maps never read
+/// the feature's tables themselves; they list layers via `mapLayersProvider`.
 class MapLayerDef {
   const MapLayerDef({required this.id, required this.layer, this.permission, this.onLongPress});
   final String id;
   final String? permission;
-  final Widget Function(BuildContext context, WidgetRef ref) layer;
+  final Widget Function(BuildContext context, WidgetRef ref, MapLayerMode mode) layer;
   final void Function(BuildContext context, WidgetRef ref, double lat, double lng)? onLongPress;
 }
 
