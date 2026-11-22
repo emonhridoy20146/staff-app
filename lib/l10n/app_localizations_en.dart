@@ -3384,6 +3384,32 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get customerRefresh => 'Reload from server';
+
+  @override
+  String get customerRefreshDone => 'Updated from the server';
+
+  @override
+  String get customerRefreshOffline =>
+      'Needs internet. Showing the data saved on this phone.';
+
+  @override
+  String get customerRefreshBusy => 'The ERP is busy. Try again in a minute.';
+
+  @override
+  String get customerRefreshNotFound =>
+      'The server no longer has this customer for you. The data on this phone is kept.';
+
+  @override
+  String get customerRefreshDenied =>
+      'You don\'t have permission to reload this customer.';
+
+  @override
+  String customerRefreshFailed(String code) {
+    return 'Couldn\'t reload. Showing the saved data. Code: $code';
+  }
+
+  @override
   String get placeIconShop => 'Shop';
 
   @override

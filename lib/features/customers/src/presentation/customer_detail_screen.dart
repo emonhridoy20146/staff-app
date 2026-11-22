@@ -14,10 +14,12 @@ import '../../../../core/theme/status_colors.dart';
 import '../../../../core/theme/tokens.dart';
 import '../../../../core/time/clock.dart';
 import '../../../../core/ui/dashed_border.dart';
+import '../../../../core/ui/common.dart';
 import '../../../../core/ui/money_text.dart';
 import '../../../../core/ui/status_badge.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../contact_attempts.dart';
+import '../customer_refresh.dart';
 import '../pin_correction.dart';
 import '../customer_providers.dart';
 import '../data/customer_repository.dart';
@@ -66,6 +68,27 @@ class _Detail extends ConsumerStatefulWidget {
 
 class _DetailState extends ConsumerState<_Detail> {
   bool _actionRun = false;
+  bool _refreshing = false;
+  final _pull = GlobalKey<RefreshIndicatorState>();
+
+  /// FR-M-063: the reload button and pull down both ask the server for this customer, then sync.
+  Future<void> _refresh() async {
+    if (_refreshing) return;
+    setState(() => _refreshing = true);
+    final r = await ref.read(customerRefreshServiceProvider).refresh(widget.customer.id);
+    if (!mounted) return;
+    setState(() => _refreshing = false);
+    final l = AppLocalizations.of(context);
+    final (text, icon) = switch (r.outcome) {
+      CustomerRefreshOutcome.ok => (l.customerRefreshDone, Icons.check_circle_rounded),
+      CustomerRefreshOutcome.offline => (l.customerRefreshOffline, Icons.cloud_off_rounded),
+      CustomerRefreshOutcome.busy => (l.customerRefreshBusy, Icons.hourglass_top_rounded),
+      CustomerRefreshOutcome.notFound => (l.customerRefreshNotFound, Icons.error_outline_rounded),
+      CustomerRefreshOutcome.denied => (l.customerRefreshDenied, Icons.block_rounded),
+      CustomerRefreshOutcome.failed => (l.customerRefreshFailed(r.code ?? '—'), Icons.error_outline_rounded),
+    };
+    showAppSnack(context, text, icon: icon);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -89,14 +112,30 @@ class _DetailState extends ConsumerState<_Detail> {
       if (a != null) WidgetsBinding.instance.addPostFrameCallback((_) { if (mounted) a.onTap(context, ref, ctx); });
     }
 
+    final l = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: cs.surfaceContainerLowest,
-      body: CustomScrollView(
+      body: RefreshIndicator(
+        key: _pull,
+        onRefresh: _refresh,
+        child: CustomScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
           SliverAppBar(
             pinned: true,
             backgroundColor: cs.surfaceContainer,
             title: Text(customer.code, style: AppTheme.mono(Theme.of(context).textTheme.titleMedium!)),
+            actions: [
+              IconButton(
+                tooltip: l.customerRefresh,
+                // Same as pulling down: the indicator shows while the server is asked.
+                onPressed: _refreshing ? null : () => _pull.currentState?.show() ?? _refresh(),
+                icon: _refreshing
+                    ? const SizedBox.square(dimension: Space.s20, child: CircularProgressIndicator(strokeWidth: 2.5))
+                    : const Icon(Icons.refresh_rounded),
+              ),
+              const SizedBox(width: Space.s4),
+            ],
           ),
           SliverToBoxAdapter(child: _Header(customer: customer)),
           SliverPadding(
@@ -116,6 +155,7 @@ class _DetailState extends ConsumerState<_Detail> {
             ]),
           ),
         ],
+        ),
       ),
       bottomNavigationBar: actions.isEmpty
           ? null
@@ -648,11 +688,17 @@ class _MonthCard extends ConsumerWidget {
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
             Expanded(child: Text(l.monthTitle, style: t.titleSmall)),
-            if (invoices.isNotEmpty)
-              Text(
-                l.monthInvoices(f.num(invoices.length), f.num(invoices.where((p) => p.collectable).length)),
-                style: t.bodySmall!.copyWith(color: cs.onSurfaceVariant),
+            if (invoices.isNotEmpty) ...[
+              const SizedBox(width: Space.s8),
+              // Flexible: the English line is longer than the title's row on a narrow phone.
+              Flexible(
+                child: Text(
+                  l.monthInvoices(f.num(invoices.length), f.num(invoices.where((p) => p.collectable).length)),
+                  style: t.bodySmall!.copyWith(color: cs.onSurfaceVariant),
+                  textAlign: TextAlign.end,
+                ),
               ),
+            ],
           ]),
           switch (m.visit) {
             VisitMark.today => line(Icons.directions_walk_rounded, sem.success.fg, l.marksVisitToday),

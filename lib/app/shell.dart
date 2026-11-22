@@ -49,7 +49,11 @@ class AppShell extends ConsumerWidget {
           ),
           // The bar above already sits below the status bar; without this the
           // screens' own app bars would leave that gap a second time.
-          Expanded(child: MediaQuery.removePadding(context: context, removeTop: true, child: shell)),
+          // The Builder reads the MediaQuery *inside* this Scaffold's body, which
+          // has the keyboard inset already taken off. Reading the shell's own
+          // context put the full inset back, so each tab's Scaffold shrank for
+          // the keyboard a second time and left a blank band over the list.
+          Expanded(child: Builder(builder: (context) => MediaQuery.removePadding(context: context, removeTop: true, child: shell))),
         ],
       ),
       bottomNavigationBar: Column(mainAxisSize: MainAxisSize.min, children: [
@@ -155,17 +159,20 @@ class _BranchBar extends StatelessWidget {
                       isExpanded: true,
                       underline: const SizedBox.shrink(),
                       dropdownColor: cs.primaryContainer,
-                      style: t.titleSmall!.copyWith(color: cs.onPrimaryContainer),
+                      // labelMedium: branch names were too big at titleSmall (owner, 2026-11-22).
+                      // Rows keep the 48 dp default item height; long names end in "…".
+                      style: t.labelMedium!.copyWith(color: cs.onPrimaryContainer),
+                      itemHeight: Sizes.minTarget,
                       iconEnabledColor: cs.onPrimaryContainer,
                       items: [
-                        DropdownMenuItem<String?>(value: null, child: Text(l.filterAllBranches)),
-                        for (final e in branches.entries) DropdownMenuItem<String?>(value: e.key, child: Text(e.value)),
+                        DropdownMenuItem<String?>(value: null, child: _BranchName(l.filterAllBranches)),
+                        for (final e in branches.entries) DropdownMenuItem<String?>(value: e.key, child: _BranchName(e.value)),
                       ],
                       onChanged: onBranchChanged,
                     )
                   : Text(
                       branches.values.firstOrNull ?? '',
-                      style: t.titleSmall!.copyWith(color: cs.onPrimaryContainer),
+                      style: t.labelMedium!.copyWith(color: cs.onPrimaryContainer),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -187,4 +194,13 @@ class _BranchBar extends StatelessWidget {
       ),
     );
   }
+}
+
+/// One branch name in the picker: one line, "…" when it does not fit.
+class _BranchName extends StatelessWidget {
+  const _BranchName(this.name);
+  final String name;
+
+  @override
+  Widget build(BuildContext context) => Text(name, maxLines: 1, overflow: TextOverflow.ellipsis, softWrap: false);
 }

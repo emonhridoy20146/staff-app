@@ -3371,6 +3371,33 @@ class AppLocalizationsBn extends AppLocalizations {
   }
 
   @override
+  String get customerRefresh => 'সার্ভার থেকে আবার লোড করুন';
+
+  @override
+  String get customerRefreshDone => 'সার্ভার থেকে হালনাগাদ হয়েছে';
+
+  @override
+  String get customerRefreshOffline =>
+      'ইন্টারনেট লাগবে। ফোনে রাখা তথ্য দেখানো হচ্ছে।';
+
+  @override
+  String get customerRefreshBusy =>
+      'ইআরপি এখন ব্যস্ত। এক মিনিট পরে আবার চেষ্টা করুন।';
+
+  @override
+  String get customerRefreshNotFound =>
+      'সার্ভারে এই গ্রাহক আর আপনার তালিকায় নেই। ফোনের তথ্য রাখা আছে।';
+
+  @override
+  String get customerRefreshDenied =>
+      'এই গ্রাহক আবার লোড করার অনুমতি আপনার নেই।';
+
+  @override
+  String customerRefreshFailed(String code) {
+    return 'আবার লোড করা যায়নি। রাখা তথ্য দেখানো হচ্ছে। কোড: $code';
+  }
+
+  @override
   String get placeIconShop => 'দোকান';
 
   @override
