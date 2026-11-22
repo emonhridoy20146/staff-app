@@ -47,6 +47,9 @@ class FakeFieldApi implements HttpClientAdapter {
   int pushCalls = 0;
   int coworkMaxMembers = 5; // cowork.maxMembers, counts the requester
   String staffPinApproval = 'when_missing'; // customers.staffPinApproval (1.11.0)
+  /// Signed-in user holds `customer.location.approve` (office user, 1.39.0).
+  bool pinApprover = false;
+  List<String> get _permissions => [...permissions, if (pinApprover) 'customer.location.approve'];
 
   /// My daily target (1.10.0). The demo shows the leaderboard; the real
   /// default of reports.leaderboardVisibleToStaff is false.
@@ -807,7 +810,7 @@ class FakeFieldApi implements HttpClientAdapter {
       'refreshToken': 'demo-rt',
       'refreshTokenExpiresAt': clock.nowUtc().add(const Duration(days: 30)).toIso8601String(),
       'user': {...user, 'mustChangePassword': _mustChange},
-      'permissions': permissions,
+      'permissions': _permissions,
       'flags': flags,
       'serverTime': clock.nowUtc().toIso8601String(),
     };
@@ -828,7 +831,7 @@ class FakeFieldApi implements HttpClientAdapter {
       'changes': changes,
       'nextCursor': '$end',
       'hasMore': end < _log.length,
-      'permissions': {'version': 1, 'keys': permissions},
+      'permissions': {'version': 1, 'keys': _permissions},
       'flags': flags,
       'settings': _settings,
       'cash': {
@@ -1173,12 +1176,14 @@ class FakeFieldApi implements HttpClientAdapter {
         if (entity == 'location_proposal') {
           // Server rules (1.11.0): a pin for a customer without a usable pin
           // applies at once under `when_missing`, unless the phone is mocked.
+          // 1.39.0: a caller with `customer.location.approve` sets it at once
+          // whatever the policy (a mock deviceGeo still waits).
           final geo = (payload['geo'] as Json?) ?? const {};
           final method = (payload['method'] as String?) ?? 'gps';
           final deviceMock = (payload['deviceGeo'] as Json?)?['mock'] == true;
           final loc = (_customer(payload['customerId'] as String)?['location'] as Json?) ?? const {};
           final usable = loc['status'] == 'ok' || loc['status'] == 'overridden';
-          final auto = staffPinApproval == 'when_missing' && !usable && !deviceMock;
+          final auto = !deviceMock && (pinApprover || (staffPinApproval == 'when_missing' && !usable));
           final status = auto ? 'approved' : 'pending';
           r = {...r, 'status': status};
           serverChange('location_proposal', '$entity-$id', {
