@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Added (owner request 2026-11-22: visit outcome "Runaway"; FR-M-064, contract 1.41.0)
+- **New visit outcome "পলাতক / Runaway"** (the customer has absconded) in the visit outcome picker, after "Customer died". Its label and running-person icon (`directions_run_rounded`) show wherever a visit outcome is shown: the customer timeline, Today's Work and other staff's activity.
+- Sent as `outcome: runaway` in the `visit` mutation (and accepted by `visit_checkout`'s optional `outcome`); field-api adds `runaway` to `VisitOutcome` in contract 1.41.0. The local `visits.outcome` and `colleague_activities.outcome` columns are plain text, so no schema change. An older server refuses the value and the visit stays in Problems until field-api 1.41.0 is live.
+- Tests: `test/features/visit_outcome_test.dart` (in the picker, bn/en labels, own icon).
+
 ### Added (owner request 2026-11-22: reload on the customer page; FR-M-063, ADR-M27)
 - **Reload button and pull-to-refresh on the customer page.** Both ask the server for this customer now (`POST /customers/{id}/refresh`, already in the contract): ERP balance, invoices, installment lines and payments are stored like a pull, then a sync runs so queued work goes out. The top-bar button turns into a spinner while it runs. Messages (bn/en): "সার্ভার থেকে হালনাগাদ হয়েছে / Updated from the server"; offline "ইন্টারনেট লাগবে। ফোনে রাখা তথ্য দেখানো হচ্ছে। / Needs internet. Showing the data saved on this phone."; ERP busy (503/429); no longer yours (404, the phone's data is kept); no permission (403); otherwise the error code.
 - Nothing unsynced is touched: the answer goes through the same `customer` pull handler as sync (pending field amounts and numbers typed on the phone are kept); the outbox is not changed.
