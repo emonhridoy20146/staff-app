@@ -8,9 +8,13 @@ import 'package:staff_app/features/places/src/places_ui.dart';
 
 import 'helpers.dart';
 
-/// Map places on screen (master FR-PLC-001..004): long-press the map to add one, its name stays next to
-/// the marker, my own place can be edited, a colleague's can only be asked to move.
+/// Map places on screen (master FR-PLC-001..004): long-press the map to add one, the marker shows as
+/// much as the zoom allows (place_marker_zoom_test), my own place can be edited, a colleague's can only
+/// be asked to move.
 void main() {
+  // The customer map opens at zoom 14 (middle): square icons only, names come at zoom 16.
+  Finder marker(String name) => find.byWidgetPredicate((w) => w is PlaceMarker && w.place.name == name);
+
   Future<void> settle(WidgetTester t, {int rounds = 8}) async {
     for (var i = 0; i < rounds; i++) {
       await t.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 30)));
@@ -37,7 +41,8 @@ void main() {
   testWidgets('a colleague\'s place shows with its name; long-press adds mine, which I may edit', (t) async {
     await start(t);
     expect(find.byType(PlaceMarker), findsOneWidget);
-    expect(find.text('নতুন বাজার'), findsOneWidget); // the label is always shown
+    expect(find.byKey(const Key('place-square')), findsOneWidget);
+    expect(find.text('নতুন বাজার'), findsNothing); // middle zoom: the icon only
 
     // Long-press the map → the sheet; a name is required.
     await t.longPress(find.byType(FlutterMap));
@@ -58,7 +63,7 @@ void main() {
     await t.tap(find.byKey(const Key('place-save')));
     await settle(t);
     expect(find.byType(PlaceMarker), findsNWidgets(2));
-    expect(find.text('আলিফ মডেল স্কুল'), findsWidgets);
+    expect(marker('আলিফ মডেল স্কুল'), findsOneWidget);
 
     // Every place marker is a ≥ 48 dp target.
     for (final e in find.byType(PlaceMarker).evaluate()) {
@@ -66,7 +71,8 @@ void main() {
     }
 
     // Mine: edit is offered.
-    await t.tap(find.widgetWithText(PlaceMarker, 'আলিফ মডেল স্কুল'));
+    // It sits where I am: tap the edge of its 48 dp target, beside my own dot.
+    await t.tapAt(t.getCenter(marker('আলিফ মডেল স্কুল')) + const Offset(20, 0));
     await settle(t);
     expect(find.text('আপনি এই জায়গাটি যোগ করেছেন'), findsOneWidget);
     expect(find.byKey(const Key('place-edit')), findsOneWidget);
@@ -75,7 +81,7 @@ void main() {
     await settle(t);
 
     // A colleague's: no edit, but I can ask to move it.
-    await t.tap(find.widgetWithText(PlaceMarker, 'নতুন বাজার'));
+    await t.tap(marker('নতুন বাজার'));
     await settle(t);
     expect(find.text('যোগ করেছেন সুমন মিয়া'), findsOneWidget);
     expect(find.byKey(const Key('place-edit')), findsNothing);
@@ -84,7 +90,7 @@ void main() {
 
   testWidgets('ask to move: the map moves under the pin, the request waits for the office', (t) async {
     final h = await start(t);
-    await t.tap(find.widgetWithText(PlaceMarker, 'নতুন বাজার'));
+    await t.tap(marker('নতুন বাজার'));
     await settle(t);
     await t.tap(find.byKey(const Key('place-move')));
     await settle(t);
@@ -104,7 +110,7 @@ void main() {
 
   testWidgets('labels and sheet still fit at 130 % text (FR-M accessibility)', (t) async {
     await start(t, textScale: 1.3);
-    expect(find.text('নতুন বাজার'), findsOneWidget);
+    expect(marker('নতুন বাজার'), findsOneWidget);
     await t.longPress(find.byType(FlutterMap));
     await settle(t);
     expect(find.text('ম্যাপে নতুন জায়গা'), findsOneWidget);

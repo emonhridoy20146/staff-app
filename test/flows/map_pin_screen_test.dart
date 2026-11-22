@@ -5,6 +5,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:staff_app/app/app.dart';
 import 'package:staff_app/app/router.dart';
 import 'package:staff_app/core/providers.dart';
+import 'package:staff_app/features/places/src/places_ui.dart';
 
 import 'helpers.dart';
 
@@ -65,6 +66,37 @@ void main() {
     expect(rows.single.lat, closeTo(22.71001, 1e-6));
     expect(rows.single.lng, closeTo(90.36002, 1e-6));
     expect(rows.single.deviceGeoJson, isNotNull, reason: 'where the phone was goes along');
+
+    await t.pumpWidget(const SizedBox.shrink());
+    h.container.dispose();
+    await t.pump(const Duration(milliseconds: 50));
+  });
+
+  testWidgets('places show on the pin screen as landmarks, for reference only', (t) async {
+    final h = Harness();
+    // Next to where the phone is (the pin screen zooms to 18 there): close enough for the name.
+    h.api.addPlace('pl-7', name: 'নাথুল্লাবাদ মসজিদ', icon: 'mosque', lat: 22.7107, lng: 90.3499);
+    await t.runAsync(h.signIn);
+    t.view.physicalSize = const Size(412, 892) * 2;
+    t.view.devicePixelRatio = 2;
+    addTearDown(t.view.reset);
+    await t.pumpWidget(UncontrolledProviderScope(container: h.container, child: const FieldApp(watchConnectivity: false)));
+    await settle(t);
+    h.read(routerProvider).go('/customers/c-1010');
+    await settle(t);
+    await t.tap(find.text('লোকেশন দিন').first);
+    await settle(t);
+
+    expect(find.byType(PlaceMarker), findsOneWidget);
+    expect(find.text('নাথুল্লাবাদ মসজিদ'), findsOneWidget, reason: 'zoomed in: icon and name');
+    expect(find.byIcon(Icons.mosque_rounded), findsOneWidget);
+    // Reference only: no details sheet; a tap on it still moves the pin there.
+    expect(find.descendant(of: find.byType(PlaceMarker), matching: find.byType(GestureDetector)), findsNothing);
+    final before = shown(t);
+    await t.tap(find.text('নাথুল্লাবাদ মসজিদ'), warnIfMissed: false);
+    await settle(t, rounds: 4);
+    expect(find.byType(BottomSheet), findsNothing);
+    expect(shown(t), isNot(before), reason: 'the tap went to the map');
 
     await t.pumpWidget(const SizedBox.shrink());
     h.container.dispose();

@@ -7,7 +7,9 @@ import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../../core/feature/feature_manifest.dart';
 import '../../../../core/location/location_engine.dart';
+import '../../../../core/map/map_defaults.dart';
 import '../../../../core/media/media.dart';
 import '../../../../core/providers.dart';
 import '../../../../core/settings/ui_prefs.dart';
@@ -21,12 +23,10 @@ import '../domain/customer.dart';
 import '../domain/map_pin.dart';
 import '../pin_correction.dart';
 
-/// Barishal, when neither the customer nor the phone has a position.
-const _fallback = LatLng(22.7010, 90.3535);
-
 /// Set or move a customer's pin (FR-CUS-008, FR-CUS-011), ride-app style:
 /// the pin stays in the middle and the map moves under it. Starts at the
-/// customer's pin, else at the phone's position. Works offline (the pin is
+/// customer's pin, else at the phone's position, else at the app's default
+/// (Galachipa). Map places show as landmarks. Works offline (the pin is
 /// saved and sent later); only the map tiles need the network.
 class MapPinScreen extends ConsumerStatefulWidget {
   const MapPinScreen({super.key, required this.customerId});
@@ -131,7 +131,7 @@ class _MapPinScreenState extends ConsumerState<MapPinScreen> {
     if (c == null) return const Scaffold(body: Center(child: CircularProgressIndicator()));
 
     final old = c.hasPin ? LatLng(c.row.lat!, c.row.lng!) : null;
-    final start = _start ??= old ?? (_phone != null ? LatLng(_phone!.lat, _phone!.lng) : null) ?? _fallback;
+    final start = _start ??= old ?? (_phone != null ? LatLng(_phone!.lat, _phone!.lng) : null) ?? defaultMapCenter;
     final p = _point ?? start;
     final check = checkMapPin(lat: p.latitude, lng: p.longitude, phone: _phone, customerHasUsablePin: c.pinUsable, policy: policy);
     final movedM = old == null ? null : distanceMeters(old.latitude, old.longitude, p.latitude, p.longitude);
@@ -153,7 +153,7 @@ class _MapPinScreenState extends ConsumerState<MapPinScreen> {
                       mapController: _map,
                       options: MapOptions(
                         initialCenter: start,
-                        initialZoom: old != null || _phone != null ? 18 : 14,
+                        initialZoom: old != null || _phone != null ? 18 : defaultMapZoom,
                         maxZoom: tiles.maxZoom.toDouble(),
                         backgroundColor: cs.surfaceContainer,
                         interactionOptions: const InteractionOptions(flags: InteractiveFlag.all & ~InteractiveFlag.rotate),
@@ -173,6 +173,8 @@ class _MapPinScreenState extends ConsumerState<MapPinScreen> {
                       ),
                       children: [
                         if (tilesOn) TileLayer(urlTemplate: tiles.urlTemplate, subdomains: tiles.subdomains, userAgentPackageName: 'bd.howlader.field.staff'),
+                        // Landmarks of other features (map places) help find the spot; reference only, so a tap still moves the pin.
+                        for (final x in ref.watch(mapLayersProvider)) x.layer(context, ref, MapLayerMode.reference),
                         MarkerLayer(
                           markers: [
                             if (old != null) Marker(point: old, width: 24, height: 24, child: const _OldPin()),
