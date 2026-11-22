@@ -15,13 +15,30 @@ void main() {
     await h.dispose();
   });
 
-  test('every attendance event needs a selfie by default', () async {
+  test('by default a photo at work-in and work-out only, never at a break (contract 1.36.0)', () async {
+    await h.signIn();
+    final s = h.read(attendanceServiceProvider);
+    expect(s.needsSelfie(AttendanceEventType.workIn), isTrue);
+    expect(s.needsSelfie(AttendanceEventType.workOut), isTrue);
+    expect(s.needsSelfie(AttendanceEventType.breakStart), isFalse);
+    expect(s.needsSelfie(AttendanceEventType.breakEnd), isFalse);
+    expect(() => s.record(AttendanceEventType.workIn), throwsA(isA<SelfieRequired>()));
+  });
+
+  test('no list from the server: the same default, the camera never opens at a break', () async {
+    h.api.selfieEvents = null;
+    await h.signIn();
+    final s = h.read(attendanceServiceProvider);
+    expect([for (final t in AttendanceEventType.values) if (s.needsSelfie(t)) t], [AttendanceEventType.workIn, AttendanceEventType.workOut]);
+  });
+
+  test('admin setting can ask for a photo at breaks too', () async {
+    h.api.selfieEvents = ['work_in', 'break_start', 'break_end', 'work_out'];
     await h.signIn();
     final s = h.read(attendanceServiceProvider);
     for (final t in AttendanceEventType.values) {
       expect(s.needsSelfie(t), isTrue, reason: t.name);
     }
-    expect(() => s.record(AttendanceEventType.workIn), throwsA(isA<SelfieRequired>()));
   });
 
   test('admin setting can limit photos to work-in', () async {
@@ -51,7 +68,9 @@ void main() {
     h.clock.advance(const Duration(hours: 2));
     await s.record(AttendanceEventType.breakStart, selfie: testJpeg());
 
-    // On duty locally right away; nothing is held for a photo.
+    // On duty locally right away; nothing is held for a photo. record() starts a sync on its own: wait for that
+    // (offline) attempt to finish so the rows are back to pending, not caught mid-send.
+    await h.read(syncEngineProvider).kick(reason: 'test');
     final ob = await (db.select(db.outbox)..where((t) => t.entity.equals('attendance_event'))).get();
     expect(ob.map((o) => o.state), everyElement('pending'));
     expect(await h.read(outboxReaderProvider).unsyncedCount(), greaterThanOrEqualTo(4), reason: '2 events + 2 photos');

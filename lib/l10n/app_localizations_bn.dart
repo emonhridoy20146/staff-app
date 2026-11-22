@@ -3361,4 +3361,12 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get depositAgain => 'আবার জমা দিন';
+
+  @override
+  String get collectWhichInvoice => 'কোন ইনভয়েসের টাকা';
+
+  @override
+  String collectInvoiceCount(String count) {
+    return 'এই গ্রাহকের $countটি খোলা ইনভয়েস — সঠিকটি বেছে নিন';
+  }
 }

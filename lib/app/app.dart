@@ -10,6 +10,7 @@ import '../core/providers.dart';
 import '../core/settings/ui_prefs.dart';
 import '../core/sync/sync_engine.dart';
 import '../core/theme/app_theme.dart';
+import '../features/attendance/attendance.dart';
 import '../features/auth/auth.dart';
 import '../features/collections/collections.dart';
 import '../features/location/location.dart';
@@ -50,6 +51,8 @@ class _FieldAppState extends ConsumerState<FieldApp> with WidgetsBindingObserver
     _status = ref.read(syncEngineProvider).status.listen((s) {
       if (s.running || s.lastErrorCode != null || s.lastSuccessAt == null) return;
       unawaited(ref.read(mediaServiceProvider).uploadPending().catchError((Object _) {}));
+      // FR-M-061: after a reinstall, today's work-in comes back from the server instead of being asked again.
+      unawaited(ref.read(attendanceServiceProvider).restoreTodayIfMissing().catchError((Object _) => 0));
     });
   }
 

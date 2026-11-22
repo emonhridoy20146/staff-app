@@ -61,6 +61,51 @@ class AttendanceService {
   AppDatabase get _db => _ref.read(databaseProvider);
   Clock get _clock => _ref.read(clockProvider);
 
+  String? _checkedServerFor;
+
+  /// FR-M-061: a phone that lost its local data (app reinstalled, data cleared)
+  /// takes today's events back from the server (contract 1.36.0), so staff are
+  /// not asked to work in again. Only while the phone has no event of today;
+  /// asks the server once per day per app run; inserted as already sent (no
+  /// outbox entry) under the phone's own clientId. Never changes local events.
+  Future<int> restoreTodayIfMissing() async {
+    final date = _clock.businessDate();
+    if (_checkedServerFor == date) return 0;
+    Future<bool> empty() async => (await (_db.select(_db.attendanceEvents)..where((t) => t.businessDate.equals(date))..limit(1)).get()).isEmpty;
+    if (!await empty()) {
+      _checkedServerFor = date;
+      return 0;
+    }
+    final j = await _ref.read(fieldApiProvider).myAttendanceToday();
+    _checkedServerFor = date;
+    final rows = [
+      for (final e in (j['events'] as List? ?? const []).whereType<Map<String, dynamic>>())
+        if (e['type'] is String && e['at'] is String && AttendanceService._tryWire(e['type'] as String) != null) e,
+    ];
+    if (rows.isEmpty) return 0;
+    return _db.transaction(() async {
+      if (!await empty()) return 0; // staff recorded one meanwhile: the phone's own data wins
+      var n = 0;
+      for (final e in rows) {
+        final at = DateTime.parse(e['at'] as String).toUtc();
+        n += await _db.into(_db.attendanceEvents).insert(
+              AttendanceEventsCompanion.insert(
+                clientId: (e['clientId'] as String?) ?? 'server-${e['id']}',
+                type: e['type'] as String,
+                at: at,
+                deviceTime: at,
+                businessDate: date,
+                syncState: const Value('synced'),
+              ),
+              mode: InsertMode.insertOrIgnore,
+            ) > 0
+            ? 1
+            : 0;
+      }
+      return n;
+    });
+  }
+
   Stream<List<AttendanceEventIn>> watchToday() {
     final date = _clock.businessDate();
     return (_db.select(_db.attendanceEvents)
@@ -74,13 +119,13 @@ class AttendanceService {
 
   /// Events that need a front-camera photo (contract 1.8.0): master switch
   /// `attendance.selfieRequired` (default true) and the list
-  /// `attendance.selfieEvents` (default all four, as the owner asked on
-  /// 2026-11-16; amends OD-12). Both come resolved for the user's branch.
+  /// `attendance.selfieEvents` (default work-in and work-out only: no photo at
+  /// breaks, owner 2026-11-22, contract 1.36.0). Both come resolved for the user's branch.
   Set<AttendanceEventType> selfieEvents() {
     final settings = _ref.read(serverSettingsProvider);
     if (settings['attendance.selfieRequired'] == false) return const {};
     final v = settings['attendance.selfieEvents'];
-    if (v is! List) return AttendanceEventType.values.toSet();
+    if (v is! List) return const {AttendanceEventType.workIn, AttendanceEventType.workOut};
     return {for (final w in v.whereType<String>()) ?_tryWire(w)};
   }
 

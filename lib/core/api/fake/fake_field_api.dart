@@ -37,7 +37,10 @@ class FakeFieldApi implements HttpClientAdapter {
   bool uploadsFail = false; // the storage host refuses photos (e.g. a misconfigured server)
   String trackingProvider = 'free'; // admin setting location.trackingProvider
   bool selfieRequired = true; // attendance.selfieRequired (master switch)
-  List<String> selfieEvents = const ['work_in', 'break_start', 'break_end', 'work_out']; // attendance.selfieEvents
+  /// Events the server already has for today (`GET /attendance/me/today`, 1.36.0).
+  List<Json> todayAttendanceEvents = [];
+  int meTodayCalls = 0;
+  List<String>? selfieEvents = const ['work_in', 'work_out']; // attendance.selfieEvents (server default since 1.36.0); null = not sent
   int pushCalls = 0;
   int coworkMaxMembers = 5; // cowork.maxMembers, counts the requester
   String staffPinApproval = 'when_missing'; // customers.staffPinApproval (1.11.0)
@@ -120,7 +123,7 @@ class FakeFieldApi implements HttpClientAdapter {
 
   Json get _settings => {
         'dutyStart': '09:00',
-        'dutyEnd': '18:00',
+        'dutyEnd': '21:00',
         'lateGraceMin': 15,
         'maxBreakMin': 60,
         'cashWarnPct': 80,
@@ -131,7 +134,7 @@ class FakeFieldApi implements HttpClientAdapter {
         'hotline': '০১৭০০-০০০০০০',
         'location.trackingProvider': trackingProvider,
         'attendance.selfieRequired': selfieRequired,
-        'attendance.selfieEvents': selfieEvents,
+        if (selfieEvents != null) 'attendance.selfieEvents': selfieEvents,
         'cowork.maxMembers': coworkMaxMembers,
         'customers.staffPinApproval': staffPinApproval,
         'cowork.visitCredit': 1.0,
@@ -665,6 +668,10 @@ class FakeFieldApi implements HttpClientAdapter {
           ]..sort((a, b) => (a['date'] as String).compareTo(b['date'] as String)));
         }
         if (o.method == 'GET' && path == '/attendance/me/shift') return _json(200, myShift);
+        if (o.method == 'GET' && path == '/attendance/me/today') {
+          meTodayCalls++;
+          return _json(200, {'status': todayAttendanceEvents.isEmpty ? 'not_started' : 'on_duty', 'events': todayAttendanceEvents});
+        }
         if (path.startsWith('/cowork/')) {
           final r = _coworkRoute(o.method, path, body);
           if (r is (int, Json)) return _json(r.$1, r.$2);

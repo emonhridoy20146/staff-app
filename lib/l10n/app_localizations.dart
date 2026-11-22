@@ -5917,6 +5917,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Deposit again'**
   String get depositAgain;
+
+  /// No description provided for @collectWhichInvoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Which invoice'**
+  String get collectWhichInvoice;
+
+  /// No description provided for @collectInvoiceCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} open invoices for this customer — pick the right one'**
+  String collectInvoiceCount(String count);
 }
 
 class _AppLocalizationsDelegate

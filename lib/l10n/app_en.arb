@@ -2077,5 +2077,8 @@
     }
   },
   "depositFailedBack": "The collections are back in your hand and can be changed. Deposit again.",
-  "depositAgain": "Deposit again"
+  "depositAgain": "Deposit again",
+  "collectWhichInvoice": "Which invoice",
+  "collectInvoiceCount": "{count} open invoices for this customer — pick the right one",
+  "@collectInvoiceCount": {"placeholders": {"count": {"type": "String"}}}
 }

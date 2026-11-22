@@ -3374,4 +3374,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get depositAgain => 'Deposit again';
+
+  @override
+  String get collectWhichInvoice => 'Which invoice';
+
+  @override
+  String collectInvoiceCount(String count) {
+    return '$count open invoices for this customer — pick the right one';
+  }
 }

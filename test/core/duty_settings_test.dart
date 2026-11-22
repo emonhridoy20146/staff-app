@@ -21,7 +21,7 @@ void main() {
     },
   };
 
-  test('reads the server value; nothing sent: 09:00–18:00, Friday off, 15 and 60 minutes', () {
+  test('reads the server value; nothing sent: 09:00–21:00, Friday off, 15 and 60 minutes', () {
     final d = DutySettings.of(fridayShift);
     expect([d.start, d.end, d.lateGraceMin, d.maxBreakMin], ['08:30', '19:00', 10, 45]);
     expect(d.weeklyOff, isEmpty);
@@ -29,7 +29,8 @@ void main() {
     expect(d.windowsOn('2026-11-21'), isEmpty);
 
     final none = DutySettings.of(const {});
-    expect([none.start, none.end, none.lateGraceMin, none.maxBreakMin], ['09:00', '18:00', 15, 60]);
+    // no shift data: 09:00–21:00 (owner 2026-11-22)
+    expect([none.start, none.end, none.lateGraceMin, none.maxBreakMin], ['09:00', '21:00', 15, 60]);
     expect(none.isWeeklyOff(friday), isTrue);
     expect(none.isWeeklyOff('2026-11-21'), isFalse);
   });
@@ -55,7 +56,7 @@ void main() {
         ],
       },
     });
-    expect([bad.start, bad.end, bad.maxBreakMin], ['09:00', '18:00', 60]);
+    expect([bad.start, bad.end, bad.maxBreakMin], ['09:00', '21:00', 60]);
     expect(bad.breakWindows, isEmpty);
   });
 

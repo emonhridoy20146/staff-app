@@ -290,13 +290,26 @@ class _AmountStep extends ConsumerWidget {
     ];
     return Column(
       children: [
+        // FR-M-062: which invoice the money is for is always in view; a choice when there are several.
         if (plans.length > 1)
           Padding(
             padding: const EdgeInsets.fromLTRB(Space.screen, Space.s12, Space.screen, 0),
             child: DropdownButtonFormField<String>(
+              key: const Key('collect-invoice-choice'),
               initialValue: planId,
+              isExpanded: true,
+              decoration: InputDecoration(labelText: l.collectWhichInvoice, helperText: l.collectInvoiceCount(f.num('${plans.length}'))),
               items: [for (final p in plans) DropdownMenuItem(value: p.plan.erpPlanId, child: Text(planChoiceLabel(p), overflow: TextOverflow.ellipsis))],
               onChanged: (v) => v == null ? null : onPlan(v),
+            ),
+          )
+        else if (plans.length == 1)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(Space.screen, Space.s12, Space.screen, 0),
+            child: InputDecorator(
+              key: const Key('collect-invoice-single'),
+              decoration: InputDecoration(labelText: l.collectWhichInvoice),
+              child: Text(planChoiceLabel(plans.single), overflow: TextOverflow.ellipsis),
             ),
           ),
         Expanded(

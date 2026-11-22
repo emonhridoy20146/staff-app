@@ -52,6 +52,8 @@ class MainActivity : FlutterActivity() {
                     }
                 }
                 "openBatterySettings" -> result.success(openBatterySettings())
+                // FR-M-060: survives an app reinstall (same signing key, same phone), so the device stays approved.
+                "androidId" -> result.success(Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID))
                 "openAppSettings" -> {
                     val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
                         data = Uri.fromParts("package", packageName, null)

@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Howlader Field Operations API
-  version: 1.35.0
+  version: 1.36.0
   description: |
     Contract owned by field-api. Consumers (admin-web, staff-app) generate types from this file.
     Conventions (auth, pagination, idempotency, errors) are described in docs/05-api-contract.md.
@@ -1540,8 +1540,28 @@ paths:
     get:
       tags: [attendance]
       operationId: myAttendanceToday
+      description: '1.36.0: also returns `events`, the day''s attendance events (oldest first), so a phone that lost its local data (reinstall) restores the work-in, breaks and work-out already recorded instead of asking again.'
       responses:
-        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/AttendanceDay' } } } }
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/AttendanceDay'
+                  - type: object
+                    properties:
+                      events:
+                        type: array
+                        items:
+                          type: object
+                          required: [id, type, at, source]
+                          properties:
+                            id: { type: string }
+                            clientId: { type: [string, 'null'], description: 'The id the phone gave the event; restore it under this id so a retry stays idempotent' }
+                            type: { type: string, enum: [work_in, break_start, break_end, work_out] }
+                            at: { type: string, format: date-time }
+                            source: { type: string, enum: [app, correction, system] }
   /attendance/me/shift:
     get:
       tags: [attendance]
