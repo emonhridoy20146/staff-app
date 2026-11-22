@@ -125,8 +125,16 @@ class CollectionPullHandler implements PullHandler {
       );
       return;
     }
+    // 1.35.0 (FR-M-059): the server's deposit, unless a deposit saved on this phone has not been sent yet
+    // (the server cannot know it; the lock stays until that deposit is sent or refused).
+    final serverDepositId = d['depositId'] as String?;
+    final local = serverDepositId != null ? null : await (db.select(db.collections)..where((t) => t.clientId.equals(clientId))).getSingleOrNull();
+    final keepLocalLock = local?.depositId != null &&
+        await (db.select(db.deposits)..where((t) => t.clientId.equals(local!.depositId!) & t.syncState.isIn(['queued', 'sending']))).getSingleOrNull() != null;
     await (db.update(db.collections)..where((t) => t.clientId.equals(clientId))).write(
       CollectionsCompanion(
+        depositId: keepLocalLock ? const Value.absent() : Value(serverDepositId),
+        depositedAt: keepLocalLock ? const Value.absent() : Value(DateTime.tryParse((d['depositedAt'] as String?) ?? '')?.toUtc()),
         serverId: Value(id),
         status: Value((d['status'] as String?) ?? 'received'),
         erpReceiptNo: Value(d['erpReceiptNo'] as String?),
@@ -193,6 +201,19 @@ class CollectionRepository {
       ..where(_db.collections.method.equals('cash') & _db.collections.syncState.isIn(['queued', 'sending']));
     return q.map((r) => r.read(s) ?? 0).watchSingle();
   }
+
+  /// FR-M-059: my mobile banking, bank and card collections still in my hand (no deposit yet),
+  /// newest first. They go with the next deposit and may be changed or deleted until then.
+  Stream<List<CollectionRow>> watchNonCashInHand() => (_db.select(_db.collections)
+        ..where((t) => t.method.isNotValue('cash') & t.depositId.isNull() & t.status.isIn(inHandStatuses))
+        ..orderBy([(t) => OrderingTerm.desc(t.recordedAt)]))
+      .watch();
+
+  /// FR-M-059: every collection of mine a deposit would hand in now (any method), oldest first.
+  Future<List<CollectionRow>> inHand() => (_db.select(_db.collections)
+        ..where((t) => t.depositId.isNull() & t.status.isIn(inHandStatuses))
+        ..orderBy([(t) => OrderingTerm.asc(t.recordedAt)]))
+      .get();
 
   Stream<List<CollectionRow>> watchProblems() => (_db.select(_db.collections)
         ..where((t) => t.status.isIn(['conflict', 'rejected', 'posting_failed']))

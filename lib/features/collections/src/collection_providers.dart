@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/db/app_database.dart';
@@ -28,6 +29,20 @@ final recordCollectionProvider = Provider<RecordCollection>((ref) {
 final todayTotalsProvider = StreamProvider<DayTotals>((ref) => ref.watch(collectionRepositoryProvider).watchTodayTotals());
 final todayCollectionsProvider = StreamProvider<List<CollectionRow>>((ref) => ref.watch(collectionRepositoryProvider).watchToday());
 final collectionProblemsProvider = StreamProvider<List<CollectionRow>>((ref) => ref.watch(collectionRepositoryProvider).watchProblems());
+
+/// FR-M-059: my mobile banking / bank collections still in my hand (they go with the next deposit).
+final nonCashInHandProvider = StreamProvider<List<CollectionRow>>((ref) => ref.watch(collectionRepositoryProvider).watchNonCashInHand());
+
+/// FR-M-059: server ids of my collections a deposit has handed in (saved on this phone or known from
+/// the server). Such a collection is locked: no change, no delete.
+final depositLockedIdsProvider = StreamProvider<Set<String>>((ref) {
+  final db = ref.watch(databaseProvider);
+  return (db.selectOnly(db.collections)
+        ..addColumns([db.collections.serverId])
+        ..where(db.collections.depositId.isNotNull() & db.collections.serverId.isNotNull()))
+      .watch()
+      .map((rows) => {for (final r in rows) r.read(db.collections.serverId)!});
+});
 
 final collectionProvider = StreamProvider.family<CollectionRow?, String>((ref, id) {
   final db = ref.watch(databaseProvider);

@@ -49,7 +49,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 13;
+  int get schemaVersion => 14;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -159,6 +159,16 @@ class AppDatabase extends _$AppDatabase {
           // everything unsynced stay.
           if (from < 13) {
             await _ensureV12(m);
+          }
+          // v14 (contract 1.35.0, FR-M-059): which deposit handed a collection in, and what a deposit took
+          // besides cash. Nullable columns only; the next pull fills them. Nothing unsynced is touched.
+          if (from < 14) {
+            for (final c in [collections.depositId, collections.depositedAt]) {
+              await _ensureColumn(m, collections, c);
+            }
+            for (final c in [deposits.collectionCount, deposits.nonCashPoisha, deposits.nonCashCount, deposits.failureCode]) {
+              await _ensureColumn(m, deposits, c);
+            }
           }
         },
         beforeOpen: (details) async {

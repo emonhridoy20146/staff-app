@@ -15,6 +15,7 @@ import '../../../core/ui/common.dart';
 import '../../../core/ui/money_text.dart';
 import '../../../core/ui/status_badge.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../cash/cash.dart' show depositByClientIdProvider, depositFailureText, showDepositSheet;
 
 /// Entities that carry money: never offered for discard (CLAUDE.md §2.2).
 const moneyEntities = {'collection', 'deposit', 'cash_closing'};
@@ -120,7 +121,7 @@ class SyncCentreScreen extends ConsumerWidget {
             AppCard(child: Row(children: [Icon(Icons.verified_rounded, color: context.semanticColors.success.fg), const SizedBox(width: Space.s12), Text(l.syncNoProblems, style: t.bodyLarge)]))
           else ...[
             for (final c in conflicts) ...[_ConflictCard(row: c), const SizedBox(height: Space.cardGap)],
-            for (final m in failed) ...[_FailedCard(row: m), const SizedBox(height: Space.cardGap)],
+            for (final m in failed) ...[m.entity == 'deposit' ? _FailedDepositCard(row: m) : _FailedCard(row: m), const SizedBox(height: Space.cardGap)],
             if (failed.any((m) => moneyEntities.contains(m.entity)) || conflicts.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: Space.s8),
@@ -192,6 +193,45 @@ class _FailedCard extends ConsumerWidget {
           ]),
         ),
         TextButton(onPressed: () => ref.read(syncEngineProvider).retryFailed(row.mutationId), child: Text(l.actionRetry)),
+      ]),
+    );
+  }
+}
+
+/// A deposit the server refused (FR-M-059): why, in words, and that the collections are back in
+/// hand. It is never sent again with the same amount (the cash has changed); the staff member
+/// deposits again, and this record stays here (money is never discarded).
+class _FailedDepositCard extends ConsumerWidget {
+  const _FailedDepositCard({required this.row});
+  final OutboxRow row;
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context);
+    final f = ref.watch(fmtProvider);
+    final t = Theme.of(context).textTheme;
+    final cs = Theme.of(context).colorScheme;
+    final d = ref.watch(depositByClientIdProvider(row.mutationId)).value;
+    return AppCard(
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          Icon(syncEntityIcon(row.entity), color: cs.error),
+          const SizedBox(width: Space.s12),
+          Expanded(child: Text(syncEntityLabel(l, row.entity), style: t.titleMedium)),
+          StatusBadge(AppStatus.overdue, dense: true, label: l.statusDepositFailed),
+        ]),
+        const SizedBox(height: Space.s8),
+        Row(children: [
+          if (d != null) ...[MoneyText(d.amountPoisha, style: t.titleLarge), const SizedBox(width: Space.s12)],
+          Text(f.dateTime(row.createdAt), style: t.bodySmall!.copyWith(color: cs.onSurfaceVariant)),
+        ]),
+        const SizedBox(height: Space.s8),
+        Text(depositFailureText(l, d?.failureCode), style: t.bodyMedium),
+        const SizedBox(height: Space.s4),
+        Text(l.depositFailedBack, style: t.bodySmall!.copyWith(color: cs.onSurfaceVariant)),
+        Align(
+          alignment: AlignmentDirectional.centerEnd,
+          child: TextButton.icon(onPressed: () => showDepositSheet(context), icon: const Icon(Icons.savings_rounded), label: Text(l.depositAgain)),
+        ),
       ]),
     );
   }

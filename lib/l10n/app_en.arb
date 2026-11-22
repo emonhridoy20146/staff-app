@@ -603,14 +603,14 @@
       }
     }
   },
-  "cashDeposit": "Record deposit",
-  "cashDepositTitle": "Cash deposit",
+  "cashDeposit": "Deposit everything",
+  "cashDepositTitle": "Deposit everything in hand",
   "cashDepositTo": "Deposited to",
   "cashDestCashier": "Branch cashier",
   "cashDestBank": "Bank",
   "cashDestManager": "Manager",
   "cashReference": "Reference / slip no.",
-  "cashDepositSaved": "Deposit saved · waiting for verification",
+  "cashDepositSaved": "Deposited · it goes to the ERP",
   "cashDeposits": "Deposits",
   "cashNoDeposits": "No deposits yet",
   "cashTodayCash": "Cash today",
@@ -1643,7 +1643,7 @@
       "amount": { "type": "String" }
     }
   },
-  "cashInHandPendingDeposits": "{amount} handed in, waiting to be verified",
+  "cashInHandPendingDeposits": "{amount} handed in by earlier deposits",
   "@cashInHandPendingDeposits": {
     "placeholders": {
       "amount": { "type": "String" }
@@ -1657,7 +1657,7 @@
       "n": { "type": "String" }
     }
   },
-  "cashInHandHow": "A deposit pays off your oldest collections first, so the cash on hand is your newest collections. Tap a line to open the customer.",
+  "cashInHandHow": "A deposit hands in all the cash and every mobile or bank collection you hold at once, and they then go to the ERP. Until you deposit, each line can be changed or deleted; after it, nothing can. Tap a line to open the customer.",
   "cashActionEdit": "Change",
   "cashActionDelete": "Delete",
   "cashEditTitle": "Change this collection",
@@ -1674,7 +1674,7 @@
   "cashDeleteConfirm": "Delete",
   "cashActionDone": "Done",
   "cashActionOffline": "This needs internet. Try again when you are online.",
-  "cashActionCovered": "A deposit already covers this cash, so it cannot be changed. Ask the office.",
+  "cashActionCovered": "This collection is already deposited, so it cannot be changed or deleted.",
   "cashActionNotEditable": "This collection is already with the ERP and cannot be changed here. Ask the office.",
   "cashActionPosted": "This collection is already posted to the ERP. Ask the office.",
   "cashActionBusy": "It is being sent to the ERP right now. Try again in a minute.",
@@ -2017,5 +2017,65 @@
   "gpsMockWarning": "Fake/mock location is not allowed. Disable mock locations to continue.",
   "gpsRequiredForAttendance": "GPS must be turned on to record attendance.",
   "gpsRequiredForBreak": "GPS must be turned on to start or end break.",
-  "gpsRequiredForWorkOut": "GPS must be turned on to end work."
+  "gpsRequiredForWorkOut": "GPS must be turned on to end work.",
+  "statusDeposited": "Deposited",
+  "statusDepositFailed": "Not deposited",
+  "cashDepositCash": "Cash (all you hold)",
+  "cashDepositNonCash": "Mobile / bank",
+  "cashDepositNonCashCount": "{count} collections",
+  "@cashDepositNonCashCount": {
+    "placeholders": {
+      "count": { "type": "String" }
+    }
+  },
+  "cashDepositTotalCount": "{count} collections in all",
+  "@cashDepositTotalCount": {
+    "placeholders": {
+      "count": { "type": "String" }
+    }
+  },
+  "cashDepositAllHint": "No part deposits: all the cash you hold and every mobile or bank collection go together, and then go to the ERP.",
+  "cashDepositNothing": "Nothing in hand to deposit.",
+  "cashDepositSubmit": "Deposit",
+  "cashDepositConfirmTitle": "Confirm the deposit",
+  "cashDepositConfirmOnline": "Depositing {cash} cash and {nonCash} mobile/bank ({count} collections) sends them to the ERP as payments right away when online. After the deposit they cannot be changed or deleted.",
+  "@cashDepositConfirmOnline": {
+    "placeholders": {
+      "cash": { "type": "String" },
+      "nonCash": { "type": "String" },
+      "count": { "type": "String" }
+    }
+  },
+  "cashDepositConfirmOffline": "There is no internet now. Depositing {cash} cash and {nonCash} mobile/bank ({count} collections) sends them to the ERP as payments as soon as the phone is online. After the deposit they cannot be changed or deleted.",
+  "@cashDepositConfirmOffline": {
+    "placeholders": {
+      "cash": { "type": "String" },
+      "nonCash": { "type": "String" },
+      "count": { "type": "String" }
+    }
+  },
+  "cashDepositChanged": "The money in hand just changed. Check it and deposit again.",
+  "cashDepositLine": "{count} collections · mobile/bank {amount}",
+  "@cashDepositLine": {
+    "placeholders": {
+      "count": { "type": "String" },
+      "amount": { "type": "String" }
+    }
+  },
+  "cashDepositWaitingLock": "A deposit is still waiting to be sent, so nothing in hand can be changed or deleted now.",
+  "cashInHandNonCashTitle": "Mobile / bank collections (go with the deposit)",
+  "cashInHandNotSent": "Not sent yet; it can be changed once it is sent",
+  "depositFailedMustBeAll": "Not deposited: the server says you hold more cash than this deposit (something changed meanwhile). A deposit must take all of it.",
+  "depositFailedExceeds": "Not deposited: the server says you hold less cash than this deposit (a collection was left out or changed).",
+  "depositFailedNothing": "Not deposited: there was nothing in hand to deposit.",
+  "depositFailedSlip": "Not deposited: a bank deposit needs a photo of the slip. Deposit to the branch cashier or the manager.",
+  "depositFailedChanged": "Not deposited: a collection was changed or cancelled while it was being deposited.",
+  "depositFailedOther": "Not deposited ({code}).",
+  "@depositFailedOther": {
+    "placeholders": {
+      "code": { "type": "String" }
+    }
+  },
+  "depositFailedBack": "The collections are back in your hand and can be changed. Deposit again.",
+  "depositAgain": "Deposit again"
 }

@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Howlader Field Operations API
-  version: 1.34.0
+  version: 1.35.0
   description: |
     Contract owned by field-api. Consumers (admin-web, staff-app) generate types from this file.
     Conventions (auth, pagination, idempotency, errors) are described in docs/05-api-contract.md.
@@ -941,12 +941,13 @@ paths:
     get:
       tags: [cash]
       operationId: listDeposits
-      parameters: [ { $ref: '#/components/parameters/BranchId' }, { name: status, in: query, schema: { type: string, enum: [pending, verified, rejected, deleted] } }, { $ref: '#/components/parameters/Limit' }, { $ref: '#/components/parameters/Cursor' } ]
+      parameters: [ { $ref: '#/components/parameters/BranchId' }, { name: status, in: query, schema: { type: string, enum: [pending, verified, rejected, deleted, submitted] } }, { $ref: '#/components/parameters/Limit' }, { $ref: '#/components/parameters/Cursor' } ]
       responses:
         '200': { description: OK, content: { application/json: { schema: { type: object, properties: { items: { type: array, items: { $ref: '#/components/schemas/Deposit' } }, nextCursor: { type: [string, 'null'] } } } } } }
     post:
       tags: [cash]
       operationId: createDeposit
+      description: 'cash.deposit.record. 1.35.0 (FR-CASH-010, ADR-049): hands in everything the caller holds at once: all the cash in hand (amountPoisha must equal it) and every mobile banking, bank or card collection not handed in yet. The deposit is `submitted` and final: each collection it took gets `depositId`, is posted to the ERP (now, or when ERP posting is switched on) and can no longer be edited or withdrawn. No office step. Before 1.35.0 a collection was posted when it was recorded; now it waits for its deposit.'
       parameters: [ { $ref: '#/components/parameters/IdempotencyKey' } ]
       requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/DepositCreate' } } } }
       responses:
@@ -955,6 +956,7 @@ paths:
     post:
       tags: [cash]
       operationId: verifyDeposit
+      description: 'Retired in 1.35.0 (ADR-049): a deposit is final. Answers 409 INVALID_STATE reason DEPOSIT_FINAL for every deposit (404 out of scope). Kept because /api/v1 is additive-only.'
       parameters: [ { $ref: '#/components/parameters/Id' } ]
       responses:
         '200': { description: OK }
@@ -962,7 +964,7 @@ paths:
     post:
       tags: [cash]
       operationId: deleteDeposit
-      description: 'cash.deposit.delete (1.32.0, FR-CASH-009; super admin, branch manager). Deletes a deposit that is `pending` or `verified` (a verified one gives its money back to the person''s cash in hand). The row is kept with status `deleted`, `deletedBy`, `deletedAt`, `deleteReason`; it no longer counts anywhere. The depositor is notified (type `cash.deposit.deleted`) and the sync entity `deposit` carries the new status. Audited (`cash.deposit.deleted`). 409 INVALID_STATE reason: NOT_DELETABLE (already rejected or deleted).'
+      description: 'Retired in 1.35.0 (ADR-049): a deposit is final; answers 409 INVALID_STATE reason DEPOSIT_FINAL (404 out of scope). Before 1.35.0: cash.deposit.delete (1.32.0, FR-CASH-009; super admin, branch manager). Deleted a deposit that is `pending` or `verified` (a verified one gives its money back to the person''s cash in hand). The row is kept with status `deleted`, `deletedBy`, `deletedAt`, `deleteReason`; it no longer counts anywhere. The depositor is notified (type `cash.deposit.deleted`) and the sync entity `deposit` carries the new status. Audited (`cash.deposit.deleted`). 409 INVALID_STATE reason: NOT_DELETABLE (already rejected or deleted).'
       parameters: [ { $ref: '#/components/parameters/Id' } ]
       requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/Reason' } } } }
       responses:
@@ -973,6 +975,7 @@ paths:
     post:
       tags: [cash]
       operationId: rejectDeposit
+      description: 'Retired in 1.35.0 (ADR-049): a deposit is final. Answers 409 INVALID_STATE reason DEPOSIT_FINAL for every deposit (404 out of scope). Kept because /api/v1 is additive-only.'
       parameters: [ { $ref: '#/components/parameters/Id' } ]
       requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/Reason' } } } }
       responses:
@@ -2466,6 +2469,8 @@ components:
             previousAmountPoisha: { type: integer }
         flags: { type: array, items: { type: string, enum: [far_from_pin, mock_location, clock_skew, late_sync, duplicate_txn_ref, not_in_scope_at_record_time, no_location] } }
         distanceToPinM: { type: [integer, 'null'] }
+        depositId: { type: [string, 'null'], description: '1.35.0 (FR-CASH-010): the deposit that handed it in. Until then the collection is in the collector''s hand, is not in the ERP and may be edited or withdrawn; from then on it goes to the ERP and cannot be changed.' }
+        depositedAt: { type: [string, 'null'], format: date-time, description: '1.35.0' }
         cashOnHand: { $ref: '#/components/schemas/CashPosition' }
     CashPosition:
       type: object
@@ -2517,7 +2522,7 @@ components:
         onTime: { type: boolean }
     DepositCoverage:
       type: object
-      description: '1.30.0 (FR-CASH-008). Which cash collections a deposit covered, oldest first; the first and the last may be covered only in part (`coveredPoisha` < `amountPoisha`). `unmatchedPoisha` is deposit money with no collection behind it (a collection voided after the deposit). Field-system cash, not an ERP balance.'
+      description: '1.30.0 (FR-CASH-008). 1.35.0: a `submitted` deposit lists every collection it handed in (cash and the rest, each whole, with `method`, `status` and `erpReceiptNo`). A deposit from before 1.35.0: which cash collections it covered, oldest first; the first and the last may be covered only in part (`coveredPoisha` < `amountPoisha`). `unmatchedPoisha` is deposit money with no collection behind it (a collection voided after the deposit). Field-system cash, not an ERP balance.'
       required: [deposit, coveredPoisha, unmatchedPoisha, items, generatedAt]
       properties:
         deposit: { $ref: '#/components/schemas/Deposit' }
@@ -2530,14 +2535,17 @@ components:
               - $ref: '#/components/schemas/CashInHandItem'
               - type: object
                 required: [coveredPoisha]
-                properties: { coveredPoisha: { type: integer, description: 'The part of this collection this deposit covered' } }
+                properties:
+                  coveredPoisha: { type: integer, description: 'The part of this collection this deposit covered' }
+                  method: { $ref: '#/components/schemas/PaymentMethod' }
+                  erpReceiptNo: { type: [string, 'null'], description: '1.35.0: the ERP payment number once posted' }
         generatedAt: { type: string, format: date-time }
     DepositCreate:
       type: object
       required: [clientId, amountPoisha, destination, depositedAt]
       properties:
         clientId: { type: string, format: uuid }
-        amountPoisha: { type: integer, minimum: 1 }
+        amountPoisha: { type: integer, minimum: 0, description: '1.35.0 (FR-CASH-010): must equal all the cash in hand (422 BUSINESS_RULE DEPOSIT_MUST_BE_ALL / DEPOSIT_EXCEEDS_ON_HAND, details.onHandPoisha); 0 when only mobile banking, bank or card collections are handed in (nothing at all: NOTHING_TO_DEPOSIT). Before 1.35.0 minimum 1 and any part of it.' }
         destination: { type: string, enum: [branch_cashier, bank, manager] }
         reference: { type: string }
         slipMediaId: { type: string }
@@ -2547,7 +2555,7 @@ components:
       allOf:
         - $ref: '#/components/schemas/DepositCreate'
         - type: object
-          properties: { id: { type: string }, userId: { type: string }, userName: { type: string, description: 'Depositor display name (1.3.0)' }, status: { type: string, enum: [pending, verified, rejected, deleted], description: '`deleted` added in 1.32.0: an admin deleted the deposit; it counts nowhere' }, verifiedBy: { type: string }, verifiedAt: { type: string }, rejectReason: { type: string }, deletedBy: { type: string, description: '1.32.0' }, deletedAt: { type: string, description: '1.32.0' }, deleteReason: { type: string, description: '1.32.0' } }
+          properties: { id: { type: string }, userId: { type: string }, userName: { type: string, description: 'Depositor display name (1.3.0)' }, status: { type: string, enum: [pending, verified, rejected, deleted, submitted], description: '`submitted` (1.35.0, FR-CASH-010): every deposit made from 1.35.0 on; final, the collections it took go to the ERP, nobody verifies, rejects or deletes it. `pending`, `verified`, `rejected`, `deleted` (1.32.0) are deposits from before 1.35.0.' }, collectionCount: { type: integer, description: '1.35.0: collections it handed in (cash and the rest); absent on deposits from before 1.35.0' }, nonCashPoisha: { type: integer, description: '1.35.0: mobile banking, bank and card money it handed in (not part of amountPoisha)' }, nonCashCount: { type: integer, description: '1.35.0' }, verifiedBy: { type: string }, verifiedAt: { type: string }, rejectReason: { type: string }, deletedBy: { type: string, description: '1.32.0' }, deletedAt: { type: string, description: '1.32.0' }, deleteReason: { type: string, description: '1.32.0' } }
     Area:
       type: object
       properties: { id: { type: string }, branchId: { type: string }, name: { $ref: '#/components/schemas/I18nText' }, code: { type: string }, kind: { type: string, enum: [polygon, codes] }, polygon: { type: object, description: GeoJSON Polygon }, erpAreaCodes: { type: array, items: { type: string } }, color: { type: string }, customerCount: { type: integer }, assignees: { type: array, items: { type: string } }, active: { type: boolean }, version: { type: integer } }

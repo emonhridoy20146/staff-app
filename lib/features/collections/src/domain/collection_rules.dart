@@ -74,3 +74,15 @@ CashState cashState(int onHand, int limit, {int warnPct = 80}) {
   if (onHand * 100 >= limit * warnPct) return CashState.warning;
   return CashState.ok;
 }
+
+/// Local statuses of a collection that is still in my hand (contract 1.35.0, FR-M-059): saved on
+/// the phone (`queued`) or taken by the server (`received`), and not voided, rejected or with the ERP.
+const inHandStatuses = {'queued', 'received'};
+
+/// FR-M-059 (field-api FR-CASH-010, ADR-049): a collection of any method stays in my hand until a
+/// deposit hands it in; until then it may be changed or deleted. Once [depositId] is set (by the
+/// deposit saved on this phone, or by the server) it is locked for good.
+bool isInHand({required String status, required String? depositId}) => depositId == null && inHandStatuses.contains(status);
+
+/// Locked: a deposit has handed it in, so it goes to the ERP and cannot be changed or deleted.
+bool isLockedByDeposit(String? depositId) => depositId != null;

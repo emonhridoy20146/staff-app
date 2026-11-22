@@ -198,6 +198,13 @@ class Collections extends Table {
   TextColumn get voidedKind => text().nullable()();
   TextColumn get voidedByName => text().nullable()();
   TextColumn get voidedReason => text().nullable()();
+
+  /// The deposit that handed it in (v14, contract 1.35.0, FR-M-059): the local deposit's clientId
+  /// from the moment the deposit is saved on this phone (so it locks at once, offline too), then
+  /// the server's `depositId` on pull. Null = still in my hand: may be changed or deleted.
+  /// Cleared again when the server refuses that deposit (the collection is back in hand).
+  TextColumn get depositId => text().nullable()();
+  DateTimeColumn get depositedAt => dateTime().nullable()();
   TextColumn get conflictCode => text().nullable()();
   TextColumn get conflictMessage => text().nullable()();
   TextColumn get resolutionText => text().nullable()();
@@ -248,6 +255,17 @@ class Deposits extends Table {
   TextColumn get status => text().withDefault(const Constant('pending'))();
   TextColumn get rejectReason => text().nullable()();
   TextColumn get syncState => text().withDefault(const Constant('queued'))();
+
+  /// v14 (contract 1.35.0): what the deposit handed in besides [amountPoisha] (cash): the number of
+  /// collections, and the mobile banking / bank money and its count. The phone's estimate at save
+  /// time, then the server's on pull; null on deposits from before 1.35.0.
+  IntColumn get collectionCount => integer().nullable()();
+  IntColumn get nonCashPoisha => integer().nullable()();
+  IntColumn get nonCashCount => integer().nullable()();
+
+  /// v14: why the server refused this deposit (`details.rule` / `details.reason`, else the error
+  /// code, e.g. `DEPOSIT_MUST_BE_ALL`); null unless [syncState] is `failed`.
+  TextColumn get failureCode => text().nullable()();
 
   @override
   Set<Column> get primaryKey => {clientId};

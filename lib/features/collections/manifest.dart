@@ -14,15 +14,17 @@ import '../../core/ui/common.dart';
 import '../../l10n/app_localizations.dart';
 import 'src/collection_providers.dart';
 import 'src/data/collection_repository.dart';
-import 'src/domain/collection_rules.dart' show receiptLowWater;
+import 'src/domain/collection_rules.dart' show receiptLowWater, inHandStatuses;
 import 'src/presentation/collect_flow_screen.dart';
 import 'src/presentation/collect_success_screen.dart';
 import 'src/presentation/customer_picker_screen.dart';
 import 'src/work_log.dart';
 
 /// Status chip for a local collection (04-architecture §5.6).
-Widget collectionStatusChip(BuildContext context, String status, String syncState, {String? voidedKind}) {
+Widget collectionStatusChip(BuildContext context, String status, String syncState, {String? voidedKind, String? depositId}) {
   final l = AppLocalizations.of(context);
+  // FR-M-059: handed in by a deposit, not yet posted: locked, on its way to the ERP.
+  if (depositId != null && inHandStatuses.contains(status)) return StatusBadge(AppStatus.pending, label: l.statusDeposited, dense: true);
   return switch (status) {
     'posted' || 'resolved_posted' => StatusBadge(AppStatus.paid, label: l.statusPosted, dense: true),
     'conflict' => StatusBadge(AppStatus.overdue, label: l.statusConflict, dense: true),
@@ -77,7 +79,7 @@ final collectionsManifest = FeatureManifest(
                 icon: Icons.payments_rounded,
                 title: l.timelineCollection(f.money(r.amountPoisha)),
                 subtitle: [f.dateTime(r.recordedAt), r.receiptNo, if (myName != null) l.timelineCollector(myName), if (r.previousAmountPoisha != null) l.collectionEditedWas(f.money(r.previousAmountPoisha!)), if (r.voidedKind == 'admin' && r.voidedByName != null) l.collectionVoidedBy(r.voidedByName!), if (r.voidedReason != null && r.voidedReason!.isNotEmpty) r.voidedReason!].join(' · '),
-                statusChip: Builder(builder: (c) => collectionStatusChip(c, r.status, r.syncState, voidedKind: r.voidedKind)),
+                statusChip: Builder(builder: (c) => collectionStatusChip(c, r.status, r.syncState, voidedKind: r.voidedKind, depositId: r.depositId)),
                 // FR-M-050: the receipt of this collection, to show, send or print again
                 trailing: Builder(
                   builder: (c) => TextButton.icon(onPressed: () => c.push('/receipt/${r.clientId}'), icon: const Icon(Icons.receipt_long_rounded), label: Text(l.receiptView)),

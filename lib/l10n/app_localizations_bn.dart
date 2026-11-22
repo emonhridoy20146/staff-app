@@ -1034,10 +1034,10 @@ class AppLocalizationsBn extends AppLocalizations {
   }
 
   @override
-  String get cashDeposit => 'জমা রেকর্ড করুন';
+  String get cashDeposit => 'সব জমা দিন';
 
   @override
-  String get cashDepositTitle => 'নগদ জমা';
+  String get cashDepositTitle => 'হাতের সব জমা দিন';
 
   @override
   String get cashDepositTo => 'কোথায় জমা';
@@ -1055,7 +1055,7 @@ class AppLocalizationsBn extends AppLocalizations {
   String get cashReference => 'রেফারেন্স / স্লিপ নং';
 
   @override
-  String get cashDepositSaved => 'জমা সংরক্ষিত · যাচাইয়ের অপেক্ষায়';
+  String get cashDepositSaved => 'জমা হয়েছে · ইআরপিতে যাবে';
 
   @override
   String get cashDeposits => 'জমা';
@@ -2629,7 +2629,7 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String cashInHandPendingDeposits(String amount) {
-    return '$amount জমা দেওয়া হয়েছে, যাচাই বাকি';
+    return '$amount আগের জমায় দেওয়া হয়েছে';
   }
 
   @override
@@ -2646,7 +2646,7 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get cashInHandHow =>
-      'জমা দিলে আপনার সবচেয়ে পুরনো আদায় আগে মেটানো ধরা হয়, তাই হাতে থাকা নগদ মানে আপনার সবচেয়ে নতুন আদায়গুলো। গ্রাহক খুলতে লাইনে চাপ দিন।';
+      'জমা দিলে হাতে থাকা সব নগদ ও সব মোবাইল/ব্যাংক আদায় একসাথে জমা হয়, তারপর ইআরপিতে যায়। জমার আগে প্রতিটি লাইন বদলানো বা মোছা যায়, জমার পর আর যায় না। গ্রাহক খুলতে লাইনে চাপ দিন।';
 
   @override
   String get cashActionEdit => 'পরিবর্তন';
@@ -2692,7 +2692,7 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get cashActionCovered =>
-      'এই টাকা ইতিমধ্যে জমার মধ্যে ধরা হয়েছে, তাই পরিবর্তন করা যাবে না। অফিসকে জানান।';
+      'এই আদায় জমা হয়ে গেছে, তাই আর বদলানো বা মোছা যাবে না।';
 
   @override
   String get cashActionNotEditable =>
@@ -3265,4 +3265,100 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get gpsRequiredForWorkOut => 'কাজ শেষ করতে GPS চালু থাকতে হবে।';
+
+  @override
+  String get statusDeposited => 'জমা হয়েছে';
+
+  @override
+  String get statusDepositFailed => 'জমা হয়নি';
+
+  @override
+  String get cashDepositCash => 'নগদ (হাতে থাকা সব)';
+
+  @override
+  String get cashDepositNonCash => 'মোবাইল / ব্যাংক';
+
+  @override
+  String cashDepositNonCashCount(String count) {
+    return '$countটি আদায়';
+  }
+
+  @override
+  String cashDepositTotalCount(String count) {
+    return 'মোট $countটি আদায়';
+  }
+
+  @override
+  String get cashDepositAllHint =>
+      'আংশিক জমা হয় না: হাতে থাকা সব নগদ আর সব মোবাইল/ব্যাংক আদায় একসাথে জমা হয়, তারপর ইআরপিতে যায়।';
+
+  @override
+  String get cashDepositNothing => 'জমা দেওয়ার মতো কিছু হাতে নেই।';
+
+  @override
+  String get cashDepositSubmit => 'জমা দিন';
+
+  @override
+  String get cashDepositConfirmTitle => 'জমা নিশ্চিত করুন';
+
+  @override
+  String cashDepositConfirmOnline(String cash, String nonCash, String count) {
+    return 'এই $cash নগদ ও $nonCash মোবাইল/ব্যাংক (মোট $countটি আদায়) জমা দিলে অনলাইনে থাকলে সাথে সাথে ইআরপিতে পেমেন্ট হিসেবে চলে যাবে। জমার পর আর বদলানো বা মুছে ফেলা যাবে না।';
+  }
+
+  @override
+  String cashDepositConfirmOffline(String cash, String nonCash, String count) {
+    return 'এখন ইন্টারনেট নেই। এই $cash নগদ ও $nonCash মোবাইল/ব্যাংক (মোট $countটি আদায়) জমা দিলে ফোন অনলাইনে আসার সাথে সাথে ইআরপিতে পেমেন্ট হিসেবে চলে যাবে। জমার পর আর বদলানো বা মুছে ফেলা যাবে না।';
+  }
+
+  @override
+  String get cashDepositChanged =>
+      'হাতে থাকা টাকা এইমাত্র বদলেছে। আবার দেখে জমা দিন।';
+
+  @override
+  String cashDepositLine(String count, String amount) {
+    return '$countটি আদায় · মোবাইল/ব্যাংক $amount';
+  }
+
+  @override
+  String get cashDepositWaitingLock =>
+      'একটি জমা এখনো পাঠানো বাকি, তাই এখন হাতের কোনো আদায় বদলানো বা মোছা যাবে না।';
+
+  @override
+  String get cashInHandNonCashTitle => 'মোবাইল / ব্যাংক আদায় (জমার সাথে যাবে)';
+
+  @override
+  String get cashInHandNotSent => 'এখনো পাঠানো হয়নি; পাঠানোর পর বদলানো যাবে';
+
+  @override
+  String get depositFailedMustBeAll =>
+      'জমা হয়নি: সার্ভারে আপনার হাতে এই জমার চেয়ে বেশি নগদ আছে (মাঝে কিছু বদলেছে)। জমায় হাতের সব নগদ দিতে হয়।';
+
+  @override
+  String get depositFailedExceeds =>
+      'জমা হয়নি: সার্ভারে আপনার হাতে এই জমার চেয়ে কম নগদ আছে (কোনো আদায় বাদ গেছে বা বদলেছে)।';
+
+  @override
+  String get depositFailedNothing =>
+      'জমা হয়নি: জমা দেওয়ার মতো কিছু হাতে ছিল না।';
+
+  @override
+  String get depositFailedSlip =>
+      'জমা হয়নি: ব্যাংকে জমার জন্য স্লিপের ছবি লাগে। শাখার ক্যাশিয়ার বা ম্যানেজারের কাছে জমা দিন।';
+
+  @override
+  String get depositFailedChanged =>
+      'জমা হয়নি: জমার সময় একটি আদায় বদলে গেছে বা বাতিল হয়েছে।';
+
+  @override
+  String depositFailedOther(String code) {
+    return 'জমা হয়নি ($code)।';
+  }
+
+  @override
+  String get depositFailedBack =>
+      'আদায়গুলো আবার আপনার হাতে আছে, বদলানোও যাবে। আবার জমা দিন।';
+
+  @override
+  String get depositAgain => 'আবার জমা দিন';
 }

@@ -1034,10 +1034,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get cashDeposit => 'Record deposit';
+  String get cashDeposit => 'Deposit everything';
 
   @override
-  String get cashDepositTitle => 'Cash deposit';
+  String get cashDepositTitle => 'Deposit everything in hand';
 
   @override
   String get cashDepositTo => 'Deposited to';
@@ -1055,7 +1055,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cashReference => 'Reference / slip no.';
 
   @override
-  String get cashDepositSaved => 'Deposit saved · waiting for verification';
+  String get cashDepositSaved => 'Deposited · it goes to the ERP';
 
   @override
   String get cashDeposits => 'Deposits';
@@ -2636,7 +2636,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String cashInHandPendingDeposits(String amount) {
-    return '$amount handed in, waiting to be verified';
+    return '$amount handed in by earlier deposits';
   }
 
   @override
@@ -2653,7 +2653,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cashInHandHow =>
-      'A deposit pays off your oldest collections first, so the cash on hand is your newest collections. Tap a line to open the customer.';
+      'A deposit hands in all the cash and every mobile or bank collection you hold at once, and they then go to the ERP. Until you deposit, each line can be changed or deleted; after it, nothing can. Tap a line to open the customer.';
 
   @override
   String get cashActionEdit => 'Change';
@@ -2699,7 +2699,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cashActionCovered =>
-      'A deposit already covers this cash, so it cannot be changed. Ask the office.';
+      'This collection is already deposited, so it cannot be changed or deleted.';
 
   @override
   String get cashActionNotEditable =>
@@ -3276,4 +3276,102 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get gpsRequiredForWorkOut => 'GPS must be turned on to end work.';
+
+  @override
+  String get statusDeposited => 'Deposited';
+
+  @override
+  String get statusDepositFailed => 'Not deposited';
+
+  @override
+  String get cashDepositCash => 'Cash (all you hold)';
+
+  @override
+  String get cashDepositNonCash => 'Mobile / bank';
+
+  @override
+  String cashDepositNonCashCount(String count) {
+    return '$count collections';
+  }
+
+  @override
+  String cashDepositTotalCount(String count) {
+    return '$count collections in all';
+  }
+
+  @override
+  String get cashDepositAllHint =>
+      'No part deposits: all the cash you hold and every mobile or bank collection go together, and then go to the ERP.';
+
+  @override
+  String get cashDepositNothing => 'Nothing in hand to deposit.';
+
+  @override
+  String get cashDepositSubmit => 'Deposit';
+
+  @override
+  String get cashDepositConfirmTitle => 'Confirm the deposit';
+
+  @override
+  String cashDepositConfirmOnline(String cash, String nonCash, String count) {
+    return 'Depositing $cash cash and $nonCash mobile/bank ($count collections) sends them to the ERP as payments right away when online. After the deposit they cannot be changed or deleted.';
+  }
+
+  @override
+  String cashDepositConfirmOffline(String cash, String nonCash, String count) {
+    return 'There is no internet now. Depositing $cash cash and $nonCash mobile/bank ($count collections) sends them to the ERP as payments as soon as the phone is online. After the deposit they cannot be changed or deleted.';
+  }
+
+  @override
+  String get cashDepositChanged =>
+      'The money in hand just changed. Check it and deposit again.';
+
+  @override
+  String cashDepositLine(String count, String amount) {
+    return '$count collections · mobile/bank $amount';
+  }
+
+  @override
+  String get cashDepositWaitingLock =>
+      'A deposit is still waiting to be sent, so nothing in hand can be changed or deleted now.';
+
+  @override
+  String get cashInHandNonCashTitle =>
+      'Mobile / bank collections (go with the deposit)';
+
+  @override
+  String get cashInHandNotSent =>
+      'Not sent yet; it can be changed once it is sent';
+
+  @override
+  String get depositFailedMustBeAll =>
+      'Not deposited: the server says you hold more cash than this deposit (something changed meanwhile). A deposit must take all of it.';
+
+  @override
+  String get depositFailedExceeds =>
+      'Not deposited: the server says you hold less cash than this deposit (a collection was left out or changed).';
+
+  @override
+  String get depositFailedNothing =>
+      'Not deposited: there was nothing in hand to deposit.';
+
+  @override
+  String get depositFailedSlip =>
+      'Not deposited: a bank deposit needs a photo of the slip. Deposit to the branch cashier or the manager.';
+
+  @override
+  String get depositFailedChanged =>
+      'Not deposited: a collection was changed or cancelled while it was being deposited.';
+
+  @override
+  String depositFailedOther(String code) {
+    return 'Not deposited ($code).';
+  }
+
+  @override
+  String get depositFailedBack =>
+      'The collections are back in your hand and can be changed. Deposit again.';
+
+  @override
+  String get depositAgain => 'Deposit again';
 }

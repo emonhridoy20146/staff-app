@@ -198,21 +198,29 @@ class CashOnHand {
   double get ratio => limit <= 0 ? 0 : onHand / limit;
 }
 
+Selectable<QueryRow> _unsentCash(AppDatabase db) => db.customSelect(
+      'SELECT '
+      "(SELECT COALESCE(SUM(amount_poisha),0) FROM collections WHERE method = 'cash' AND sync_state IN ('queued','sending')) AS c, "
+      "(SELECT COALESCE(SUM(amount_poisha),0) FROM deposits WHERE sync_state IN ('queued','sending')) AS d",
+      readsFrom: {db.collections, db.deposits},
+    );
+
 final cashOnHandProvider = StreamProvider<CashOnHand>((ref) {
   final db = ref.watch(databaseProvider);
   final server = ref.watch(serverCashProvider);
   final serverOnHand = server?.onHandPoisha ?? 0;
   final limit = server?.limitPoisha ?? 0;
-  return db
-      .customSelect(
-        'SELECT '
-        "(SELECT COALESCE(SUM(amount_poisha),0) FROM collections WHERE method = 'cash' AND sync_state IN ('queued','sending')) AS c, "
-        "(SELECT COALESCE(SUM(amount_poisha),0) FROM deposits WHERE sync_state IN ('queued','sending')) AS d",
-        readsFrom: {db.collections, db.deposits},
-      )
+  return _unsentCash(db)
       .watchSingle()
       .map((r) => CashOnHand(onHand: serverOnHand + r.read<int>('c') - r.read<int>('d'), limit: limit, serverOnHand: serverOnHand));
 });
+
+/// The same figure as [cashOnHandProvider], read once from the database (a deposit takes exactly
+/// this, FR-M-059). A failed deposit no longer counts, so its cash is back in hand.
+Future<int> readCashOnHand(AppDatabase db, int serverOnHand) async {
+  final r = await _unsentCash(db).getSingle();
+  return serverOnHand + r.read<int>('c') - r.read<int>('d');
+}
 
 /// Collections the server marked as conflict and the office has not yet
 /// resolved (counted as "problems" with failed outbox items).
