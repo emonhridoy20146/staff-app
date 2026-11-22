@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Changed (CI, owner decision 2026-11-22)
+- **A pull request builds the APK only when it can break the Android build:** `pubspec.yaml`/`pubspec.lock`, `android/`, `config/`, the workflows or build config (new `changes` job, plain `git diff`, no third-party action). Other pull requests run the tests only, about 8 minutes faster; a skipped `apk` job counts as passed.
+- **Main always builds the APK** and publishes the numbered test release, as before. New **"Run workflow" button** (`workflow_dispatch`) builds an APK from any branch on demand (published as a release when run on main). The release-key guard is unchanged.
+
 ### Changed (owner decisions 2026-11-22: places on every map, Google-Maps-style zoom, all branches, Galachipa default; FR-M-063, ADR-M28, contract 1.42.0)
 - **Places show on every map:** the customer map, the **pin-setting screen** (set/move a customer's pin) and the place-move screen. On the pin screen they are landmarks for reference only: not tappable, a tap still moves the pin. The `mapLayers` extension point now serves every map: `MapLayerDef.layer` gets a `MapLayerMode` (`interactive` | `reference`), and maps list the layers through the new `mapLayersProvider` (`lib/core/map/map_defaults.dart`, flag + permission), so customers never import places.
 - **Marker by zoom** (`placeIconMinZoom` = 13, `placeLabelMinZoom` = 16 in `places_ui.dart`): below 13 no places at all; 13–15.9 only a small **24 dp rounded square** with the kind's icon; 16 and up the square with the name next to it. Replaces the 40 dp round marker whose name was always shown. Where tappable the target stays 48 dp.

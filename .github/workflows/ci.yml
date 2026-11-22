@@ -3,8 +3,33 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch: # "Run workflow" button: builds an APK from the chosen branch
 
 jobs:
+  # A pull request builds the APK only when something that can break the Android build changed
+  # (packages, android/, build config). Main and the button always build it. Tests always run.
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      apk: ${{ steps.diff.outputs.apk }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: diff
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          if [ "$EVENT" != "pull_request" ]; then echo "apk=true" >> "$GITHUB_OUTPUT"; exit 0; fi
+          FILES=$(git diff --name-only "$BASE_SHA"...HEAD)
+          echo "$FILES"
+          if echo "$FILES" | grep -qE '^(pubspec\.yaml|pubspec\.lock|android/|config/|\.github/workflows/|analysis_options\.yaml|build\.yaml|l10n\.yaml)'; then
+            echo "apk=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "apk=false" >> "$GITHUB_OUTPUT"
+          fi
+
   check:
     runs-on: ubuntu-latest
     steps:
@@ -23,7 +48,8 @@ jobs:
         continue-on-error: true # goldens are rendered on Linux; review diffs manually
 
   apk:
-    needs: check
+    needs: [check, changes]
+    if: needs.changes.outputs.apk == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: write # publish the test release on main
@@ -42,7 +68,7 @@ jobs:
       - name: Decode keystore (main must have one)
         env:
           KEYSTORE_B64: ${{ secrets.STAFF_KEYSTORE_B64 }}
-          IS_MAIN_PUSH: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }}
+          IS_MAIN_PUSH: ${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' }}
         run: |
           if [ -n "$KEYSTORE_B64" ]; then
             echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/staff.jks"
@@ -71,7 +97,7 @@ jobs:
           path: build/app/outputs/flutter-apk/app-release.apk
       # On main: a GitHub release with the APK, so the owner downloads it from the Releases page (no login to Actions needed).
       - name: Publish test release
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
