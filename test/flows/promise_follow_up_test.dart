@@ -93,6 +93,16 @@ void main() {
       expect([rc.followUpOf, rc.attempt], ['promise-$b', 3]);
     });
 
+    test('followed up by someone else (the server says followUpId): not on Home, no action', () async {
+      await h.signIn();
+      final a = await promise(h);
+      await h.read(syncEngineProvider).kick(reason: 'test');
+      h.api.breakPromise(a, followUpId: 'promise-of-a-colleague');
+      await h.read(syncEngineProvider).kick(reason: 'test');
+      expect((await row(h, a)).status, 'broken');
+      expect(await unfollowed(h), isEmpty);
+    });
+
     test('an open or kept promise needs no follow-up', () async {
       await h.signIn();
       await promise(h);

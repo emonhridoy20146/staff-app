@@ -130,7 +130,7 @@ class FakeFieldApi implements HttpClientAdapter {
     'branch.view', 'customer.view', 'customer.location.propose', 'customer.phone.manage', 'tag.view', 'tag.set', //
     'collection.record', 'collection.view', 'cash.view', 'cash.deposit.record', 'assignment.view',
     'visit.record', 'visit.view', 'note.create', 'note.view', 'promise.create', 'promise.view',
-    'attendance.record', 'leave.request', 'cowork.use', 'task.work', 'place.view', 'place.create',
+    'attendance.record', 'leave.request', 'cowork.use', 'task.work', 'place.view', 'place.create', 'prospect.create',
   ];
 
   static const flags = {
@@ -283,44 +283,40 @@ class FakeFieldApi implements HttpClientAdapter {
     serverChange('prospect', 'pr-$clientId', Map<String, dynamic>.of(p));
   }
 
+  /// `prospect` (contract 1.45.0): `ProspectCreate` only, idempotent by clientId; numbers stored as +8801XXXXXXXXX.
+  /// Unknown fields are refused like field-api's strict schema.
   Json _prospectMutation(String mutationId, String op, Json payload) {
-    Json reject(String rule) => {'mutationId': mutationId, 'result': 'rejected', 'error': _rule(rule)};
+    Json invalid(String what) => {'mutationId': mutationId, 'result': 'rejected', 'error': _problem(400, 'VALIDATION_FAILED', what)};
+    const allowed = {'clientId', 'name', 'phones', 'address', 'note', 'location', 'branchId', 'fromProspectId'};
+    if (op != 'create' || payload.keys.any((k) => !allowed.contains(k))) return invalid('unknown field');
     final name = (payload['name'] as String?)?.trim() ?? '';
-    final phones = ((payload['phones'] as List?) ?? const []).cast<String>();
-    if (name.isEmpty || name.length > 80) return {'mutationId': mutationId, 'result': 'rejected', 'error': _problem(400, 'VALIDATION_FAILED', 'name')};
-    if (phones.isEmpty || phones.any((n) => !RegExp(r'^01[3-9]\d{8}$').hasMatch(n))) {
-      return {'mutationId': mutationId, 'result': 'rejected', 'error': _problem(400, 'VALIDATION_FAILED', 'phones')};
+    final phones = (payload['phones'] as List?) ?? const [];
+    if (name.isEmpty || name.length > 120 || phones.length > 5) return invalid('name or phones');
+    final numbers = <String>[];
+    for (final p in phones) {
+      final n = p is Map ? p['number'] as String? : null;
+      if (n == null || !RegExp(r'^01[3-9]\d{8}$').hasMatch(n)) return invalid('phones');
+      numbers.add('+88$n');
     }
-    if (op == 'create') {
-      final id = 'pr-${payload['clientId']}';
-      prospects[id] = {
-        'id': id,
-        'clientId': payload['clientId'],
-        'name': name,
-        'phones': phones,
-        'address': payload['address'],
-        'note': payload['note'],
-        if (payload['location'] != null) 'location': payload['location'],
-        'status': 'new',
-        'createdBy': {'id': user['id'], 'name': 'রহিম উদ্দিন'},
-        'createdAt': clock.nowUtc().toIso8601String(),
-      };
-      serverChange('prospect', id, Map<String, dynamic>.of(prospects[id]!));
-      return {'mutationId': mutationId, 'result': 'applied', 'entityId': id};
-    }
-    final target = payload['prospectId'] as String?;
-    final p = prospects[target] ?? prospects['pr-$target'];
-    if (p == null) return reject('PROSPECT_NOT_FOUND');
-    if ((p['createdBy'] as Json)['id'] != user['id']) return reject('NOT_OWNER');
-    if (p['status'] != 'new') return reject('PROSPECT_NOT_NEW');
-    p
-      ..['name'] = name
-      ..['phones'] = phones
-      ..['address'] = payload['address']
-      ..['note'] = payload['note']
-      ..['updatedAt'] = clock.nowUtc().toIso8601String();
-    serverChange('prospect', p['id'] as String, Map<String, dynamic>.of(p));
-    return {'mutationId': mutationId, 'result': 'applied', 'entityId': p['id']};
+    final id = 'pr-${payload['clientId']}';
+    if (prospects.containsKey(id)) return {'mutationId': mutationId, 'result': 'applied', 'entityId': id}; // replay
+    prospects[id] = {
+      'id': id,
+      'clientId': payload['clientId'],
+      'name': name,
+      'phones': [for (final n in numbers) {'number': n, 'label': null}],
+      'address': payload['address'],
+      'note': payload['note'],
+      'location': payload['location'],
+      'branchId': 'b-1',
+      'status': 'new',
+      'history': [{'status': 'new', 'at': clock.nowUtc().toIso8601String(), 'by': {'id': user['id'], 'name': 'রহিম উদ্দিন'}}],
+      'version': 1,
+      'createdBy': {'id': user['id'], 'name': 'রহিম উদ্দিন'},
+      'createdAt': clock.nowUtc().toIso8601String(),
+    };
+    serverChange('prospect', id, Map<String, dynamic>.of(prospects[id]!));
+    return {'mutationId': mutationId, 'result': 'applied', 'entityId': id};
   }
 
   Json _placeMutation(String mutationId, String entity, Json payload) {
@@ -526,9 +522,18 @@ class FakeFieldApi implements HttpClientAdapter {
 
   /// Tests / demo: the server marks a promise broken (FR-PRM-003) and sends it on the change feed with the
   /// follow-up fields of contract 1.45.0.
-  void breakPromise(String mutationId) {
+  /// [followUpId]: somebody (e.g. a colleague) already followed it up on the server.
+  void breakPromise(String mutationId, {String? followUpId}) {
     final p = appliedPayloads[mutationId]!;
-    serverChange('promise', 'promise-$mutationId', {...p, 'status': 'broken', 'attempt': _promiseAttempt(p), 'createdAt': clock.nowUtc().toIso8601String()});
+    serverChange('promise', 'promise-$mutationId', {
+      ...p,
+      'id': 'promise-$mutationId',
+      'status': 'broken',
+      'attempt': _promiseAttempt(p),
+      'followUpId': followUpId,
+      'chainRootId': 'promise-$mutationId',
+      'createdAt': clock.nowUtc().toIso8601String(),
+    });
   }
 
   /// 1.45.0: a follow-up is one attempt after the promise it names; a promise without `followUpOf` is attempt 1.

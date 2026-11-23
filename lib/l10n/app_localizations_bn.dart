@@ -3815,7 +3815,7 @@ class AppLocalizationsBn extends AppLocalizations {
   String get prospectStatusConverted => 'গ্রাহক হয়েছেন';
 
   @override
-  String get prospectStatusClosed => 'বন্ধ';
+  String get prospectStatusClosed => 'বাদ দেওয়া হয়েছে';
 
   @override
   String get prospectByMe => 'আপনি';
@@ -3877,13 +3877,13 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get prospectOfflineHint =>
-      'ইন্টারনেট ছাড়াও চলে। অফিস ব্যবস্থা না নেওয়া পর্যন্ত পরিবর্তন করা যায়।';
+      'ইন্টারনেট ছাড়াও চলে। পাঠানোর আগ পর্যন্ত পরিবর্তন করা যায়।';
 
   @override
   String get prospectErrName => 'একটি নাম লিখুন';
 
   @override
-  String get prospectErrNameLong => 'নাম খুব বড় (সর্বোচ্চ ৮০ অক্ষর)';
+  String get prospectErrNameLong => 'নাম খুব বড় (সর্বোচ্চ ১২০ অক্ষর)';
 
   @override
   String get prospectErrPhone => 'অন্তত একটি মোবাইল নম্বর লিখুন';
@@ -3896,22 +3896,19 @@ class AppLocalizationsBn extends AppLocalizations {
   String get prospectErrPhoneRepeated => 'একই নম্বর দুবার লেখা হয়েছে';
 
   @override
-  String get prospectErrAddressLong => 'ঠিকানা খুব বড় (সর্বোচ্চ ২০০ অক্ষর)';
+  String get prospectErrAddressLong => 'ঠিকানা খুব বড় (সর্বোচ্চ ৫০০ অক্ষর)';
 
   @override
-  String get prospectErrNoteLong => 'নোট খুব বড় (সর্বোচ্চ ৫০০ অক্ষর)';
+  String get prospectErrNoteLong => 'নোট খুব বড় (সর্বোচ্চ ১০০০ অক্ষর)';
 
   @override
-  String get prospectErrNotEditable => 'এটি আর পরিবর্তন করা যাবে না';
-
-  @override
-  String get prospectRefusedNotNew =>
-      'আপনার পরিবর্তন সংরক্ষিত হয়নি: অফিস আগেই ব্যবস্থা নিয়েছে';
-
-  @override
-  String get prospectRefusedNotOwner =>
-      'যিনি যোগ করেছেন শুধু তিনিই পরিবর্তন করতে পারেন';
+  String get prospectErrNotEditable =>
+      'এটি পাঠানো হয়ে গেছে; এখন শুধু অফিস পরিবর্তন করতে পারে';
 
   @override
   String get prospectRefusedInvalid => 'সার্ভার নাম বা কোনো নম্বর গ্রহণ করেনি';
+
+  @override
+  String get prospectRefusedNotAllowed =>
+      'আপনার অ্যাকাউন্টে সম্ভাব্য গ্রাহক যোগ করার অনুমতি নেই';
 }

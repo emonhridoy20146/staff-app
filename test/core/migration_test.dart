@@ -522,6 +522,7 @@ Future<void> _dropV17(AppDatabase db) async {
   await db.customStatement('ALTER TABLE media_queue DROP COLUMN last_error');
   await db.customStatement('ALTER TABLE media_queue DROP COLUMN last_attempt_at');
   await db.customStatement('ALTER TABLE promises DROP COLUMN follow_up_of');
+  await db.customStatement('ALTER TABLE promises DROP COLUMN follow_up_id');
   await db.customStatement('ALTER TABLE promises DROP COLUMN attempt');
   await db.customStatement('DROP TABLE prospects');
 }

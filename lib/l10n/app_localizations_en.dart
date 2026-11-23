@@ -3837,7 +3837,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get prospectStatusConverted => 'Became a customer';
 
   @override
-  String get prospectStatusClosed => 'Closed';
+  String get prospectStatusClosed => 'Dropped';
 
   @override
   String get prospectByMe => 'you';
@@ -3901,13 +3901,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get prospectOfflineHint =>
-      'Works without internet. You can change it until the office acts on it.';
+      'Works without internet. You can change it until it is sent.';
 
   @override
   String get prospectErrName => 'Write a name';
 
   @override
-  String get prospectErrNameLong => 'The name is too long (at most 80 letters)';
+  String get prospectErrNameLong =>
+      'The name is too long (at most 120 letters)';
 
   @override
   String get prospectErrPhone => 'Write at least one mobile number';
@@ -3921,24 +3922,21 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get prospectErrAddressLong =>
-      'The address is too long (at most 200 letters)';
+      'The address is too long (at most 500 letters)';
 
   @override
   String get prospectErrNoteLong =>
-      'The note is too long (at most 500 letters)';
+      'The note is too long (at most 1000 letters)';
 
   @override
-  String get prospectErrNotEditable => 'This one can no longer be changed';
-
-  @override
-  String get prospectRefusedNotNew =>
-      'Your change was not saved: the office had already acted on it';
-
-  @override
-  String get prospectRefusedNotOwner =>
-      'Only the person who added it can change it';
+  String get prospectErrNotEditable =>
+      'It has been sent; only the office can change it now';
 
   @override
   String get prospectRefusedInvalid =>
       'The server did not accept the name or a number';
+
+  @override
+  String get prospectRefusedNotAllowed =>
+      'Your account may not add possible customers';
 }

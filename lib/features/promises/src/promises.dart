@@ -67,6 +67,7 @@ class PromisePullHandler implements PullHandler {
           note: Value(d['note'] as String?),
           createdByName: Value(isColleague(me: me, staffId: maker) ? d['createdByName'] as String? : null),
           followUpOf: Value(d['followUpOf'] as String?),
+          followUpId: Value(d['followUpId'] as String?),
           attempt: Value(((d['attempt'] as num?) ?? 1).toInt()),
           createdAt: d['createdAt'] == null ? DateTime.fromMillisecondsSinceEpoch(0, isUtc: true) : DateTime.parse(d['createdAt'] as String).toUtc(),
           syncState: const Value('synced'),
@@ -118,9 +119,10 @@ final todayPromiseCountProvider = StreamProvider<int>((ref) {
 /// The id a follow-up names: the server id once the promise is on the server, else its clientId.
 String promiseRefId(PromiseRow p) => p.serverId ?? p.clientId;
 
-/// A broken promise nobody has followed up yet (FR-M-072): no promise names it in `followUpOf`.
+/// A broken promise nobody has followed up yet (FR-M-072): the server names no follow-up (`followUpId`, which
+/// also covers a colleague's) and no promise on this phone names it in `followUpOf` (one not sent yet).
 bool needsFollowUp(PromiseRow p, Iterable<PromiseRow> all) =>
-    p.status == 'broken' && !all.any((q) => q.followUpOf != null && (q.followUpOf == p.serverId || q.followUpOf == p.clientId));
+    p.status == 'broken' && p.followUpId == null && !all.any((q) => q.followUpOf != null && (q.followUpOf == p.serverId || q.followUpOf == p.clientId));
 
 /// The customer's latest broken promise without a follow-up, if any: a new promise on this customer follows it up.
 Future<PromiseRow?> brokenToFollowUp(AppDatabase db, String customerId) async {

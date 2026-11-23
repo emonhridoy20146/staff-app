@@ -191,6 +191,7 @@ class AppDatabase extends _$AppDatabase {
             await _ensureColumn(m, mediaQueue, mediaQueue.lastAttemptAt);
             // contract 1.45.0 (FR-M-072): promise follow-up chain. Existing promises are attempt 1.
             await _ensureColumn(m, promises, promises.followUpOf);
+            await _ensureColumn(m, promises, promises.followUpId);
             await _ensureColumn(m, promises, promises.attempt);
             // contract 1.45.0 (FR-M-073): possible customers. A new table only.
             if (!await _hasTable('prospects')) await m.createTable(prospects);

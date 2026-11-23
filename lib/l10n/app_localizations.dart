@@ -6683,7 +6683,7 @@ abstract class AppLocalizations {
   /// No description provided for @prospectStatusClosed.
   ///
   /// In en, this message translates to:
-  /// **'Closed'**
+  /// **'Dropped'**
   String get prospectStatusClosed;
 
   /// No description provided for @prospectByMe.
@@ -6797,7 +6797,7 @@ abstract class AppLocalizations {
   /// No description provided for @prospectOfflineHint.
   ///
   /// In en, this message translates to:
-  /// **'Works without internet. You can change it until the office acts on it.'**
+  /// **'Works without internet. You can change it until it is sent.'**
   String get prospectOfflineHint;
 
   /// No description provided for @prospectErrName.
@@ -6809,7 +6809,7 @@ abstract class AppLocalizations {
   /// No description provided for @prospectErrNameLong.
   ///
   /// In en, this message translates to:
-  /// **'The name is too long (at most 80 letters)'**
+  /// **'The name is too long (at most 120 letters)'**
   String get prospectErrNameLong;
 
   /// No description provided for @prospectErrPhone.
@@ -6833,38 +6833,32 @@ abstract class AppLocalizations {
   /// No description provided for @prospectErrAddressLong.
   ///
   /// In en, this message translates to:
-  /// **'The address is too long (at most 200 letters)'**
+  /// **'The address is too long (at most 500 letters)'**
   String get prospectErrAddressLong;
 
   /// No description provided for @prospectErrNoteLong.
   ///
   /// In en, this message translates to:
-  /// **'The note is too long (at most 500 letters)'**
+  /// **'The note is too long (at most 1000 letters)'**
   String get prospectErrNoteLong;
 
   /// No description provided for @prospectErrNotEditable.
   ///
   /// In en, this message translates to:
-  /// **'This one can no longer be changed'**
+  /// **'It has been sent; only the office can change it now'**
   String get prospectErrNotEditable;
-
-  /// No description provided for @prospectRefusedNotNew.
-  ///
-  /// In en, this message translates to:
-  /// **'Your change was not saved: the office had already acted on it'**
-  String get prospectRefusedNotNew;
-
-  /// No description provided for @prospectRefusedNotOwner.
-  ///
-  /// In en, this message translates to:
-  /// **'Only the person who added it can change it'**
-  String get prospectRefusedNotOwner;
 
   /// No description provided for @prospectRefusedInvalid.
   ///
   /// In en, this message translates to:
   /// **'The server did not accept the name or a number'**
   String get prospectRefusedInvalid;
+
+  /// No description provided for @prospectRefusedNotAllowed.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account may not add possible customers'**
+  String get prospectRefusedNotAllowed;
 }
 
 class _AppLocalizationsDelegate

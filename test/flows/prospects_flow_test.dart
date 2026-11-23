@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:drift/drift.dart' show BooleanExpressionOperators;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -25,7 +24,7 @@ void main() {
     expect(validateProspect((name: 'ক', phones: ['', ''], address: '', note: '')).error, ProspectError.phoneMissing);
     expect(validateProspect((name: 'ক', phones: ['12345'], address: '', note: '')).error, ProspectError.phoneInvalid);
     expect(validateProspect((name: 'ক', phones: ['01711223344', '+8801711223344'], address: '', note: '')).error, ProspectError.phoneRepeated);
-    expect(validateProspect((name: 'ক' * 81, phones: ['01711223344'], address: '', note: '')).error, ProspectError.nameTooLong);
+    expect(validateProspect((name: 'ক' * 121, phones: ['01711223344'], address: '', note: '')).error, ProspectError.nameTooLong);
     expect(validateProspect(draft).draft!.phones, ['01711223344', '01811223344']);
   });
 
@@ -54,8 +53,8 @@ void main() {
       expect([ob.mutationId, ob.op], [id, 'create']);
       final payload = jsonDecode(ob.payloadJson) as Map<String, dynamic>;
       expect(payload['clientId'], id);
-      expect(payload['phones'], ['01711223344', '01811223344']);
-      expect(payload.containsKey('location'), isFalse);
+      expect(payload['phones'], [{'number': '01711223344'}, {'number': '01811223344'}]);
+      expect(payload.keys.toSet(), {'clientId', 'name', 'phones', 'address', 'note'}, reason: 'ProspectCreate fields only, no location off duty');
 
       await h.read(syncEngineProvider).kick(reason: 'test');
       h.api.offline = false;
@@ -63,6 +62,7 @@ void main() {
       await h.read(syncEngineProvider).syncNow();
       r = await row(id);
       expect([r.syncState, r.serverId, r.createdByName], ['synced', 'pr-$id', 'রহিম উদ্দিন']);
+      expect(jsonDecode(r.phonesJson), ['01711223344', '01811223344'], reason: 'the server stores +8801…; shown as 01…');
       expect(h.api.prospects.length, 1, reason: 'sent once whatever the retries');
     });
 
@@ -80,45 +80,35 @@ void main() {
       expect(h.api.prospects['pr-$id']!['location'], {'lat': 22.7, 'lng': 90.35, 'accuracyM': 8.0});
     });
 
-    test('edit my own while new (also before it is sent); not once the office acted', () async {
+    test('change my own before it is sent: the queued create is rewritten (same id, one mutation); not after', () async {
       await h.signIn();
       h.api.offline = true;
       final svc = h.read(prospectServiceProvider);
       final id = await svc.create(draft);
-      await svc.update(id, (name: 'জামাল হোসেন মিয়া', phones: ['01711223344'], address: '', note: ''));
       final db = h.read(databaseProvider);
-      final edit = await (db.select(db.outbox)..where((t) => t.entity.equals('prospect') & t.op.equals('update'))).getSingle();
-      expect(edit.dependsOnJson, contains(id));
-      expect((await row(id)).editState, 'queued');
-
+      // The sync started by create() failed offline: that create was tried, so it may be on the server already.
       await h.read(syncEngineProvider).kick(reason: 'test');
+      await expectLater(svc.update(id, draft), throwsA(isA<ProspectInvalid>()));
+
+      // Never tried (as when no sync ran yet): it may be changed.
+      await db.customStatement("UPDATE outbox SET attempts = 0, state = 'pending' WHERE mutation_id = '$id'");
+      await svc.update(id, (name: 'জামাল হোসেন মিয়া', phones: ['01711223344'], address: '', note: ''));
+      final obs = await (db.select(db.outbox)..where((t) => t.entity.equals('prospect'))).get();
+      expect(obs, hasLength(1));
+      final payload = jsonDecode(obs.single.payloadJson) as Map<String, dynamic>;
+      expect([payload['clientId'], payload['name'], payload['phones']], [id, 'জামাল হোসেন মিয়া', [{'number': '01711223344'}]]);
+      expect(payload.containsKey('address'), isFalse);
+
       h.api.offline = false;
       await Future<void>.delayed(const Duration(milliseconds: 20));
       await h.read(syncEngineProvider).syncNow();
-      final r = await row(id);
-      expect([r.name, r.editState, r.address], ['জামাল হোসেন মিয়া', 'none', null]);
       expect(h.api.prospects['pr-$id']!['name'], 'জামাল হোসেন মিয়া');
-
-      h.api.setProspectStatus(id, 'contacted');
+      expect((await row(id)).syncState, 'synced');
+      // On the server now: only the office changes it (contract 1.45.0).
+      await expectLater(svc.update(id, draft), throwsA(isA<ProspectInvalid>().having((e) => e.error, 'error', ProspectError.notEditable)));
+      h.api.setProspectStatus(id, 'dropped');
       await h.read(syncEngineProvider).kick(reason: 'test');
-      expect((await row(id)).status, 'contacted');
-      expect(() => svc.update(id, draft), throwsA(isA<ProspectInvalid>().having((e) => e.error, 'error', ProspectError.notEditable)));
-    });
-
-    test('the office acted before my edit arrived: the edit is refused with its reason and kept', () async {
-      await h.signIn();
-      final svc = h.read(prospectServiceProvider);
-      final id = await svc.create(draft);
-      await h.read(syncEngineProvider).kick(reason: 'test');
-      h.api.offline = true;
-      await svc.update(id, (name: 'নতুন নাম', phones: ['01711223344'], address: '', note: ''));
-      h.api.setProspectStatus(id, 'converted'); // the office, meanwhile
-      await h.read(syncEngineProvider).kick(reason: 'test');
-      h.api.offline = false;
-      await Future<void>.delayed(const Duration(milliseconds: 20));
-      await h.read(syncEngineProvider).syncNow();
-      final r = await row(id);
-      expect([r.editState, r.errorCode], ['failed', 'PROSPECT_NOT_NEW']);
+      expect((await row(id)).status, 'dropped');
     });
   });
 
@@ -160,7 +150,7 @@ void main() {
     expect(find.text('জামাল হোসেন'), findsOneWidget);
     expect(find.text('নতুন'), findsOneWidget);
     expect(find.textContaining('যোগ করেছেন আপনি'), findsOneWidget);
-    expect(find.text('পরিবর্তন'), findsOneWidget); // mine and new
+    expect(find.text('পরিবর্তন'), findsNothing); // sent at once (online): only the office changes it now
     await t.pump(const Duration(seconds: 10));
     await t.pumpWidget(const SizedBox());
     await settle();

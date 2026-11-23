@@ -117,6 +117,11 @@ final fieldApiProvider = Provider<FieldApi>((ref) {
     try {
       final r = await api.refresh(rt);
       await tokens.save(r.accessToken, r.refreshToken.isEmpty ? rt : r.refreshToken);
+      // 1.45.0: the refresh answer says too whether this user gives attendance (FR-M-070).
+      if (r.attendanceRequired != null) {
+        ref.read(attendanceRequiredProvider.notifier).state = r.attendanceRequired!;
+        unawaited(ref.read(databaseProvider).kvSet('attendance_required', jsonEncode(r.attendanceRequired)));
+      }
       return r.accessToken;
     } on ApiException catch (e) {
       // Offline: keep the session, just fail this request.

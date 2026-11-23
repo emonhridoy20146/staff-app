@@ -2299,7 +2299,7 @@
   "prospectStatusNew": "New",
   "prospectStatusContacted": "Contacted",
   "prospectStatusConverted": "Became a customer",
-  "prospectStatusClosed": "Closed",
+  "prospectStatusClosed": "Dropped",
   "prospectByMe": "you",
   "prospectAddedBy": "Added by {name} · {time}",
   "@prospectAddedBy": {
@@ -2324,16 +2324,15 @@
   "prospectLocationHint": "Only if you are with the person now",
   "prospectLocationOffDuty": "Location is used only while you are on duty",
   "prospectSaved": "Saved. It goes to the office when there is internet.",
-  "prospectOfflineHint": "Works without internet. You can change it until the office acts on it.",
+  "prospectOfflineHint": "Works without internet. You can change it until it is sent.",
   "prospectErrName": "Write a name",
-  "prospectErrNameLong": "The name is too long (at most 80 letters)",
+  "prospectErrNameLong": "The name is too long (at most 120 letters)",
   "prospectErrPhone": "Write at least one mobile number",
   "prospectErrPhoneInvalid": "A mobile number is not valid (01XXXXXXXXX)",
   "prospectErrPhoneRepeated": "The same number is written twice",
-  "prospectErrAddressLong": "The address is too long (at most 200 letters)",
-  "prospectErrNoteLong": "The note is too long (at most 500 letters)",
-  "prospectErrNotEditable": "This one can no longer be changed",
-  "prospectRefusedNotNew": "Your change was not saved: the office had already acted on it",
-  "prospectRefusedNotOwner": "Only the person who added it can change it",
-  "prospectRefusedInvalid": "The server did not accept the name or a number"
+  "prospectErrAddressLong": "The address is too long (at most 500 letters)",
+  "prospectErrNoteLong": "The note is too long (at most 1000 letters)",
+  "prospectErrNotEditable": "It has been sent; only the office can change it now",
+  "prospectRefusedInvalid": "The server did not accept the name or a number",
+  "prospectRefusedNotAllowed": "Your account may not add possible customers"
 }

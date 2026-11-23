@@ -11874,6 +11874,17 @@ class $PromisesTable extends Promises
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _followUpIdMeta = const VerificationMeta(
+    'followUpId',
+  );
+  @override
+  late final GeneratedColumn<String> followUpId = GeneratedColumn<String>(
+    'follow_up_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _attemptMeta = const VerificationMeta(
     'attempt',
   );
@@ -11902,6 +11913,7 @@ class $PromisesTable extends Promises
     reminderScheduled,
     createdByName,
     followUpOf,
+    followUpId,
     attempt,
   ];
   @override
@@ -12028,6 +12040,15 @@ class $PromisesTable extends Promises
         ),
       );
     }
+    if (data.containsKey('follow_up_id')) {
+      context.handle(
+        _followUpIdMeta,
+        followUpId.isAcceptableOrUnknown(
+          data['follow_up_id']!,
+          _followUpIdMeta,
+        ),
+      );
+    }
     if (data.containsKey('attempt')) {
       context.handle(
         _attemptMeta,
@@ -12099,6 +12120,10 @@ class $PromisesTable extends Promises
         DriftSqlType.string,
         data['${effectivePrefix}follow_up_of'],
       ),
+      followUpId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}follow_up_id'],
+      ),
       attempt: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}attempt'],
@@ -12133,6 +12158,9 @@ class PromiseRow extends DataClass implements Insertable<PromiseRow> {
   /// Follow-up of a broken promise (v17, contract 1.45.0, FR-M-072): the broken promise's server id (or its
   /// clientId while unsent), and the attempt number in the chain (1 = the first promise).
   final String? followUpOf;
+
+  /// The server's newest follow-up of this promise that is not cancelled (anyone's, also a colleague's); null = none.
+  final String? followUpId;
   final int attempt;
   const PromiseRow({
     required this.clientId,
@@ -12149,6 +12177,7 @@ class PromiseRow extends DataClass implements Insertable<PromiseRow> {
     required this.reminderScheduled,
     this.createdByName,
     this.followUpOf,
+    this.followUpId,
     required this.attempt,
   });
   @override
@@ -12178,6 +12207,9 @@ class PromiseRow extends DataClass implements Insertable<PromiseRow> {
     if (!nullToAbsent || followUpOf != null) {
       map['follow_up_of'] = Variable<String>(followUpOf);
     }
+    if (!nullToAbsent || followUpId != null) {
+      map['follow_up_id'] = Variable<String>(followUpId);
+    }
     map['attempt'] = Variable<int>(attempt);
     return map;
   }
@@ -12206,6 +12238,9 @@ class PromiseRow extends DataClass implements Insertable<PromiseRow> {
       followUpOf: followUpOf == null && nullToAbsent
           ? const Value.absent()
           : Value(followUpOf),
+      followUpId: followUpId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(followUpId),
       attempt: Value(attempt),
     );
   }
@@ -12232,6 +12267,7 @@ class PromiseRow extends DataClass implements Insertable<PromiseRow> {
       reminderScheduled: serializer.fromJson<bool>(json['reminderScheduled']),
       createdByName: serializer.fromJson<String?>(json['createdByName']),
       followUpOf: serializer.fromJson<String?>(json['followUpOf']),
+      followUpId: serializer.fromJson<String?>(json['followUpId']),
       attempt: serializer.fromJson<int>(json['attempt']),
     );
   }
@@ -12253,6 +12289,7 @@ class PromiseRow extends DataClass implements Insertable<PromiseRow> {
       'reminderScheduled': serializer.toJson<bool>(reminderScheduled),
       'createdByName': serializer.toJson<String?>(createdByName),
       'followUpOf': serializer.toJson<String?>(followUpOf),
+      'followUpId': serializer.toJson<String?>(followUpId),
       'attempt': serializer.toJson<int>(attempt),
     };
   }
@@ -12272,6 +12309,7 @@ class PromiseRow extends DataClass implements Insertable<PromiseRow> {
     bool? reminderScheduled,
     Value<String?> createdByName = const Value.absent(),
     Value<String?> followUpOf = const Value.absent(),
+    Value<String?> followUpId = const Value.absent(),
     int? attempt,
   }) => PromiseRow(
     clientId: clientId ?? this.clientId,
@@ -12290,6 +12328,7 @@ class PromiseRow extends DataClass implements Insertable<PromiseRow> {
         ? createdByName.value
         : this.createdByName,
     followUpOf: followUpOf.present ? followUpOf.value : this.followUpOf,
+    followUpId: followUpId.present ? followUpId.value : this.followUpId,
     attempt: attempt ?? this.attempt,
   );
   PromiseRow copyWithCompanion(PromisesCompanion data) {
@@ -12322,6 +12361,9 @@ class PromiseRow extends DataClass implements Insertable<PromiseRow> {
       followUpOf: data.followUpOf.present
           ? data.followUpOf.value
           : this.followUpOf,
+      followUpId: data.followUpId.present
+          ? data.followUpId.value
+          : this.followUpId,
       attempt: data.attempt.present ? data.attempt.value : this.attempt,
     );
   }
@@ -12343,6 +12385,7 @@ class PromiseRow extends DataClass implements Insertable<PromiseRow> {
           ..write('reminderScheduled: $reminderScheduled, ')
           ..write('createdByName: $createdByName, ')
           ..write('followUpOf: $followUpOf, ')
+          ..write('followUpId: $followUpId, ')
           ..write('attempt: $attempt')
           ..write(')'))
         .toString();
@@ -12364,6 +12407,7 @@ class PromiseRow extends DataClass implements Insertable<PromiseRow> {
     reminderScheduled,
     createdByName,
     followUpOf,
+    followUpId,
     attempt,
   );
   @override
@@ -12384,6 +12428,7 @@ class PromiseRow extends DataClass implements Insertable<PromiseRow> {
           other.reminderScheduled == this.reminderScheduled &&
           other.createdByName == this.createdByName &&
           other.followUpOf == this.followUpOf &&
+          other.followUpId == this.followUpId &&
           other.attempt == this.attempt);
 }
 
@@ -12402,6 +12447,7 @@ class PromisesCompanion extends UpdateCompanion<PromiseRow> {
   final Value<bool> reminderScheduled;
   final Value<String?> createdByName;
   final Value<String?> followUpOf;
+  final Value<String?> followUpId;
   final Value<int> attempt;
   final Value<int> rowid;
   const PromisesCompanion({
@@ -12419,6 +12465,7 @@ class PromisesCompanion extends UpdateCompanion<PromiseRow> {
     this.reminderScheduled = const Value.absent(),
     this.createdByName = const Value.absent(),
     this.followUpOf = const Value.absent(),
+    this.followUpId = const Value.absent(),
     this.attempt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
@@ -12437,6 +12484,7 @@ class PromisesCompanion extends UpdateCompanion<PromiseRow> {
     this.reminderScheduled = const Value.absent(),
     this.createdByName = const Value.absent(),
     this.followUpOf = const Value.absent(),
+    this.followUpId = const Value.absent(),
     this.attempt = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : clientId = Value(clientId),
@@ -12459,6 +12507,7 @@ class PromisesCompanion extends UpdateCompanion<PromiseRow> {
     Expression<bool>? reminderScheduled,
     Expression<String>? createdByName,
     Expression<String>? followUpOf,
+    Expression<String>? followUpId,
     Expression<int>? attempt,
     Expression<int>? rowid,
   }) {
@@ -12478,6 +12527,7 @@ class PromisesCompanion extends UpdateCompanion<PromiseRow> {
       if (reminderScheduled != null) 'reminder_scheduled': reminderScheduled,
       if (createdByName != null) 'created_by_name': createdByName,
       if (followUpOf != null) 'follow_up_of': followUpOf,
+      if (followUpId != null) 'follow_up_id': followUpId,
       if (attempt != null) 'attempt': attempt,
       if (rowid != null) 'rowid': rowid,
     });
@@ -12498,6 +12548,7 @@ class PromisesCompanion extends UpdateCompanion<PromiseRow> {
     Value<bool>? reminderScheduled,
     Value<String?>? createdByName,
     Value<String?>? followUpOf,
+    Value<String?>? followUpId,
     Value<int>? attempt,
     Value<int>? rowid,
   }) {
@@ -12516,6 +12567,7 @@ class PromisesCompanion extends UpdateCompanion<PromiseRow> {
       reminderScheduled: reminderScheduled ?? this.reminderScheduled,
       createdByName: createdByName ?? this.createdByName,
       followUpOf: followUpOf ?? this.followUpOf,
+      followUpId: followUpId ?? this.followUpId,
       attempt: attempt ?? this.attempt,
       rowid: rowid ?? this.rowid,
     );
@@ -12566,6 +12618,9 @@ class PromisesCompanion extends UpdateCompanion<PromiseRow> {
     if (followUpOf.present) {
       map['follow_up_of'] = Variable<String>(followUpOf.value);
     }
+    if (followUpId.present) {
+      map['follow_up_id'] = Variable<String>(followUpId.value);
+    }
     if (attempt.present) {
       map['attempt'] = Variable<int>(attempt.value);
     }
@@ -12592,6 +12647,7 @@ class PromisesCompanion extends UpdateCompanion<PromiseRow> {
           ..write('reminderScheduled: $reminderScheduled, ')
           ..write('createdByName: $createdByName, ')
           ..write('followUpOf: $followUpOf, ')
+          ..write('followUpId: $followUpId, ')
           ..write('attempt: $attempt, ')
           ..write('rowid: $rowid')
           ..write(')'))
@@ -29930,6 +29986,7 @@ typedef $$PromisesTableCreateCompanionBuilder = PromisesCompanion Function({
   Value<bool> reminderScheduled,
   Value<String?> createdByName,
   Value<String?> followUpOf,
+  Value<String?> followUpId,
   Value<int> attempt,
   Value<int> rowid,
 });
@@ -29948,6 +30005,7 @@ typedef $$PromisesTableUpdateCompanionBuilder = PromisesCompanion Function({
   Value<bool> reminderScheduled,
   Value<String?> createdByName,
   Value<String?> followUpOf,
+  Value<String?> followUpId,
   Value<int> attempt,
   Value<int> rowid,
 });
@@ -30028,6 +30086,11 @@ class $$PromisesTableFilterComposer
 
   ColumnFilters<String> get followUpOf => $composableBuilder(
     column: $table.followUpOf,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get followUpId => $composableBuilder(
+    column: $table.followUpId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -30116,6 +30179,11 @@ class $$PromisesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get followUpId => $composableBuilder(
+    column: $table.followUpId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get attempt => $composableBuilder(
     column: $table.attempt,
     builder: (column) => ColumnOrderings(column),
@@ -30187,6 +30255,11 @@ class $$PromisesTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<String> get followUpId => $composableBuilder(
+    column: $table.followUpId,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<int> get attempt =>
       $composableBuilder(column: $table.attempt, builder: (column) => column);
 }
@@ -30236,6 +30309,7 @@ class $$PromisesTableTableManager
                 Value<bool> reminderScheduled = const Value.absent(),
                 Value<String?> createdByName = const Value.absent(),
                 Value<String?> followUpOf = const Value.absent(),
+                Value<String?> followUpId = const Value.absent(),
                 Value<int> attempt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => PromisesCompanion(
@@ -30253,6 +30327,7 @@ class $$PromisesTableTableManager
                 reminderScheduled: reminderScheduled,
                 createdByName: createdByName,
                 followUpOf: followUpOf,
+                followUpId: followUpId,
                 attempt: attempt,
                 rowid: rowid,
               ),
@@ -30272,6 +30347,7 @@ class $$PromisesTableTableManager
                 Value<bool> reminderScheduled = const Value.absent(),
                 Value<String?> createdByName = const Value.absent(),
                 Value<String?> followUpOf = const Value.absent(),
+                Value<String?> followUpId = const Value.absent(),
                 Value<int> attempt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => PromisesCompanion.insert(
@@ -30289,6 +30365,7 @@ class $$PromisesTableTableManager
                 reminderScheduled: reminderScheduled,
                 createdByName: createdByName,
                 followUpOf: followUpOf,
+                followUpId: followUpId,
                 attempt: attempt,
                 rowid: rowid,
               ),

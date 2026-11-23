@@ -18,7 +18,7 @@ String prospectStatusLabel(AppLocalizations l, String s) => switch (s) {
       'new' => l.prospectStatusNew,
       'contacted' => l.prospectStatusContacted,
       'converted' => l.prospectStatusConverted,
-      'rejected' || 'closed' => l.prospectStatusClosed,
+      'dropped' => l.prospectStatusClosed,
       _ => s,
     };
 
@@ -42,9 +42,8 @@ String prospectErrorText(AppLocalizations l, ProspectError e) => switch (e) {
 
 /// Why the server refused a prospect or its change, in words; else its code.
 String prospectRefusalText(AppLocalizations l, String? code) => switch (code) {
-      'PROSPECT_NOT_NEW' => l.prospectRefusedNotNew,
-      'NOT_OWNER' => l.prospectRefusedNotOwner,
       'VALIDATION_FAILED' => l.prospectRefusedInvalid,
+      'FORBIDDEN' || 'MODULE_DISABLED' => l.prospectRefusedNotAllowed,
       _ => l.prospectRefused(code ?? '—'),
     };
 

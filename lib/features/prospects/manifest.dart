@@ -1,16 +1,17 @@
 import 'package:go_router/go_router.dart';
 
 import '../../core/feature/feature_manifest.dart';
+import '../../core/permissions/permission_service.dart';
 import 'src/prospects_data.dart';
 import 'src/prospects_ui.dart';
 
 /// Possible customers (prospects, contract 1.45.0, FR-M-073, ADR-M36): staff note someone who may become a
-/// customer, offline; see their list with status and who added it; change their own while `new`.
-/// Location only while on duty (CLAUDE.md §2.6). No permission keys yet: the 1.45.0 contract names none for
-/// staff, so the module flag alone gates it (hidden ≠ secure: the server checks every mutation).
+/// customer, offline; see their list with status and who added it; change their own until it is sent.
+/// Location only while on duty (CLAUDE.md §2.6). Permission prospect.create (the server checks every mutation).
 final prospectsManifest = FeatureManifest(
   name: 'prospects',
   flag: 'module.prospects',
+  permissions: const [Perm.prospectCreate, Perm.prospectView],
   routes: [
     GoRoute(path: '/prospects', builder: (_, _) => const ProspectsScreen()),
     GoRoute(path: '/prospects/new', builder: (_, _) => const ProspectFormScreen()),
@@ -18,5 +19,5 @@ final prospectsManifest = FeatureManifest(
   ],
   pullHandlers: [ProspectPullHandler()],
   pushHandlers: [ProspectPushHandler()],
-  meEntries: [MeEntryDef(id: 'prospects', order: 14, builder: (_) => const ProspectsMeEntry())],
+  meEntries: [MeEntryDef(id: 'prospects', order: 14, permission: Perm.prospectCreate, builder: (_) => const ProspectsMeEntry())],
 );

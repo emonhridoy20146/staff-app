@@ -366,6 +366,8 @@ class Promises extends Table {
   /// Follow-up of a broken promise (v17, contract 1.45.0, FR-M-072): the broken promise's server id (or its
   /// clientId while unsent), and the attempt number in the chain (1 = the first promise).
   TextColumn get followUpOf => text().nullable()();
+  /// The server's newest follow-up of this promise that is not cancelled (anyone's, also a colleague's); null = none.
+  TextColumn get followUpId => text().nullable()();
   IntColumn get attempt => integer().withDefault(const Constant(1))();
 
   @override
