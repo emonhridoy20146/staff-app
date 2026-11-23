@@ -4,7 +4,6 @@ import 'package:drift/drift.dart';
 
 import '../../../../core/api/api_models.dart';
 import '../../../../core/db/app_database.dart';
-import '../../../../core/db/colleague_activity.dart' show combineLatest2;
 import '../../../../core/sync/sync_handlers.dart';
 import '../domain/customer.dart';
 import '../domain/month_people.dart';
@@ -260,60 +259,65 @@ class CustomerRepository {
   /// Who made the open promise of each customer that has one (Home row "promised by", FR-M-067): the
   /// promise's `createdByName` (contract 1.31.0; null on the phone means the user made it, shown as [myName]),
   /// else a colleague's promise from `colleague_activities`. Read only; the promises feature owns its table.
-  Stream<Map<String, String>> watchPromiseMakers({required String? myName}) => _db
-      .customSelect(
+  Stream<Map<String, String>> watchPromiseMakers({required String? myName}) =>
+      _promiseMakersQuery().watch().map((rows) => _promiseMakersOf(rows, myName));
+
+  Selectable<QueryRow> _promiseMakersQuery({String? customerId}) => _db.customSelect(
         'SELECT c.server_id AS cid, p.client_id AS pid, p.created_by_name AS pname, ca.staff_name AS cname '
         'FROM customers c '
         'LEFT JOIN promises p ON p.client_id = c.open_promise_id OR p.server_id = c.open_promise_id '
         "LEFT JOIN colleague_activities ca ON ca.id = 'promise:' || c.open_promise_id "
-        'WHERE c.open_promise_id IS NOT NULL',
+        'WHERE c.open_promise_id IS NOT NULL${customerId == null ? '' : ' AND c.server_id = ?'}',
+        variables: [if (customerId != null) Variable.withString(customerId)],
         readsFrom: {_db.customers, _db.promises, _db.colleagueActivities},
-      )
-      .watch()
-      .map((rows) {
-        final out = <String, String>{};
-        for (final r in rows) {
-          final name = promiseMakerName(
-            ownRow: r.readNullable<String>('pid') != null,
-            createdByName: r.readNullable<String>('pname'),
-            colleagueName: r.readNullable<String>('cname'),
-            myName: myName,
-          );
-          if (name != null) out[r.read<String>('cid')] = name;
-        }
-        return out;
-      });
+      );
+
+  static Map<String, String> _promiseMakersOf(List<QueryRow> rows, String? myName) {
+    final out = <String, String>{};
+    for (final r in rows) {
+      final name = promiseMakerName(
+        ownRow: r.readNullable<String>('pid') != null,
+        createdByName: r.readNullable<String>('pname'),
+        colleagueName: r.readNullable<String>('cname'),
+        myName: myName,
+      );
+      if (name != null) out[r.read<String>('cid')] = name;
+    }
+    return out;
+  }
 
   /// Who did this month's work on one customer (FR-M-068): the latest visit of the month, the ERP payments'
   /// collectors and the open promise's maker. Names already on the phone only; each is null when unknown.
   Stream<MonthPeople> watchMonthPeople(String customerId, {required String today, required String? myName, required String? myUserId}) {
     final month = today.substring(0, 7);
-    final mine = (_db.select(_db.visits)
-          ..where((t) => t.customerId.equals(customerId))
-          ..orderBy([(t) => OrderingTerm.desc(t.checkInAt)])
-          ..limit(5))
-        .watch();
-    final colleagues = (_db.select(_db.colleagueActivities)
-          ..where((t) => t.customerId.equals(customerId) & t.kind.isIn(const ['visit', 'promise']))
-          ..orderBy([(t) => OrderingTerm.desc(t.at)]))
-        .watch();
-    final payments = (_db.select(_db.erpPayments)
-          ..where((t) => t.customerId.equals(customerId) & t.date.like('$month%') & t.reversed.equals(false))
-          ..orderBy([(t) => OrderingTerm.desc(t.date)]))
-        .watch();
-    final promise = watchPromiseMakers(myName: myName).map((m) => m[customerId]);
-    return combineLatest2(
-      combineLatest2(mine, colleagues, (a, b) => (a, b)),
-      combineLatest2(payments, promise, (a, b) => (a, b)),
-      (x, y) => monthPeopleOf(
+    // One drift stream that fires on any change to the tables read below, then reads them once. Several
+    // combined streams would cancel one after another and leave drift's close timers behind the screen.
+    final trigger = _db.customSelect('SELECT 1', readsFrom: {_db.visits, _db.colleagueActivities, _db.erpPayments, _db.promises, _db.customers}).watch();
+    return trigger.asyncMap((_) async {
+      final mine = await (_db.select(_db.visits)
+            ..where((t) => t.customerId.equals(customerId))
+            ..orderBy([(t) => OrderingTerm.desc(t.checkInAt)])
+            ..limit(5))
+          .get();
+      final colleagues = await (_db.select(_db.colleagueActivities)
+            ..where((t) => t.customerId.equals(customerId) & t.kind.equals('visit'))
+            ..orderBy([(t) => OrderingTerm.desc(t.at)])
+            ..limit(5))
+          .get();
+      final payments = await (_db.select(_db.erpPayments)
+            ..where((t) => t.customerId.equals(customerId) & t.date.like('$month%') & t.reversed.equals(false))
+            ..orderBy([(t) => OrderingTerm.desc(t.date)]))
+          .get();
+      final makers = _promiseMakersOf(await _promiseMakersQuery(customerId: customerId).get(), myName);
+      return monthPeopleOf(
         today: today,
         myName: myName,
-        myVisits: [for (final v in x.$1) (at: v.checkInAt, userName: v.userName, byMe: v.userId == null || v.userId == myUserId)],
-        colleagueVisits: [for (final a in x.$2) if (a.kind == 'visit') (at: a.at, name: a.staffName)],
-        paymentCollectors: [for (final p in y.$1) p.collectorName],
-        promiseBy: y.$2,
-      ),
-    );
+        myVisits: [for (final v in mine) (at: v.checkInAt, userName: v.userName, byMe: v.userId == null || v.userId == myUserId)],
+        colleagueVisits: [for (final a in colleagues) (at: a.at, name: a.staffName)],
+        paymentCollectors: [for (final p in payments) p.collectorName],
+        promiseBy: makers[customerId],
+      );
+    });
   }
 
   Future<Customer?> getOne(String id) async {
