@@ -261,35 +261,6 @@ class FakeFieldApi implements HttpClientAdapter {
     serverChange('place', id, const {}, op: 'delete');
   }
 
-  /// `PATCH /places/{id}` with `location` (contract 1.38.0): a direct move by place.manage. Closes an open move
-  /// request as rejected ("moved by the office"). Stale `If-Match` → 412.
-  (int, Json) _movePlaceDirect(String id, Json body, String? ifMatch) {
-    final p = _places[id];
-    if (p == null) return (404, _problem(404, 'NOT_FOUND', 'No such place'));
-    if (!placeManager) return (403, _problem(403, 'FORBIDDEN', 'place.manage needed'));
-    if (p['status'] == 'deleted') return (409, {..._problem(409, 'INVALID_STATE', 'Place deleted'), 'details': {'reason': 'PLACE_DELETED'}});
-    if (ifMatch != null && ifMatch != 'W/"${p['version']}"') return (412, _problem(412, 'PRECONDITION_FAILED', 'Stale version'));
-    final to = body['location'] as Json;
-    final lat = (to['lat'] as num).toDouble(), lng = (to['lng'] as num).toDouble();
-    if (lat < 20.5 || lat > 26.7 || lng < 88.0 || lng > 92.7) {
-      return (422, {..._problem(422, 'BUSINESS_RULE', 'Outside Bangladesh'), 'details': {'rule': 'OUTSIDE_BANGLADESH'}});
-    }
-    final at = clock.nowUtc().toIso8601String();
-    final pm = p['pendingMove'] as Json?;
-    final next = {
-      ...p,
-      'location': {'lat': lat, 'lng': lng},
-      'pendingMove': null,
-      if (pm != null) 'lastMoveDecision': {'decision': 'reject', 'by': _me, 'at': at, 'reason': 'moved by the office', 'requestedBy': pm['requestedBy']},
-      'version': (p['version'] as int) + 1,
-      'updatedAt': at,
-      'updatedBy': _me,
-    };
-    _places[id] = next;
-    serverChange('place', id, next);
-    return (200, next);
-  }
-
   /// The server's rules for the three place mutations (FR-PLC-002..004).
   Json _placeMutation(String mutationId, String entity, Json payload) {
     Json? find() {
@@ -320,15 +291,40 @@ class FakeFieldApi implements HttpClientAdapter {
       return {'mutationId': mutationId, 'result': 'applied', 'entityId': id, 'version': 1};
     }
     final p = find();
+    final moveTo = payload['location'] as Json?;
+    // 1.43.0: a direct move (place_edit with location) on a removed place is 409 PLACE_DELETED.
+    if (p != null && p['status'] == 'deleted' && entity == 'place_edit' && moveTo != null) {
+      return reject(409, 'INVALID_STATE', 'Place deleted', rule: 'PLACE_DELETED');
+    }
     if (p == null || p['status'] == 'deleted') return reject(404, 'NOT_FOUND', 'No such place');
     final id = p['id'] as String;
     if (entity == 'place_edit') {
-      if ((p['createdBy'] as Json)['id'] != user['id']) return reject(403, 'FORBIDDEN', 'not your place', rule: 'NOT_OWNER');
+      // place.manage edits and moves any place (1.42.0/1.43.0); field staff only change the words of their own.
+      const allowed = {'placeId', 'placeClientId', 'name', 'icon', 'note', 'location'};
+      if (payload.keys.any((k) => !allowed.contains(k))) return reject(400, 'VALIDATION_FAILED', 'Unknown field');
+      if (moveTo != null && !placeManager) return reject(403, 'FORBIDDEN', 'place.manage needed', rule: 'MOVE_NEEDS_MANAGE');
+      if (!placeManager && (p['createdBy'] as Json)['id'] != user['id']) return reject(403, 'FORBIDDEN', 'not your place', rule: 'NOT_OWNER');
+      if (moveTo != null) {
+        final lat = (moveTo['lat'] as num).toDouble(), lng = (moveTo['lng'] as num).toDouble();
+        if (lat < 20.5 || lat > 26.7 || lng < 88.0 || lng > 92.7) return reject(422, 'BUSINESS_RULE', 'Outside Bangladesh', rule: 'OUTSIDE_BANGLADESH');
+      }
+      final pm = p['pendingMove'] as Json?;
+      final loc = p['location'] as Json;
+      final samePoint = moveTo != null && moveTo['lat'] == loc['lat'] && moveTo['lng'] == loc['lng'];
+      final words = payload.keys.any((k) => const {'name', 'icon', 'note'}.contains(k));
+      // 1.43.0: the same point again changes nothing (no version bump).
+      if (samePoint && !words) return {'mutationId': mutationId, 'result': 'applied', 'entityId': id, 'version': p['version']};
       final next = {
         ...p,
         if (payload.containsKey('name')) 'name': payload['name'],
         if (payload.containsKey('icon')) 'icon': payload['icon'],
         if (payload.containsKey('note')) 'note': payload['note'],
+        // A direct move closes an open request as rejected ("moved by the office").
+        if (moveTo != null) ...{
+          'location': {'lat': moveTo['lat'], 'lng': moveTo['lng']},
+          'pendingMove': null,
+          if (pm != null) 'lastMoveDecision': {'decision': 'reject', 'by': _me, 'at': at, 'reason': 'Moved by the office', 'requestedBy': pm['requestedBy']},
+        },
         'version': (p['version'] as int) + 1,
         'updatedAt': at,
         'updatedBy': _me,
@@ -829,15 +825,6 @@ class FakeFieldApi implements HttpClientAdapter {
           final r = _coworkRoute(o.method, path, body);
           if (r is (int, Json)) return _json(r.$1, r.$2);
           return _json(200, r);
-        }
-        final pl = RegExp(r'^/places/([^/]+)$').firstMatch(path);
-        if (pl != null && o.method == 'PATCH' && (body as Json?)?['location'] != null) {
-          final r = _movePlaceDirect(Uri.decodeComponent(pl.group(1)!), body!, o.headers['If-Match'] as String?);
-          return _json(r.$1, r.$2);
-        }
-        if (pl != null && o.method == 'GET') {
-          final p = _places[Uri.decodeComponent(pl.group(1)!)];
-          return p == null || p['status'] == 'deleted' ? _json(404, _problem(404, 'NOT_FOUND', 'No such place')) : _json(200, p);
         }
         final cr = RegExp(r'^/customers/([^/]+)/refresh$').firstMatch(path);
         if (cr != null) {

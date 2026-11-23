@@ -6269,7 +6269,7 @@ abstract class AppLocalizations {
   /// No description provided for @placeMoveNowHint.
   ///
   /// In en, this message translates to:
-  /// **'Move the map until the pin sits on the right spot. The marker moves as soon as you save; this needs internet.'**
+  /// **'Move the map until the pin sits on the right spot. The marker moves as soon as you save, even without internet.'**
   String get placeMoveNowHint;
 
   /// No description provided for @placeMoveNowSave.
@@ -6281,38 +6281,32 @@ abstract class AppLocalizations {
   /// No description provided for @placeMovedNow.
   ///
   /// In en, this message translates to:
-  /// **'Moved. Everyone sees it at the new spot after their next sync.'**
+  /// **'Moved. It is sent to the server when there is internet.'**
   String get placeMovedNow;
 
-  /// No description provided for @placeMoveNeedsInternet.
+  /// No description provided for @syncEntityPlace.
   ///
   /// In en, this message translates to:
-  /// **'No internet. Moving a place needs internet; nothing was changed.'**
-  String get placeMoveNeedsInternet;
+  /// **'Map place'**
+  String get syncEntityPlace;
 
-  /// No description provided for @placeMoveStale.
+  /// No description provided for @placeProblem.
   ///
   /// In en, this message translates to:
-  /// **'Someone changed this place just now. It has been reloaded; check it and move again.'**
-  String get placeMoveStale;
+  /// **'{name}: {reason}'**
+  String placeProblem(String name, String reason);
 
-  /// No description provided for @placeMoveDeleted.
+  /// No description provided for @placeProblemMoveBack.
   ///
   /// In en, this message translates to:
-  /// **'This place was removed from the map, so it cannot be moved.'**
-  String get placeMoveDeleted;
+  /// **'The move was refused, so the marker is back where the server has it.'**
+  String get placeProblemMoveBack;
 
-  /// No description provided for @placeMoveNotSynced.
+  /// No description provided for @placeErrMoveNeedsManage.
   ///
   /// In en, this message translates to:
-  /// **'This place has not reached the server yet. Sync first, then move it.'**
-  String get placeMoveNotSynced;
-
-  /// No description provided for @placeMoveNotAllowed.
-  ///
-  /// In en, this message translates to:
-  /// **'You are not allowed to move places any more.'**
-  String get placeMoveNotAllowed;
+  /// **'Only the office can move a place directly.'**
+  String get placeErrMoveNeedsManage;
 }
 
 class _AppLocalizationsDelegate

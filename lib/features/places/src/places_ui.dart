@@ -313,7 +313,7 @@ class PlaceDetailsSheet extends ConsumerWidget {
             if (p.row.note != null) ...[const SizedBox(height: Space.s12), Text(p.row.note!, style: t.bodyLarge)],
             const SizedBox(height: Space.s12),
             Text(mine ? l.placeAddedByMe : l.placeAddedBy(p.row.createdByName ?? ''), style: t.bodyMedium!.copyWith(color: cs.onSurfaceVariant)),
-            if (p.createQueued || p.editQueued) ...[const SizedBox(height: Space.s8), _Note(icon: Icons.cloud_upload_rounded, text: l.placeWaitingToSend, style: sem.info)],
+            if (p.createQueued || p.editQueued || p.movedUnsent) ...[const SizedBox(height: Space.s8), _Note(icon: Icons.cloud_upload_rounded, text: l.placeWaitingToSend, style: sem.info)],
             if (p.movePending) ...[
               const SizedBox(height: Space.s8),
               _Note(icon: Icons.hourglass_top_rounded, text: p.moveQueued ? l.placeMoveQueued : l.placeMovePending(p.pendingByName ?? ''), style: sem.warning),
@@ -340,7 +340,7 @@ class PlaceDetailsSheet extends ConsumerWidget {
                   icon: const Icon(Icons.edit_rounded),
                   label: Text(l.placeEdit),
                 ),
-              if (manage ? p.onServer : !p.movePending && !p.createFailed)
+              if (manage ? !p.createFailed : !p.movePending && !p.createFailed)
                 FilledButton.tonalIcon(
                   key: const Key('place-move'),
                   style: FilledButton.styleFrom(minimumSize: const Size(Sizes.minTarget, Sizes.minTarget)),
@@ -364,19 +364,10 @@ String placeErrorText(AppLocalizations l, String? code) => switch (code) {
       'MOVE_PENDING' => l.placeErrMovePending,
       'MOVE_TOO_SHORT' => l.placeErrMoveTooShort,
       'OUTSIDE_BANGLADESH' => l.placeErrOutside,
+      'MOVE_NEEDS_MANAGE' => l.placeErrMoveNeedsManage,
       'NOT_OWNER' || 'FORBIDDEN' => l.placeErrNotOwner,
-      'NOT_FOUND' => l.placeGone,
+      'NOT_FOUND' || 'PLACE_DELETED' => l.placeGone,
       _ => l.placeErrGeneric,
-    };
-
-String placeMoveErrorText(AppLocalizations l, PlaceMoveError e) => switch (e) {
-      PlaceMoveError.offline => l.placeMoveNeedsInternet,
-      PlaceMoveError.notSynced => l.placeMoveNotSynced,
-      PlaceMoveError.stale => l.placeMoveStale,
-      PlaceMoveError.deleted => l.placeMoveDeleted,
-      PlaceMoveError.outside => l.placeErrOutside,
-      PlaceMoveError.notAllowed => l.placeMoveNotAllowed,
-      PlaceMoveError.failed => l.placeErrGeneric,
     };
 
 class _Note extends StatelessWidget {
@@ -397,8 +388,8 @@ class _Note extends StatelessWidget {
 }
 
 /// FR-PLC-004: move the map under the fixed pin to the right spot, say why, send. The marker stays
-/// where it is until the office approves. An office user (place.manage) saves the new point at once
-/// instead (FR-PLC-003, ADR-M29): online only, no reason field, the marker moves when the server says yes.
+/// where it is until the office approves. An office user (place.manage) moves it at once instead
+/// (FR-PLC-003, ADR-M29): no reason field, offline-first, the marker moves now and goes back if refused.
 class PlaceMoveScreen extends ConsumerStatefulWidget {
   const PlaceMoveScreen({super.key, required this.localId});
   final String localId;
@@ -418,28 +409,18 @@ class _PlaceMoveScreenState extends ConsumerState<PlaceMoveScreen> {
     super.dispose();
   }
 
-  Future<void> _request(MapPlace p, LatLng to) async {
+  Future<void> _send(MapPlace p, LatLng to, {required bool direct}) async {
     final l = AppLocalizations.of(context);
     setState(() => _busy = true);
-    await ref.read(placeServiceProvider).requestMove(p.id, lat: to.latitude, lng: to.longitude, reason: _reason.text);
-    if (!mounted) return;
-    showAppSnack(context, l.placeMoveSent);
-    context.pop();
-  }
-
-  /// ADR-M29: the office moves it now. On a refusal the screen stays, with the reason in words.
-  Future<void> _moveNow(MapPlace p, LatLng to) async {
-    final l = AppLocalizations.of(context);
-    setState(() => _busy = true);
-    final err = await ref.read(placeServiceProvider).moveNow(p.id, lat: to.latitude, lng: to.longitude);
-    if (!mounted) return;
-    if (err == null) {
-      showAppSnack(context, l.placeMovedNow);
-      context.pop();
-      return;
+    final svc = ref.read(placeServiceProvider);
+    if (direct) {
+      await svc.moveNow(p.id, lat: to.latitude, lng: to.longitude);
+    } else {
+      await svc.requestMove(p.id, lat: to.latitude, lng: to.longitude, reason: _reason.text);
     }
-    setState(() => _busy = false);
-    showAppSnack(context, placeMoveErrorText(l, err));
+    if (!mounted) return;
+    showAppSnack(context, direct ? l.placeMovedNow : l.placeMoveSent);
+    context.pop();
   }
 
   @override
@@ -455,7 +436,7 @@ class _PlaceMoveScreenState extends ConsumerState<PlaceMoveScreen> {
     final to = _point ?? here;
     final metres = const Distance().as(LengthUnit.Meter, here, to).round();
     final tooShort = metres < 5;
-    final direct = ref.watch(accessProvider).can(Perm.placeManage) && p.onServer;
+    final direct = ref.watch(accessProvider).can(Perm.placeManage);
     final t = Theme.of(context).textTheme;
     return Scaffold(
       appBar: AppBar(title: Text(l.placeMoveTitle(p.name))),
@@ -501,7 +482,7 @@ class _PlaceMoveScreenState extends ConsumerState<PlaceMoveScreen> {
               FilledButton.icon(
                 key: const Key('place-move-send'),
                 style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(Sizes.minTarget)),
-                onPressed: tooShort || _busy ? null : () => direct ? _moveNow(p, to) : _request(p, to),
+                onPressed: tooShort || _busy ? null : () => _send(p, to, direct: direct),
                 icon: Icon(direct ? Icons.check_rounded : Icons.send_rounded),
                 label: Text(tooShort ? l.placeMoveDragFirst : direct ? l.placeMoveNowSave : l.placeMoveSend),
               ),

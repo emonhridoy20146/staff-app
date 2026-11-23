@@ -3580,32 +3580,28 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get placeMoveNowHint =>
-      'Move the map until the pin sits on the right spot. The marker moves as soon as you save; this needs internet.';
+      'Move the map until the pin sits on the right spot. The marker moves as soon as you save, even without internet.';
 
   @override
   String get placeMoveNowSave => 'Move here';
 
   @override
   String get placeMovedNow =>
-      'Moved. Everyone sees it at the new spot after their next sync.';
+      'Moved. It is sent to the server when there is internet.';
 
   @override
-  String get placeMoveNeedsInternet =>
-      'No internet. Moving a place needs internet; nothing was changed.';
+  String get syncEntityPlace => 'Map place';
 
   @override
-  String get placeMoveStale =>
-      'Someone changed this place just now. It has been reloaded; check it and move again.';
+  String placeProblem(String name, String reason) {
+    return '$name: $reason';
+  }
 
   @override
-  String get placeMoveDeleted =>
-      'This place was removed from the map, so it cannot be moved.';
+  String get placeProblemMoveBack =>
+      'The move was refused, so the marker is back where the server has it.';
 
   @override
-  String get placeMoveNotSynced =>
-      'This place has not reached the server yet. Sync first, then move it.';
-
-  @override
-  String get placeMoveNotAllowed =>
-      'You are not allowed to move places any more.';
+  String get placeErrMoveNeedsManage =>
+      'Only the office can move a place directly.';
 }

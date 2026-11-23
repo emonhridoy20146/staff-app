@@ -2173,12 +2173,14 @@
   "placeMoveDragFirst": "Move the map first",
   "placeMoveSend": "Send to the office",
   "placeMoveNow": "Move",
-  "placeMoveNowHint": "Move the map until the pin sits on the right spot. The marker moves as soon as you save; this needs internet.",
+  "placeMoveNowHint": "Move the map until the pin sits on the right spot. The marker moves as soon as you save, even without internet.",
   "placeMoveNowSave": "Move here",
-  "placeMovedNow": "Moved. Everyone sees it at the new spot after their next sync.",
-  "placeMoveNeedsInternet": "No internet. Moving a place needs internet; nothing was changed.",
-  "placeMoveStale": "Someone changed this place just now. It has been reloaded; check it and move again.",
-  "placeMoveDeleted": "This place was removed from the map, so it cannot be moved.",
-  "placeMoveNotSynced": "This place has not reached the server yet. Sync first, then move it.",
-  "placeMoveNotAllowed": "You are not allowed to move places any more."
+  "placeMovedNow": "Moved. It is sent to the server when there is internet.",
+  "syncEntityPlace": "Map place",
+  "placeProblem": "{name}: {reason}",
+  "@placeProblem": {
+    "placeholders": { "name": { "type": "String" }, "reason": { "type": "String" } }
+  },
+  "placeProblemMoveBack": "The move was refused, so the marker is back where the server has it.",
+  "placeErrMoveNeedsManage": "Only the office can move a place directly."
 }

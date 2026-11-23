@@ -87,7 +87,7 @@ LocationEngine spike (ADR-009) → duty-aware tracking, adaptive sampling, filte
 | Battery level in heartbeat | ☐ blocked (`battery_plus` dependency conflict) |
 | Real-device checks (battery, OEM killing, reboot) | ☐ needs phones |
 | Places on the map: long-press add, labels, own edit, move request, offline (FR-M-063, contract 1.38.0) | ✅ flow + widget tests; ☐ real phone check |
-| Office users (place.manage) move a place at once, online only; field staff still ask (FR-M-063, ADR-M29) | ✅ 2026-11-22 flow + widget tests; ☐ real phone check against field-api |
+| Office users (place.manage) move a place at once, offline-first via `place_edit` + location; field staff still ask (FR-M-063, ADR-M29, contract 1.43.0) | ✅ 2026-11-23 flow + widget tests; ☐ real phone check against field-api 1.43.0 |
 | Places on every map by zoom (none / square icon / icon + name), pin screen landmarks, all branches, Galachipa default centre (FR-M-063, ADR-M28) | ✅ 2026-11-22 widget tests; ☐ real phone check of the zoom steps |
 
 ## Phase 3 — Reports in app

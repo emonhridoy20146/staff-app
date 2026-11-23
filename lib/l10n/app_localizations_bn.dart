@@ -3563,31 +3563,27 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get placeMoveNowHint =>
-      'পিনটি সঠিক জায়গায় না বসা পর্যন্ত ম্যাপ সরান। সংরক্ষণ করলেই মার্কার সরে যাবে; এর জন্য ইন্টারনেট লাগবে।';
+      'পিনটি সঠিক জায়গায় না বসা পর্যন্ত ম্যাপ সরান। সংরক্ষণ করলেই মার্কার সরে যাবে, ইন্টারনেট না থাকলেও।';
 
   @override
   String get placeMoveNowSave => 'এখানে সরান';
 
   @override
   String get placeMovedNow =>
-      'সরানো হয়েছে। পরের সিঙ্কের পর সবাই নতুন জায়গায় দেখবেন।';
+      'সরানো হয়েছে। ইন্টারনেট পেলে সার্ভারে পাঠানো হবে।';
 
   @override
-  String get placeMoveNeedsInternet =>
-      'ইন্টারনেট নেই। জায়গা সরাতে ইন্টারনেট লাগে; কিছুই বদলায়নি।';
+  String get syncEntityPlace => 'ম্যাপের জায়গা';
 
   @override
-  String get placeMoveStale =>
-      'এইমাত্র কেউ জায়গাটি বদলেছেন। নতুন করে আনা হয়েছে; দেখে আবার সরান।';
+  String placeProblem(String name, String reason) {
+    return '$name: $reason';
+  }
 
   @override
-  String get placeMoveDeleted =>
-      'জায়গাটি ম্যাপ থেকে সরিয়ে ফেলা হয়েছে, তাই এটি সরানো যাবে না।';
+  String get placeProblemMoveBack =>
+      'সরানো গ্রহণ করা হয়নি, তাই মার্কার সার্ভারের জায়গায় ফিরে গেছে।';
 
   @override
-  String get placeMoveNotSynced =>
-      'জায়গাটি এখনো সার্ভারে পৌঁছায়নি। আগে সিঙ্ক করুন, তারপর সরান।';
-
-  @override
-  String get placeMoveNotAllowed => 'আপনার আর জায়গা সরানোর অনুমতি নেই।';
+  String get placeErrMoveNeedsManage => 'সরাসরি জায়গা সরাতে পারে শুধু অফিস।';
 }

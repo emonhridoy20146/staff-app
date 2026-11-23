@@ -160,21 +160,6 @@ class FieldApi {
         (d) => d as Json,
       );
 
-  /// FR-PLC-003 (contract 1.38.0, `PATCH /places/{id}` with `location`): an office user (place.manage) moves a
-  /// place at once; an open move request is closed by the server. [version] goes as `If-Match` (stale → 412).
-  /// Online only (ADR-M29). Returns the Place.
-  Future<Json> movePlace(String id, {required double lat, required double lng, int? version}) => _call(
-        () => _dio.patch<dynamic>(
-          '/places/${Uri.encodeComponent(id)}',
-          data: {'location': {'lat': lat, 'lng': lng}},
-          options: version == null ? null : Options(headers: {'If-Match': 'W/"$version"'}),
-        ),
-        (d) => d as Json,
-      );
-
-  /// One place as the server has it now (contract 1.38.0); used to reload after a stale move (412).
-  Future<Json> getPlace(String id) => _call(() => _dio.get<dynamic>('/places/${Uri.encodeComponent(id)}'), (d) => d as Json);
-
   /// FR-M-053 (contract 1.23.0): remove a number added in the field; the ERP's own numbers cannot be removed. Online only.
   Future<void> removeCustomerPhone(String customerId, String number) =>
       _call(() => _dio.delete<dynamic>('/customers/$customerId/phones/$number'), (_) {});

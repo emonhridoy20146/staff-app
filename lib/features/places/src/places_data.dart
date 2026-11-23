@@ -6,7 +6,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../core/api/api_models.dart';
-import '../../../core/api/field_api.dart';
 import '../../../core/db/app_database.dart';
 import '../../../core/providers.dart';
 import '../../../core/sync/sync_handlers.dart';
@@ -22,7 +21,8 @@ import '../../auth/auth.dart';
 /// I may change the words of places I made (`place_edit`) and ask the office
 /// to move any place (`place_move_request`): the marker moves only when the
 /// office approves. An office user (`place.manage`) moves a place at once
-/// instead, online only (`PATCH /places/{id}`, ADR-M29).
+/// instead: `place_edit` with `location` (contract 1.43.0, ADR-M29), offline
+/// like every other change; the marker goes back if the server refuses.
 
 /// The fixed icon list, in the order the picker shows them.
 const placeIcons = ['shop', 'market', 'mosque', 'school', 'bank', 'hospital', 'bus_stop', 'office', 'landmark', 'other'];
@@ -43,6 +43,7 @@ class PlacePullHandler implements PullHandler {
     // An edit of mine that is not sent yet wins over what the server had before it.
     final keepWords = existing != null && existing.editState == 'queued';
     final pending = d['pendingMove'];
+    final moved = existing != null && existing.moveState == 'moved';
     final row = MapPlacesCompanion(
       localId: Value(existing?.localId ?? id),
       serverId: Value(id),
@@ -51,8 +52,11 @@ class PlacePullHandler implements PullHandler {
       name: Value(keepWords ? existing.name : (d['name'] as String?) ?? ''),
       icon: Value(keepWords ? existing.icon : (d['icon'] as String?) ?? 'other'),
       note: Value(keepWords ? existing.note : d['note'] as String?),
-      lat: Value((loc['lat'] as num?)?.toDouble() ?? existing?.lat ?? 0),
-      lng: Value((loc['lng'] as num?)?.toDouble() ?? existing?.lng ?? 0),
+      // My direct move not sent yet (ADR-M29) keeps its point; the server's goes to moveLat/moveLng for a refusal.
+      lat: Value(moved ? existing.lat : (loc['lat'] as num?)?.toDouble() ?? existing?.lat ?? 0),
+      lng: Value(moved ? existing.lng : (loc['lng'] as num?)?.toDouble() ?? existing?.lng ?? 0),
+      moveLat: moved ? Value((loc['lat'] as num?)?.toDouble() ?? existing.moveLat) : const Value.absent(),
+      moveLng: moved ? Value((loc['lng'] as num?)?.toDouble() ?? existing.moveLng) : const Value.absent(),
       version: Value((d['version'] as num?)?.toInt() ?? 0),
       createdById: Value(by is Map ? by['id'] as String? : null),
       createdByName: Value(by is Map ? by['name'] as String? : null),
@@ -61,7 +65,7 @@ class PlacePullHandler implements PullHandler {
       updatedAt: Value(d['updatedAt'] == null ? null : DateTime.parse(d['updatedAt'] as String).toUtc()),
       createState: const Value('synced'),
       // The server now shows my request (or already decided it): nothing of mine is waiting.
-      moveState: Value(existing?.moveState == 'queued' ? 'queued' : existing?.moveState == 'failed' ? 'failed' : 'none'),
+      moveState: Value(switch (existing?.moveState) { 'queued' || 'failed' || 'moved' => existing!.moveState, _ => 'none' }),
     );
     await db.into(db.mapPlaces).insertOnConflictUpdate(existing == null ? row : row.copyWith(createMutationId: Value(existing.createMutationId)));
   }
@@ -69,7 +73,7 @@ class PlacePullHandler implements PullHandler {
   @override
   Future<void> delete(AppDatabase db, String id, {String? reason}) =>
       // Removed by the office. Never drop something of mine that is still waiting to be sent.
-      (db.delete(db.mapPlaces)..where((t) => t.serverId.equals(id) & t.createState.equals('queued').not() & t.editState.equals('queued').not() & t.moveState.equals('queued').not())).go();
+      (db.delete(db.mapPlaces)..where((t) => t.serverId.equals(id) & t.createState.equals('queued').not() & t.editState.equals('queued').not() & t.moveState.isIn(const ['queued', 'moved']).not())).go();
 }
 
 class PlacePushHandler implements PushResultHandler {
@@ -92,6 +96,18 @@ class PlacePushHandler implements PushResultHandler {
               editState: Value(rejected ? 'failed' : 'none'),
               errorCode: Value(code),
             ));
+        // An office user's direct move (ADR-M29). Refused: the marker goes back to the server's point at once and
+        // the item stays in Problems with its reason; a retry from there that succeeds clears it.
+        final move = await (db.select(db.mapPlaces)..where((t) => t.moveMutationId.equals(m.mutationId) & t.moveState.isIn(const ['moved', 'failed']))).getSingleOrNull();
+        if (move == null) break;
+        await (db.update(db.mapPlaces)..where((t) => t.localId.equals(move.localId))).write(rejected
+            ? MapPlacesCompanion(
+                moveState: const Value('failed'),
+                errorCode: Value(code),
+                lat: move.moveState == 'moved' && move.moveLat != null ? Value(move.moveLat!) : const Value.absent(),
+                lng: move.moveState == 'moved' && move.moveLng != null ? Value(move.moveLng!) : const Value.absent(),
+              )
+            : const MapPlacesCompanion(moveState: Value('none'), errorCode: Value(null)));
       case 'place_move_request':
         await (db.update(db.mapPlaces)..where((t) => t.moveMutationId.equals(m.mutationId) & t.moveState.equals('queued'))).write(MapPlacesCompanion(
               moveState: Value(rejected ? 'failed' : 'sent'),
@@ -125,6 +141,9 @@ class MapPlace {
 
   /// My move request is saved here and waits for the network.
   bool get moveQueued => row.moveState == 'queued';
+
+  /// An office user's direct move (ADR-M29) is on the map and waits for the network: no office approval.
+  bool get movedUnsent => row.moveState == 'moved';
   bool get moveFailed => row.moveState == 'failed';
 
   /// Waiting for the office: the server's open request, or mine still on the phone.
@@ -164,23 +183,13 @@ final placeProvider = StreamProvider.family<MapPlace?, String>((ref, id) {
   return (db.select(db.mapPlaces)..where((t) => t.localId.equals(id))).watchSingleOrNull().map((r) => r == null ? null : MapPlace(r));
 });
 
-/// Why an office user's direct move did not happen (ADR-M29).
-enum PlaceMoveError { offline, notSynced, stale, deleted, outside, notAllowed, failed }
-
-/// Maps the server's answer to `PATCH /places/{id}` (contract 1.38.0/1.42.0) to what the user is told.
-PlaceMoveError placeMoveErrorOf(ApiException e) {
-  if (e.isNetwork) return PlaceMoveError.offline;
-  final d = e.problem?.details;
-  final why = d?['reason'] ?? d?['rule'];
-  return switch (e.statusCode) {
-    412 => PlaceMoveError.stale,
-    403 => PlaceMoveError.notAllowed,
-    404 => PlaceMoveError.deleted,
-    409 when why == 'PLACE_DELETED' => PlaceMoveError.deleted,
-    422 when why == 'OUTSIDE_BANGLADESH' => PlaceMoveError.outside,
-    _ => PlaceMoveError.failed,
-  };
-}
+/// The place a create, edit or move mutation was for (Problems shows its name and reason in words).
+final placeByMutationProvider = StreamProvider.family<MapPlace?, String>((ref, mutationId) {
+  final db = ref.watch(databaseProvider);
+  return (db.select(db.mapPlaces)..where((t) => t.createMutationId.equals(mutationId) | t.editMutationId.equals(mutationId) | t.moveMutationId.equals(mutationId)))
+      .watch()
+      .map((rows) => rows.isEmpty ? null : MapPlace(rows.first));
+});
 
 /// Saving is local first; the outbox sends it (offline-first, CLAUDE.md §2.1).
 class PlaceService {
@@ -288,34 +297,40 @@ class PlaceService {
   }
 
   /// FR-PLC-003 by the office (owner decision 2026-11-22, ADR-M29): a holder of `place.manage` moves the
-  /// marker at once, no request. Online only, like the other office decisions: the server checks the
-  /// version, the permission and the point, and closes any open move request. The row on the phone
-  /// changes only after the server says yes (from its answer, through the pull handler), so there is
-  /// never a "waiting for the office" state and nothing to undo. Null when moved, otherwise why not.
-  /// On 412 the place is reloaded from the server so the user sees what changed and can move again.
-  Future<PlaceMoveError?> moveNow(String localId, {required double lat, required double lng}) async {
+  /// marker at once, no request. Offline-first like every change: the row takes the new point now and
+  /// `place_edit` with `location` (contract 1.43.0) is queued. The point the server last had is kept in
+  /// `moveLat`/`moveLng` (`moveState = moved`), so a refusal puts the marker back at once; the next pull
+  /// confirms the server's point. The server closes any open move request. Returns false when the place is gone.
+  Future<bool> moveNow(String localId, {required double lat, required double lng}) async {
     final db = _ref.read(databaseProvider);
-    final row = await (db.select(db.mapPlaces)..where((t) => t.localId.equals(localId))).getSingleOrNull();
-    if (row == null) return PlaceMoveError.deleted;
-    final id = row.serverId;
-    if (id == null) return PlaceMoveError.notSynced;
-    final api = _ref.read(fieldApiProvider);
-    final Json place;
-    try {
-      place = await api.movePlace(id, lat: lat, lng: lng, version: row.version > 0 ? row.version : null);
-    } on ApiException catch (e) {
-      final err = placeMoveErrorOf(e);
-      if (err == PlaceMoveError.stale) {
-        try {
-          await PlacePullHandler().upsert(db, id, await api.getPlace(id));
-        } on ApiException {
-          // The reload is a courtesy; the next sync brings the place anyway.
-        }
-      }
-      return err;
-    }
-    await PlacePullHandler().upsert(db, id, place);
-    return null;
+    var queued = false;
+    await db.transaction(() async {
+      final row = await (db.select(db.mapPlaces)..where((t) => t.localId.equals(localId))).getSingleOrNull();
+      if (row == null) return;
+      final mutationId = const Uuid().v7();
+      // A second move before the first is sent keeps the server's point, not the first local one.
+      final unsent = row.moveState == 'moved';
+      await (db.update(db.mapPlaces)..where((t) => t.localId.equals(localId))).write(MapPlacesCompanion(
+            lat: Value(lat),
+            lng: Value(lng),
+            moveState: const Value('moved'),
+            moveMutationId: Value(mutationId),
+            moveLat: Value(unsent ? row.moveLat : row.lat),
+            moveLng: Value(unsent ? row.moveLng : row.lng),
+            moveReason: const Value(null),
+            errorCode: const Value(null),
+            updatedAt: Value(_ref.read(clockProvider).nowUtc()),
+          ));
+      await _ref.read(outboxWriterProvider).enqueue(
+        mutationId: mutationId,
+        entity: 'place_edit',
+        payload: {..._placeRef(row), 'location': {'lat': lat, 'lng': lng}},
+        dependsOn: [if (row.createState == 'queued' && row.createMutationId != null) row.createMutationId!],
+      );
+      queued = true;
+    });
+    if (queued) unawaited(_ref.read(syncEngineProvider).kick(reason: 'place'));
+    return queued;
   }
 
   /// How a mutation names the place: by server id, or by my clientId while the create is not synced.

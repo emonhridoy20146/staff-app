@@ -11,7 +11,7 @@ import 'src/places_ui.dart';
 /// OpenStreetMap lacks, shown on every map (customer map, pin setting) by zoom. Places of all branches
 /// are seen by all staff (contract 1.42.0). Long-press the customer map to add one (works offline);
 /// tap one to see it, change my own, or ask the office to move it. An office user (place.manage)
-/// moves it at once instead (online only, ADR-M29).
+/// moves it at once instead (offline-first, `place_edit` with location, ADR-M29).
 final placesManifest = FeatureManifest(
   name: 'places',
   flag: 'module.places',

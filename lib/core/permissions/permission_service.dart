@@ -28,7 +28,7 @@ abstract final class Perm {
   static const placeView = 'place.view';
   static const placeCreate = 'place.create';
 
-  /// Office users (super admin, branch manager): move any place at once, no request (contract 1.38.0 PATCH /places/{id}).
+  /// Office users (super admin, branch manager): move any place at once, no request (`place_edit` with location, contract 1.43.0).
   static const placeManage = 'place.manage';
 
   static const all = [
