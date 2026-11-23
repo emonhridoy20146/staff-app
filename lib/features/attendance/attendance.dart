@@ -2,6 +2,6 @@
 library;
 
 export 'manifest.dart';
-export 'src/attendance_data.dart' show todayAttendanceProvider, attendanceServiceProvider, minuteTickerProvider, recentAttendanceDaysProvider, linkAttendanceSelfie, releaseHeldAttendance, SelfieRequired;
+export 'src/attendance_data.dart' show attendanceShownProvider, todayAttendanceProvider, attendanceServiceProvider, minuteTickerProvider, recentAttendanceDaysProvider, linkAttendanceSelfie, releaseHeldAttendance, SelfieRequired;
 export 'src/attendance_domain.dart' show AttendanceDay, DayStatus, AttendanceEventType, computeDay, AttendanceEventIn;
 export 'src/attendance_widgets.dart' show DutyCard, AttendanceCard, dutyStateOf;

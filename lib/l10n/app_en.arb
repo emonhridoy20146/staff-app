@@ -2234,5 +2234,46 @@
   "monthMore": "+{n}",
   "@monthMore": {
     "placeholders": { "n": { "type": "String" } }
-  }
+  },
+  "mediaQueueHint": "Photos go to the server on their own, separately from the other work. Nothing is deleted from this phone until the server has the photo.",
+  "mediaKindSelfie": "Attendance photo",
+  "mediaKindVisit": "Visit photo",
+  "mediaKindSlip": "Deposit slip",
+  "mediaKindPin": "Map pin photo",
+  "mediaKindOther": "Photo",
+  "mediaStateWaiting": "Waiting to upload",
+  "mediaStateFailed": "Not uploaded yet: {reason}",
+  "@mediaStateFailed": {
+    "placeholders": { "reason": { "type": "String" } }
+  },
+  "mediaNextTry": "Tried {tries} times · tries again at {time}",
+  "@mediaNextTry": {
+    "placeholders": { "tries": { "type": "String" }, "time": { "type": "String" } }
+  },
+  "mediaRetryAll": "Upload all now",
+  "mediaReasonNetwork": "no connection to the server",
+  "mediaReasonTimeout": "the network was too slow",
+  "mediaReasonMissing": "the photo file is no longer on this phone",
+  "mediaReasonDeleted": "the office deleted this photo on the server",
+  "mediaReasonInvalid": "the server did not accept the photo's details",
+  "mediaReasonSignature": "the upload link was refused or had expired",
+  "mediaReasonNotUploaded": "the server did not receive the photo",
+  "mediaReasonServer": "the server is not answering right now",
+  "mediaReasonCode": "the server answered {code}",
+  "@mediaReasonCode": {
+    "placeholders": { "code": { "type": "String" } }
+  },
+  "mediaStepPresign": "{reason} (getting the upload link)",
+  "@mediaStepPresign": {
+    "placeholders": { "reason": { "type": "String" } }
+  },
+  "mediaStepUpload": "{reason} (sending the photo)",
+  "@mediaStepUpload": {
+    "placeholders": { "reason": { "type": "String" } }
+  },
+  "mediaStepConfirm": "{reason} (confirming)",
+  "@mediaStepConfirm": {
+    "placeholders": { "reason": { "type": "String" } }
+  },
+  "attNotRequired": "Your account does not give attendance. There is nothing to do here."
 }

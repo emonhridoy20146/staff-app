@@ -488,6 +488,10 @@ class MediaQueue extends Table {
   TextColumn get state => text().withDefault(const Constant('pending'))();
   IntColumn get attempts => integer().withDefault(const Constant(0))();
   DateTimeColumn get nextAttemptAt => dateTime().nullable()();
+  /// Why the last try failed, as `<step>:<code>` (`presign:VALIDATION_FAILED`, `upload:HTTP_403`, `upload:NETWORK`,
+  /// `file:MISSING`, …); null after a success or before the first try (schema 17).
+  TextColumn get lastError => text().nullable()();
+  DateTimeColumn get lastAttemptAt => dateTime().nullable()();
 
   @override
   Set<Column> get primaryKey => {clientId};

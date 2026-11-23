@@ -2882,7 +2882,7 @@ class PlanRow extends DataClass implements Insertable<PlanRow> {
   final String status;
   final bool badSuggested;
 
-  /// installment | credit | cash (contract 1.44.0 `saleType`); any other value is kept as sent and shown as "other"
+  /// installment | credit | cash (contract 1.44.0); any other value is kept as sent and treated as cash
   final String kind;
   final String? invoiceNo;
   final String? saleDate;
@@ -14917,6 +14917,29 @@ class $MediaQueueTable extends MediaQueue
         type: DriftSqlType.dateTime,
         requiredDuringInsert: false,
       );
+  static const VerificationMeta _lastErrorMeta = const VerificationMeta(
+    'lastError',
+  );
+  @override
+  late final GeneratedColumn<String> lastError = GeneratedColumn<String>(
+    'last_error',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _lastAttemptAtMeta = const VerificationMeta(
+    'lastAttemptAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> lastAttemptAt =
+      GeneratedColumn<DateTime>(
+        'last_attempt_at',
+        aliasedName,
+        true,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
   @override
   List<GeneratedColumn> get $columns => [
     clientId,
@@ -14931,6 +14954,8 @@ class $MediaQueueTable extends MediaQueue
     state,
     attempts,
     nextAttemptAt,
+    lastError,
+    lastAttemptAt,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -15044,6 +15069,21 @@ class $MediaQueueTable extends MediaQueue
         ),
       );
     }
+    if (data.containsKey('last_error')) {
+      context.handle(
+        _lastErrorMeta,
+        lastError.isAcceptableOrUnknown(data['last_error']!, _lastErrorMeta),
+      );
+    }
+    if (data.containsKey('last_attempt_at')) {
+      context.handle(
+        _lastAttemptAtMeta,
+        lastAttemptAt.isAcceptableOrUnknown(
+          data['last_attempt_at']!,
+          _lastAttemptAtMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -15101,6 +15141,14 @@ class $MediaQueueTable extends MediaQueue
         DriftSqlType.dateTime,
         data['${effectivePrefix}next_attempt_at'],
       ),
+      lastError: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}last_error'],
+      ),
+      lastAttemptAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}last_attempt_at'],
+      ),
     );
   }
 
@@ -15123,6 +15171,11 @@ class MediaQueueRow extends DataClass implements Insertable<MediaQueueRow> {
   final String state;
   final int attempts;
   final DateTime? nextAttemptAt;
+
+  /// Why the last try failed, as `<step>:<code>` (`presign:VALIDATION_FAILED`, `upload:HTTP_403`, `upload:NETWORK`,
+  /// `file:MISSING`, …); null after a success or before the first try (schema 17).
+  final String? lastError;
+  final DateTime? lastAttemptAt;
   const MediaQueueRow({
     required this.clientId,
     required this.kind,
@@ -15136,6 +15189,8 @@ class MediaQueueRow extends DataClass implements Insertable<MediaQueueRow> {
     required this.state,
     required this.attempts,
     this.nextAttemptAt,
+    this.lastError,
+    this.lastAttemptAt,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -15155,6 +15210,12 @@ class MediaQueueRow extends DataClass implements Insertable<MediaQueueRow> {
     map['attempts'] = Variable<int>(attempts);
     if (!nullToAbsent || nextAttemptAt != null) {
       map['next_attempt_at'] = Variable<DateTime>(nextAttemptAt);
+    }
+    if (!nullToAbsent || lastError != null) {
+      map['last_error'] = Variable<String>(lastError);
+    }
+    if (!nullToAbsent || lastAttemptAt != null) {
+      map['last_attempt_at'] = Variable<DateTime>(lastAttemptAt);
     }
     return map;
   }
@@ -15177,6 +15238,12 @@ class MediaQueueRow extends DataClass implements Insertable<MediaQueueRow> {
       nextAttemptAt: nextAttemptAt == null && nullToAbsent
           ? const Value.absent()
           : Value(nextAttemptAt),
+      lastError: lastError == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastError),
+      lastAttemptAt: lastAttemptAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastAttemptAt),
     );
   }
 
@@ -15198,6 +15265,8 @@ class MediaQueueRow extends DataClass implements Insertable<MediaQueueRow> {
       state: serializer.fromJson<String>(json['state']),
       attempts: serializer.fromJson<int>(json['attempts']),
       nextAttemptAt: serializer.fromJson<DateTime?>(json['nextAttemptAt']),
+      lastError: serializer.fromJson<String?>(json['lastError']),
+      lastAttemptAt: serializer.fromJson<DateTime?>(json['lastAttemptAt']),
     );
   }
   @override
@@ -15216,6 +15285,8 @@ class MediaQueueRow extends DataClass implements Insertable<MediaQueueRow> {
       'state': serializer.toJson<String>(state),
       'attempts': serializer.toJson<int>(attempts),
       'nextAttemptAt': serializer.toJson<DateTime?>(nextAttemptAt),
+      'lastError': serializer.toJson<String?>(lastError),
+      'lastAttemptAt': serializer.toJson<DateTime?>(lastAttemptAt),
     };
   }
 
@@ -15232,6 +15303,8 @@ class MediaQueueRow extends DataClass implements Insertable<MediaQueueRow> {
     String? state,
     int? attempts,
     Value<DateTime?> nextAttemptAt = const Value.absent(),
+    Value<String?> lastError = const Value.absent(),
+    Value<DateTime?> lastAttemptAt = const Value.absent(),
   }) => MediaQueueRow(
     clientId: clientId ?? this.clientId,
     kind: kind ?? this.kind,
@@ -15249,6 +15322,10 @@ class MediaQueueRow extends DataClass implements Insertable<MediaQueueRow> {
     nextAttemptAt: nextAttemptAt.present
         ? nextAttemptAt.value
         : this.nextAttemptAt,
+    lastError: lastError.present ? lastError.value : this.lastError,
+    lastAttemptAt: lastAttemptAt.present
+        ? lastAttemptAt.value
+        : this.lastAttemptAt,
   );
   MediaQueueRow copyWithCompanion(MediaQueueCompanion data) {
     return MediaQueueRow(
@@ -15274,6 +15351,10 @@ class MediaQueueRow extends DataClass implements Insertable<MediaQueueRow> {
       nextAttemptAt: data.nextAttemptAt.present
           ? data.nextAttemptAt.value
           : this.nextAttemptAt,
+      lastError: data.lastError.present ? data.lastError.value : this.lastError,
+      lastAttemptAt: data.lastAttemptAt.present
+          ? data.lastAttemptAt.value
+          : this.lastAttemptAt,
     );
   }
 
@@ -15291,7 +15372,9 @@ class MediaQueueRow extends DataClass implements Insertable<MediaQueueRow> {
           ..write('serverMediaId: $serverMediaId, ')
           ..write('state: $state, ')
           ..write('attempts: $attempts, ')
-          ..write('nextAttemptAt: $nextAttemptAt')
+          ..write('nextAttemptAt: $nextAttemptAt, ')
+          ..write('lastError: $lastError, ')
+          ..write('lastAttemptAt: $lastAttemptAt')
           ..write(')'))
         .toString();
   }
@@ -15310,6 +15393,8 @@ class MediaQueueRow extends DataClass implements Insertable<MediaQueueRow> {
     state,
     attempts,
     nextAttemptAt,
+    lastError,
+    lastAttemptAt,
   );
   @override
   bool operator ==(Object other) =>
@@ -15326,7 +15411,9 @@ class MediaQueueRow extends DataClass implements Insertable<MediaQueueRow> {
           other.serverMediaId == this.serverMediaId &&
           other.state == this.state &&
           other.attempts == this.attempts &&
-          other.nextAttemptAt == this.nextAttemptAt);
+          other.nextAttemptAt == this.nextAttemptAt &&
+          other.lastError == this.lastError &&
+          other.lastAttemptAt == this.lastAttemptAt);
 }
 
 class MediaQueueCompanion extends UpdateCompanion<MediaQueueRow> {
@@ -15342,6 +15429,8 @@ class MediaQueueCompanion extends UpdateCompanion<MediaQueueRow> {
   final Value<String> state;
   final Value<int> attempts;
   final Value<DateTime?> nextAttemptAt;
+  final Value<String?> lastError;
+  final Value<DateTime?> lastAttemptAt;
   final Value<int> rowid;
   const MediaQueueCompanion({
     this.clientId = const Value.absent(),
@@ -15356,6 +15445,8 @@ class MediaQueueCompanion extends UpdateCompanion<MediaQueueRow> {
     this.state = const Value.absent(),
     this.attempts = const Value.absent(),
     this.nextAttemptAt = const Value.absent(),
+    this.lastError = const Value.absent(),
+    this.lastAttemptAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   MediaQueueCompanion.insert({
@@ -15371,6 +15462,8 @@ class MediaQueueCompanion extends UpdateCompanion<MediaQueueRow> {
     this.state = const Value.absent(),
     this.attempts = const Value.absent(),
     this.nextAttemptAt = const Value.absent(),
+    this.lastError = const Value.absent(),
+    this.lastAttemptAt = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : clientId = Value(clientId),
        kind = Value(kind),
@@ -15393,6 +15486,8 @@ class MediaQueueCompanion extends UpdateCompanion<MediaQueueRow> {
     Expression<String>? state,
     Expression<int>? attempts,
     Expression<DateTime>? nextAttemptAt,
+    Expression<String>? lastError,
+    Expression<DateTime>? lastAttemptAt,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -15408,6 +15503,8 @@ class MediaQueueCompanion extends UpdateCompanion<MediaQueueRow> {
       if (state != null) 'state': state,
       if (attempts != null) 'attempts': attempts,
       if (nextAttemptAt != null) 'next_attempt_at': nextAttemptAt,
+      if (lastError != null) 'last_error': lastError,
+      if (lastAttemptAt != null) 'last_attempt_at': lastAttemptAt,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -15425,6 +15522,8 @@ class MediaQueueCompanion extends UpdateCompanion<MediaQueueRow> {
     Value<String>? state,
     Value<int>? attempts,
     Value<DateTime?>? nextAttemptAt,
+    Value<String?>? lastError,
+    Value<DateTime?>? lastAttemptAt,
     Value<int>? rowid,
   }) {
     return MediaQueueCompanion(
@@ -15440,6 +15539,8 @@ class MediaQueueCompanion extends UpdateCompanion<MediaQueueRow> {
       state: state ?? this.state,
       attempts: attempts ?? this.attempts,
       nextAttemptAt: nextAttemptAt ?? this.nextAttemptAt,
+      lastError: lastError ?? this.lastError,
+      lastAttemptAt: lastAttemptAt ?? this.lastAttemptAt,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -15483,6 +15584,12 @@ class MediaQueueCompanion extends UpdateCompanion<MediaQueueRow> {
     if (nextAttemptAt.present) {
       map['next_attempt_at'] = Variable<DateTime>(nextAttemptAt.value);
     }
+    if (lastError.present) {
+      map['last_error'] = Variable<String>(lastError.value);
+    }
+    if (lastAttemptAt.present) {
+      map['last_attempt_at'] = Variable<DateTime>(lastAttemptAt.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -15504,6 +15611,8 @@ class MediaQueueCompanion extends UpdateCompanion<MediaQueueRow> {
           ..write('state: $state, ')
           ..write('attempts: $attempts, ')
           ..write('nextAttemptAt: $nextAttemptAt, ')
+          ..write('lastError: $lastError, ')
+          ..write('lastAttemptAt: $lastAttemptAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -30303,6 +30412,8 @@ typedef $$MediaQueueTableCreateCompanionBuilder = MediaQueueCompanion Function({
   Value<String> state,
   Value<int> attempts,
   Value<DateTime?> nextAttemptAt,
+  Value<String?> lastError,
+  Value<DateTime?> lastAttemptAt,
   Value<int> rowid,
 });
 typedef $$MediaQueueTableUpdateCompanionBuilder = MediaQueueCompanion Function({
@@ -30318,6 +30429,8 @@ typedef $$MediaQueueTableUpdateCompanionBuilder = MediaQueueCompanion Function({
   Value<String> state,
   Value<int> attempts,
   Value<DateTime?> nextAttemptAt,
+  Value<String?> lastError,
+  Value<DateTime?> lastAttemptAt,
   Value<int> rowid,
 });
 
@@ -30387,6 +30500,16 @@ class $$MediaQueueTableFilterComposer
 
   ColumnFilters<DateTime> get nextAttemptAt => $composableBuilder(
     column: $table.nextAttemptAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get lastError => $composableBuilder(
+    column: $table.lastError,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get lastAttemptAt => $composableBuilder(
+    column: $table.lastAttemptAt,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -30459,6 +30582,16 @@ class $$MediaQueueTableOrderingComposer
     column: $table.nextAttemptAt,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get lastError => $composableBuilder(
+    column: $table.lastError,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get lastAttemptAt => $composableBuilder(
+    column: $table.lastAttemptAt,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$MediaQueueTableAnnotationComposer
@@ -30515,6 +30648,14 @@ class $$MediaQueueTableAnnotationComposer
     column: $table.nextAttemptAt,
     builder: (column) => column,
   );
+
+  GeneratedColumn<String> get lastError =>
+      $composableBuilder(column: $table.lastError, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get lastAttemptAt => $composableBuilder(
+    column: $table.lastAttemptAt,
+    builder: (column) => column,
+  );
 }
 
 class $$MediaQueueTableTableManager
@@ -30560,6 +30701,8 @@ class $$MediaQueueTableTableManager
                 Value<String> state = const Value.absent(),
                 Value<int> attempts = const Value.absent(),
                 Value<DateTime?> nextAttemptAt = const Value.absent(),
+                Value<String?> lastError = const Value.absent(),
+                Value<DateTime?> lastAttemptAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => MediaQueueCompanion(
                 clientId: clientId,
@@ -30574,6 +30717,8 @@ class $$MediaQueueTableTableManager
                 state: state,
                 attempts: attempts,
                 nextAttemptAt: nextAttemptAt,
+                lastError: lastError,
+                lastAttemptAt: lastAttemptAt,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -30590,6 +30735,8 @@ class $$MediaQueueTableTableManager
                 Value<String> state = const Value.absent(),
                 Value<int> attempts = const Value.absent(),
                 Value<DateTime?> nextAttemptAt = const Value.absent(),
+                Value<String?> lastError = const Value.absent(),
+                Value<DateTime?> lastAttemptAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => MediaQueueCompanion.insert(
                 clientId: clientId,
@@ -30604,6 +30751,8 @@ class $$MediaQueueTableTableManager
                 state: state,
                 attempts: attempts,
                 nextAttemptAt: nextAttemptAt,
+                lastError: lastError,
+                lastAttemptAt: lastAttemptAt,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

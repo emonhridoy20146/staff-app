@@ -189,7 +189,9 @@ final photoCapturerProvider = Provider<PhotoCapturer>((ref) => CameraPhotoCaptur
 class MediaService {
   MediaService(this._ref);
   final Ref _ref;
-  bool _uploading = false;
+  Future<void>? _running;
+  bool _again = false;
+  bool _againForce = false;
 
   AppDatabase get _db => _ref.read(databaseProvider);
 
@@ -236,52 +238,102 @@ class MediaService {
     }
   }
 
-  /// Uploads pending media (independent of data sync; Wi-Fi not required).
-  Future<void> uploadPending() async {
-    if (_uploading) return;
-    _uploading = true;
-    try {
+  /// Uploads pending media (independent of data sync; Wi-Fi not required): presign → PUT → confirm (FR-M-069).
+  ///
+  /// Each failure is written to the row in words-ready form (`<step>:<code>`, see [MediaFailure]) with the next
+  /// try after a backoff (30 s · attempts², at most 15 min). A row is never deleted here (CLAUDE.md §2.3).
+  /// [force] ignores the backoff (the Retry button).
+  /// A call while a run is going is not dropped: it runs again right after (a Retry tap must never be lost).
+  Future<void> uploadPending({bool force = false}) {
+    if (_running != null) {
+      _again = true;
+      _againForce |= force;
+      return _running!;
+    }
+    final run = _loop(force).whenComplete(() => _running = null);
+    _running = run;
+    return run;
+  }
+
+  Future<void> _loop(bool force) async {
+    var f = force;
+    do {
+      _again = false;
+      await _uploadOnce(force: f);
+      f = _againForce;
+      _againForce = false;
+    } while (_again);
+  }
+
+  Future<void> _uploadOnce({required bool force}) async {
+    {
       final dio = _ref.read(dioProvider);
       final now = _ref.read(clockProvider).nowUtc();
-      final rows = await (_db.select(_db.mediaQueue)
-            ..where((t) => t.state.isIn(['pending', 'failed']) & (t.nextAttemptAt.isNull() | t.nextAttemptAt.isSmallerOrEqualValue(now))))
-          .get();
+      final rows =
+          await (_db.select(_db.mediaQueue)
+                ..where(
+                  (t) =>
+                      t.state.isIn(['pending', 'failed']) &
+                      (force ? const Constant(true) : (t.nextAttemptAt.isNull() | t.nextAttemptAt.isSmallerOrEqualValue(now))),
+                )
+                ..orderBy([(t) => OrderingTerm.asc(t.capturedAt)]))
+              .get();
       final confirmedByOwner = <String, List<String>>{};
       for (final m in rows) {
+        var step = 'file';
         try {
-          final bytes = m.localPath.startsWith('memory://') ? _memory[m.clientId]! : await File(m.localPath).readAsBytes();
-          final r = await dio.post<dynamic>('/media/upload-url', data: {
-            'kind': m.kind,
-            'contentType': 'image/jpeg',
-            'sizeBytes': m.sizeBytes,
-            'sha256': m.sha256,
-            'capturedAt': m.capturedAt.toIso8601String(),
-          });
+          final bytes = await localBytes(m);
+          if (bytes == null) throw const MediaFailure('file', 'MISSING');
+          step = 'presign';
+          final r = await dio.post<dynamic>(
+            '/media/upload-url',
+            data: {
+              'kind': m.kind,
+              'contentType': 'image/jpeg',
+              'sizeBytes': m.sizeBytes,
+              'sha256': m.sha256,
+              // drift reads a DateTime back in local time; without toUtc() this went out as
+              // "2026-11-23T16:00:00.000" (no offset), which is not an RFC 3339 date-time, and field-api
+              // answered 400 VALIDATION_FAILED, so no photo ever left the phone (owner report 2026-11-23).
+              'capturedAt': m.capturedAt.toUtc().toIso8601String(),
+            },
+          );
           final j = r.data as Map<String, dynamic>;
           final mediaId = j['mediaId'] as String;
           if (j['alreadyExists'] != true) {
+            step = 'upload';
             await dio.put<dynamic>(
-              j['uploadUrl'] as String,
-              data: Stream.fromIterable([bytes]),
-              options: Options(headers: {
-                ...((j['headers'] as Map?) ?? const {}).cast<String, dynamic>(),
-                Headers.contentLengthHeader: bytes.length,
-                Headers.contentTypeHeader: 'image/jpeg',
-              }, extra: {'skipAuth': true}),
+              resolveUploadUrl(dio.options.baseUrl, j['uploadUrl'] as String),
+              data: bytes,
+              options: Options(
+                headers: {
+                  ...((j['headers'] as Map?) ?? const {}).cast<String, dynamic>(),
+                  Headers.contentLengthHeader: bytes.length,
+                  Headers.contentTypeHeader: 'image/jpeg',
+                },
+                // The signature in the URL is the permission: no bearer token, and a large-ish body on a slow line.
+                extra: {'skipAuth': true},
+                sendTimeout: const Duration(minutes: 2),
+                receiveTimeout: const Duration(minutes: 2),
+              ),
             );
           }
+          step = 'confirm';
           await dio.post<dynamic>('/media/$mediaId/confirm');
           await (_db.update(_db.mediaQueue)..where((t) => t.clientId.equals(m.clientId))).write(
-            MediaQueueCompanion(state: const Value('confirmed'), serverMediaId: Value(mediaId)),
+            MediaQueueCompanion(state: const Value('confirmed'), serverMediaId: Value(mediaId), lastError: const Value(null), lastAttemptAt: Value(now)),
           );
           (confirmedByOwner['${m.ownerEntity}|${m.ownerClientId}'] ??= []).add(mediaId);
-        } catch (_) {
+        } catch (e) {
+          final failure = e is MediaFailure ? e : MediaFailure.from(step, e);
           final attempts = m.attempts + 1;
           await (_db.update(_db.mediaQueue)..where((t) => t.clientId.equals(m.clientId))).write(
             MediaQueueCompanion(
               state: const Value('failed'),
               attempts: Value(attempts),
-              nextAttemptAt: Value(now.add(Duration(seconds: (30 * attempts * attempts).clamp(30, 900)))),
+              lastError: Value(failure.wire),
+              lastAttemptAt: Value(now),
+              nextAttemptAt: Value(now.add(mediaBackoff(attempts))),
             ),
           );
         }
@@ -289,12 +341,22 @@ class MediaService {
       final hooks = _ref.read(mediaOwnerHooksProvider);
       for (final e in confirmedByOwner.entries) {
         final parts = e.key.split('|');
-        final all = await (_db.select(_db.mediaQueue)..where((t) => t.ownerEntity.equals(parts[0]) & t.ownerClientId.equals(parts[1]) & t.state.equals('confirmed'))).get();
+        final all = await (_db.select(
+          _db.mediaQueue,
+        )..where((t) => t.ownerEntity.equals(parts[0]) & t.ownerClientId.equals(parts[1]) & t.state.equals('confirmed'))).get();
         await hooks[parts[0]]?.call(_db, parts[1], [for (final r in all) r.serverMediaId!]);
       }
-    } finally {
-      _uploading = false;
     }
+  }
+
+  /// Retry button: try this photo (or every waiting photo when [clientId] is null) now, ignoring the backoff.
+  Future<void> retryNow([String? clientId]) async {
+    if (clientId != null) {
+      await (_db.update(
+        _db.mediaQueue,
+      )..where((t) => t.clientId.equals(clientId) & t.state.isIn(['pending', 'failed']))).write(const MediaQueueCompanion(nextAttemptAt: Value(null)));
+    }
+    await uploadPending(force: clientId == null);
   }
 
   /// Purges confirmed media files older than 7 days.
@@ -312,3 +374,65 @@ class MediaService {
 }
 
 final mediaServiceProvider = Provider<MediaService>(MediaService.new);
+
+/// Photos not yet on the server, oldest first (sync centre, FR-M-069).
+final waitingMediaProvider = StreamProvider<List<MediaQueueRow>>((ref) {
+  final db = ref.watch(databaseProvider);
+  return (db.select(db.mediaQueue)
+        ..where((t) => t.state.isIn(['pending', 'failed']))
+        ..orderBy([(t) => OrderingTerm.asc(t.capturedAt)]))
+      .watch();
+});
+
+/// 30 s · attempts², at least 30 s, at most 15 minutes.
+Duration mediaBackoff(int attempts) => Duration(seconds: (30 * attempts * attempts).clamp(30, 900));
+
+/// `uploadUrl` as the server sent it. An absolute URL (S3, Cloudinary) is used as is; a path such as
+/// `/api/v1/storage/o?t=…` (field-api's own store) is resolved against the API's origin. dio would otherwise
+/// glue it to the base URL and PUT to `/api/v1/api/v1/storage/o`.
+String resolveUploadUrl(String apiBaseUrl, String uploadUrl) {
+  final u = Uri.parse(uploadUrl);
+  if (u.hasScheme) return uploadUrl;
+  return Uri.parse(apiBaseUrl).resolveUri(u).toString();
+}
+
+/// Why a photo upload failed, kept on the row as `<step>:<code>`.
+/// step: `file` (the photo on this phone), `presign` (`POST /media/upload-url`), `upload` (the PUT to the
+/// signed URL), `confirm` (`POST /media/{id}/confirm`). code: the server's problem `code` (or `details.reason`
+/// when it names one, e.g. `MEDIA_DELETED`), `HTTP_<status>` without one, `NETWORK`, `TIMEOUT`, `MISSING`.
+class MediaFailure implements Exception {
+  const MediaFailure(this.step, this.code);
+  final String step;
+  final String code;
+  String get wire => '$step:$code';
+
+  static MediaFailure parse(String? wire) {
+    final w = wire ?? '';
+    final i = w.indexOf(':');
+    return i < 0 ? MediaFailure('upload', w.isEmpty ? 'UNKNOWN' : w) : MediaFailure(w.substring(0, i), w.substring(i + 1));
+  }
+
+  factory MediaFailure.from(String step, Object e) {
+    if (e is! DioException) return MediaFailure(step, 'UNKNOWN');
+    switch (e.type) {
+      case DioExceptionType.connectionError:
+        return MediaFailure(step, 'NETWORK');
+      case DioExceptionType.connectionTimeout || DioExceptionType.sendTimeout || DioExceptionType.receiveTimeout:
+        return MediaFailure(step, 'TIMEOUT');
+      default:
+    }
+    final r = e.response;
+    if (r == null) return MediaFailure(step, 'NETWORK');
+    final d = r.data;
+    if (d is Map) {
+      final reason = (d['details'] is Map) ? (d['details'] as Map)['reason'] : null;
+      if (reason is String && reason.isNotEmpty) return MediaFailure(step, reason);
+      final code = d['code'];
+      if (code is String && code.isNotEmpty) return MediaFailure(step, code);
+    }
+    return MediaFailure(step, 'HTTP_${r.statusCode}');
+  }
+
+  @override
+  String toString() => wire;
+}

@@ -115,6 +115,7 @@ class LoginResponse {
     required this.flags,
     this.accessTokenExpiresAt,
     this.serverTime,
+    this.attendanceRequired,
   });
   factory LoginResponse.fromJson(Json j) => LoginResponse(
         accessToken: j['accessToken'] as String,
@@ -124,10 +125,14 @@ class LoginResponse {
         permissions: ((j['permissions'] as List?) ?? const []).cast<String>(),
         flags: ((j['flags'] as Json?) ?? const {}).map((k, v) => MapEntry(k, v as bool)),
         serverTime: _date(j['serverTime']),
+        attendanceRequired: attendanceRequiredIn(j),
       );
   final String accessToken;
   final String refreshToken;
   final DateTime? accessTokenExpiresAt;
+
+  /// Contract 1.45.0: false when this user never gives attendance (super admin); null from an older server.
+  final bool? attendanceRequired;
   final ApiUser user;
   final List<String> permissions;
   final Map<String, bool> flags;
@@ -297,6 +302,7 @@ class SyncPullResponse {
     this.cash,
     this.target,
     this.serverTime,
+    this.attendanceRequired,
   });
   factory SyncPullResponse.fromJson(Json j) => SyncPullResponse._from(
         j,
@@ -327,6 +333,7 @@ class SyncPullResponse {
       hasMore: hasMore,
       bootstrapCursor: bootstrapCursor,
       permissions: perms == null ? null : ((perms['keys'] as List?) ?? const []).cast<String>(),
+      attendanceRequired: attendanceRequiredIn(j),
       flags: (j['flags'] as Json?)?.map((k, v) => MapEntry(k, v as bool)),
       settings: _opt<Json>(j, 'settings'),
       cash: j['cash'] == null ? null : CashPositionDto.fromJson(j['cash'] as Json),
@@ -341,6 +348,9 @@ class SyncPullResponse {
   /// Bootstrap only: the cursor of the next snapshot page (not a pull cursor).
   final String? bootstrapCursor;
   final List<String>? permissions;
+
+  /// Contract 1.45.0 session snapshot: does this user give attendance? null when the server does not say.
+  final bool? attendanceRequired;
   final Map<String, bool>? flags;
   final Json? settings;
   final CashPositionDto? cash;
@@ -388,4 +398,13 @@ class ReceiptBlockDto {
   final String businessDate;
   final int from;
   final int to;
+}
+
+/// `attendanceRequired` (contract 1.45.0) wherever the server puts it in a login, `/auth/me` or sync answer:
+/// top level, in `user`, in `me` or in the `permissions` block. null when absent (older server = required).
+bool? attendanceRequiredIn(Json j) {
+  for (final o in [j, j['user'], j['me'], j['permissions']]) {
+    if (o is Map && o['attendanceRequired'] is bool) return o['attendanceRequired'] as bool;
+  }
+  return null;
 }

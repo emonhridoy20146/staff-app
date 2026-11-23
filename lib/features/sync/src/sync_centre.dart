@@ -6,6 +6,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../core/api/api_models.dart';
 import '../../../core/db/app_database.dart';
+import '../../../core/media/media.dart';
 import '../../../core/providers.dart';
 import '../../../core/settings/ui_prefs.dart';
 import '../../../core/theme/status_colors.dart';
@@ -74,7 +75,8 @@ class SyncCentreScreen extends ConsumerWidget {
     final oldest = ref.watch(_oldestProvider).value;
     final failed = ref.watch(_failedProvider).value ?? const <OutboxRow>[];
     final conflicts = ref.watch(_conflictsProvider).value ?? const <CollectionRow>[];
-    final media = ref.watch(pendingMediaCountProvider).value ?? 0;
+    final photos = ref.watch(waitingMediaProvider).value ?? const <MediaQueueRow>[];
+    final media = photos.length;
     final upgrade = ref.watch(upgradeRequiredProvider);
     final last = meta?.lastSuccessAt ?? status.lastSuccessAt;
     final waiting = byEntity.values.fold(0, (a, b) => a + b);
@@ -119,6 +121,7 @@ class SyncCentreScreen extends ConsumerWidget {
                       ListTile(leading: const Icon(Icons.photo_camera_rounded), title: Text(l.syncMediaTitle), trailing: Text(l.syncMediaCount(f.num(media)), style: t.titleSmall)),
                   ]),
           ),
+          if (media > 0) ...[const SizedBox(height: Space.cardGap), MediaQueueCard(photos: photos)],
           SectionHeader(l.syncProblemsTitle, count: failed.length + conflicts.length > 0 ? f.num(failed.length + conflicts.length) : null, color: failed.isEmpty && conflicts.isEmpty ? null : cs.error),
           if (failed.isEmpty && conflicts.isEmpty)
             AppCard(child: Row(children: [Icon(Icons.verified_rounded, color: context.semanticColors.success.fg), const SizedBox(width: Space.s12), Text(l.syncNoProblems, style: t.bodyLarge)]))
@@ -273,3 +276,89 @@ class SyncProblemsBanner extends ConsumerWidget {
   }
 }
 
+
+
+/// The kind of a queued photo in words.
+String mediaKindLabel(AppLocalizations l, String kind) => switch (kind) {
+      'selfie' => l.mediaKindSelfie,
+      'visit_photo' => l.mediaKindVisit,
+      'deposit_slip' => l.mediaKindSlip,
+      'location_proof' => l.mediaKindPin,
+      _ => l.mediaKindOther,
+    };
+
+IconData _mediaKindIcon(String kind) => switch (kind) {
+      'selfie' => Icons.face_rounded,
+      'deposit_slip' => Icons.receipt_long_rounded,
+      'location_proof' => Icons.add_location_alt_rounded,
+      _ => Icons.photo_camera_rounded,
+    };
+
+/// Why a photo upload failed, in words (FR-M-069), from the row's `<step>:<code>`.
+String mediaFailureText(AppLocalizations l, String? wire) {
+  final f = MediaFailure.parse(wire);
+  final reason = switch (f.code) {
+    'NETWORK' => l.mediaReasonNetwork,
+    'TIMEOUT' => l.mediaReasonTimeout,
+    'MISSING' => l.mediaReasonMissing,
+    'MEDIA_DELETED' => l.mediaReasonDeleted,
+    'VALIDATION_FAILED' || 'HTTP_400' || 'HTTP_422' => l.mediaReasonInvalid,
+    'FORBIDDEN' || 'HTTP_403' || 'SIGNATURE_EXPIRED' => l.mediaReasonSignature,
+    'NOT_UPLOADED' || 'INVALID_STATE' => l.mediaReasonNotUploaded,
+    'UNAVAILABLE' || 'HTTP_500' || 'HTTP_502' || 'HTTP_503' || 'HTTP_504' => l.mediaReasonServer,
+    _ => l.mediaReasonCode(f.code),
+  };
+  return switch (f.step) {
+    'presign' => l.mediaStepPresign(reason),
+    'upload' => l.mediaStepUpload(reason),
+    'confirm' => l.mediaStepConfirm(reason),
+    _ => reason,
+  };
+}
+
+/// Every photo not yet on the server: what it is, when it was taken, its state and the last error in words,
+/// with a Retry button each and one for all (FR-M-069). Nothing here deletes a photo.
+class MediaQueueCard extends ConsumerWidget {
+  const MediaQueueCard({super.key, required this.photos});
+  final List<MediaQueueRow> photos;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context);
+    final f = ref.watch(fmtProvider);
+    final t = Theme.of(context).textTheme;
+    final cs = Theme.of(context).colorScheme;
+    return AppCard(
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(l.mediaQueueHint, style: t.bodySmall!.copyWith(color: cs.onSurfaceVariant)),
+        for (final m in photos) ...[
+          const Divider(height: Space.s24),
+          Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Icon(_mediaKindIcon(m.kind), color: m.state == 'failed' ? cs.error : cs.onSurfaceVariant),
+            const SizedBox(width: Space.s12),
+            Expanded(
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(mediaKindLabel(l, m.kind), style: t.titleMedium),
+                Text(f.dateTime(m.capturedAt), style: t.bodySmall!.copyWith(color: cs.onSurfaceVariant)),
+                const SizedBox(height: Space.s4),
+                if (m.state == 'failed') ...[
+                  Text(l.mediaStateFailed(mediaFailureText(l, m.lastError)), style: t.bodyMedium!.copyWith(color: cs.error)),
+                  if (m.nextAttemptAt != null) Text(l.mediaNextTry(f.num(m.attempts), f.time(m.nextAttemptAt!)), style: t.bodySmall!.copyWith(color: cs.onSurfaceVariant)),
+                ] else
+                  Text(l.mediaStateWaiting, style: t.bodyMedium),
+              ]),
+            ),
+            TextButton(onPressed: () => ref.read(mediaServiceProvider).retryNow(m.clientId), child: Text(l.actionRetry)),
+          ]),
+        ],
+        if (photos.length > 1) ...[
+          const SizedBox(height: Space.s8),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(onPressed: () => ref.read(mediaServiceProvider).retryNow(), icon: const Icon(Icons.cloud_upload_rounded), label: Text(l.mediaRetryAll)),
+          ),
+        ],
+      ]),
+    );
+  }
+}

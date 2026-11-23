@@ -12,6 +12,7 @@ import '../../../core/media/media.dart';
 import '../../../core/settings/ui_prefs.dart';
 import '../../../core/settings/duty_settings.dart';
 import '../../../core/sync/outbox.dart';
+import '../../../core/permissions/permission_service.dart';
 import '../../../core/providers.dart';
 import '../../../core/sync/sync_handlers.dart';
 import '../../../core/time/clock.dart';
@@ -69,6 +70,7 @@ class AttendanceService {
   /// asks the server once per day per app run; inserted as already sent (no
   /// outbox entry) under the phone's own clientId. Never changes local events.
   Future<int> restoreTodayIfMissing() async {
+    if (!_ref.read(attendanceRequiredProvider)) return 0; // FR-M-070: never ask a super admin's day
     final date = _clock.businessDate();
     if (_checkedServerFor == date) return 0;
     Future<bool> empty() async => (await (_db.select(_db.attendanceEvents)..where((t) => t.businessDate.equals(date))..limit(1)).get()).isEmpty;
@@ -227,6 +229,13 @@ Future<void> linkAttendanceSelfie(OutboxWriter outbox, AppDatabase db, String ev
 Future<int> releaseHeldAttendance(AppDatabase db) =>
     (db.update(db.outbox)..where((t) => t.entity.equals('attendance_event') & t.state.equals('held')))
         .write(const OutboxCompanion(state: Value('pending')));
+
+/// Attendance is shown and asked for only when the module is on, the user may record it, and the server says
+/// this user gives attendance (contract 1.45.0 `attendanceRequired`; false for a super admin, FR-M-070).
+final attendanceShownProvider = Provider<bool>((ref) {
+  final access = ref.watch(accessProvider);
+  return access.flag('module.attendance') && access.can(Perm.attendanceRecord) && ref.watch(attendanceRequiredProvider);
+});
 
 final todayAttendanceProvider = StreamProvider<AttendanceDay>((ref) {
   final s = ref.watch(attendanceServiceProvider);

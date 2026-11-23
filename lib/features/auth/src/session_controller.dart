@@ -68,6 +68,8 @@ class SessionController extends Notifier<SessionState> {
             flags: (j['flags'] as Json).map((k, v) => MapEntry(k, v as bool)),
           );
     }
+    final ar = await db.kvGet('attendance_required');
+    if (ar != null) ref.read(attendanceRequiredProvider.notifier).state = jsonDecode(ar) as bool;
     final ss = await db.kvGet('server_settings');
     if (ss != null) ref.read(serverSettingsProvider.notifier).state = jsonDecode(ss) as Json;
     final cash = await db.kvGet('server_cash');
@@ -137,6 +139,8 @@ class SessionController extends Notifier<SessionState> {
     await store.delete(_kLockedUser);
     ref.read(accessProvider.notifier).set(permissions: r.permissions, flags: r.flags);
     await ref.read(databaseProvider).kvSet('access', jsonEncode({'permissions': r.permissions, 'flags': r.flags}));
+    ref.read(attendanceRequiredProvider.notifier).state = r.attendanceRequired ?? true;
+    await ref.read(databaseProvider).kvSet('attendance_required', jsonEncode(r.attendanceRequired ?? true));
     await saveUserId(ref.read(databaseProvider), r.user.id);
     state = SessionState(stage: SessionStage.loading, user: r.user);
     await _advance();
@@ -234,6 +238,7 @@ class SessionController extends Notifier<SessionState> {
     await ref.read(databaseProvider).wipeAll();
     ref.read(accessProvider.notifier).clear();
     ref.read(myTargetProvider.notifier).state = null;
+    ref.read(attendanceRequiredProvider.notifier).state = true;
     state = const SessionState(stage: SessionStage.signedOut);
   }
 }

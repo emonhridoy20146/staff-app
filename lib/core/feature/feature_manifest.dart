@@ -46,10 +46,13 @@ class TodayCardDef {
 
 /// An entry in the Me tab.
 class MeEntryDef {
-  const MeEntryDef({required this.id, required this.order, required this.builder, this.permission});
+  const MeEntryDef({required this.id, required this.order, required this.builder, this.permission, this.visible});
   final String id;
   final int order;
   final String? permission;
+
+  /// Extra condition from server data (e.g. an admin setting); null = always, once flag and permission allow.
+  final bool Function(WidgetRef ref)? visible;
   final WidgetBuilder builder;
 }
 

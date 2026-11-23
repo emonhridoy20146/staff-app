@@ -6457,6 +6457,138 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'+{n}'**
   String monthMore(String n);
+
+  /// No description provided for @mediaQueueHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Photos go to the server on their own, separately from the other work. Nothing is deleted from this phone until the server has the photo.'**
+  String get mediaQueueHint;
+
+  /// No description provided for @mediaKindSelfie.
+  ///
+  /// In en, this message translates to:
+  /// **'Attendance photo'**
+  String get mediaKindSelfie;
+
+  /// No description provided for @mediaKindVisit.
+  ///
+  /// In en, this message translates to:
+  /// **'Visit photo'**
+  String get mediaKindVisit;
+
+  /// No description provided for @mediaKindSlip.
+  ///
+  /// In en, this message translates to:
+  /// **'Deposit slip'**
+  String get mediaKindSlip;
+
+  /// No description provided for @mediaKindPin.
+  ///
+  /// In en, this message translates to:
+  /// **'Map pin photo'**
+  String get mediaKindPin;
+
+  /// No description provided for @mediaKindOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo'**
+  String get mediaKindOther;
+
+  /// No description provided for @mediaStateWaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting to upload'**
+  String get mediaStateWaiting;
+
+  /// No description provided for @mediaStateFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Not uploaded yet: {reason}'**
+  String mediaStateFailed(String reason);
+
+  /// No description provided for @mediaNextTry.
+  ///
+  /// In en, this message translates to:
+  /// **'Tried {tries} times · tries again at {time}'**
+  String mediaNextTry(String tries, String time);
+
+  /// No description provided for @mediaRetryAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload all now'**
+  String get mediaRetryAll;
+
+  /// No description provided for @mediaReasonNetwork.
+  ///
+  /// In en, this message translates to:
+  /// **'no connection to the server'**
+  String get mediaReasonNetwork;
+
+  /// No description provided for @mediaReasonTimeout.
+  ///
+  /// In en, this message translates to:
+  /// **'the network was too slow'**
+  String get mediaReasonTimeout;
+
+  /// No description provided for @mediaReasonMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'the photo file is no longer on this phone'**
+  String get mediaReasonMissing;
+
+  /// No description provided for @mediaReasonDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'the office deleted this photo on the server'**
+  String get mediaReasonDeleted;
+
+  /// No description provided for @mediaReasonInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'the server did not accept the photo\'s details'**
+  String get mediaReasonInvalid;
+
+  /// No description provided for @mediaReasonSignature.
+  ///
+  /// In en, this message translates to:
+  /// **'the upload link was refused or had expired'**
+  String get mediaReasonSignature;
+
+  /// No description provided for @mediaReasonNotUploaded.
+  ///
+  /// In en, this message translates to:
+  /// **'the server did not receive the photo'**
+  String get mediaReasonNotUploaded;
+
+  /// No description provided for @mediaReasonServer.
+  ///
+  /// In en, this message translates to:
+  /// **'the server is not answering right now'**
+  String get mediaReasonServer;
+
+  /// No description provided for @mediaReasonCode.
+  ///
+  /// In en, this message translates to:
+  /// **'the server answered {code}'**
+  String mediaReasonCode(String code);
+
+  /// No description provided for @mediaStepPresign.
+  ///
+  /// In en, this message translates to:
+  /// **'{reason} (getting the upload link)'**
+  String mediaStepPresign(String reason);
+
+  /// No description provided for @mediaStepUpload.
+  ///
+  /// In en, this message translates to:
+  /// **'{reason} (sending the photo)'**
+  String mediaStepUpload(String reason);
+
+  /// No description provided for @mediaStepConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'{reason} (confirming)'**
+  String mediaStepConfirm(String reason);
 }
 
 class _AppLocalizationsDelegate

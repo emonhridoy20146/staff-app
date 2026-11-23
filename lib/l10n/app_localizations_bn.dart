@@ -3680,4 +3680,83 @@ class AppLocalizationsBn extends AppLocalizations {
   String monthMore(String n) {
     return '+$n';
   }
+
+  @override
+  String get mediaQueueHint =>
+      'ছবিগুলো অন্য কাজ থেকে আলাদাভাবে নিজে থেকেই সার্ভারে যায়। সার্ভার ছবি না পাওয়া পর্যন্ত এই ফোন থেকে কিছু মোছা হয় না।';
+
+  @override
+  String get mediaKindSelfie => 'হাজিরার ছবি';
+
+  @override
+  String get mediaKindVisit => 'ভিজিটের ছবি';
+
+  @override
+  String get mediaKindSlip => 'জমার স্লিপ';
+
+  @override
+  String get mediaKindPin => 'পিনের ছবি';
+
+  @override
+  String get mediaKindOther => 'ছবি';
+
+  @override
+  String get mediaStateWaiting => 'আপলোডের অপেক্ষায়';
+
+  @override
+  String mediaStateFailed(String reason) {
+    return 'এখনো আপলোড হয়নি: $reason';
+  }
+
+  @override
+  String mediaNextTry(String tries, String time) {
+    return '$tries বার চেষ্টা হয়েছে · $time-এ আবার চেষ্টা করবে';
+  }
+
+  @override
+  String get mediaRetryAll => 'সব এখন আপলোড করুন';
+
+  @override
+  String get mediaReasonNetwork => 'সার্ভারের সাথে সংযোগ নেই';
+
+  @override
+  String get mediaReasonTimeout => 'নেটওয়ার্ক খুব ধীর ছিল';
+
+  @override
+  String get mediaReasonMissing => 'ছবির ফাইল এই ফোনে আর নেই';
+
+  @override
+  String get mediaReasonDeleted => 'অফিস সার্ভার থেকে এই ছবি মুছে ফেলেছে';
+
+  @override
+  String get mediaReasonInvalid => 'সার্ভার ছবির তথ্য গ্রহণ করেনি';
+
+  @override
+  String get mediaReasonSignature => 'আপলোড লিংক গ্রহণ হয়নি বা মেয়াদ শেষ';
+
+  @override
+  String get mediaReasonNotUploaded => 'সার্ভার ছবিটি পায়নি';
+
+  @override
+  String get mediaReasonServer => 'সার্ভার এখন উত্তর দিচ্ছে না';
+
+  @override
+  String mediaReasonCode(String code) {
+    return 'সার্ভারের উত্তর: $code';
+  }
+
+  @override
+  String mediaStepPresign(String reason) {
+    return '$reason (আপলোড লিংক নেওয়ার সময়)';
+  }
+
+  @override
+  String mediaStepUpload(String reason) {
+    return '$reason (ছবি পাঠানোর সময়)';
+  }
+
+  @override
+  String mediaStepConfirm(String reason) {
+    return '$reason (নিশ্চিত করার সময়)';
+  }
 }

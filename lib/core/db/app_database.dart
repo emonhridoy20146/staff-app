@@ -50,7 +50,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 16;
+  int get schemaVersion => 17;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -181,6 +181,12 @@ class AppDatabase extends _$AppDatabase {
           if (from < 16) {
             await _ensureColumn(m, customers, customers.activityJson);
             await _ensureColumn(m, erpPayments, erpPayments.referrerName);
+          }
+          // v17 (FR-M-069): why a photo upload failed and when it was last tried, shown in the sync centre.
+          // Nullable columns only; queued photos keep their state and are retried as before.
+          if (from < 17) {
+            await _ensureColumn(m, mediaQueue, mediaQueue.lastError);
+            await _ensureColumn(m, mediaQueue, mediaQueue.lastAttemptAt);
           }
         },
         beforeOpen: (details) async {

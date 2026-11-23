@@ -3699,4 +3699,86 @@ class AppLocalizationsEn extends AppLocalizations {
   String monthMore(String n) {
     return '+$n';
   }
+
+  @override
+  String get mediaQueueHint =>
+      'Photos go to the server on their own, separately from the other work. Nothing is deleted from this phone until the server has the photo.';
+
+  @override
+  String get mediaKindSelfie => 'Attendance photo';
+
+  @override
+  String get mediaKindVisit => 'Visit photo';
+
+  @override
+  String get mediaKindSlip => 'Deposit slip';
+
+  @override
+  String get mediaKindPin => 'Map pin photo';
+
+  @override
+  String get mediaKindOther => 'Photo';
+
+  @override
+  String get mediaStateWaiting => 'Waiting to upload';
+
+  @override
+  String mediaStateFailed(String reason) {
+    return 'Not uploaded yet: $reason';
+  }
+
+  @override
+  String mediaNextTry(String tries, String time) {
+    return 'Tried $tries times · tries again at $time';
+  }
+
+  @override
+  String get mediaRetryAll => 'Upload all now';
+
+  @override
+  String get mediaReasonNetwork => 'no connection to the server';
+
+  @override
+  String get mediaReasonTimeout => 'the network was too slow';
+
+  @override
+  String get mediaReasonMissing => 'the photo file is no longer on this phone';
+
+  @override
+  String get mediaReasonDeleted =>
+      'the office deleted this photo on the server';
+
+  @override
+  String get mediaReasonInvalid =>
+      'the server did not accept the photo\'s details';
+
+  @override
+  String get mediaReasonSignature =>
+      'the upload link was refused or had expired';
+
+  @override
+  String get mediaReasonNotUploaded => 'the server did not receive the photo';
+
+  @override
+  String get mediaReasonServer => 'the server is not answering right now';
+
+  @override
+  String mediaReasonCode(String code) {
+    return 'the server answered $code';
+  }
+
+  @override
+  String mediaStepPresign(String reason) {
+    return '$reason (getting the upload link)';
+  }
+
+  @override
+  String mediaStepUpload(String reason) {
+    return '$reason (sending the photo)';
+  }
+
+  @override
+  String mediaStepConfirm(String reason) {
+    return '$reason (confirming)';
+  }
 }
