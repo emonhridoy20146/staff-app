@@ -18,8 +18,10 @@ import '../l10n/app_localizations.dart';
 import 'router.dart';
 import 'shell.dart';
 
-/// How often to sync while the app is open and signed in.
-const foregroundSyncEvery = Duration(minutes: 5);
+/// How often to sync on its own while the app is open and signed in. Owner 2026-11-23: customer pages must not
+/// reload every few minutes; once every 15 minutes is fine, and only when online. Saved work still goes out at
+/// once (each use case kicks a sync), and network-back / app-resume / pull-down still sync immediately.
+const foregroundSyncEvery = Duration(minutes: 15);
 
 class FieldApp extends ConsumerStatefulWidget {
   const FieldApp({super.key, this.watchConnectivity = true});
@@ -41,7 +43,7 @@ class _FieldAppState extends ConsumerState<FieldApp> with WidgetsBindingObserver
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _timer = Timer.periodic(foregroundSyncEvery, (_) => _kick('timer'));
+    _timer = Timer.periodic(foregroundSyncEvery, (_) => unawaited(_timerKick()));
     if (widget.watchConnectivity) {
       _net = Connectivity().onConnectivityChanged.listen(_onNetwork);
       unawaited(Connectivity().checkConnectivity().then(_onNetwork).catchError((Object _) {}));
@@ -65,6 +67,17 @@ class _FieldAppState extends ConsumerState<FieldApp> with WidgetsBindingObserver
     }
   }
 
+  /// The 15-minute sync runs only when the phone has a network; offline it would only fail.
+  Future<void> _timerKick() async {
+    if (widget.watchConnectivity) {
+      try {
+        final r = await Connectivity().checkConnectivity();
+        if (!r.any((x) => x != ConnectivityResult.none)) return;
+      } catch (_) {}
+    }
+    if (mounted) _kick('timer');
+  }
+
   void _kick(String reason) {
     if (ref.read(sessionProvider).stage != SessionStage.ready) return;
     unawaited(ref.read(syncEngineProvider).kick(reason: reason));
@@ -79,7 +92,11 @@ class _FieldAppState extends ConsumerState<FieldApp> with WidgetsBindingObserver
       final away = _pausedAt == null ? Duration.zero : clock.nowUtc().difference(_pausedAt!);
       _pausedAt = null;
       if (away >= appLockAfter) ref.read(sessionProvider.notifier).lock();
-      _kick('resume');
+      // Coming back from the camera or a call must not reload the page: sync on resume only when the last good
+      // sync is older than [foregroundSyncEvery] or the last one failed (owner 2026-11-23).
+      final s = ref.read(syncEngineProvider).current;
+      final last = s.lastSuccessAt;
+      if (last == null || s.lastErrorCode != null || clock.nowUtc().difference(last) >= foregroundSyncEvery) _kick('resume');
     }
   }
 

@@ -329,15 +329,19 @@ class _Header extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: Space.s16),
-          if (customer.address != null)
-            Row(
+          // Always shown, so a customer without an address in the ERP says so instead of a lone icon.
+          Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Padding(padding: const EdgeInsets.only(top: 2), child: Icon(Icons.place_rounded, size: 20, color: cs.onSurfaceVariant)),
                 const SizedBox(width: Space.s8),
                 Expanded(
                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text(customer.address!, style: t.bodyMedium),
+                    Text(
+                      customer.address ?? l.detailNoAddress,
+                      key: const Key('detail-address'),
+                      style: customer.address == null ? t.bodyMedium!.copyWith(color: cs.onSurfaceVariant, fontStyle: FontStyle.italic) : t.bodyMedium,
+                    ),
                     if (customer.detailedAddress != null) Text(customer.detailedAddress!, style: t.bodyMedium!.copyWith(color: cs.onSurfaceVariant)),
                   ]),
                 ),

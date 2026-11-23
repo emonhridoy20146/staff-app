@@ -746,6 +746,24 @@ abstract class AppLocalizations {
   /// **'Today\'s duty details'**
   String get dutyDetails;
 
+  /// No description provided for @expandShow.
+  ///
+  /// In en, this message translates to:
+  /// **'Details'**
+  String get expandShow;
+
+  /// No description provided for @expandHide.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide'**
+  String get expandHide;
+
+  /// No description provided for @todayCollectedDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s collection details'**
+  String get todayCollectedDetails;
+
   /// No description provided for @dutyRowShift.
   ///
   /// In en, this message translates to:
@@ -5221,6 +5239,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Directions'**
   String get detailDirections;
+
+  /// No description provided for @detailNoAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'No address in the ERP'**
+  String get detailNoAddress;
 
   /// No description provided for @erpRiskBadge.
   ///

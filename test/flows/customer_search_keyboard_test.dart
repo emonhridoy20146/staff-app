@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:staff_app/app/app.dart';
 import 'package:staff_app/core/providers.dart';
-import 'package:staff_app/features/customers/src/presentation/customer_tile.dart';
+import 'package:staff_app/features/customers/src/presentation/customer_work_row.dart';
 
 import 'helpers.dart';
 
@@ -42,7 +42,7 @@ void main() {
     await t.enterText(find.byType(TextField), name);
     await settle(t, rounds: 4);
 
-    final row = find.widgetWithText(CustomerTile, name).first;
+    final row = find.widgetWithText(CustomerWorkRow, name).first;
     expect(row, findsOneWidget);
     final field = t.getRect(find.byType(TextField));
     final rowRect = t.getRect(row);

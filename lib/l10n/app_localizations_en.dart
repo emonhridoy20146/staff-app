@@ -370,6 +370,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dutyDetails => 'Today\'s duty details';
 
   @override
+  String get expandShow => 'Details';
+
+  @override
+  String get expandHide => 'Hide';
+
+  @override
+  String get todayCollectedDetails => 'Today\'s collection details';
+
+  @override
   String get dutyRowShift => 'Office time';
 
   @override
@@ -2953,6 +2962,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get detailDirections => 'Directions';
+
+  @override
+  String get detailNoAddress => 'No address in the ERP';
 
   @override
   String erpRiskBadge(String grade) {

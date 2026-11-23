@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+### Fixed (owner report 2026-11-23: customer page showed the pin icon with no address; FR-M-005)
+- **Cause:** the address line was shown whenever `customers.address` was not null. field-api maps a missing ERP address to `""` (`address: c.address ?? ''`), so a customer whose ERP address is blank got the pin icon with nothing beside it. The detailed address was only shown under a non-blank address.
+- **Fix:** `Customer.address` is the ERP address, or the ERP detailed address when it is blank, or the area. The line is always shown. With none of them it reads "ERP তে ঠিকানা নেই / No address in the ERP". A detailed address equal to the shown one is not repeated. Test: `test/features/customer_address_test.dart`.
+
+### Changed (owner request 2026-11-23: pages must not reload every few minutes)
+- **Foreground sync every 15 minutes** (was 5) and only when the phone has a network. Saved work still goes out at once (each use case kicks a sync); network-back and pull-down still sync immediately.
+- **Resume no longer syncs every time:** coming back from the camera or a call syncs only when the last good sync is 15 minutes old or failed.
+- **Distance fix every 15 minutes** (was 2) while on duty. Each new fix re-sorted the near-me lists, which looked like a reload.
+
+### Changed (owner requests 2026-11-23: customer list and Home)
+- **Customer list rows use the Home row** (`CustomerWorkRow`) in four lines, with no Collect button. Line 2 also shows the invoice type label and the distance. At the right of the marks is a 40 dp tonal arrow (`OpenDetailsArrow`) that says the row opens the details. The Home rows are unchanged.
+- **"আজকের আদায়" card is compact:** it shows the amount, the target and its bar. A tap opens the visit target, cash / mobile / visits and the cash meter. A "বিস্তারিত ▾ / লুকান ▴" pill (`core/ui/expand_hint.dart`) says it can be opened. The **duty card** uses the same pill in place of the bare chevron. At 130 % text the pill and the target pills shrink instead of overflowing.
+- Tests: `customers_home_ui_test.dart` (arrow on list rows, no Collect in the list, card opens and closes), `customer_search_keyboard_test.dart` and `places_screens_test.dart` (130 %) updated for the new row.
+
 ### Fixed (customer reload said "Code: VALIDATION_FAILED"; owner report 2026-11-23, FR-M-063)
 - **Cause:** the reload button and pull-down send `POST /api/v1/customers/{id}/refresh`, which has no request body in the contract (1.43.0: only the `id` path parameter, no query, no `requestBody`). dio's base options set `contentType: application/json` for every request, so it went out with `Content-Type: application/json`, `Content-Length: 0` and an empty body. An empty string is not a JSON document, and field-api's strict JSON parser answered 400 `VALIDATION_FAILED`. The path, the id and the (absent) query were right.
 - **Fix:** `ClientHeadersInterceptor` drops the content type of a request that has no body (`lib/core/network/dio_client.dart`). This fixes every body-less POST the same way (`/auth/logout`, `/handovers/{id}/accept`, `/cowork/sessions/{id}/leave`, `/leave-requests/{id}/cancel`). Requests with a body still say JSON.

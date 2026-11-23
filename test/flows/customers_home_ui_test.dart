@@ -85,7 +85,7 @@ void main() {
     final (_, c) = await start(t);
     await t.tap(find.text('গ্রাহক').last);
     await settle(t);
-    Finder row(CustomerRow r) => find.widgetWithText(CustomerTile, r.nameBn);
+    Finder row(CustomerRow r) => find.widgetWithText(CustomerWorkRow, r.nameBn);
 
     // The chip row scrolls sideways; the type chips come first, the status chips after the divider.
     // Built but past the right edge until scrolled to.
@@ -102,12 +102,15 @@ void main() {
     expect(row(c[3]), findsOneWidget);
     expect(row(c[1]), findsNothing); // credit only
     expect(row(c[2]), findsNothing); // not overdue
-    expect(find.byType(CustomerTile), findsNWidgets(2));
+    expect(find.byType(CustomerWorkRow), findsNWidgets(2));
+    // Owner request 2026-11-23: the Home row style with an arrow to the details, and no Collect in the list.
+    expect(find.byKey(const Key('open-details-arrow')), findsNWidgets(2));
+    expect(find.byKey(ValueKey('collect-${c[0].serverId}')), findsNothing);
 
     // Credit instead: B and D.
     await t.tap(find.byKey(const ValueKey('kind-filter-credit')));
     await settle(t, rounds: 3);
-    expect(find.byType(CustomerTile), findsNWidgets(2));
+    expect(find.byType(CustomerWorkRow), findsNWidgets(2));
     expect(row(c[1]), findsOneWidget);
     expect(row(c[3]), findsOneWidget);
 
@@ -115,7 +118,7 @@ void main() {
     await t.tap(find.byKey(const ValueKey('kind-filter-credit')));
     await settle(t, rounds: 3);
     expect(row(c[2]), findsNothing);
-    expect(find.byType(CustomerTile).evaluate().length, greaterThan(2));
+    expect(find.byType(CustomerWorkRow).evaluate().length, greaterThan(2));
   });
 
   testWidgets('row label: "কিস্তি" / "বাকি" for one invoice, counts for several', (t) async {
@@ -124,7 +127,7 @@ void main() {
     await settle(t);
     await t.tap(find.byKey(const ValueKey('kind-filter-installment')));
     await settle(t, rounds: 3);
-    Finder label(CustomerRow r) => find.descendant(of: find.widgetWithText(CustomerTile, r.nameBn), matching: find.byType(InvoiceKindLabel));
+    Finder label(CustomerRow r) => find.descendant(of: find.widgetWithText(CustomerWorkRow, r.nameBn), matching: find.byType(InvoiceKindLabel));
     expect(find.descendant(of: label(c[0]), matching: find.text('কিস্তি')), findsOneWidget);
     expect(find.descendant(of: label(c[3]), matching: find.text('1 কিস্তি')), findsOneWidget);
     expect(find.descendant(of: label(c[3]), matching: find.text('2 বাকি')), findsOneWidget);
@@ -227,5 +230,24 @@ void main() {
     await t.tap(find.descendant(of: row, matching: find.text('আদায়')));
     await settle(t, rounds: 3);
     expect(h.read(routerProvider).routerDelegate.currentConfiguration.last.matchedLocation, '/collect/${c[3].serverId}');
+  });
+
+  testWidgets('Home: the collection card is compact with a "বিস্তারিত" hint and opens on tap (owner request 2026-11-23)', (t) async {
+    await start(t);
+    final card = find.byKey(const Key('today-progress-card'));
+    expect(card, findsOneWidget);
+    expect(find.descendant(of: card, matching: find.text('বিস্তারিত')), findsOneWidget);
+    expect(find.descendant(of: card, matching: find.text('আজ নগদ')), findsNothing);
+    final closed = t.getRect(card).height;
+
+    await t.tap(find.descendant(of: card, matching: find.text('আজকের আদায়')));
+    await settle(t, rounds: 3);
+    expect(find.descendant(of: card, matching: find.text('আজ নগদ')), findsOneWidget);
+    expect(find.descendant(of: card, matching: find.text('লুকান')), findsOneWidget);
+    expect(t.getRect(card).height, greaterThan(closed));
+
+    await t.tap(find.descendant(of: card, matching: find.text('আজকের আদায়')));
+    await settle(t, rounds: 3);
+    expect(find.descendant(of: card, matching: find.text('আজ নগদ')), findsNothing);
   });
 }

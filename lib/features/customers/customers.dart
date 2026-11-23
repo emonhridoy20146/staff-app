@@ -10,7 +10,7 @@ export 'src/domain/customer.dart' show Customer, TodayPriorities, CustomerFilter
 export 'src/presentation/customer_detail_screen.dart' show CustomerDetailScreen, launchNavigate, launchCall;
 export 'src/presentation/customer_list_screen.dart' show CustomerListScreen, filterLabel;
 export 'src/presentation/customer_tile.dart' show CustomerTile;
-export 'src/presentation/customer_work_row.dart' show CustomerWorkRow;
+export 'src/presentation/customer_work_row.dart' show CustomerWorkRow, OpenDetailsArrow;
 export 'src/presentation/invoice_kind_label.dart' show InvoiceKindLabel;
 export 'src/pin_correction.dart' show openPinCorrection, submitLocationProposal;
 export 'src/presentation/map_pin_screen.dart' show MapPinScreen;
