@@ -137,7 +137,7 @@ class FakeFieldApi implements HttpClientAdapter {
     'module.customers': true, 'module.tags': true, 'module.collections': true, 'module.cash': true, //
     'module.visits': true, 'module.notes': true, 'module.promises': true, 'module.attendance': true,
     'module.handovers': true, 'module.location': true, 'module.notifications': true, 'module.sync': true,
-    'module.cowork': true, 'module.targets': true, 'module.reports': true, 'module.tasks': true, 'module.places': true, 'module.microfinance': false,
+    'module.cowork': true, 'module.targets': true, 'module.reports': true, 'module.tasks': true, 'module.places': true, 'module.prospects': true, 'module.microfinance': false,
   };
 
   Json get _settings => {
@@ -273,6 +273,56 @@ class FakeFieldApi implements HttpClientAdapter {
   }
 
   /// The server's rules for the three place mutations (FR-PLC-002..004).
+  /// Possible customers (provisional contract 1.45.0): `prospect` create / update. Server id `pr-<clientId>`.
+  final prospects = <String, Json>{};
+
+  /// Tests / demo: the office changes a prospect's status (it then can no longer be changed by staff).
+  void setProspectStatus(String clientId, String status) {
+    final p = prospects['pr-$clientId']!;
+    p['status'] = status;
+    serverChange('prospect', 'pr-$clientId', Map<String, dynamic>.of(p));
+  }
+
+  Json _prospectMutation(String mutationId, String op, Json payload) {
+    Json reject(String rule) => {'mutationId': mutationId, 'result': 'rejected', 'error': _rule(rule)};
+    final name = (payload['name'] as String?)?.trim() ?? '';
+    final phones = ((payload['phones'] as List?) ?? const []).cast<String>();
+    if (name.isEmpty || name.length > 80) return {'mutationId': mutationId, 'result': 'rejected', 'error': _problem(400, 'VALIDATION_FAILED', 'name')};
+    if (phones.isEmpty || phones.any((n) => !RegExp(r'^01[3-9]\d{8}$').hasMatch(n))) {
+      return {'mutationId': mutationId, 'result': 'rejected', 'error': _problem(400, 'VALIDATION_FAILED', 'phones')};
+    }
+    if (op == 'create') {
+      final id = 'pr-${payload['clientId']}';
+      prospects[id] = {
+        'id': id,
+        'clientId': payload['clientId'],
+        'name': name,
+        'phones': phones,
+        'address': payload['address'],
+        'note': payload['note'],
+        if (payload['location'] != null) 'location': payload['location'],
+        'status': 'new',
+        'createdBy': {'id': user['id'], 'name': 'রহিম উদ্দিন'},
+        'createdAt': clock.nowUtc().toIso8601String(),
+      };
+      serverChange('prospect', id, Map<String, dynamic>.of(prospects[id]!));
+      return {'mutationId': mutationId, 'result': 'applied', 'entityId': id};
+    }
+    final target = payload['prospectId'] as String?;
+    final p = prospects[target] ?? prospects['pr-$target'];
+    if (p == null) return reject('PROSPECT_NOT_FOUND');
+    if ((p['createdBy'] as Json)['id'] != user['id']) return reject('NOT_OWNER');
+    if (p['status'] != 'new') return reject('PROSPECT_NOT_NEW');
+    p
+      ..['name'] = name
+      ..['phones'] = phones
+      ..['address'] = payload['address']
+      ..['note'] = payload['note']
+      ..['updatedAt'] = clock.nowUtc().toIso8601String();
+    serverChange('prospect', p['id'] as String, Map<String, dynamic>.of(p));
+    return {'mutationId': mutationId, 'result': 'applied', 'entityId': p['id']};
+  }
+
   Json _placeMutation(String mutationId, String entity, Json payload) {
     Json? find() {
       final pid = payload['placeId'] as String?;
@@ -1199,6 +1249,8 @@ class FakeFieldApi implements HttpClientAdapter {
         r = _deposit(id, payload);
       } else if (entity == 'place' || entity == 'place_edit' || entity == 'place_move_request') {
         r = _placeMutation(id, entity, payload);
+      } else if (entity == 'prospect') {
+        r = _prospectMutation(id, (m['op'] as String?) ?? 'create', payload);
       } else {
         r = {'mutationId': id, 'result': 'applied', 'entityId': '$entity-$id', 'status': entity == 'collection' ? 'received' : 'ok'};
         if (entity == 'collection' && payload['method'] == 'cash') _cashOnHand += payload['amountPoisha'] as int;

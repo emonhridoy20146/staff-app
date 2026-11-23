@@ -23535,6 +23535,963 @@ class MapPlacesCompanion extends UpdateCompanion<PlaceRow> {
   }
 }
 
+class $ProspectsTable extends Prospects
+    with TableInfo<$ProspectsTable, ProspectRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ProspectsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _clientIdMeta = const VerificationMeta(
+    'clientId',
+  );
+  @override
+  late final GeneratedColumn<String> clientId = GeneratedColumn<String>(
+    'client_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _serverIdMeta = const VerificationMeta(
+    'serverId',
+  );
+  @override
+  late final GeneratedColumn<String> serverId = GeneratedColumn<String>(
+    'server_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _phonesJsonMeta = const VerificationMeta(
+    'phonesJson',
+  );
+  @override
+  late final GeneratedColumn<String> phonesJson = GeneratedColumn<String>(
+    'phones_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('[]'),
+  );
+  static const VerificationMeta _addressMeta = const VerificationMeta(
+    'address',
+  );
+  @override
+  late final GeneratedColumn<String> address = GeneratedColumn<String>(
+    'address',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _noteMeta = const VerificationMeta('note');
+  @override
+  late final GeneratedColumn<String> note = GeneratedColumn<String>(
+    'note',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _latMeta = const VerificationMeta('lat');
+  @override
+  late final GeneratedColumn<double> lat = GeneratedColumn<double>(
+    'lat',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _lngMeta = const VerificationMeta('lng');
+  @override
+  late final GeneratedColumn<double> lng = GeneratedColumn<double>(
+    'lng',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _accuracyMMeta = const VerificationMeta(
+    'accuracyM',
+  );
+  @override
+  late final GeneratedColumn<double> accuracyM = GeneratedColumn<double>(
+    'accuracy_m',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('new'),
+  );
+  static const VerificationMeta _createdByIdMeta = const VerificationMeta(
+    'createdById',
+  );
+  @override
+  late final GeneratedColumn<String> createdById = GeneratedColumn<String>(
+    'created_by_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdByNameMeta = const VerificationMeta(
+    'createdByName',
+  );
+  @override
+  late final GeneratedColumn<String> createdByName = GeneratedColumn<String>(
+    'created_by_name',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _syncStateMeta = const VerificationMeta(
+    'syncState',
+  );
+  @override
+  late final GeneratedColumn<String> syncState = GeneratedColumn<String>(
+    'sync_state',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('queued'),
+  );
+  static const VerificationMeta _editStateMeta = const VerificationMeta(
+    'editState',
+  );
+  @override
+  late final GeneratedColumn<String> editState = GeneratedColumn<String>(
+    'edit_state',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('none'),
+  );
+  static const VerificationMeta _errorCodeMeta = const VerificationMeta(
+    'errorCode',
+  );
+  @override
+  late final GeneratedColumn<String> errorCode = GeneratedColumn<String>(
+    'error_code',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    clientId,
+    serverId,
+    name,
+    phonesJson,
+    address,
+    note,
+    lat,
+    lng,
+    accuracyM,
+    status,
+    createdById,
+    createdByName,
+    createdAt,
+    updatedAt,
+    syncState,
+    editState,
+    errorCode,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'prospects';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ProspectRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('client_id')) {
+      context.handle(
+        _clientIdMeta,
+        clientId.isAcceptableOrUnknown(data['client_id']!, _clientIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_clientIdMeta);
+    }
+    if (data.containsKey('server_id')) {
+      context.handle(
+        _serverIdMeta,
+        serverId.isAcceptableOrUnknown(data['server_id']!, _serverIdMeta),
+      );
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('phones_json')) {
+      context.handle(
+        _phonesJsonMeta,
+        phonesJson.isAcceptableOrUnknown(data['phones_json']!, _phonesJsonMeta),
+      );
+    }
+    if (data.containsKey('address')) {
+      context.handle(
+        _addressMeta,
+        address.isAcceptableOrUnknown(data['address']!, _addressMeta),
+      );
+    }
+    if (data.containsKey('note')) {
+      context.handle(
+        _noteMeta,
+        note.isAcceptableOrUnknown(data['note']!, _noteMeta),
+      );
+    }
+    if (data.containsKey('lat')) {
+      context.handle(
+        _latMeta,
+        lat.isAcceptableOrUnknown(data['lat']!, _latMeta),
+      );
+    }
+    if (data.containsKey('lng')) {
+      context.handle(
+        _lngMeta,
+        lng.isAcceptableOrUnknown(data['lng']!, _lngMeta),
+      );
+    }
+    if (data.containsKey('accuracy_m')) {
+      context.handle(
+        _accuracyMMeta,
+        accuracyM.isAcceptableOrUnknown(data['accuracy_m']!, _accuracyMMeta),
+      );
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    }
+    if (data.containsKey('created_by_id')) {
+      context.handle(
+        _createdByIdMeta,
+        createdById.isAcceptableOrUnknown(
+          data['created_by_id']!,
+          _createdByIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('created_by_name')) {
+      context.handle(
+        _createdByNameMeta,
+        createdByName.isAcceptableOrUnknown(
+          data['created_by_name']!,
+          _createdByNameMeta,
+        ),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    if (data.containsKey('sync_state')) {
+      context.handle(
+        _syncStateMeta,
+        syncState.isAcceptableOrUnknown(data['sync_state']!, _syncStateMeta),
+      );
+    }
+    if (data.containsKey('edit_state')) {
+      context.handle(
+        _editStateMeta,
+        editState.isAcceptableOrUnknown(data['edit_state']!, _editStateMeta),
+      );
+    }
+    if (data.containsKey('error_code')) {
+      context.handle(
+        _errorCodeMeta,
+        errorCode.isAcceptableOrUnknown(data['error_code']!, _errorCodeMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {clientId};
+  @override
+  ProspectRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ProspectRow(
+      clientId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}client_id'],
+      )!,
+      serverId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}server_id'],
+      ),
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      phonesJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}phones_json'],
+      )!,
+      address: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}address'],
+      ),
+      note: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}note'],
+      ),
+      lat: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}lat'],
+      ),
+      lng: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}lng'],
+      ),
+      accuracyM: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}accuracy_m'],
+      ),
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status'],
+      )!,
+      createdById: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}created_by_id'],
+      ),
+      createdByName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}created_by_name'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      ),
+      syncState: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sync_state'],
+      )!,
+      editState: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}edit_state'],
+      )!,
+      errorCode: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}error_code'],
+      ),
+    );
+  }
+
+  @override
+  $ProspectsTable createAlias(String alias) {
+    return $ProspectsTable(attachedDatabase, alias);
+  }
+}
+
+class ProspectRow extends DataClass implements Insertable<ProspectRow> {
+  final String clientId;
+  final String? serverId;
+  final String name;
+
+  /// JSON list of phone numbers as typed (normalized to 01XXXXXXXXX).
+  final String phonesJson;
+  final String? address;
+  final String? note;
+  final double? lat;
+  final double? lng;
+  final double? accuracyM;
+
+  /// The server's status (`new` until the office acts; unknown values kept as sent).
+  final String status;
+  final String? createdById;
+  final String? createdByName;
+  final DateTime createdAt;
+  final DateTime? updatedAt;
+
+  /// `queued` (not on the server yet), `synced`, `failed` (refused; kept, shown in Problems).
+  final String syncState;
+
+  /// An edit of mine not yet sent: `queued`; refused: `failed`; else `none`.
+  final String editState;
+  final String? errorCode;
+  const ProspectRow({
+    required this.clientId,
+    this.serverId,
+    required this.name,
+    required this.phonesJson,
+    this.address,
+    this.note,
+    this.lat,
+    this.lng,
+    this.accuracyM,
+    required this.status,
+    this.createdById,
+    this.createdByName,
+    required this.createdAt,
+    this.updatedAt,
+    required this.syncState,
+    required this.editState,
+    this.errorCode,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['client_id'] = Variable<String>(clientId);
+    if (!nullToAbsent || serverId != null) {
+      map['server_id'] = Variable<String>(serverId);
+    }
+    map['name'] = Variable<String>(name);
+    map['phones_json'] = Variable<String>(phonesJson);
+    if (!nullToAbsent || address != null) {
+      map['address'] = Variable<String>(address);
+    }
+    if (!nullToAbsent || note != null) {
+      map['note'] = Variable<String>(note);
+    }
+    if (!nullToAbsent || lat != null) {
+      map['lat'] = Variable<double>(lat);
+    }
+    if (!nullToAbsent || lng != null) {
+      map['lng'] = Variable<double>(lng);
+    }
+    if (!nullToAbsent || accuracyM != null) {
+      map['accuracy_m'] = Variable<double>(accuracyM);
+    }
+    map['status'] = Variable<String>(status);
+    if (!nullToAbsent || createdById != null) {
+      map['created_by_id'] = Variable<String>(createdById);
+    }
+    if (!nullToAbsent || createdByName != null) {
+      map['created_by_name'] = Variable<String>(createdByName);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    if (!nullToAbsent || updatedAt != null) {
+      map['updated_at'] = Variable<DateTime>(updatedAt);
+    }
+    map['sync_state'] = Variable<String>(syncState);
+    map['edit_state'] = Variable<String>(editState);
+    if (!nullToAbsent || errorCode != null) {
+      map['error_code'] = Variable<String>(errorCode);
+    }
+    return map;
+  }
+
+  ProspectsCompanion toCompanion(bool nullToAbsent) {
+    return ProspectsCompanion(
+      clientId: Value(clientId),
+      serverId: serverId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(serverId),
+      name: Value(name),
+      phonesJson: Value(phonesJson),
+      address: address == null && nullToAbsent
+          ? const Value.absent()
+          : Value(address),
+      note: note == null && nullToAbsent ? const Value.absent() : Value(note),
+      lat: lat == null && nullToAbsent ? const Value.absent() : Value(lat),
+      lng: lng == null && nullToAbsent ? const Value.absent() : Value(lng),
+      accuracyM: accuracyM == null && nullToAbsent
+          ? const Value.absent()
+          : Value(accuracyM),
+      status: Value(status),
+      createdById: createdById == null && nullToAbsent
+          ? const Value.absent()
+          : Value(createdById),
+      createdByName: createdByName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(createdByName),
+      createdAt: Value(createdAt),
+      updatedAt: updatedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(updatedAt),
+      syncState: Value(syncState),
+      editState: Value(editState),
+      errorCode: errorCode == null && nullToAbsent
+          ? const Value.absent()
+          : Value(errorCode),
+    );
+  }
+
+  factory ProspectRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ProspectRow(
+      clientId: serializer.fromJson<String>(json['clientId']),
+      serverId: serializer.fromJson<String?>(json['serverId']),
+      name: serializer.fromJson<String>(json['name']),
+      phonesJson: serializer.fromJson<String>(json['phonesJson']),
+      address: serializer.fromJson<String?>(json['address']),
+      note: serializer.fromJson<String?>(json['note']),
+      lat: serializer.fromJson<double?>(json['lat']),
+      lng: serializer.fromJson<double?>(json['lng']),
+      accuracyM: serializer.fromJson<double?>(json['accuracyM']),
+      status: serializer.fromJson<String>(json['status']),
+      createdById: serializer.fromJson<String?>(json['createdById']),
+      createdByName: serializer.fromJson<String?>(json['createdByName']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime?>(json['updatedAt']),
+      syncState: serializer.fromJson<String>(json['syncState']),
+      editState: serializer.fromJson<String>(json['editState']),
+      errorCode: serializer.fromJson<String?>(json['errorCode']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'clientId': serializer.toJson<String>(clientId),
+      'serverId': serializer.toJson<String?>(serverId),
+      'name': serializer.toJson<String>(name),
+      'phonesJson': serializer.toJson<String>(phonesJson),
+      'address': serializer.toJson<String?>(address),
+      'note': serializer.toJson<String?>(note),
+      'lat': serializer.toJson<double?>(lat),
+      'lng': serializer.toJson<double?>(lng),
+      'accuracyM': serializer.toJson<double?>(accuracyM),
+      'status': serializer.toJson<String>(status),
+      'createdById': serializer.toJson<String?>(createdById),
+      'createdByName': serializer.toJson<String?>(createdByName),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime?>(updatedAt),
+      'syncState': serializer.toJson<String>(syncState),
+      'editState': serializer.toJson<String>(editState),
+      'errorCode': serializer.toJson<String?>(errorCode),
+    };
+  }
+
+  ProspectRow copyWith({
+    String? clientId,
+    Value<String?> serverId = const Value.absent(),
+    String? name,
+    String? phonesJson,
+    Value<String?> address = const Value.absent(),
+    Value<String?> note = const Value.absent(),
+    Value<double?> lat = const Value.absent(),
+    Value<double?> lng = const Value.absent(),
+    Value<double?> accuracyM = const Value.absent(),
+    String? status,
+    Value<String?> createdById = const Value.absent(),
+    Value<String?> createdByName = const Value.absent(),
+    DateTime? createdAt,
+    Value<DateTime?> updatedAt = const Value.absent(),
+    String? syncState,
+    String? editState,
+    Value<String?> errorCode = const Value.absent(),
+  }) => ProspectRow(
+    clientId: clientId ?? this.clientId,
+    serverId: serverId.present ? serverId.value : this.serverId,
+    name: name ?? this.name,
+    phonesJson: phonesJson ?? this.phonesJson,
+    address: address.present ? address.value : this.address,
+    note: note.present ? note.value : this.note,
+    lat: lat.present ? lat.value : this.lat,
+    lng: lng.present ? lng.value : this.lng,
+    accuracyM: accuracyM.present ? accuracyM.value : this.accuracyM,
+    status: status ?? this.status,
+    createdById: createdById.present ? createdById.value : this.createdById,
+    createdByName: createdByName.present
+        ? createdByName.value
+        : this.createdByName,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
+    syncState: syncState ?? this.syncState,
+    editState: editState ?? this.editState,
+    errorCode: errorCode.present ? errorCode.value : this.errorCode,
+  );
+  ProspectRow copyWithCompanion(ProspectsCompanion data) {
+    return ProspectRow(
+      clientId: data.clientId.present ? data.clientId.value : this.clientId,
+      serverId: data.serverId.present ? data.serverId.value : this.serverId,
+      name: data.name.present ? data.name.value : this.name,
+      phonesJson: data.phonesJson.present
+          ? data.phonesJson.value
+          : this.phonesJson,
+      address: data.address.present ? data.address.value : this.address,
+      note: data.note.present ? data.note.value : this.note,
+      lat: data.lat.present ? data.lat.value : this.lat,
+      lng: data.lng.present ? data.lng.value : this.lng,
+      accuracyM: data.accuracyM.present ? data.accuracyM.value : this.accuracyM,
+      status: data.status.present ? data.status.value : this.status,
+      createdById: data.createdById.present
+          ? data.createdById.value
+          : this.createdById,
+      createdByName: data.createdByName.present
+          ? data.createdByName.value
+          : this.createdByName,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      syncState: data.syncState.present ? data.syncState.value : this.syncState,
+      editState: data.editState.present ? data.editState.value : this.editState,
+      errorCode: data.errorCode.present ? data.errorCode.value : this.errorCode,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ProspectRow(')
+          ..write('clientId: $clientId, ')
+          ..write('serverId: $serverId, ')
+          ..write('name: $name, ')
+          ..write('phonesJson: $phonesJson, ')
+          ..write('address: $address, ')
+          ..write('note: $note, ')
+          ..write('lat: $lat, ')
+          ..write('lng: $lng, ')
+          ..write('accuracyM: $accuracyM, ')
+          ..write('status: $status, ')
+          ..write('createdById: $createdById, ')
+          ..write('createdByName: $createdByName, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('syncState: $syncState, ')
+          ..write('editState: $editState, ')
+          ..write('errorCode: $errorCode')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    clientId,
+    serverId,
+    name,
+    phonesJson,
+    address,
+    note,
+    lat,
+    lng,
+    accuracyM,
+    status,
+    createdById,
+    createdByName,
+    createdAt,
+    updatedAt,
+    syncState,
+    editState,
+    errorCode,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ProspectRow &&
+          other.clientId == this.clientId &&
+          other.serverId == this.serverId &&
+          other.name == this.name &&
+          other.phonesJson == this.phonesJson &&
+          other.address == this.address &&
+          other.note == this.note &&
+          other.lat == this.lat &&
+          other.lng == this.lng &&
+          other.accuracyM == this.accuracyM &&
+          other.status == this.status &&
+          other.createdById == this.createdById &&
+          other.createdByName == this.createdByName &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt &&
+          other.syncState == this.syncState &&
+          other.editState == this.editState &&
+          other.errorCode == this.errorCode);
+}
+
+class ProspectsCompanion extends UpdateCompanion<ProspectRow> {
+  final Value<String> clientId;
+  final Value<String?> serverId;
+  final Value<String> name;
+  final Value<String> phonesJson;
+  final Value<String?> address;
+  final Value<String?> note;
+  final Value<double?> lat;
+  final Value<double?> lng;
+  final Value<double?> accuracyM;
+  final Value<String> status;
+  final Value<String?> createdById;
+  final Value<String?> createdByName;
+  final Value<DateTime> createdAt;
+  final Value<DateTime?> updatedAt;
+  final Value<String> syncState;
+  final Value<String> editState;
+  final Value<String?> errorCode;
+  final Value<int> rowid;
+  const ProspectsCompanion({
+    this.clientId = const Value.absent(),
+    this.serverId = const Value.absent(),
+    this.name = const Value.absent(),
+    this.phonesJson = const Value.absent(),
+    this.address = const Value.absent(),
+    this.note = const Value.absent(),
+    this.lat = const Value.absent(),
+    this.lng = const Value.absent(),
+    this.accuracyM = const Value.absent(),
+    this.status = const Value.absent(),
+    this.createdById = const Value.absent(),
+    this.createdByName = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.syncState = const Value.absent(),
+    this.editState = const Value.absent(),
+    this.errorCode = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ProspectsCompanion.insert({
+    required String clientId,
+    this.serverId = const Value.absent(),
+    required String name,
+    this.phonesJson = const Value.absent(),
+    this.address = const Value.absent(),
+    this.note = const Value.absent(),
+    this.lat = const Value.absent(),
+    this.lng = const Value.absent(),
+    this.accuracyM = const Value.absent(),
+    this.status = const Value.absent(),
+    this.createdById = const Value.absent(),
+    this.createdByName = const Value.absent(),
+    required DateTime createdAt,
+    this.updatedAt = const Value.absent(),
+    this.syncState = const Value.absent(),
+    this.editState = const Value.absent(),
+    this.errorCode = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : clientId = Value(clientId),
+       name = Value(name),
+       createdAt = Value(createdAt);
+  static Insertable<ProspectRow> custom({
+    Expression<String>? clientId,
+    Expression<String>? serverId,
+    Expression<String>? name,
+    Expression<String>? phonesJson,
+    Expression<String>? address,
+    Expression<String>? note,
+    Expression<double>? lat,
+    Expression<double>? lng,
+    Expression<double>? accuracyM,
+    Expression<String>? status,
+    Expression<String>? createdById,
+    Expression<String>? createdByName,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<String>? syncState,
+    Expression<String>? editState,
+    Expression<String>? errorCode,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (clientId != null) 'client_id': clientId,
+      if (serverId != null) 'server_id': serverId,
+      if (name != null) 'name': name,
+      if (phonesJson != null) 'phones_json': phonesJson,
+      if (address != null) 'address': address,
+      if (note != null) 'note': note,
+      if (lat != null) 'lat': lat,
+      if (lng != null) 'lng': lng,
+      if (accuracyM != null) 'accuracy_m': accuracyM,
+      if (status != null) 'status': status,
+      if (createdById != null) 'created_by_id': createdById,
+      if (createdByName != null) 'created_by_name': createdByName,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (syncState != null) 'sync_state': syncState,
+      if (editState != null) 'edit_state': editState,
+      if (errorCode != null) 'error_code': errorCode,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ProspectsCompanion copyWith({
+    Value<String>? clientId,
+    Value<String?>? serverId,
+    Value<String>? name,
+    Value<String>? phonesJson,
+    Value<String?>? address,
+    Value<String?>? note,
+    Value<double?>? lat,
+    Value<double?>? lng,
+    Value<double?>? accuracyM,
+    Value<String>? status,
+    Value<String?>? createdById,
+    Value<String?>? createdByName,
+    Value<DateTime>? createdAt,
+    Value<DateTime?>? updatedAt,
+    Value<String>? syncState,
+    Value<String>? editState,
+    Value<String?>? errorCode,
+    Value<int>? rowid,
+  }) {
+    return ProspectsCompanion(
+      clientId: clientId ?? this.clientId,
+      serverId: serverId ?? this.serverId,
+      name: name ?? this.name,
+      phonesJson: phonesJson ?? this.phonesJson,
+      address: address ?? this.address,
+      note: note ?? this.note,
+      lat: lat ?? this.lat,
+      lng: lng ?? this.lng,
+      accuracyM: accuracyM ?? this.accuracyM,
+      status: status ?? this.status,
+      createdById: createdById ?? this.createdById,
+      createdByName: createdByName ?? this.createdByName,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      syncState: syncState ?? this.syncState,
+      editState: editState ?? this.editState,
+      errorCode: errorCode ?? this.errorCode,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (clientId.present) {
+      map['client_id'] = Variable<String>(clientId.value);
+    }
+    if (serverId.present) {
+      map['server_id'] = Variable<String>(serverId.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (phonesJson.present) {
+      map['phones_json'] = Variable<String>(phonesJson.value);
+    }
+    if (address.present) {
+      map['address'] = Variable<String>(address.value);
+    }
+    if (note.present) {
+      map['note'] = Variable<String>(note.value);
+    }
+    if (lat.present) {
+      map['lat'] = Variable<double>(lat.value);
+    }
+    if (lng.present) {
+      map['lng'] = Variable<double>(lng.value);
+    }
+    if (accuracyM.present) {
+      map['accuracy_m'] = Variable<double>(accuracyM.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (createdById.present) {
+      map['created_by_id'] = Variable<String>(createdById.value);
+    }
+    if (createdByName.present) {
+      map['created_by_name'] = Variable<String>(createdByName.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (syncState.present) {
+      map['sync_state'] = Variable<String>(syncState.value);
+    }
+    if (editState.present) {
+      map['edit_state'] = Variable<String>(editState.value);
+    }
+    if (errorCode.present) {
+      map['error_code'] = Variable<String>(errorCode.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ProspectsCompanion(')
+          ..write('clientId: $clientId, ')
+          ..write('serverId: $serverId, ')
+          ..write('name: $name, ')
+          ..write('phonesJson: $phonesJson, ')
+          ..write('address: $address, ')
+          ..write('note: $note, ')
+          ..write('lat: $lat, ')
+          ..write('lng: $lng, ')
+          ..write('accuracyM: $accuracyM, ')
+          ..write('status: $status, ')
+          ..write('createdById: $createdById, ')
+          ..write('createdByName: $createdByName, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('syncState: $syncState, ')
+          ..write('editState: $editState, ')
+          ..write('errorCode: $errorCode, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -23574,6 +24531,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $ColleagueActivitiesTable colleagueActivities =
       $ColleagueActivitiesTable(this);
   late final $MapPlacesTable mapPlaces = $MapPlacesTable(this);
+  late final $ProspectsTable prospects = $ProspectsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -23609,6 +24567,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     kvSettings,
     colleagueActivities,
     mapPlaces,
+    prospects,
   ];
 }
 
@@ -34779,6 +35738,447 @@ typedef $$MapPlacesTableProcessedTableManager =
       PlaceRow,
       PrefetchHooks Function()
     >;
+typedef $$ProspectsTableCreateCompanionBuilder = ProspectsCompanion Function({
+  required String clientId,
+  Value<String?> serverId,
+  required String name,
+  Value<String> phonesJson,
+  Value<String?> address,
+  Value<String?> note,
+  Value<double?> lat,
+  Value<double?> lng,
+  Value<double?> accuracyM,
+  Value<String> status,
+  Value<String?> createdById,
+  Value<String?> createdByName,
+  required DateTime createdAt,
+  Value<DateTime?> updatedAt,
+  Value<String> syncState,
+  Value<String> editState,
+  Value<String?> errorCode,
+  Value<int> rowid,
+});
+typedef $$ProspectsTableUpdateCompanionBuilder = ProspectsCompanion Function({
+  Value<String> clientId,
+  Value<String?> serverId,
+  Value<String> name,
+  Value<String> phonesJson,
+  Value<String?> address,
+  Value<String?> note,
+  Value<double?> lat,
+  Value<double?> lng,
+  Value<double?> accuracyM,
+  Value<String> status,
+  Value<String?> createdById,
+  Value<String?> createdByName,
+  Value<DateTime> createdAt,
+  Value<DateTime?> updatedAt,
+  Value<String> syncState,
+  Value<String> editState,
+  Value<String?> errorCode,
+  Value<int> rowid,
+});
+
+class $$ProspectsTableFilterComposer
+    extends Composer<_$AppDatabase, $ProspectsTable> {
+  $$ProspectsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get clientId => $composableBuilder(
+    column: $table.clientId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get serverId => $composableBuilder(
+    column: $table.serverId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get phonesJson => $composableBuilder(
+    column: $table.phonesJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get address => $composableBuilder(
+    column: $table.address,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get lat => $composableBuilder(
+    column: $table.lat,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get lng => $composableBuilder(
+    column: $table.lng,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get accuracyM => $composableBuilder(
+    column: $table.accuracyM,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get createdById => $composableBuilder(
+    column: $table.createdById,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get createdByName => $composableBuilder(
+    column: $table.createdByName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get syncState => $composableBuilder(
+    column: $table.syncState,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get editState => $composableBuilder(
+    column: $table.editState,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get errorCode => $composableBuilder(
+    column: $table.errorCode,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$ProspectsTableOrderingComposer
+    extends Composer<_$AppDatabase, $ProspectsTable> {
+  $$ProspectsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get clientId => $composableBuilder(
+    column: $table.clientId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get serverId => $composableBuilder(
+    column: $table.serverId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get phonesJson => $composableBuilder(
+    column: $table.phonesJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get address => $composableBuilder(
+    column: $table.address,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get lat => $composableBuilder(
+    column: $table.lat,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get lng => $composableBuilder(
+    column: $table.lng,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get accuracyM => $composableBuilder(
+    column: $table.accuracyM,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get createdById => $composableBuilder(
+    column: $table.createdById,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get createdByName => $composableBuilder(
+    column: $table.createdByName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncState => $composableBuilder(
+    column: $table.syncState,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get editState => $composableBuilder(
+    column: $table.editState,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get errorCode => $composableBuilder(
+    column: $table.errorCode,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$ProspectsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ProspectsTable> {
+  $$ProspectsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get clientId =>
+      $composableBuilder(column: $table.clientId, builder: (column) => column);
+
+  GeneratedColumn<String> get serverId =>
+      $composableBuilder(column: $table.serverId, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get phonesJson => $composableBuilder(
+    column: $table.phonesJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get address =>
+      $composableBuilder(column: $table.address, builder: (column) => column);
+
+  GeneratedColumn<String> get note =>
+      $composableBuilder(column: $table.note, builder: (column) => column);
+
+  GeneratedColumn<double> get lat =>
+      $composableBuilder(column: $table.lat, builder: (column) => column);
+
+  GeneratedColumn<double> get lng =>
+      $composableBuilder(column: $table.lng, builder: (column) => column);
+
+  GeneratedColumn<double> get accuracyM =>
+      $composableBuilder(column: $table.accuracyM, builder: (column) => column);
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<String> get createdById => $composableBuilder(
+    column: $table.createdById,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get createdByName => $composableBuilder(
+    column: $table.createdByName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get syncState =>
+      $composableBuilder(column: $table.syncState, builder: (column) => column);
+
+  GeneratedColumn<String> get editState =>
+      $composableBuilder(column: $table.editState, builder: (column) => column);
+
+  GeneratedColumn<String> get errorCode =>
+      $composableBuilder(column: $table.errorCode, builder: (column) => column);
+}
+
+class $$ProspectsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ProspectsTable,
+          ProspectRow,
+          $$ProspectsTableFilterComposer,
+          $$ProspectsTableOrderingComposer,
+          $$ProspectsTableAnnotationComposer,
+          $$ProspectsTableCreateCompanionBuilder,
+          $$ProspectsTableUpdateCompanionBuilder,
+          (
+            ProspectRow,
+            BaseReferences<_$AppDatabase, $ProspectsTable, ProspectRow>,
+          ),
+          ProspectRow,
+          PrefetchHooks Function()
+        > {
+  $$ProspectsTableTableManager(_$AppDatabase db, $ProspectsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ProspectsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ProspectsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ProspectsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> clientId = const Value.absent(),
+                Value<String?> serverId = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> phonesJson = const Value.absent(),
+                Value<String?> address = const Value.absent(),
+                Value<String?> note = const Value.absent(),
+                Value<double?> lat = const Value.absent(),
+                Value<double?> lng = const Value.absent(),
+                Value<double?> accuracyM = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<String?> createdById = const Value.absent(),
+                Value<String?> createdByName = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime?> updatedAt = const Value.absent(),
+                Value<String> syncState = const Value.absent(),
+                Value<String> editState = const Value.absent(),
+                Value<String?> errorCode = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ProspectsCompanion(
+                clientId: clientId,
+                serverId: serverId,
+                name: name,
+                phonesJson: phonesJson,
+                address: address,
+                note: note,
+                lat: lat,
+                lng: lng,
+                accuracyM: accuracyM,
+                status: status,
+                createdById: createdById,
+                createdByName: createdByName,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                syncState: syncState,
+                editState: editState,
+                errorCode: errorCode,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String clientId,
+                Value<String?> serverId = const Value.absent(),
+                required String name,
+                Value<String> phonesJson = const Value.absent(),
+                Value<String?> address = const Value.absent(),
+                Value<String?> note = const Value.absent(),
+                Value<double?> lat = const Value.absent(),
+                Value<double?> lng = const Value.absent(),
+                Value<double?> accuracyM = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<String?> createdById = const Value.absent(),
+                Value<String?> createdByName = const Value.absent(),
+                required DateTime createdAt,
+                Value<DateTime?> updatedAt = const Value.absent(),
+                Value<String> syncState = const Value.absent(),
+                Value<String> editState = const Value.absent(),
+                Value<String?> errorCode = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ProspectsCompanion.insert(
+                clientId: clientId,
+                serverId: serverId,
+                name: name,
+                phonesJson: phonesJson,
+                address: address,
+                note: note,
+                lat: lat,
+                lng: lng,
+                accuracyM: accuracyM,
+                status: status,
+                createdById: createdById,
+                createdByName: createdByName,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                syncState: syncState,
+                editState: editState,
+                errorCode: errorCode,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$ProspectsTable, ProspectRow>(table),
+                  BaseReferences<_$AppDatabase, $ProspectsTable, ProspectRow>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$ProspectsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ProspectsTable,
+      ProspectRow,
+      $$ProspectsTableFilterComposer,
+      $$ProspectsTableOrderingComposer,
+      $$ProspectsTableAnnotationComposer,
+      $$ProspectsTableCreateCompanionBuilder,
+      $$ProspectsTableUpdateCompanionBuilder,
+      (
+        ProspectRow,
+        BaseReferences<_$AppDatabase, $ProspectsTable, ProspectRow>,
+      ),
+      ProspectRow,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -34843,4 +36243,6 @@ class $AppDatabaseManager {
       $$ColleagueActivitiesTableTableManager(_db, _db.colleagueActivities);
   $$MapPlacesTableTableManager get mapPlaces =>
       $$MapPlacesTableTableManager(_db, _db.mapPlaces);
+  $$ProspectsTableTableManager get prospects =>
+      $$ProspectsTableTableManager(_db, _db.prospects);
 }

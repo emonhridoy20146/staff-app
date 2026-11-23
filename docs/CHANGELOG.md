@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+### Added (owner request 2026-11-23: possible customers; FR-M-073, ADR-M36, contract 1.45.0, schema 17)
+- **New feature `prospects`** (flag `module.prospects`, registered in `lib/app/features.dart`): Me → **সম্ভাব্য গ্রাহক / Possible customers** lists every prospect on the phone with its status (নতুন, যোগাযোগ হয়েছে, গ্রাহক হয়েছেন, বন্ধ; unknown shown as sent), who added it and when, "waiting to be sent", and a refusal in words. **Add** opens a form: name, 1–3 mobile numbers (Bangla digits, `+880`, dashes accepted; cleaned to `01XXXXXXXXX`; repeats refused), address and note (optional), and **"এখন যেখানে আছি তা সংরক্ষণ"**, which can be turned on only while on duty (off duty it is disabled with the reason, and the service drops any fix; CLAUDE.md §2.6).
+- **Offline-first:** saved at once and queued as `prospect` `op: create` with its UUIDv7 clientId. My own can be changed while `new` (`op: update`, `prospectId`, `dependsOn` the create while unsent). A pull keeps my unsent change; an edit refused because the office already acted (`PROSPECT_NOT_NEW`) or by someone else (`NOT_OWNER`) stays visible with its reason. Nothing unsent is deleted by a pull.
+- **Schema 17:** table `prospects` (created only when missing) in the same v17 step; migration test.
+- **Provisional:** built before the 1.45.0 contract copy arrived, with `prospect` added to `SyncMutation.entities`. The flag is off until the server turns it on, so nothing is sent to an older server. No permission keys yet (not in the catalog).
+- Fake API: `prospect` create/update with validation, owner and `new` rules, `setProspectStatus` hook; `module.prospects` on in the demo. `normalizeMobile` is exported from the customers barrel.
+- Tests: `prospects_flow_test.dart` (rules, offline create sent once with cleaned numbers and no location off duty, on-duty location, edit before and after sending, locked after the office acts, refused edit kept with its reason, Me → list → form with the disabled location switch, error in words, 48 dp save), `migration_test.dart`.
+
 ### Added (owner request 2026-11-23: follow up a broken promise; FR-M-072, ADR-M35, contract 1.45.0, schema 17)
 - **"নতুন প্রতিশ্রুতি (ফলো-আপ) / New promise (follow-up)"** on a broken promise ("কথা রাখেননি") on the customer page's timeline. It opens the promise sheet titled as a follow-up, with "<date> তারিখের <amount> এর ভাঙা প্রতিশ্রুতির ফলো-আপ · চেষ্টা N". The promise is saved offline-first through the same `promise` mutation (one UUIDv7 clientId, never regenerated) with `followUpOf` = the broken promise's server id (or its clientId with `dependsOn` while unsent). A plain new promise on a customer with an unfollowed broken promise is linked the same way.
 - **Chain:** every promise in a chain shows "চেষ্টা 1, 2, 3 …" on the timeline (the phone counts until the server's `attempt` arrives).

@@ -27,6 +27,7 @@ Phases match `field-api/docs/09-progress.md`. Start each phase against the Prism
 | Cash: position, limit, deposits with slip, end-of-day closing | ◐ slip photo and closing not yet |
 | Visits with camera, media queue | ✅ |
 | Photo uploads fixed (UTC `capturedAt`), queue with reasons and Retry in the sync centre (FR-M-069, schema 17) | ✅ 2026-11-23 flow + widget tests; ☐ real phone check against field-api (cloudinary) |
+| Possible customers (prospects): Me entry, list with status and maker, add offline with optional on-duty location, edit own while new (FR-M-073, schema 17) | ◐ 2026-11-23 built and tested against provisional `prospect` shapes; align with the 1.45.0 contract when pinned |
 | Promise follow-up: "New promise (follow-up)" on a broken promise, attempt chain on the timeline, Home card of broken promises without follow-up (FR-M-072) | ◐ 2026-11-23 built and tested against the provisional `followUpOf`/`attempt` fields; re-check when the 1.45.0 contract is pinned |
 | No attendance for super admin (`attendanceRequired`, FR-M-070) | ◐ 2026-11-23 built and tested against the provisional field; re-check when the 1.45.0 contract is pinned |
 | Notes, promises, local reminders | ✅ |

@@ -506,6 +506,9 @@ void main() {
     expect((await v17.select(v17.outbox).get()).single.mutationId, 'a-16');
     final p = (await v17.select(v17.promises).get()).single;
     expect([p.clientId, p.status, p.followUpOf, p.attempt], ['p-16', 'broken', null, 1]);
+    // the prospects table exists and works
+    await v17.into(v17.prospects).insert(ProspectsCompanion.insert(clientId: 'pr-1', name: 'জামাল', createdAt: DateTime.utc(2026, 11, 23)));
+    expect((await v17.select(v17.prospects).get()).single.syncState, 'queued');
     await v17.customStatement("UPDATE media_queue SET last_error = 'presign:VALIDATION_FAILED' WHERE client_id = 'md-16'");
     expect((await v17.select(v17.mediaQueue).get()).single.lastError, 'presign:VALIDATION_FAILED');
     await v17.close();
@@ -514,12 +517,13 @@ void main() {
 }
 
 /// What schema 17 (FR-M-069, FR-M-072) added: why a photo upload failed and when it was last tried; the promise
-/// follow-up chain.
+/// follow-up chain; the prospects table.
 Future<void> _dropV17(AppDatabase db) async {
   await db.customStatement('ALTER TABLE media_queue DROP COLUMN last_error');
   await db.customStatement('ALTER TABLE media_queue DROP COLUMN last_attempt_at');
   await db.customStatement('ALTER TABLE promises DROP COLUMN follow_up_of');
   await db.customStatement('ALTER TABLE promises DROP COLUMN attempt');
+  await db.customStatement('DROP TABLE prospects');
 }
 
 /// What schema 16 (contract 1.44.0, FR-M-068) added: the server's month activity and the payment referrer.

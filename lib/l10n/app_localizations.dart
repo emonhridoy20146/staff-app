@@ -6631,6 +6631,240 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{amount} · was due {date}'**
   String todayBrokenRow(String amount, String date);
+
+  /// No description provided for @prospectsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Possible customers'**
+  String get prospectsTitle;
+
+  /// No description provided for @prospectsMeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'People who may buy: note them, the office follows up'**
+  String get prospectsMeSubtitle;
+
+  /// No description provided for @prospectAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get prospectAdd;
+
+  /// No description provided for @prospectsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No possible customers yet'**
+  String get prospectsEmpty;
+
+  /// No description provided for @prospectsEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Met someone who may buy? Add them here, even without internet.'**
+  String get prospectsEmptyBody;
+
+  /// No description provided for @prospectStatusNew.
+  ///
+  /// In en, this message translates to:
+  /// **'New'**
+  String get prospectStatusNew;
+
+  /// No description provided for @prospectStatusContacted.
+  ///
+  /// In en, this message translates to:
+  /// **'Contacted'**
+  String get prospectStatusContacted;
+
+  /// No description provided for @prospectStatusConverted.
+  ///
+  /// In en, this message translates to:
+  /// **'Became a customer'**
+  String get prospectStatusConverted;
+
+  /// No description provided for @prospectStatusClosed.
+  ///
+  /// In en, this message translates to:
+  /// **'Closed'**
+  String get prospectStatusClosed;
+
+  /// No description provided for @prospectByMe.
+  ///
+  /// In en, this message translates to:
+  /// **'you'**
+  String get prospectByMe;
+
+  /// No description provided for @prospectAddedBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Added by {name} · {time}'**
+  String prospectAddedBy(String name, String time);
+
+  /// No description provided for @prospectHasLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Location saved'**
+  String get prospectHasLocation;
+
+  /// No description provided for @prospectWaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting to be sent'**
+  String get prospectWaiting;
+
+  /// No description provided for @prospectRefused.
+  ///
+  /// In en, this message translates to:
+  /// **'Not accepted by the server: {code}'**
+  String prospectRefused(String code);
+
+  /// No description provided for @prospectEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Change'**
+  String get prospectEdit;
+
+  /// No description provided for @prospectNewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New possible customer'**
+  String get prospectNewTitle;
+
+  /// No description provided for @prospectEditTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Change possible customer'**
+  String get prospectEditTitle;
+
+  /// No description provided for @prospectName.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get prospectName;
+
+  /// No description provided for @prospectPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Mobile number'**
+  String get prospectPhone;
+
+  /// No description provided for @prospectPhoneMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Another mobile number (optional)'**
+  String get prospectPhoneMore;
+
+  /// No description provided for @prospectAddPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a number'**
+  String get prospectAddPhone;
+
+  /// No description provided for @prospectAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Address (optional)'**
+  String get prospectAddress;
+
+  /// No description provided for @prospectNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Note (optional)'**
+  String get prospectNote;
+
+  /// No description provided for @prospectLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Save where I am now'**
+  String get prospectLocation;
+
+  /// No description provided for @prospectLocationHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Only if you are with the person now'**
+  String get prospectLocationHint;
+
+  /// No description provided for @prospectLocationOffDuty.
+  ///
+  /// In en, this message translates to:
+  /// **'Location is used only while you are on duty'**
+  String get prospectLocationOffDuty;
+
+  /// No description provided for @prospectSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved. It goes to the office when there is internet.'**
+  String get prospectSaved;
+
+  /// No description provided for @prospectOfflineHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Works without internet. You can change it until the office acts on it.'**
+  String get prospectOfflineHint;
+
+  /// No description provided for @prospectErrName.
+  ///
+  /// In en, this message translates to:
+  /// **'Write a name'**
+  String get prospectErrName;
+
+  /// No description provided for @prospectErrNameLong.
+  ///
+  /// In en, this message translates to:
+  /// **'The name is too long (at most 80 letters)'**
+  String get prospectErrNameLong;
+
+  /// No description provided for @prospectErrPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Write at least one mobile number'**
+  String get prospectErrPhone;
+
+  /// No description provided for @prospectErrPhoneInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'A mobile number is not valid (01XXXXXXXXX)'**
+  String get prospectErrPhoneInvalid;
+
+  /// No description provided for @prospectErrPhoneRepeated.
+  ///
+  /// In en, this message translates to:
+  /// **'The same number is written twice'**
+  String get prospectErrPhoneRepeated;
+
+  /// No description provided for @prospectErrAddressLong.
+  ///
+  /// In en, this message translates to:
+  /// **'The address is too long (at most 200 letters)'**
+  String get prospectErrAddressLong;
+
+  /// No description provided for @prospectErrNoteLong.
+  ///
+  /// In en, this message translates to:
+  /// **'The note is too long (at most 500 letters)'**
+  String get prospectErrNoteLong;
+
+  /// No description provided for @prospectErrNotEditable.
+  ///
+  /// In en, this message translates to:
+  /// **'This one can no longer be changed'**
+  String get prospectErrNotEditable;
+
+  /// No description provided for @prospectRefusedNotNew.
+  ///
+  /// In en, this message translates to:
+  /// **'Your change was not saved: the office had already acted on it'**
+  String get prospectRefusedNotNew;
+
+  /// No description provided for @prospectRefusedNotOwner.
+  ///
+  /// In en, this message translates to:
+  /// **'Only the person who added it can change it'**
+  String get prospectRefusedNotOwner;
+
+  /// No description provided for @prospectRefusedInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'The server did not accept the name or a number'**
+  String get prospectRefusedInvalid;
 }
 
 class _AppLocalizationsDelegate

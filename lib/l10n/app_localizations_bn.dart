@@ -3787,4 +3787,131 @@ class AppLocalizationsBn extends AppLocalizations {
   String todayBrokenRow(String amount, String date) {
     return '$amount · $date তারিখে দেওয়ার কথা ছিল';
   }
+
+  @override
+  String get prospectsTitle => 'সম্ভাব্য গ্রাহক';
+
+  @override
+  String get prospectsMeSubtitle =>
+      'যারা কিনতে পারেন: লিখে রাখুন, অফিস যোগাযোগ করবে';
+
+  @override
+  String get prospectAdd => 'যোগ করুন';
+
+  @override
+  String get prospectsEmpty => 'এখনো কোনো সম্ভাব্য গ্রাহক নেই';
+
+  @override
+  String get prospectsEmptyBody =>
+      'কেউ কিনতে পারেন মনে হলে এখানে যোগ করুন, ইন্টারনেট ছাড়াও।';
+
+  @override
+  String get prospectStatusNew => 'নতুন';
+
+  @override
+  String get prospectStatusContacted => 'যোগাযোগ হয়েছে';
+
+  @override
+  String get prospectStatusConverted => 'গ্রাহক হয়েছেন';
+
+  @override
+  String get prospectStatusClosed => 'বন্ধ';
+
+  @override
+  String get prospectByMe => 'আপনি';
+
+  @override
+  String prospectAddedBy(String name, String time) {
+    return 'যোগ করেছেন $name · $time';
+  }
+
+  @override
+  String get prospectHasLocation => 'জায়গা সংরক্ষিত';
+
+  @override
+  String get prospectWaiting => 'পাঠানোর অপেক্ষায়';
+
+  @override
+  String prospectRefused(String code) {
+    return 'সার্ভার গ্রহণ করেনি: $code';
+  }
+
+  @override
+  String get prospectEdit => 'পরিবর্তন';
+
+  @override
+  String get prospectNewTitle => 'নতুন সম্ভাব্য গ্রাহক';
+
+  @override
+  String get prospectEditTitle => 'সম্ভাব্য গ্রাহক পরিবর্তন';
+
+  @override
+  String get prospectName => 'নাম';
+
+  @override
+  String get prospectPhone => 'মোবাইল নম্বর';
+
+  @override
+  String get prospectPhoneMore => 'আরেকটি মোবাইল নম্বর (ঐচ্ছিক)';
+
+  @override
+  String get prospectAddPhone => 'নম্বর যোগ করুন';
+
+  @override
+  String get prospectAddress => 'ঠিকানা (ঐচ্ছিক)';
+
+  @override
+  String get prospectNote => 'নোট (ঐচ্ছিক)';
+
+  @override
+  String get prospectLocation => 'এখন যেখানে আছি তা সংরক্ষণ';
+
+  @override
+  String get prospectLocationHint => 'শুধু যদি এখন তাঁর কাছে থাকেন';
+
+  @override
+  String get prospectLocationOffDuty => 'ডিউটিতে থাকলেই শুধু জায়গা নেওয়া হয়';
+
+  @override
+  String get prospectSaved => 'সংরক্ষিত। ইন্টারনেট পেলে অফিসে যাবে।';
+
+  @override
+  String get prospectOfflineHint =>
+      'ইন্টারনেট ছাড়াও চলে। অফিস ব্যবস্থা না নেওয়া পর্যন্ত পরিবর্তন করা যায়।';
+
+  @override
+  String get prospectErrName => 'একটি নাম লিখুন';
+
+  @override
+  String get prospectErrNameLong => 'নাম খুব বড় (সর্বোচ্চ ৮০ অক্ষর)';
+
+  @override
+  String get prospectErrPhone => 'অন্তত একটি মোবাইল নম্বর লিখুন';
+
+  @override
+  String get prospectErrPhoneInvalid =>
+      'একটি মোবাইল নম্বর সঠিক নয় (01XXXXXXXXX)';
+
+  @override
+  String get prospectErrPhoneRepeated => 'একই নম্বর দুবার লেখা হয়েছে';
+
+  @override
+  String get prospectErrAddressLong => 'ঠিকানা খুব বড় (সর্বোচ্চ ২০০ অক্ষর)';
+
+  @override
+  String get prospectErrNoteLong => 'নোট খুব বড় (সর্বোচ্চ ৫০০ অক্ষর)';
+
+  @override
+  String get prospectErrNotEditable => 'এটি আর পরিবর্তন করা যাবে না';
+
+  @override
+  String get prospectRefusedNotNew =>
+      'আপনার পরিবর্তন সংরক্ষিত হয়নি: অফিস আগেই ব্যবস্থা নিয়েছে';
+
+  @override
+  String get prospectRefusedNotOwner =>
+      'যিনি যোগ করেছেন শুধু তিনিই পরিবর্তন করতে পারেন';
+
+  @override
+  String get prospectRefusedInvalid => 'সার্ভার নাম বা কোনো নম্বর গ্রহণ করেনি';
 }

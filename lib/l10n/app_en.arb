@@ -2290,5 +2290,50 @@
   "todayBrokenRow": "{amount} · was due {date}",
   "@todayBrokenRow": {
     "placeholders": { "amount": { "type": "String" }, "date": { "type": "String" } }
-  }
+  },
+  "prospectsTitle": "Possible customers",
+  "prospectsMeSubtitle": "People who may buy: note them, the office follows up",
+  "prospectAdd": "Add",
+  "prospectsEmpty": "No possible customers yet",
+  "prospectsEmptyBody": "Met someone who may buy? Add them here, even without internet.",
+  "prospectStatusNew": "New",
+  "prospectStatusContacted": "Contacted",
+  "prospectStatusConverted": "Became a customer",
+  "prospectStatusClosed": "Closed",
+  "prospectByMe": "you",
+  "prospectAddedBy": "Added by {name} · {time}",
+  "@prospectAddedBy": {
+    "placeholders": { "name": { "type": "String" }, "time": { "type": "String" } }
+  },
+  "prospectHasLocation": "Location saved",
+  "prospectWaiting": "Waiting to be sent",
+  "prospectRefused": "Not accepted by the server: {code}",
+  "@prospectRefused": {
+    "placeholders": { "code": { "type": "String" } }
+  },
+  "prospectEdit": "Change",
+  "prospectNewTitle": "New possible customer",
+  "prospectEditTitle": "Change possible customer",
+  "prospectName": "Name",
+  "prospectPhone": "Mobile number",
+  "prospectPhoneMore": "Another mobile number (optional)",
+  "prospectAddPhone": "Add a number",
+  "prospectAddress": "Address (optional)",
+  "prospectNote": "Note (optional)",
+  "prospectLocation": "Save where I am now",
+  "prospectLocationHint": "Only if you are with the person now",
+  "prospectLocationOffDuty": "Location is used only while you are on duty",
+  "prospectSaved": "Saved. It goes to the office when there is internet.",
+  "prospectOfflineHint": "Works without internet. You can change it until the office acts on it.",
+  "prospectErrName": "Write a name",
+  "prospectErrNameLong": "The name is too long (at most 80 letters)",
+  "prospectErrPhone": "Write at least one mobile number",
+  "prospectErrPhoneInvalid": "A mobile number is not valid (01XXXXXXXXX)",
+  "prospectErrPhoneRepeated": "The same number is written twice",
+  "prospectErrAddressLong": "The address is too long (at most 200 letters)",
+  "prospectErrNoteLong": "The note is too long (at most 500 letters)",
+  "prospectErrNotEditable": "This one can no longer be changed",
+  "prospectRefusedNotNew": "Your change was not saved: the office had already acted on it",
+  "prospectRefusedNotOwner": "Only the person who added it can change it",
+  "prospectRefusedInvalid": "The server did not accept the name or a number"
 }

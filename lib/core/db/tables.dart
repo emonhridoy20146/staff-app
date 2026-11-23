@@ -770,3 +770,34 @@ class MapPlaces extends Table {
   @override
   Set<Column> get primaryKey => {localId};
 }
+
+/// A possible customer (prospect) a staff member noted in the field (v17, contract 1.45.0, FR-M-073). Mine are
+/// saved here at once (`client_id` = my clientId) and sent as the `prospect` mutation; the server sends mine
+/// (and, when it decides so, others') on the change feed. Never deleted while unsent.
+@DataClassName('ProspectRow')
+class Prospects extends Table {
+  TextColumn get clientId => text()();
+  TextColumn get serverId => text().nullable()();
+  TextColumn get name => text()();
+  /// JSON list of phone numbers as typed (normalized to 01XXXXXXXXX).
+  TextColumn get phonesJson => text().withDefault(const Constant('[]'))();
+  TextColumn get address => text().nullable()();
+  TextColumn get note => text().nullable()();
+  RealColumn get lat => real().nullable()();
+  RealColumn get lng => real().nullable()();
+  RealColumn get accuracyM => real().nullable()();
+  /// The server's status (`new` until the office acts; unknown values kept as sent).
+  TextColumn get status => text().withDefault(const Constant('new'))();
+  TextColumn get createdById => text().nullable()();
+  TextColumn get createdByName => text().nullable()();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get updatedAt => dateTime().nullable()();
+  /// `queued` (not on the server yet), `synced`, `failed` (refused; kept, shown in Problems).
+  TextColumn get syncState => text().withDefault(const Constant('queued'))();
+  /// An edit of mine not yet sent: `queued`; refused: `failed`; else `none`.
+  TextColumn get editState => text().withDefault(const Constant('none'))();
+  TextColumn get errorCode => text().nullable()();
+
+  @override
+  Set<Column> get primaryKey => {clientId};
+}

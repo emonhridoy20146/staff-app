@@ -3809,4 +3809,136 @@ class AppLocalizationsEn extends AppLocalizations {
   String todayBrokenRow(String amount, String date) {
     return '$amount · was due $date';
   }
+
+  @override
+  String get prospectsTitle => 'Possible customers';
+
+  @override
+  String get prospectsMeSubtitle =>
+      'People who may buy: note them, the office follows up';
+
+  @override
+  String get prospectAdd => 'Add';
+
+  @override
+  String get prospectsEmpty => 'No possible customers yet';
+
+  @override
+  String get prospectsEmptyBody =>
+      'Met someone who may buy? Add them here, even without internet.';
+
+  @override
+  String get prospectStatusNew => 'New';
+
+  @override
+  String get prospectStatusContacted => 'Contacted';
+
+  @override
+  String get prospectStatusConverted => 'Became a customer';
+
+  @override
+  String get prospectStatusClosed => 'Closed';
+
+  @override
+  String get prospectByMe => 'you';
+
+  @override
+  String prospectAddedBy(String name, String time) {
+    return 'Added by $name · $time';
+  }
+
+  @override
+  String get prospectHasLocation => 'Location saved';
+
+  @override
+  String get prospectWaiting => 'Waiting to be sent';
+
+  @override
+  String prospectRefused(String code) {
+    return 'Not accepted by the server: $code';
+  }
+
+  @override
+  String get prospectEdit => 'Change';
+
+  @override
+  String get prospectNewTitle => 'New possible customer';
+
+  @override
+  String get prospectEditTitle => 'Change possible customer';
+
+  @override
+  String get prospectName => 'Name';
+
+  @override
+  String get prospectPhone => 'Mobile number';
+
+  @override
+  String get prospectPhoneMore => 'Another mobile number (optional)';
+
+  @override
+  String get prospectAddPhone => 'Add a number';
+
+  @override
+  String get prospectAddress => 'Address (optional)';
+
+  @override
+  String get prospectNote => 'Note (optional)';
+
+  @override
+  String get prospectLocation => 'Save where I am now';
+
+  @override
+  String get prospectLocationHint => 'Only if you are with the person now';
+
+  @override
+  String get prospectLocationOffDuty =>
+      'Location is used only while you are on duty';
+
+  @override
+  String get prospectSaved =>
+      'Saved. It goes to the office when there is internet.';
+
+  @override
+  String get prospectOfflineHint =>
+      'Works without internet. You can change it until the office acts on it.';
+
+  @override
+  String get prospectErrName => 'Write a name';
+
+  @override
+  String get prospectErrNameLong => 'The name is too long (at most 80 letters)';
+
+  @override
+  String get prospectErrPhone => 'Write at least one mobile number';
+
+  @override
+  String get prospectErrPhoneInvalid =>
+      'A mobile number is not valid (01XXXXXXXXX)';
+
+  @override
+  String get prospectErrPhoneRepeated => 'The same number is written twice';
+
+  @override
+  String get prospectErrAddressLong =>
+      'The address is too long (at most 200 letters)';
+
+  @override
+  String get prospectErrNoteLong =>
+      'The note is too long (at most 500 letters)';
+
+  @override
+  String get prospectErrNotEditable => 'This one can no longer be changed';
+
+  @override
+  String get prospectRefusedNotNew =>
+      'Your change was not saved: the office had already acted on it';
+
+  @override
+  String get prospectRefusedNotOwner =>
+      'Only the person who added it can change it';
+
+  @override
+  String get prospectRefusedInvalid =>
+      'The server did not accept the name or a number';
 }
