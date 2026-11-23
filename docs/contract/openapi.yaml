@@ -1737,6 +1737,7 @@ paths:
         clientId again answers 200 with the stored prospect (another user's clientId → 409 IDEMPOTENCY_MISMATCH).
         The branch is the creator's home branch, or `branchId` (in scope) for office users. `fromProspectId` copies nothing
         but records that this is a re-entry of an older prospect (the office "create new from old").
+        An unknown or out-of-scope `branchId` or `fromProspectId` is 400 VALIDATION_FAILED.
       requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/ProspectCreate' } } } }
       responses:
         '201': { description: Created, content: { application/json: { schema: { $ref: '#/components/schemas/Prospect' } } } }
@@ -1759,7 +1760,8 @@ paths:
       description: |
         Added in 1.45.0. prospect.manage. Edits the details and/or moves the status between new, contacted and dropped
         (converted only through /convert; a converted prospect is re-opened through /reopen). Every status change is kept
-        in `history`. Audited (`prospect.updated`).
+        in `history`. Audited (`prospect.updated`). Edit, convert and reopen answer 409 INVALID_STATE (reason PROSPECT_CHANGED)
+        when another change landed at the same moment; reload and retry. A repeat with nothing new changes nothing.
       parameters: [ { $ref: '#/components/parameters/Id' } ]
       requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/ProspectUpdate' } } } }
       responses:
@@ -3200,7 +3202,7 @@ components:
         promisedDate: { type: string, format: date }
         promisedAmountPoisha: { type: integer, minimum: 1 }
         note: { type: string }
-        followUpOf: { type: string, description: 'Added in 1.45.0 (FR-PRM-006). Id of the broken or partially kept promise this one follows up (same customer). Omit for a first promise' }
+        followUpOf: { type: [string, 'null'], description: 'Added in 1.45.0 (FR-PRM-006). Id of the broken or partially kept promise this one follows up (same customer). Omit for a first promise' }
     Promise:
       allOf:
         - $ref: '#/components/schemas/PromiseCreate'
@@ -3228,7 +3230,7 @@ components:
             customer: { type: object, properties: { id: { type: string }, name: { $ref: '#/components/schemas/I18nText' }, code: { type: string } } }
             user: { type: object, properties: { id: { type: string }, name: { type: string } } }
             businessDate: { type: string, format: date, description: 'Added in 1.45.0. Asia/Dhaka business date of checkInAt (the day filters `date` / `from` / `to` use)' }
-            checkInLocalTime: { type: string, pattern: '^\\d{2}:\\d{2}$', description: 'Added in 1.45.0. Asia/Dhaka wall-clock time of checkInAt, HH:mm (24 h), so a table can show date and time without converting' }
+            checkInLocalTime: { type: string, pattern: '^\d{2}:\d{2}$', description: 'Added in 1.45.0. Asia/Dhaka wall-clock time of checkInAt, HH:mm (24 h), so a table can show date and time without converting' }
     PromiseListItem:
       description: 'Promise plus display refs, returned by GET /promises (1.4.0)'
       allOf:
