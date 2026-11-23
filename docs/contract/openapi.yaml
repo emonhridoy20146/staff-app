@@ -1,11 +1,13 @@
 openapi: 3.1.0
 info:
   title: Howlader Field Operations API
-  version: 1.45.0
+  version: 1.46.0
   description: |
     Contract owned by field-api. Consumers (admin-web, staff-app) generate types from this file.
     Conventions (auth, pagination, idempotency, errors) are described in docs/05-api-contract.md.
     Money is integer poisha. Times are UTC ISO-8601; business dates are YYYY-MM-DD in Asia/Dhaka.
+    1.46.0 (additive): GET /customers takes `limit` up to 1000 and an optional 0-based `offset` (wins over `cursor`)
+    for a numbered pager; `nextCursor` unchanged; `total` (includeTotal=true) is exact, no longer capped at 10,000.
     1.45.0 (additive): dashboard statistics with `from`/`to` and list links (GET /dashboard/overview), `from`/`to` on
     GET /inbox and GET /activity, promise follow-ups (`followUpOf`, `followUpId`, `attempt`, `brokenWithoutFollowUp`),
     possible customers (`/prospects`, sync entity and mutation `prospect`, flag `module.prospects`),
@@ -530,9 +532,10 @@ paths:
         - { name: near, in: query, schema: { type: string, example: '22.7101,90.3705' } }
         - { name: radiusM, in: query, schema: { type: integer, default: 5000 } }
         - { name: sort, in: query, schema: { type: string, enum: [distance, -daysOverdue, name, -totalOutstanding, nextDueDate] } }
-        - $ref: '#/components/parameters/Limit'
-        - $ref: '#/components/parameters/Cursor'
-        - { name: includeTotal, in: query, schema: { type: boolean, default: false }, description: 'Return `total` (capped at 10,000). Added in 1.1.0' }
+        - { name: limit, in: query, schema: { type: integer, default: 50, minimum: 1, maximum: 1000 }, description: 'Rows per page. Maximum 1000 since 1.46.0 (was 200)' }
+        - { name: cursor, in: query, schema: { type: string }, description: 'Opaque `nextCursor` of the previous page. Ignored when `offset` is sent' }
+        - { name: offset, in: query, schema: { type: integer, minimum: 0, maximum: 1000000 }, description: 'Added in 1.46.0. 0-based row number to start at (page N of size L = `offset=(N-1)*L`); works with every filter and sort, wins over `cursor`. Past the end = empty `items`, `nextCursor` null. With sort=distance only the nearest 2000 in the radius are paged' }
+        - { name: includeTotal, in: query, schema: { type: boolean, default: false }, description: 'Return `total`, every customer the query matches (added in 1.1.0; exact since 1.46.0, was capped at 10,000)' }
         - $ref: '#/components/parameters/PayStateFilter'
         - $ref: '#/components/parameters/InvoiceKind'
         - $ref: '#/components/parameters/PaidThisMonth'
@@ -2661,8 +2664,8 @@ components:
       type: object
       properties:
         items: { type: array, items: { $ref: '#/components/schemas/CustomerListItem' } }
-        nextCursor: { type: [string, 'null'] }
-        total: { type: integer }
+        nextCursor: { type: [string, 'null'], description: 'Next page after this one (also when the page was asked with `offset`); null on the last page' }
+        total: { type: integer, minimum: 0, description: 'Only with includeTotal=true; exact since 1.46.0' }
         invoiceTotals:
           type: object
           description: 'Added in 1.24.0 (FR-CUS-018), only with includeTotal=true. Invoices of every customer the query matches (not one page): all, with a balance, and those by kind'
