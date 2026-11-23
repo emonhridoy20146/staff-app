@@ -2,4 +2,4 @@
 library;
 
 export 'manifest.dart';
-export 'src/promises.dart' show showPromiseSheet, recordPromise, cancelPromise, todayPromiseCountProvider, reminderIdFor;
+export 'src/promises.dart' show showPromiseSheet, recordPromise, brokenWithoutFollowUpProvider, watchBrokenWithoutFollowUp, BrokenPromisesCard, PromiseFollowUpButton, needsFollowUp, promiseServiceProvider, cancelPromise, todayPromiseCountProvider, reminderIdFor;

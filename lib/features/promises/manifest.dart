@@ -37,6 +37,8 @@ final promisesManifest = FeatureManifest(
       ],
     ),
   ],
+  // FR-M-072: broken promises without a follow-up, on Home.
+  todayCards: [TodayCardDef(id: 'broken-promises', order: 15, permission: Perm.promiseCreate, builder: (_) => const BrokenPromisesCard())],
   workLogSources: const [WorkLogSourceDef(id: 'promises', watch: watchPromiseWorkLog)],
   timelineSources: [
     TimelineSourceDef(
@@ -47,14 +49,22 @@ final promisesManifest = FeatureManifest(
         return combineLatest2(watchPromisesFor(ref, id), watchColleagueActivities(ref.read(databaseProvider), id, 'promise'), (rows, others) {
           final f = ref.read(fmtProvider);
           final myName = ref.read(sessionProvider).user?.name.of(lang);
+          // FR-M-072: a chain shows its attempt number on every promise in it (attempt 1 too, once followed up).
+          final inChain = {for (final p in rows) if (p.followUpOf != null) p.followUpOf!};
           return [
             for (final p in rows)
               TimelineEntry(
                 at: p.createdAt,
-                icon: Icons.handshake_rounded,
+                icon: p.attempt > 1 ? Icons.replay_rounded : Icons.handshake_rounded,
                 title: l.timelinePromise(f.money(p.promisedAmountPoisha), f.date(p.promisedDate)),
-                subtitle: [f.dateTime(p.createdAt), if ((p.createdByName ?? myName) != null) l.timelinePromiseBy((p.createdByName ?? myName)!), if (p.note != null) p.note!].join(' · '),
+                subtitle: [
+                  if (p.attempt > 1 || inChain.contains(p.serverId) || inChain.contains(p.clientId)) l.promiseAttempt(f.num(p.attempt)),
+                  f.dateTime(p.createdAt),
+                  if ((p.createdByName ?? myName) != null) l.timelinePromiseBy((p.createdByName ?? myName)!),
+                  if (p.note != null) p.note!,
+                ].join(' · '),
                 statusChip: Builder(builder: (c) => promiseStatusChip(c, p)),
+                trailing: needsFollowUp(p, rows) && ref.read(accessProvider).can(Perm.promiseCreate) ? PromiseFollowUpButton(promise: p) : null,
               ),
             for (final o in others)
               TimelineEntry(

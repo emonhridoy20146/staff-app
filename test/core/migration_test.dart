@@ -486,7 +486,7 @@ void main() {
     await dir.delete(recursive: true);
   });
 
-  test('migrates a schema 16 database: photo error columns are added empty, queued photos and the outbox stay', () async {
+  test('migrates a schema 16 database: photo error and promise chain columns are added, queued photos, promises and the outbox stay', () async {
     final dir = await Directory.systemTemp.createTemp('mig16');
     final file = File('${dir.path}/app.db');
     final v16 = AppDatabase(NativeDatabase(file));
@@ -495,6 +495,7 @@ void main() {
     await v16.customStatement(
         "INSERT INTO media_queue (client_id, kind, local_path, sha256, size_bytes, captured_at, owner_entity, owner_client_id, state, attempts, next_attempt_at) VALUES ('md-16', 'selfie', '/x/md-16.jpg', 'ab', 10, 0, 'attendance_event', 'a-16', 'failed', 7, 900)");
     await v16.customStatement("INSERT INTO outbox (mutation_id, entity, op, payload_json, created_at) VALUES ('a-16', 'attendance_event', 'create', '{}', 0)");
+    await v16.customStatement("INSERT INTO promises (client_id, server_id, customer_id, promised_date, promised_amount_poisha, status, created_at, sync_state) VALUES ('p-16', 'promise-p-16', 'c-16', '2026-11-20', 50000, 'broken', 0, 'synced')");
     await v16.customStatement('PRAGMA user_version = 16');
     await v16.close();
 
@@ -503,6 +504,8 @@ void main() {
     final m = (await v17.select(v17.mediaQueue).get()).single;
     expect([m.clientId, m.state, m.attempts, m.lastError, m.lastAttemptAt], ['md-16', 'failed', 7, null, null]);
     expect((await v17.select(v17.outbox).get()).single.mutationId, 'a-16');
+    final p = (await v17.select(v17.promises).get()).single;
+    expect([p.clientId, p.status, p.followUpOf, p.attempt], ['p-16', 'broken', null, 1]);
     await v17.customStatement("UPDATE media_queue SET last_error = 'presign:VALIDATION_FAILED' WHERE client_id = 'md-16'");
     expect((await v17.select(v17.mediaQueue).get()).single.lastError, 'presign:VALIDATION_FAILED');
     await v17.close();
@@ -510,10 +513,13 @@ void main() {
   });
 }
 
-/// What schema 17 (FR-M-069) added: why a photo upload failed and when it was last tried.
+/// What schema 17 (FR-M-069, FR-M-072) added: why a photo upload failed and when it was last tried; the promise
+/// follow-up chain.
 Future<void> _dropV17(AppDatabase db) async {
   await db.customStatement('ALTER TABLE media_queue DROP COLUMN last_error');
   await db.customStatement('ALTER TABLE media_queue DROP COLUMN last_attempt_at');
+  await db.customStatement('ALTER TABLE promises DROP COLUMN follow_up_of');
+  await db.customStatement('ALTER TABLE promises DROP COLUMN attempt');
 }
 
 /// What schema 16 (contract 1.44.0, FR-M-068) added: the server's month activity and the payment referrer.

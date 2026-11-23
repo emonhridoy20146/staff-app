@@ -11863,6 +11863,29 @@ class $PromisesTable extends Promises
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _followUpOfMeta = const VerificationMeta(
+    'followUpOf',
+  );
+  @override
+  late final GeneratedColumn<String> followUpOf = GeneratedColumn<String>(
+    'follow_up_of',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _attemptMeta = const VerificationMeta(
+    'attempt',
+  );
+  @override
+  late final GeneratedColumn<int> attempt = GeneratedColumn<int>(
+    'attempt',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     clientId,
@@ -11878,6 +11901,8 @@ class $PromisesTable extends Promises
     syncState,
     reminderScheduled,
     createdByName,
+    followUpOf,
+    attempt,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -11994,6 +12019,21 @@ class $PromisesTable extends Promises
         ),
       );
     }
+    if (data.containsKey('follow_up_of')) {
+      context.handle(
+        _followUpOfMeta,
+        followUpOf.isAcceptableOrUnknown(
+          data['follow_up_of']!,
+          _followUpOfMeta,
+        ),
+      );
+    }
+    if (data.containsKey('attempt')) {
+      context.handle(
+        _attemptMeta,
+        attempt.isAcceptableOrUnknown(data['attempt']!, _attemptMeta),
+      );
+    }
     return context;
   }
 
@@ -12055,6 +12095,14 @@ class $PromisesTable extends Promises
         DriftSqlType.string,
         data['${effectivePrefix}created_by_name'],
       ),
+      followUpOf: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}follow_up_of'],
+      ),
+      attempt: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}attempt'],
+      )!,
     );
   }
 
@@ -12081,6 +12129,11 @@ class PromiseRow extends DataClass implements Insertable<PromiseRow> {
   /// Who made the promise (v12, contract 1.31.0); null = me / not known. A colleague's promise on
   /// a customer assigned to me stays here (it is mine to follow up) and says who made it.
   final String? createdByName;
+
+  /// Follow-up of a broken promise (v17, contract 1.45.0, FR-M-072): the broken promise's server id (or its
+  /// clientId while unsent), and the attempt number in the chain (1 = the first promise).
+  final String? followUpOf;
+  final int attempt;
   const PromiseRow({
     required this.clientId,
     this.serverId,
@@ -12095,6 +12148,8 @@ class PromiseRow extends DataClass implements Insertable<PromiseRow> {
     required this.syncState,
     required this.reminderScheduled,
     this.createdByName,
+    this.followUpOf,
+    required this.attempt,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -12120,6 +12175,10 @@ class PromiseRow extends DataClass implements Insertable<PromiseRow> {
     if (!nullToAbsent || createdByName != null) {
       map['created_by_name'] = Variable<String>(createdByName);
     }
+    if (!nullToAbsent || followUpOf != null) {
+      map['follow_up_of'] = Variable<String>(followUpOf);
+    }
+    map['attempt'] = Variable<int>(attempt);
     return map;
   }
 
@@ -12144,6 +12203,10 @@ class PromiseRow extends DataClass implements Insertable<PromiseRow> {
       createdByName: createdByName == null && nullToAbsent
           ? const Value.absent()
           : Value(createdByName),
+      followUpOf: followUpOf == null && nullToAbsent
+          ? const Value.absent()
+          : Value(followUpOf),
+      attempt: Value(attempt),
     );
   }
 
@@ -12168,6 +12231,8 @@ class PromiseRow extends DataClass implements Insertable<PromiseRow> {
       syncState: serializer.fromJson<String>(json['syncState']),
       reminderScheduled: serializer.fromJson<bool>(json['reminderScheduled']),
       createdByName: serializer.fromJson<String?>(json['createdByName']),
+      followUpOf: serializer.fromJson<String?>(json['followUpOf']),
+      attempt: serializer.fromJson<int>(json['attempt']),
     );
   }
   @override
@@ -12187,6 +12252,8 @@ class PromiseRow extends DataClass implements Insertable<PromiseRow> {
       'syncState': serializer.toJson<String>(syncState),
       'reminderScheduled': serializer.toJson<bool>(reminderScheduled),
       'createdByName': serializer.toJson<String?>(createdByName),
+      'followUpOf': serializer.toJson<String?>(followUpOf),
+      'attempt': serializer.toJson<int>(attempt),
     };
   }
 
@@ -12204,6 +12271,8 @@ class PromiseRow extends DataClass implements Insertable<PromiseRow> {
     String? syncState,
     bool? reminderScheduled,
     Value<String?> createdByName = const Value.absent(),
+    Value<String?> followUpOf = const Value.absent(),
+    int? attempt,
   }) => PromiseRow(
     clientId: clientId ?? this.clientId,
     serverId: serverId.present ? serverId.value : this.serverId,
@@ -12220,6 +12289,8 @@ class PromiseRow extends DataClass implements Insertable<PromiseRow> {
     createdByName: createdByName.present
         ? createdByName.value
         : this.createdByName,
+    followUpOf: followUpOf.present ? followUpOf.value : this.followUpOf,
+    attempt: attempt ?? this.attempt,
   );
   PromiseRow copyWithCompanion(PromisesCompanion data) {
     return PromiseRow(
@@ -12248,6 +12319,10 @@ class PromiseRow extends DataClass implements Insertable<PromiseRow> {
       createdByName: data.createdByName.present
           ? data.createdByName.value
           : this.createdByName,
+      followUpOf: data.followUpOf.present
+          ? data.followUpOf.value
+          : this.followUpOf,
+      attempt: data.attempt.present ? data.attempt.value : this.attempt,
     );
   }
 
@@ -12266,7 +12341,9 @@ class PromiseRow extends DataClass implements Insertable<PromiseRow> {
           ..write('createdAt: $createdAt, ')
           ..write('syncState: $syncState, ')
           ..write('reminderScheduled: $reminderScheduled, ')
-          ..write('createdByName: $createdByName')
+          ..write('createdByName: $createdByName, ')
+          ..write('followUpOf: $followUpOf, ')
+          ..write('attempt: $attempt')
           ..write(')'))
         .toString();
   }
@@ -12286,6 +12363,8 @@ class PromiseRow extends DataClass implements Insertable<PromiseRow> {
     syncState,
     reminderScheduled,
     createdByName,
+    followUpOf,
+    attempt,
   );
   @override
   bool operator ==(Object other) =>
@@ -12303,7 +12382,9 @@ class PromiseRow extends DataClass implements Insertable<PromiseRow> {
           other.createdAt == this.createdAt &&
           other.syncState == this.syncState &&
           other.reminderScheduled == this.reminderScheduled &&
-          other.createdByName == this.createdByName);
+          other.createdByName == this.createdByName &&
+          other.followUpOf == this.followUpOf &&
+          other.attempt == this.attempt);
 }
 
 class PromisesCompanion extends UpdateCompanion<PromiseRow> {
@@ -12320,6 +12401,8 @@ class PromisesCompanion extends UpdateCompanion<PromiseRow> {
   final Value<String> syncState;
   final Value<bool> reminderScheduled;
   final Value<String?> createdByName;
+  final Value<String?> followUpOf;
+  final Value<int> attempt;
   final Value<int> rowid;
   const PromisesCompanion({
     this.clientId = const Value.absent(),
@@ -12335,6 +12418,8 @@ class PromisesCompanion extends UpdateCompanion<PromiseRow> {
     this.syncState = const Value.absent(),
     this.reminderScheduled = const Value.absent(),
     this.createdByName = const Value.absent(),
+    this.followUpOf = const Value.absent(),
+    this.attempt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   PromisesCompanion.insert({
@@ -12351,6 +12436,8 @@ class PromisesCompanion extends UpdateCompanion<PromiseRow> {
     this.syncState = const Value.absent(),
     this.reminderScheduled = const Value.absent(),
     this.createdByName = const Value.absent(),
+    this.followUpOf = const Value.absent(),
+    this.attempt = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : clientId = Value(clientId),
        customerId = Value(customerId),
@@ -12371,6 +12458,8 @@ class PromisesCompanion extends UpdateCompanion<PromiseRow> {
     Expression<String>? syncState,
     Expression<bool>? reminderScheduled,
     Expression<String>? createdByName,
+    Expression<String>? followUpOf,
+    Expression<int>? attempt,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -12388,6 +12477,8 @@ class PromisesCompanion extends UpdateCompanion<PromiseRow> {
       if (syncState != null) 'sync_state': syncState,
       if (reminderScheduled != null) 'reminder_scheduled': reminderScheduled,
       if (createdByName != null) 'created_by_name': createdByName,
+      if (followUpOf != null) 'follow_up_of': followUpOf,
+      if (attempt != null) 'attempt': attempt,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -12406,6 +12497,8 @@ class PromisesCompanion extends UpdateCompanion<PromiseRow> {
     Value<String>? syncState,
     Value<bool>? reminderScheduled,
     Value<String?>? createdByName,
+    Value<String?>? followUpOf,
+    Value<int>? attempt,
     Value<int>? rowid,
   }) {
     return PromisesCompanion(
@@ -12422,6 +12515,8 @@ class PromisesCompanion extends UpdateCompanion<PromiseRow> {
       syncState: syncState ?? this.syncState,
       reminderScheduled: reminderScheduled ?? this.reminderScheduled,
       createdByName: createdByName ?? this.createdByName,
+      followUpOf: followUpOf ?? this.followUpOf,
+      attempt: attempt ?? this.attempt,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -12468,6 +12563,12 @@ class PromisesCompanion extends UpdateCompanion<PromiseRow> {
     if (createdByName.present) {
       map['created_by_name'] = Variable<String>(createdByName.value);
     }
+    if (followUpOf.present) {
+      map['follow_up_of'] = Variable<String>(followUpOf.value);
+    }
+    if (attempt.present) {
+      map['attempt'] = Variable<int>(attempt.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -12490,6 +12591,8 @@ class PromisesCompanion extends UpdateCompanion<PromiseRow> {
           ..write('syncState: $syncState, ')
           ..write('reminderScheduled: $reminderScheduled, ')
           ..write('createdByName: $createdByName, ')
+          ..write('followUpOf: $followUpOf, ')
+          ..write('attempt: $attempt, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -28867,6 +28970,8 @@ typedef $$PromisesTableCreateCompanionBuilder = PromisesCompanion Function({
   Value<String> syncState,
   Value<bool> reminderScheduled,
   Value<String?> createdByName,
+  Value<String?> followUpOf,
+  Value<int> attempt,
   Value<int> rowid,
 });
 typedef $$PromisesTableUpdateCompanionBuilder = PromisesCompanion Function({
@@ -28883,6 +28988,8 @@ typedef $$PromisesTableUpdateCompanionBuilder = PromisesCompanion Function({
   Value<String> syncState,
   Value<bool> reminderScheduled,
   Value<String?> createdByName,
+  Value<String?> followUpOf,
+  Value<int> attempt,
   Value<int> rowid,
 });
 
@@ -28957,6 +29064,16 @@ class $$PromisesTableFilterComposer
 
   ColumnFilters<String> get createdByName => $composableBuilder(
     column: $table.createdByName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get followUpOf => $composableBuilder(
+    column: $table.followUpOf,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get attempt => $composableBuilder(
+    column: $table.attempt,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -29034,6 +29151,16 @@ class $$PromisesTableOrderingComposer
     column: $table.createdByName,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get followUpOf => $composableBuilder(
+    column: $table.followUpOf,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get attempt => $composableBuilder(
+    column: $table.attempt,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$PromisesTableAnnotationComposer
@@ -29095,6 +29222,14 @@ class $$PromisesTableAnnotationComposer
     column: $table.createdByName,
     builder: (column) => column,
   );
+
+  GeneratedColumn<String> get followUpOf => $composableBuilder(
+    column: $table.followUpOf,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get attempt =>
+      $composableBuilder(column: $table.attempt, builder: (column) => column);
 }
 
 class $$PromisesTableTableManager
@@ -29141,6 +29276,8 @@ class $$PromisesTableTableManager
                 Value<String> syncState = const Value.absent(),
                 Value<bool> reminderScheduled = const Value.absent(),
                 Value<String?> createdByName = const Value.absent(),
+                Value<String?> followUpOf = const Value.absent(),
+                Value<int> attempt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => PromisesCompanion(
                 clientId: clientId,
@@ -29156,6 +29293,8 @@ class $$PromisesTableTableManager
                 syncState: syncState,
                 reminderScheduled: reminderScheduled,
                 createdByName: createdByName,
+                followUpOf: followUpOf,
+                attempt: attempt,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -29173,6 +29312,8 @@ class $$PromisesTableTableManager
                 Value<String> syncState = const Value.absent(),
                 Value<bool> reminderScheduled = const Value.absent(),
                 Value<String?> createdByName = const Value.absent(),
+                Value<String?> followUpOf = const Value.absent(),
+                Value<int> attempt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => PromisesCompanion.insert(
                 clientId: clientId,
@@ -29188,6 +29329,8 @@ class $$PromisesTableTableManager
                 syncState: syncState,
                 reminderScheduled: reminderScheduled,
                 createdByName: createdByName,
+                followUpOf: followUpOf,
+                attempt: attempt,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

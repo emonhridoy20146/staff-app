@@ -3788,4 +3788,25 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get leaderboardMeSubtitle => 'Who collected the most this month';
+
+  @override
+  String get promiseFollowUpAction => 'New promise (follow-up)';
+
+  @override
+  String promiseFollowUpOf(String amount, String date) {
+    return 'Follow-up of the broken promise of $amount for $date';
+  }
+
+  @override
+  String promiseAttempt(String n) {
+    return 'Attempt $n';
+  }
+
+  @override
+  String get todayBrokenTitle => 'Broken promises to follow up';
+
+  @override
+  String todayBrokenRow(String amount, String date) {
+    return '$amount · was due $date';
+  }
 }

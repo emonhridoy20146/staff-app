@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:drift/drift.dart' hide Column;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:uuid/uuid.dart';
 
@@ -65,6 +66,8 @@ class PromisePullHandler implements PullHandler {
           status: Value((d['status'] as String?) ?? 'open'),
           note: Value(d['note'] as String?),
           createdByName: Value(isColleague(me: me, staffId: maker) ? d['createdByName'] as String? : null),
+          followUpOf: Value(d['followUpOf'] as String?),
+          attempt: Value(((d['attempt'] as num?) ?? 1).toInt()),
           createdAt: d['createdAt'] == null ? DateTime.fromMillisecondsSinceEpoch(0, isUtc: true) : DateTime.parse(d['createdAt'] as String).toUtc(),
           syncState: const Value('synced'),
         ));
@@ -112,10 +115,86 @@ final todayPromiseCountProvider = StreamProvider<int>((ref) {
   return q.map((r) => r.read(db.promises.clientId.count()) ?? 0).watchSingle();
 });
 
+/// The id a follow-up names: the server id once the promise is on the server, else its clientId.
+String promiseRefId(PromiseRow p) => p.serverId ?? p.clientId;
+
+/// A broken promise nobody has followed up yet (FR-M-072): no promise names it in `followUpOf`.
+bool needsFollowUp(PromiseRow p, Iterable<PromiseRow> all) =>
+    p.status == 'broken' && !all.any((q) => q.followUpOf != null && (q.followUpOf == p.serverId || q.followUpOf == p.clientId));
+
+/// The customer's latest broken promise without a follow-up, if any: a new promise on this customer follows it up.
+Future<PromiseRow?> brokenToFollowUp(AppDatabase db, String customerId) async {
+  final all = await (db.select(db.promises)..where((t) => t.customerId.equals(customerId))..orderBy([(t) => OrderingTerm.desc(t.createdAt)])).get();
+  for (final p in all) {
+    if (needsFollowUp(p, all)) return p;
+  }
+  return null;
+}
+
+/// Broken promises without a follow-up, oldest due first (Today card, FR-M-072).
+Stream<List<PromiseRow>> watchBrokenWithoutFollowUp(AppDatabase db) =>
+    (db.select(db.promises)..orderBy([(t) => OrderingTerm.asc(t.promisedDate)])).watch().map((all) => [for (final p in all) if (needsFollowUp(p, all)) p]);
+
+final brokenWithoutFollowUpProvider = StreamProvider<List<PromiseRow>>((ref) => watchBrokenWithoutFollowUp(ref.watch(databaseProvider)));
+
 /// Records a promise offline-first (FR-PRM-001). A new promise supersedes
 /// the open one locally; the server does the same on push.
+///
+/// Follow-up (contract 1.45.0, FR-M-072): when the customer has a broken promise without a follow-up, the new
+/// promise is its follow-up: it carries `followUpOf` (the broken promise's id) and the next `attempt` number.
+/// [followUpOf] names the broken promise explicitly (the "New promise (follow-up)" action).
 Future<void> recordPromise(
   WidgetRef ref, {
+  PromiseRow? followUpOf,
+  required String customerId,
+  required String date,
+  required int amountPoisha,
+  String? note,
+  String? erpPlanId,
+  required String reminderTitle,
+  required String reminderBody,
+}) =>
+    ref.read(promiseServiceProvider).record(
+          followUpOf: followUpOf,
+          customerId: customerId,
+          date: date,
+          amountPoisha: amountPoisha,
+          note: note,
+          erpPlanId: erpPlanId,
+          reminderTitle: reminderTitle,
+          reminderBody: reminderBody,
+        );
+
+/// Saving a promise from anywhere (screens use [recordPromise]; tests use this).
+class PromiseService {
+  PromiseService(this._ref);
+  final Ref _ref;
+  Future<void> record({
+    PromiseRow? followUpOf,
+    required String customerId,
+    required String date,
+    required int amountPoisha,
+    String? note,
+    String? erpPlanId,
+    required String reminderTitle,
+    required String reminderBody,
+  }) =>
+      _record(_ref,
+          followUpOf: followUpOf,
+          customerId: customerId,
+          date: date,
+          amountPoisha: amountPoisha,
+          note: note,
+          erpPlanId: erpPlanId,
+          reminderTitle: reminderTitle,
+          reminderBody: reminderBody);
+}
+
+final promiseServiceProvider = Provider<PromiseService>(PromiseService.new);
+
+Future<void> _record(
+  Ref ref, {
+  PromiseRow? followUpOf,
   required String customerId,
   required String date,
   required int amountPoisha,
@@ -129,6 +208,8 @@ Future<void> recordPromise(
   final at = ref.read(clockProvider).nowUtc();
   final repo = ref.read(customerRepositoryProvider);
   final open = await (db.select(db.promises)..where((t) => t.customerId.equals(customerId) & t.status.equals('open'))).get();
+  final prev = followUpOf ?? await brokenToFollowUp(db, customerId);
+  final attempt = prev == null ? 1 : prev.attempt + 1;
   await db.transaction(() async {
     for (final p in open) {
       await (db.update(db.promises)..where((t) => t.clientId.equals(p.clientId))).write(const PromisesCompanion(status: Value('superseded')));
@@ -141,6 +222,8 @@ Future<void> recordPromise(
           promisedAmountPoisha: amountPoisha,
           note: Value(note),
           createdAt: at,
+          followUpOf: Value(prev == null ? null : promiseRefId(prev)),
+          attempt: Value(attempt),
         ));
     await repo.applyLocalPromise(customerId, id: id, date: date, amountPoisha: amountPoisha);
     await ref.read(outboxWriterProvider).enqueue(mutationId: id, entity: 'promise', payload: {
@@ -150,7 +233,8 @@ Future<void> recordPromise(
       'promisedDate': date,
       'promisedAmountPoisha': amountPoisha,
       'note': ?note,
-    });
+      if (prev != null) 'followUpOf': promiseRefId(prev),
+    }, dependsOn: prev != null && prev.serverId == null ? [prev.clientId] : const []);
   });
   final reminders = ref.read(reminderSchedulerProvider);
   for (final p in open) {
@@ -200,16 +284,17 @@ AppStatus promiseStatusTone(String s) => switch (s) {
       _ => AppStatus.pending,
     };
 
-Future<void> showPromiseSheet(BuildContext context, String customerId) => showModalBottomSheet<void>(
+Future<void> showPromiseSheet(BuildContext context, String customerId, {PromiseRow? followUpOf}) => showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
-      builder: (_) => _PromiseSheet(customerId: customerId),
+      builder: (_) => _PromiseSheet(customerId: customerId, followUpOf: followUpOf),
     );
 
 class _PromiseSheet extends ConsumerStatefulWidget {
-  const _PromiseSheet({required this.customerId});
+  const _PromiseSheet({required this.customerId, this.followUpOf});
   final String customerId;
+  final PromiseRow? followUpOf;
   @override
   ConsumerState<_PromiseSheet> createState() => _PromiseSheetState();
 }
@@ -221,12 +306,19 @@ class _PromiseSheetState extends ConsumerState<_PromiseSheet> {
   String? _date;
   bool _busy = false;
   bool _prefilled = false;
+  PromiseRow? _broken;
 
   @override
   void initState() {
     super.initState();
     _today = ref.read(clockProvider).businessDate();
     _date = _plus(1);
+    _broken = widget.followUpOf;
+    if (_broken == null) {
+      unawaited(brokenToFollowUp(ref.read(databaseProvider), widget.customerId).then((p) {
+        if (mounted && p != null) setState(() => _broken = p);
+      }));
+    }
   }
 
   String _plus(int days) => businessDateOf(parseBusinessDate(_today).subtract(dhakaOffset).add(Duration(days: days, hours: 12)));
@@ -265,8 +357,16 @@ class _PromiseSheetState extends ConsumerState<_PromiseSheet> {
       padding: EdgeInsets.fromLTRB(Space.s24, 0, Space.s24, MediaQuery.of(context).viewInsets.bottom + Space.s24),
       child: SingleChildScrollView(
         child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          Text(l.promiseTitle, style: t.titleLarge),
+          Text(_broken == null ? l.promiseTitle : l.promiseFollowUpAction, style: t.titleLarge),
           if (customer != null) Text(customer.nameOf(Localizations.localeOf(context).languageCode), style: t.bodyMedium!.copyWith(color: cs.onSurfaceVariant)),
+          if (_broken != null) ...[
+            const SizedBox(height: Space.s12),
+            InfoBanner(
+              icon: Icons.replay_rounded,
+              tone: BannerTone.warning,
+              text: '${l.promiseFollowUpOf(f.money(_broken!.promisedAmountPoisha), f.date(_broken!.promisedDate))} · ${l.promiseAttempt(f.num(_broken!.attempt + 1))}',
+            ),
+          ],
           const SizedBox(height: Space.s16),
           Text(l.promiseDate, style: t.titleSmall),
           const SizedBox(height: Space.s8),
@@ -320,6 +420,7 @@ class _PromiseSheetState extends ConsumerState<_PromiseSheet> {
                     final note = _note.text.trim();
                     await recordPromise(
                       ref,
+                      followUpOf: _broken,
                       customerId: widget.customerId,
                       date: _date!,
                       amountPoisha: poisha,
@@ -343,4 +444,73 @@ class _PromiseSheetState extends ConsumerState<_PromiseSheet> {
 Widget promiseStatusChip(BuildContext context, PromiseRow p) {
   final l = AppLocalizations.of(context);
   return StatusBadge(promiseStatusTone(p.status), dense: true, label: p.syncState == 'queued' && p.status == 'open' ? l.statusQueued : promiseStatusLabel(l, p.status));
+}
+
+/// "New promise (follow-up)" on a broken promise that has none yet (FR-M-072); 48 dp.
+class PromiseFollowUpButton extends StatelessWidget {
+  const PromiseFollowUpButton({super.key, required this.promise});
+  final PromiseRow promise;
+  @override
+  Widget build(BuildContext context) => TextButton.icon(
+        style: TextButton.styleFrom(minimumSize: const Size(48, 48)),
+        onPressed: () => showPromiseSheet(context, promise.customerId, followUpOf: promise),
+        icon: const Icon(Icons.replay_rounded),
+        label: Text(AppLocalizations.of(context).promiseFollowUpAction),
+      );
+}
+
+/// Today: broken promises nobody has followed up (FR-M-072), so staff act on them. Nothing when there are none.
+class BrokenPromisesCard extends ConsumerWidget {
+  const BrokenPromisesCard({super.key});
+  static const _max = 5;
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final rows = ref.watch(brokenWithoutFollowUpProvider).value ?? const <PromiseRow>[];
+    if (rows.isEmpty) return const SizedBox.shrink();
+    final l = AppLocalizations.of(context);
+    final t = Theme.of(context).textTheme;
+    final cs = Theme.of(context).colorScheme;
+    return AppCard(
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          Icon(Icons.heart_broken_rounded, color: context.semanticColors.danger.fg),
+          const SizedBox(width: Space.s12),
+          Expanded(child: Text(l.todayBrokenTitle, style: t.titleMedium)),
+          Text(ref.watch(fmtProvider).num(rows.length), style: t.titleMedium!.copyWith(color: cs.error)),
+        ]),
+        for (final p in rows.take(_max)) _BrokenRow(promise: p),
+      ]),
+    );
+  }
+}
+
+class _BrokenRow extends ConsumerWidget {
+  const _BrokenRow({required this.promise});
+  final PromiseRow promise;
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context);
+    final f = ref.watch(fmtProvider);
+    final t = Theme.of(context).textTheme;
+    final cs = Theme.of(context).colorScheme;
+    final c = ref.watch(customerProvider(promise.customerId)).value;
+    final name = c?.nameOf(Localizations.localeOf(context).languageCode) ?? '';
+    // Text on top, the action below at the end: the action's words do not fit beside a name at 360 dp.
+    return Padding(
+      padding: const EdgeInsets.only(top: Space.s8),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        InkWell(
+          onTap: () => context.push('/customers/${promise.customerId}'),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 48),
+            child: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(name, style: t.titleSmall, maxLines: 1, overflow: TextOverflow.ellipsis),
+              Text(l.todayBrokenRow(f.money(promise.promisedAmountPoisha), f.date(promise.promisedDate)), style: t.bodySmall!.copyWith(color: cs.onSurfaceVariant)),
+            ]),
+          ),
+        ),
+        Align(alignment: AlignmentDirectional.centerEnd, child: PromiseFollowUpButton(promise: promise)),
+      ]),
+    );
+  }
 }

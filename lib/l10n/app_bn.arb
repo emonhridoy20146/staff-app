@@ -1083,5 +1083,10 @@
   "mediaStepUpload": "{reason} (ছবি পাঠানোর সময়)",
   "mediaStepConfirm": "{reason} (নিশ্চিত করার সময়)",
   "attNotRequired": "আপনার অ্যাকাউন্টে হাজিরা দিতে হয় না। এখানে কিছু করার নেই।",
-  "leaderboardMeSubtitle": "এই মাসে কে সবচেয়ে বেশি আদায় করেছেন"
+  "leaderboardMeSubtitle": "এই মাসে কে সবচেয়ে বেশি আদায় করেছেন",
+  "promiseFollowUpAction": "নতুন প্রতিশ্রুতি (ফলো-আপ)",
+  "promiseFollowUpOf": "{date} তারিখের {amount} এর ভাঙা প্রতিশ্রুতির ফলো-আপ",
+  "promiseAttempt": "চেষ্টা {n}",
+  "todayBrokenTitle": "ভাঙা প্রতিশ্রুতি: ফলো-আপ করুন",
+  "todayBrokenRow": "{amount} · {date} তারিখে দেওয়ার কথা ছিল"
 }

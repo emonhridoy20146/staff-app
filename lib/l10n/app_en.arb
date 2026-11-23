@@ -2276,5 +2276,19 @@
     "placeholders": { "reason": { "type": "String" } }
   },
   "attNotRequired": "Your account does not give attendance. There is nothing to do here.",
-  "leaderboardMeSubtitle": "Who collected the most this month"
+  "leaderboardMeSubtitle": "Who collected the most this month",
+  "promiseFollowUpAction": "New promise (follow-up)",
+  "promiseFollowUpOf": "Follow-up of the broken promise of {amount} for {date}",
+  "@promiseFollowUpOf": {
+    "placeholders": { "amount": { "type": "String" }, "date": { "type": "String" } }
+  },
+  "promiseAttempt": "Attempt {n}",
+  "@promiseAttempt": {
+    "placeholders": { "n": { "type": "String" } }
+  },
+  "todayBrokenTitle": "Broken promises to follow up",
+  "todayBrokenRow": "{amount} · was due {date}",
+  "@todayBrokenRow": {
+    "placeholders": { "amount": { "type": "String" }, "date": { "type": "String" } }
+  }
 }

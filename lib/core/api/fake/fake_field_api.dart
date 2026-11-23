@@ -474,6 +474,21 @@ class FakeFieldApi implements HttpClientAdapter {
   void serverChange(String entity, String id, Json data, {String op = 'upsert'}) =>
       _log.add(_Change(entity, id, op, data));
 
+  /// Tests / demo: the server marks a promise broken (FR-PRM-003) and sends it on the change feed with the
+  /// follow-up fields of contract 1.45.0.
+  void breakPromise(String mutationId) {
+    final p = appliedPayloads[mutationId]!;
+    serverChange('promise', 'promise-$mutationId', {...p, 'status': 'broken', 'attempt': _promiseAttempt(p), 'createdAt': clock.nowUtc().toIso8601String()});
+  }
+
+  /// 1.45.0: a follow-up is one attempt after the promise it names; a promise without `followUpOf` is attempt 1.
+  int _promiseAttempt(Json p) {
+    final of = p['followUpOf'] as String?;
+    if (of == null) return 1;
+    final prev = appliedPayloads[of.replaceFirst('promise-', '')];
+    return prev == null ? 2 : _promiseAttempt(prev) + 1;
+  }
+
   /// Tests / demo: a manager decides a pin proposal (contract 1.7.0).
   void decideProposal(String clientId, String status, {String? reason}) {
     final last = _log.lastWhere((c) => c.entity == 'location_proposal' && c.data?['clientId'] == clientId);

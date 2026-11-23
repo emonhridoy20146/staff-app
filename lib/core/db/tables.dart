@@ -363,6 +363,11 @@ class Promises extends Table {
   /// a customer assigned to me stays here (it is mine to follow up) and says who made it.
   TextColumn get createdByName => text().nullable()();
 
+  /// Follow-up of a broken promise (v17, contract 1.45.0, FR-M-072): the broken promise's server id (or its
+  /// clientId while unsent), and the attempt number in the chain (1 = the first promise).
+  TextColumn get followUpOf => text().nullable()();
+  IntColumn get attempt => integer().withDefault(const Constant(1))();
+
   @override
   Set<Column> get primaryKey => {clientId};
 }

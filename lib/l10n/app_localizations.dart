@@ -6601,6 +6601,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Who collected the most this month'**
   String get leaderboardMeSubtitle;
+
+  /// No description provided for @promiseFollowUpAction.
+  ///
+  /// In en, this message translates to:
+  /// **'New promise (follow-up)'**
+  String get promiseFollowUpAction;
+
+  /// No description provided for @promiseFollowUpOf.
+  ///
+  /// In en, this message translates to:
+  /// **'Follow-up of the broken promise of {amount} for {date}'**
+  String promiseFollowUpOf(String amount, String date);
+
+  /// No description provided for @promiseAttempt.
+  ///
+  /// In en, this message translates to:
+  /// **'Attempt {n}'**
+  String promiseAttempt(String n);
+
+  /// No description provided for @todayBrokenTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Broken promises to follow up'**
+  String get todayBrokenTitle;
+
+  /// No description provided for @todayBrokenRow.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} · was due {date}'**
+  String todayBrokenRow(String amount, String date);
 }
 
 class _AppLocalizationsDelegate

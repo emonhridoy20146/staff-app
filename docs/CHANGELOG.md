@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+### Added (owner request 2026-11-23: follow up a broken promise; FR-M-072, ADR-M35, contract 1.45.0, schema 17)
+- **"নতুন প্রতিশ্রুতি (ফলো-আপ) / New promise (follow-up)"** on a broken promise ("কথা রাখেননি") on the customer page's timeline. It opens the promise sheet titled as a follow-up, with "<date> তারিখের <amount> এর ভাঙা প্রতিশ্রুতির ফলো-আপ · চেষ্টা N". The promise is saved offline-first through the same `promise` mutation (one UUIDv7 clientId, never regenerated) with `followUpOf` = the broken promise's server id (or its clientId with `dependsOn` while unsent). A plain new promise on a customer with an unfollowed broken promise is linked the same way.
+- **Chain:** every promise in a chain shows "চেষ্টা 1, 2, 3 …" on the timeline (the phone counts until the server's `attempt` arrives).
+- **Home:** a "ভাঙা প্রতিশ্রুতি: ফলো-আপ করুন" card lists broken promises nobody has followed up (customer, amount, due date, the action; 48 dp), oldest due first; nothing when there are none.
+- **Schema 17:** `promises.follow_up_of`, `promises.attempt` (default 1), in the same idempotent v17 step as the photo columns; migration test with a broken promise.
+- `PromiseService` (Ref-based) holds the save logic so it is tested without widgets; `recordPromise` calls it. Fake API: `breakPromise(mutationId)` and the server's attempt count.
+- Tests: `promise_follow_up_test.dart` (offline follow-up with the link in the outbox and once on the server, a plain promise following up, chain 1→2→3, open needs none, Home card and customer page on screen), `migration_test.dart`.
+
 ### Changed (owner request 2026-11-23: super admin gives no attendance; FR-M-070, ADR-M34, contract 1.45.0)
 - The server's `attendanceRequired` (1.45.0, read from login, `/auth/me` and the sync snapshot; missing = true for older servers) is kept on the phone (`attendanceRequiredProvider`, `kv` `attendance_required`). When it is false (super admin): no duty card and no attendance tile on Home, no attendance card in Me, the attendance screen shows only "আপনার অ্যাকাউন্টে হাজিরা দিতে হয় না" (no work-in, even by a link), and today's attendance is never fetched from the server. One provider (`attendanceShownProvider`: module flag, `attendance.record`, required) decides everywhere. `MeEntryDef` gets an optional `visible` condition.
 - Fake API hook `attendanceRequired` (null = not sent). Tests: `attendance_required_test.dart` (where the field may sit, older server, super admin, snapshot change, Home/Me/hub on screen, field staff unchanged).

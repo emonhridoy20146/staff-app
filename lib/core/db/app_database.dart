@@ -182,11 +182,14 @@ class AppDatabase extends _$AppDatabase {
             await _ensureColumn(m, customers, customers.activityJson);
             await _ensureColumn(m, erpPayments, erpPayments.referrerName);
           }
-          // v17 (FR-M-069): why a photo upload failed and when it was last tried, shown in the sync centre.
-          // Nullable columns only; queued photos keep their state and are retried as before.
+          // v17 (FR-M-069, FR-M-072): why a photo upload failed and when it was last tried (sync centre), and the
+          // promise follow-up chain. New columns only (nullable or with a default); nothing unsynced is touched.
           if (from < 17) {
             await _ensureColumn(m, mediaQueue, mediaQueue.lastError);
             await _ensureColumn(m, mediaQueue, mediaQueue.lastAttemptAt);
+            // contract 1.45.0 (FR-M-072): promise follow-up chain. Existing promises are attempt 1.
+            await _ensureColumn(m, promises, promises.followUpOf);
+            await _ensureColumn(m, promises, promises.attempt);
           }
         },
         beforeOpen: (details) async {

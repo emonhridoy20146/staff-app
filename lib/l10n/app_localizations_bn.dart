@@ -3766,4 +3766,25 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get leaderboardMeSubtitle => 'এই মাসে কে সবচেয়ে বেশি আদায় করেছেন';
+
+  @override
+  String get promiseFollowUpAction => 'নতুন প্রতিশ্রুতি (ফলো-আপ)';
+
+  @override
+  String promiseFollowUpOf(String amount, String date) {
+    return '$date তারিখের $amount এর ভাঙা প্রতিশ্রুতির ফলো-আপ';
+  }
+
+  @override
+  String promiseAttempt(String n) {
+    return 'চেষ্টা $n';
+  }
+
+  @override
+  String get todayBrokenTitle => 'ভাঙা প্রতিশ্রুতি: ফলো-আপ করুন';
+
+  @override
+  String todayBrokenRow(String amount, String date) {
+    return '$amount · $date তারিখে দেওয়ার কথা ছিল';
+  }
 }
