@@ -3649,4 +3649,31 @@ class AppLocalizationsBn extends AppLocalizations {
   String promisedBy(String name) {
     return 'প্রতিশ্রুতি নিয়েছেন: $name';
   }
+
+  @override
+  String get kindCash => 'নগদ';
+
+  @override
+  String kindCashCount(String n) {
+    return '$n নগদ';
+  }
+
+  @override
+  String get kindOther => 'অন্যান্য';
+
+  @override
+  String kindOtherCount(String n) {
+    return '$n অন্যান্য';
+  }
+
+  @override
+  String get planCashSale => 'নগদ বিক্রি';
+
+  @override
+  String get monthOffice => 'অফিস';
+
+  @override
+  String monthMore(String n) {
+    return '+$n';
+  }
 }

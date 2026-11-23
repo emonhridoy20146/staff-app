@@ -2219,5 +2219,21 @@
   "promisedBy": "Promised by {name}",
   "@promisedBy": {
     "placeholders": { "name": { "type": "String" } }
+  },
+  "kindCash": "Cash",
+  "kindCashCount": "{n} cash",
+  "@kindCashCount": {
+    "placeholders": { "n": { "type": "String" } }
+  },
+  "kindOther": "Other",
+  "kindOtherCount": "{n} other",
+  "@kindOtherCount": {
+    "placeholders": { "n": { "type": "String" } }
+  },
+  "planCashSale": "Cash sale",
+  "monthOffice": "office",
+  "monthMore": "+{n}",
+  "@monthMore": {
+    "placeholders": { "n": { "type": "String" } }
   }
 }

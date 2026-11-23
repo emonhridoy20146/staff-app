@@ -175,26 +175,49 @@ enum CustomerFilter { all, dueToday, overdue, promisedToday, paidThisMonth, notP
 
 enum CustomerSort { distance, daysOverdue, amount, name }
 
-/// The invoice type of a plan (`plans.kind`): installment (কিস্তি) or credit sale (বাকি বিক্রি).
-enum InvoiceKind { installment, credit }
+/// The invoice type of a plan (`plans.kind`): installment (কিস্তি), credit sale (বাকি বিক্রি), cash sale
+/// (নগদ, contract 1.44.0) or a type this app does not know yet (অন্যান্য).
+enum InvoiceKind { installment, credit, cash, other }
 
-/// How many open invoices of each kind a customer has (FR-M-066). "Open" is the
-/// collectable rule ([isCollectablePlan]): something is still owed and the
-/// invoice is not returned, cancelled or settled. A customer can have both.
+/// The types the list can filter by (the owner kept the two chips; cash-only customers are in "All").
+const filterableKinds = [InvoiceKind.installment, InvoiceKind.credit];
+
+/// `plans.kind` from a contract plan: `kind`, or since 1.44.0 `saleType` (`cash`). Missing means installment
+/// (older servers); an unknown value is kept as sent, so a newer server never breaks the phone.
+String planKindOf(Map<String, dynamic> p) {
+  final sale = p['saleType'];
+  if (sale is String && sale.trim().isNotEmpty) return sale.trim();
+  final kind = p['kind'];
+  return kind is String && kind.trim().isNotEmpty ? kind.trim() : 'installment';
+}
+
+/// How many invoices of each kind a customer has (FR-M-066). Installment, credit and unknown types count
+/// while open, the collectable rule ([isCollectablePlan]): something is still owed and the invoice is not
+/// returned, cancelled or settled. A cash sale is never owed, so it counts while it is not returned or
+/// cancelled. A customer can have several kinds.
 class InvoiceKinds {
-  const InvoiceKinds({this.installment = 0, this.credit = 0});
+  const InvoiceKinds({this.installment = 0, this.credit = 0, this.cash = 0, this.other = 0});
   static const none = InvoiceKinds();
   final int installment;
   final int credit;
+  final int cash;
+  final int other;
 
-  int get total => installment + credit;
+  int get total => installment + credit + cash + other;
   bool get isEmpty => total == 0;
-  bool has(InvoiceKind k) => (k == InvoiceKind.installment ? installment : credit) > 0;
+  int of(InvoiceKind k) => switch (k) {
+        InvoiceKind.installment => installment,
+        InvoiceKind.credit => credit,
+        InvoiceKind.cash => cash,
+        InvoiceKind.other => other,
+      };
+  bool has(InvoiceKind k) => of(k) > 0;
 
   @override
-  bool operator ==(Object other) => other is InvoiceKinds && other.installment == installment && other.credit == credit;
+  bool operator ==(Object other) =>
+      other is InvoiceKinds && other.installment == installment && other.credit == credit && other.cash == cash && other.other == this.other;
   @override
-  int get hashCode => Object.hash(installment, credit);
+  int get hashCode => Object.hash(installment, credit, cash, other);
 }
 
 /// The invoice-type chips (second chip group): null = either kind. Within the

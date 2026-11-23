@@ -1050,5 +1050,12 @@
   "monthToday": "আজ",
   "monthPaidAmount": "পরিশোধ: {amount}",
   "monthPromiseAmount": "প্রতিশ্রুতি: {amount}",
-  "promisedBy": "প্রতিশ্রুতি নিয়েছেন: {name}"
+  "promisedBy": "প্রতিশ্রুতি নিয়েছেন: {name}",
+  "kindCash": "নগদ",
+  "kindCashCount": "{n} নগদ",
+  "kindOther": "অন্যান্য",
+  "kindOtherCount": "{n} অন্যান্য",
+  "planCashSale": "নগদ বিক্রি",
+  "monthOffice": "অফিস",
+  "monthMore": "+{n}"
 }

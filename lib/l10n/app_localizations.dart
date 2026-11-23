@@ -6403,6 +6403,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Promised by {name}'**
   String promisedBy(String name);
+
+  /// No description provided for @kindCash.
+  ///
+  /// In en, this message translates to:
+  /// **'Cash'**
+  String get kindCash;
+
+  /// No description provided for @kindCashCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} cash'**
+  String kindCashCount(String n);
+
+  /// No description provided for @kindOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get kindOther;
+
+  /// No description provided for @kindOtherCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} other'**
+  String kindOtherCount(String n);
+
+  /// No description provided for @planCashSale.
+  ///
+  /// In en, this message translates to:
+  /// **'Cash sale'**
+  String get planCashSale;
+
+  /// No description provided for @monthOffice.
+  ///
+  /// In en, this message translates to:
+  /// **'office'**
+  String get monthOffice;
+
+  /// No description provided for @monthMore.
+  ///
+  /// In en, this message translates to:
+  /// **'+{n}'**
+  String monthMore(String n);
 }
 
 class _AppLocalizationsDelegate

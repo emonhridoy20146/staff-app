@@ -86,6 +86,8 @@ class CustomerPullHandler implements PullHandler {
             erpRiskJson: Value(d['erpRisk'] == null ? null : jsonEncode(d['erpRisk'])),
             searchText: Value(search),
             version: Value((d['version'] as num?)?.toInt() ?? 0),
+            // 1.44.0 (FR-M-068): who did this month's work. An older server sends none: keep what we had.
+            activityJson: Value(encodeActivity(d) ?? existing?.activityJson),
           ),
         );
 
@@ -109,7 +111,7 @@ class CustomerPullHandler implements PullHandler {
               outstandingPoisha: (p['outstandingPoisha'] as num?)?.toInt() ?? 0,
               status: (p['status'] as String?) ?? 'active',
               badSuggested: Value((p['badSuggested'] as bool?) ?? false),
-              kind: Value((p['kind'] as String?) ?? 'installment'),
+              kind: Value(planKindOf(p)),
               invoiceNo: Value(p['invoiceNo'] as String?),
               saleDate: Value(p['saleDate'] as String?),
               frequency: Value(p['frequency'] as String?),
@@ -158,6 +160,7 @@ class CustomerPullHandler implements PullHandler {
               reversed: Value((p['reversed'] as bool?) ?? false),
               methodLabel: Value(p['methodLabel'] as String?),
               collectorName: Value(p['collectorName'] as String?),
+              referrerName: Value(p['referrerName'] as String?),
               advance: Value((p['advance'] as bool?) ?? false),
               discountPoisha: Value((p['discountPoisha'] as num?)?.toInt() ?? 0),
             ));
@@ -208,6 +211,9 @@ class PlanWithSchedule {
 
   bool get credit => plan.kind == 'credit';
 
+  /// A cash sale (contract 1.44.0 `saleType: cash`): paid at the counter, nothing is ever due on it.
+  bool get cash => plan.kind == 'cash';
+
   /// Returned (closed) or cancelled in the ERP: shown muted, never offered for collection.
   bool get closedInErp => plan.status == 'closed' || plan.status == 'cancelled';
 
@@ -236,10 +242,17 @@ class CustomerRepository {
   /// An invoice is open when [isCollectablePlan] says so: something still owed, not returned, cancelled or settled.
   static const _open = "p.customer_id = c.server_id AND p.outstanding_poisha > 0 AND p.status NOT IN ('closed', 'cancelled', 'completed')";
 
+  /// A cash sale is never owed (contract 1.44.0): it counts while it stands, that is, not returned or cancelled.
+  static const _standing = "p.customer_id = c.server_id AND p.status NOT IN ('closed', 'cancelled')";
+
+  static const _known = "('installment', 'credit', 'cash')";
+
   Selectable<QueryRow> _withInvoices(String tail, List<Variable<Object>> vars) => _db.customSelect(
         'SELECT c.*, '
-        "(SELECT COUNT(*) FROM plans p WHERE $_open AND p.kind != 'credit') AS open_installment, "
+        "(SELECT COUNT(*) FROM plans p WHERE $_open AND p.kind = 'installment') AS open_installment, "
         "(SELECT COUNT(*) FROM plans p WHERE $_open AND p.kind = 'credit') AS open_credit, "
+        "(SELECT COUNT(*) FROM plans p WHERE $_standing AND p.kind = 'cash') AS open_cash, "
+        '(SELECT COUNT(*) FROM plans p WHERE $_open AND p.kind NOT IN $_known) AS open_other, '
         "(SELECT GROUP_CONCAT(invoice_no, char(31)) FROM (SELECT p.invoice_no FROM plans p WHERE $_open AND p.invoice_no IS NOT NULL AND p.invoice_no != '' "
         'ORDER BY p.sale_date DESC, p.invoice_no DESC)) AS open_invoice_nos '
         'FROM customers c $tail',
@@ -251,7 +264,12 @@ class CustomerRepository {
     final nos = r.readNullable<String>('open_invoice_nos');
     return Customer(
       _db.customers.map(r.data),
-      kinds: InvoiceKinds(installment: r.read<int>('open_installment'), credit: r.read<int>('open_credit')),
+      kinds: InvoiceKinds(
+        installment: r.read<int>('open_installment'),
+        credit: r.read<int>('open_credit'),
+        cash: r.read<int>('open_cash'),
+        other: r.read<int>('open_other'),
+      ),
       invoiceNos: nos == null || nos.isEmpty ? const [] : nos.split(String.fromCharCode(31)),
     );
   }
@@ -309,12 +327,14 @@ class CustomerRepository {
             ..orderBy([(t) => OrderingTerm.desc(t.date)]))
           .get();
       final makers = _promiseMakersOf(await _promiseMakersQuery(customerId: customerId).get(), myName);
+      final row = await (_db.select(_db.customers)..where((t) => t.serverId.equals(customerId))).getSingleOrNull();
       return monthPeopleOf(
+        server: ServerActivity.parse(row?.activityJson),
         today: today,
         myName: myName,
         myVisits: [for (final v in mine) (at: v.checkInAt, userName: v.userName, byMe: v.userId == null || v.userId == myUserId)],
         colleagueVisits: [for (final a in colleagues) (at: a.at, name: a.staffName)],
-        paymentCollectors: [for (final p in payments) p.collectorName],
+        paymentPeople: [for (final p in payments) paymentPersonName(source: p.source, referrerName: p.referrerName, collectorName: p.collectorName)],
         promiseBy: makers[customerId],
       );
     });

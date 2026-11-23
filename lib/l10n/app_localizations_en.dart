@@ -3668,4 +3668,31 @@ class AppLocalizationsEn extends AppLocalizations {
   String promisedBy(String name) {
     return 'Promised by $name';
   }
+
+  @override
+  String get kindCash => 'Cash';
+
+  @override
+  String kindCashCount(String n) {
+    return '$n cash';
+  }
+
+  @override
+  String get kindOther => 'Other';
+
+  @override
+  String kindOtherCount(String n) {
+    return '$n other';
+  }
+
+  @override
+  String get planCashSale => 'Cash sale';
+
+  @override
+  String get monthOffice => 'office';
+
+  @override
+  String monthMore(String n) {
+    return '+$n';
+  }
 }

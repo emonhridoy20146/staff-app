@@ -54,6 +54,9 @@ class Customers extends Table {
   TextColumn get assigneeName => text().nullable()();
   TextColumn get searchText => text().withDefault(const Constant(''))();
   IntColumn get version => integer().withDefault(const Constant(0))();
+  // v16 (contract 1.44.0, FR-M-068): the server's `CustomerActivity` as sent (who visited, paid and
+  // promised this month), plus `lastVisitByName` of the list row. Null until a 1.44.0 server sends it.
+  TextColumn get activityJson => text().nullable()();
 
   @override
   Set<Column> get primaryKey => {serverId};
@@ -74,7 +77,7 @@ class Plans extends Table {
   TextColumn get status => text()();
   BoolColumn get badSuggested => boolean().withDefault(const Constant(false))();
   // v7 (0.10.0, contract 1.13.0): one plan = one ERP invoice.
-  /// installment | credit
+  /// installment | credit | cash (contract 1.44.0 `saleType`); any other value is kept as sent and shown as "other"
   TextColumn get kind => text().withDefault(const Constant('installment'))();
   TextColumn get invoiceNo => text().nullable()();
   TextColumn get saleDate => text().nullable()();
@@ -128,6 +131,8 @@ class ErpPayments extends Table {
   TextColumn get collectorName => text().nullable()();
   BoolColumn get advance => boolean().withDefault(const Constant(false))();
   IntColumn get discountPoisha => integer().withDefault(const Constant(0))();
+  // v16 (contract 1.44.0): the ERP referrer of an office payment.
+  TextColumn get referrerName => text().nullable()();
 
   @override
   Set<Column> get primaryKey => {erpPaymentId};

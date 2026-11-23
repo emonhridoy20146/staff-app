@@ -29,6 +29,8 @@ String filterLabel(AppLocalizations l, CustomerFilter f) => switch (f) {
 String kindFilterLabel(AppLocalizations l, InvoiceKind k) => switch (k) {
       InvoiceKind.installment => l.filterInstallment,
       InvoiceKind.credit => l.filterCredit,
+      InvoiceKind.cash => l.kindCash,
+      InvoiceKind.other => l.kindOther,
     };
 
 String sortLabel(AppLocalizations l, CustomerSort s) => switch (s) {
@@ -138,7 +140,7 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
               children: [
                 // FR-M-066 (owner request 2026-11-23): invoice type first in the same row, then a divider, then the
                 // status chips. One type at a time; tapping the picked one again clears it. The groups combine with AND.
-                for (final k in InvoiceKind.values)
+                for (final k in filterableKinds)
                   Padding(
                     padding: const EdgeInsets.only(right: Space.s8),
                     child: FilterChip(

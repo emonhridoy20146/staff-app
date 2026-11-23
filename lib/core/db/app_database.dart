@@ -50,7 +50,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 15;
+  int get schemaVersion => 16;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -175,6 +175,12 @@ class AppDatabase extends _$AppDatabase {
           // The places arrive with the next pull (the server sends the branch's places in the snapshot).
           if (from < 15) {
             if (!await _hasTable('map_places')) await m.createTable(mapPlaces);
+          }
+          // v16 (contract 1.44.0, FR-M-068): who did this month's work, as the server counts it, and the ERP
+          // referrer of a payment. Nullable columns only; the next pull fills them. Nothing unsynced is touched.
+          if (from < 16) {
+            await _ensureColumn(m, customers, customers.activityJson);
+            await _ensureColumn(m, erpPayments, erpPayments.referrerName);
           }
         },
         beforeOpen: (details) async {
