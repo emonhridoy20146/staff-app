@@ -1,11 +1,16 @@
 openapi: 3.1.0
 info:
   title: Howlader Field Operations API
-  version: 1.44.0
+  version: 1.45.0
   description: |
     Contract owned by field-api. Consumers (admin-web, staff-app) generate types from this file.
     Conventions (auth, pagination, idempotency, errors) are described in docs/05-api-contract.md.
     Money is integer poisha. Times are UTC ISO-8601; business dates are YYYY-MM-DD in Asia/Dhaka.
+    1.45.0 (additive): dashboard statistics with `from`/`to` and list links (GET /dashboard/overview), `from`/`to` on
+    GET /inbox and GET /activity, promise follow-ups (`followUpOf`, `followUpId`, `attempt`, `brokenWithoutFollowUp`),
+    possible customers (`/prospects`, sync entity and mutation `prospect`, flag `module.prospects`),
+    `attendanceRequired` on login / refresh / me / sync (permission `attendance.exempt`), visit `businessDate` / `checkInLocalTime`,
+    and `capturedAt` without an offset accepted on POST /media/upload-url (read as Asia/Dhaka).
 servers:
   - url: https://api.example.com/api/v1
     description: Production (domain TBD)
@@ -37,6 +42,7 @@ tags:
   - name: targets
   - name: tasks
   - name: places
+  - name: prospects
   - name: audit
 
 paths:
@@ -111,6 +117,7 @@ paths:
                   user: { $ref: '#/components/schemas/User' }
                   permissions: { type: array, items: { type: string } }
                   flags: { type: object, additionalProperties: { type: boolean } }
+                  attendanceRequired: { $ref: '#/components/schemas/AttendanceRequired' }
   /auth/sessions:
     get:
       tags: [auth]
@@ -1509,7 +1516,7 @@ paths:
                 contentType: { type: string, enum: [image/jpeg, image/webp, audio/aac, audio/mp4] }
                 sizeBytes: { type: integer, maximum: 1048576 }
                 sha256: { type: string }
-                capturedAt: { type: string, format: date-time }
+                capturedAt: { type: string, description: 'ISO-8601 date-time. Since 1.45.0 a value without `Z` or an offset (e.g. `2026-11-23T16:12:05.000`, what a phone sends from a local DateTime) is accepted and read as Asia/Dhaka wall-clock time; before, it was refused with 400 and the photo never uploaded' }
                 geo: { $ref: '#/components/schemas/GeoFix' }
       responses:
         '201':
@@ -1668,12 +1675,25 @@ paths:
     get:
       tags: [promises]
       operationId: listPromises
-      parameters: [ { $ref: '#/components/parameters/BranchId' }, { name: ownerId, in: query, schema: { type: string } }, { name: customerId, in: query, schema: { type: string }, description: 'Documented in 1.4.0' }, { name: date, in: query, schema: { type: string, format: date }, description: 'Promised date; wins over from/to' }, { name: from, in: query, schema: { type: string, format: date }, description: 'Promised date from, inclusive (1.4.0)' }, { name: to, in: query, schema: { type: string, format: date }, description: 'Promised date to, inclusive (1.4.0)' }, { name: status, in: query, schema: { $ref: '#/components/schemas/PromiseStatus' } }, { $ref: '#/components/parameters/Limit' }, { $ref: '#/components/parameters/Cursor' } ]
+      description: |
+        Promised dates `from` / `to` work for future days too: "next 7 days" is `from=<today>&to=<today+7>` (1.45.0, verified).
+        1.45.0 (FR-PRM-006): `createdBy` = who made the promise (staff filter; `ownerId` is the customer's assignee);
+        `brokenWithoutFollowUp=true` = broken or partially kept promises that have no follow-up promise (cancelled follow-ups
+        do not count), newest first, so the office can see who was not followed up; with `status` it narrows to that status.
+        `followUpOf=<id>` lists the follow-ups of one promise.
+      parameters: [ { $ref: '#/components/parameters/BranchId' }, { name: ownerId, in: query, schema: { type: string } }, { name: createdBy, in: query, schema: { type: string }, description: 'Added in 1.45.0. Who made the promise' }, { name: brokenWithoutFollowUp, in: query, schema: { type: string, enum: ['true', 'false'] }, description: 'Added in 1.45.0' }, { name: followUpOf, in: query, schema: { type: string }, description: 'Added in 1.45.0' }, { name: customerId, in: query, schema: { type: string }, description: 'Documented in 1.4.0' }, { name: date, in: query, schema: { type: string, format: date }, description: 'Promised date; wins over from/to' }, { name: from, in: query, schema: { type: string, format: date }, description: 'Promised date from, inclusive (1.4.0)' }, { name: to, in: query, schema: { type: string, format: date }, description: 'Promised date to, inclusive (1.4.0)' }, { name: status, in: query, schema: { $ref: '#/components/schemas/PromiseStatus' } }, { $ref: '#/components/parameters/Limit' }, { $ref: '#/components/parameters/Cursor' } ]
       responses:
         '200': { description: OK, content: { application/json: { schema: { type: object, properties: { items: { type: array, items: { $ref: '#/components/schemas/PromiseListItem' } }, nextCursor: { type: [string, 'null'] } } } } } }
     post:
       tags: [promises]
       operationId: createPromise
+      description: |
+        Permission promise.create (field staff, branch managers and super admins by default, so the office can record a
+        promise from admin-web too). Same rules as the sync mutation `promise`, idempotent by clientId.
+        1.45.0 (FR-PRM-006): `followUpOf` links the new promise to a broken (or partially kept) promise of the same customer.
+        The broken promise keeps its status; the new one is an ordinary promise with `attempt` = previous attempt + 1.
+        422 BUSINESS_RULE `PROMISE_FOLLOW_UP_INVALID` (details.reason NOT_FOUND | OTHER_CUSTOMER | NOT_BROKEN) when it
+        cannot be linked. A promise made from admin-web (web client) is audited (`promise.created`).
       requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/PromiseCreate' } } } }
       responses:
         '201': { description: Created, content: { application/json: { schema: { $ref: '#/components/schemas/Promise' } } } }
@@ -1686,6 +1706,94 @@ paths:
       requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/Reason' } } } }
       responses:
         '200': { description: OK }
+
+  /prospects:
+    get:
+      tags: [prospects]
+      operationId: listProspects
+      description: |
+        Added in 1.45.0 (FR-PRO-001, module `prospects`, flag `module.prospects`). Possible customers in the caller's branch
+        scope, newest first. Permission prospect.view; a caller with only prospect.create (field staff) sees the ones they
+        created. `from` / `to` = Asia/Dhaka business date of creation (inclusive); `q` matches name, phone digits, address and note.
+      parameters:
+        - { $ref: '#/components/parameters/BranchId' }
+        - { $ref: '#/components/parameters/FromDate' }
+        - { $ref: '#/components/parameters/ToDate' }
+        - { name: status, in: query, schema: { $ref: '#/components/schemas/ProspectStatus' } }
+        - { name: createdBy, in: query, schema: { type: string } }
+        - { name: q, in: query, schema: { type: string, minLength: 1, maxLength: 100 } }
+        - { $ref: '#/components/parameters/Limit' }
+        - { $ref: '#/components/parameters/Cursor' }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: object, required: [items, nextCursor, total], properties: { items: { type: array, items: { $ref: '#/components/schemas/Prospect' } }, nextCursor: { type: [string, 'null'] }, total: { type: integer, description: 'Rows matching the filters (all pages)' } } } } } }
+        '400': { $ref: '#/components/responses/Problem' }
+        '401': { $ref: '#/components/responses/Problem' }
+        '403': { $ref: '#/components/responses/Problem' }
+    post:
+      tags: [prospects]
+      operationId: createProspect
+      description: |
+        Added in 1.45.0. Permission prospect.create. Same as the sync mutation `prospect`. Idempotent by clientId: the same
+        clientId again answers 200 with the stored prospect (another user's clientId → 409 IDEMPOTENCY_MISMATCH).
+        The branch is the creator's home branch, or `branchId` (in scope) for office users. `fromProspectId` copies nothing
+        but records that this is a re-entry of an older prospect (the office "create new from old").
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/ProspectCreate' } } } }
+      responses:
+        '201': { description: Created, content: { application/json: { schema: { $ref: '#/components/schemas/Prospect' } } } }
+        '200': { description: Idempotent replay, content: { application/json: { schema: { $ref: '#/components/schemas/Prospect' } } } }
+        '400': { $ref: '#/components/responses/Problem' }
+        '403': { $ref: '#/components/responses/Problem' }
+        '409': { $ref: '#/components/responses/Problem' }
+  /prospects/{id}:
+    get:
+      tags: [prospects]
+      operationId: getProspect
+      description: 'Added in 1.45.0. prospect.view in scope, or the creator. Out of scope is 404.'
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Prospect' } } } }
+        '404': { $ref: '#/components/responses/Problem' }
+    patch:
+      tags: [prospects]
+      operationId: updateProspect
+      description: |
+        Added in 1.45.0. prospect.manage. Edits the details and/or moves the status between new, contacted and dropped
+        (converted only through /convert; a converted prospect is re-opened through /reopen). Every status change is kept
+        in `history`. Audited (`prospect.updated`).
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/ProspectUpdate' } } } }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Prospect' } } } }
+        '400': { $ref: '#/components/responses/Problem' }
+        '404': { $ref: '#/components/responses/Problem' }
+        '409': { $ref: '#/components/responses/Problem' }
+  /prospects/{id}/convert:
+    post:
+      tags: [prospects]
+      operationId: convertProspect
+      description: |
+        Added in 1.45.0. prospect.manage. Marks the prospect converted and links it to the FOS customer (`customerId`) or
+        to an ERP customer code (`erpCustomerCode`; resolved to the FOS customer when that customer is already synced,
+        else kept as the code). Unknown or out-of-scope customerId → 404. Already converted → 409 INVALID_STATE
+        (reason PROSPECT_CONVERTED). Audited (`prospect.converted`).
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      requestBody: { required: true, content: { application/json: { schema: { type: object, properties: { customerId: { type: string }, erpCustomerCode: { type: string, maxLength: 64 }, note: { type: string, maxLength: 500 } }, description: 'customerId or erpCustomerCode is required' } } } }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Prospect' } } } }
+        '400': { $ref: '#/components/responses/Problem' }
+        '404': { $ref: '#/components/responses/Problem' }
+        '409': { $ref: '#/components/responses/Problem' }
+  /prospects/{id}/reopen:
+    post:
+      tags: [prospects]
+      operationId: reopenProspect
+      description: 'Added in 1.45.0. prospect.manage. A converted or dropped prospect goes back to `new` (re-entry); the conversion link is cleared on the prospect and kept in `history`. Other statuses → 409 INVALID_STATE (reason PROSPECT_OPEN). Audited (`prospect.reopened`).'
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/Reason' } } } }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Prospect' } } } }
+        '404': { $ref: '#/components/responses/Problem' }
+        '409': { $ref: '#/components/responses/Problem' }
 
   /attendance/events:
     post:
@@ -2000,7 +2108,8 @@ paths:
     get:
       tags: [inbox]
       operationId: listInbox
-      parameters: [ { $ref: '#/components/parameters/BranchId' }, { name: status, in: query, schema: { type: string, enum: [open, snoozed, resolved], default: open } }, { name: type, in: query, schema: { type: string } }, { $ref: '#/components/parameters/Limit' }, { $ref: '#/components/parameters/Cursor' } ]
+      description: '1.45.0: `from` / `to` (inclusive Asia/Dhaka business dates) narrow the items to those raised on those days; `counts` follow the same dates. Without them, unchanged.'
+      parameters: [ { $ref: '#/components/parameters/BranchId' }, { name: status, in: query, schema: { type: string, enum: [open, snoozed, resolved], default: open } }, { name: type, in: query, schema: { type: string } }, { $ref: '#/components/parameters/FromDate' }, { $ref: '#/components/parameters/ToDate' }, { $ref: '#/components/parameters/Limit' }, { $ref: '#/components/parameters/Cursor' } ]
       responses:
         '200': { description: OK, content: { application/json: { schema: { type: object, properties: { items: { type: array, items: { $ref: '#/components/schemas/InboxItem' } }, counts: { type: object, additionalProperties: { type: integer } }, nextCursor: { type: [string, 'null'] } } } } } }
   /activity:
@@ -2014,6 +2123,8 @@ paths:
         - { $ref: '#/components/parameters/BranchId' }
         - { name: type, in: query, schema: { type: string, enum: [collection, visit, promise, pin, collection_withdrawn, collection_edited, deposit_deleted] } }
         - { name: userId, in: query, schema: { type: string }, description: 'Only what this staff member did' }
+        - { $ref: '#/components/parameters/FromDate' }
+        - { $ref: '#/components/parameters/ToDate' }
         - { $ref: '#/components/parameters/Limit' }
         - { $ref: '#/components/parameters/Cursor' }
       responses:
@@ -2048,9 +2159,23 @@ paths:
     get:
       tags: [reports]
       operationId: dashboardOverview
-      parameters: [ { $ref: '#/components/parameters/BranchId' }, { name: date, in: query, schema: { type: string, format: date } } ]
+      description: |
+        report.view, branch scope (an out-of-scope branchId is 404). The fields up to `trend7d` are unchanged.
+        1.45.0 (FR-DSH-002): one call carries what the admin home page needs. `from` / `to` (inclusive Asia/Dhaka business
+        dates, at most 366 days, `to` today or earlier; default: first day of the month of `date` … `date`) set the range of
+        the series, method split, outcome split, promise rates, top staff, co-work and prospects figures; "today",
+        "this month", "previous month" and the now-figures (cash in hand, attendance today, pins waiting) do not depend on it.
+        Every number carries a `link` { path, query }: the list endpoint (path under /api/v1) and the query parameters
+        that list exactly the rows behind the number, so the client can open the list with one click. Sections of
+        switched-off modules come back as zeros or empty arrays. Field staff see only their own figures (scope).
+        Nothing here is an official ERP balance (cached ERP values carry erpFetchedAt in `erp`).
+      parameters: [ { $ref: '#/components/parameters/BranchId' }, { name: date, in: query, schema: { type: string, format: date } }, { name: from, in: query, schema: { type: string, format: date }, description: 'Added in 1.45.0' }, { name: to, in: query, schema: { type: string, format: date }, description: 'Added in 1.45.0' } ]
       responses:
         '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/DashboardOverview' } } } }
+        '400': { $ref: '#/components/responses/Problem' }
+        '401': { $ref: '#/components/responses/Problem' }
+        '403': { $ref: '#/components/responses/Problem' }
+        '404': { $ref: '#/components/responses/Problem' }
   /search:
     get:
       tags: [customers]
@@ -2181,6 +2306,8 @@ components:
   parameters:
     Id: { name: id, in: path, required: true, schema: { type: string } }
     BranchId: { name: branchId, in: query, schema: { type: string } }
+    FromDate: { name: from, in: query, schema: { type: string, format: date }, description: 'Inclusive Asia/Dhaka business date (YYYY-MM-DD). Added to GET /inbox and GET /activity in 1.45.0; a value after `to` is 400' }
+    ToDate: { name: to, in: query, schema: { type: string, format: date }, description: 'Inclusive Asia/Dhaka business date (YYYY-MM-DD). Added to GET /inbox and GET /activity in 1.45.0' }
     PayStateFilter: { name: payState, in: query, style: form, explode: false, schema: { type: array, items: { $ref: '#/components/schemas/PayState' } }, description: 'Added in 1.14.0 (FR-CUS-012). Pin colours, combined with OR; other parameters narrow with AND' }
     InvoiceKind: { name: invoiceKind, in: query, schema: { type: string, enum: [installment, credit] }, description: 'Added in 1.14.0 (FR-CUS-013). Only customers with an open (balance due, not returned or cancelled) invoice of this kind. Cash invoices (1.44.0) are never open, so there is no `cash` value' }
     PaidThisMonth: { name: paidThisMonth, in: query, schema: { type: string, enum: [yes, no] }, description: 'Added in 1.29.0 (FR-CUS-019). `yes` = paid something in the current Asia/Dhaka month: an ERP payment dated this month (removed ones left out) or a field collection of this month still waiting for the ERP; `no` = neither. The same two sources as the row''s `activity.paidPoisha` / `activity.pendingPoisha`, so the filter agrees with the row''s money mark. Narrows with AND like the other parameters' }
@@ -2257,7 +2384,16 @@ components:
         user: { $ref: '#/components/schemas/User' }
         permissions: { type: array, items: { type: string } }
         flags: { type: object, additionalProperties: { type: boolean } }
+        attendanceRequired: { $ref: '#/components/schemas/AttendanceRequired' }
         serverTime: { type: string, format: date-time }
+    AttendanceRequired:
+      type: boolean
+      description: |
+        Added in 1.45.0 (FR-ATT-014). True when this user must do attendance (work-in/out, breaks): they hold
+        `attendance.record` and not `attendance.exempt`. The staff app hides attendance (and does not hold location
+        or work for a work-in) when false. Super admins hold `attendance.exempt` by default; an admin can grant or deny
+        it per user or branch like any permission. Exempt users are never counted absent, late or present in
+        attendance days, counts and reports.
     User:
       type: object
       properties:
@@ -2656,6 +2792,7 @@ components:
             badSuggestion: { type: [object, 'null'], properties: { erpPlanId: { type: string }, finalDueDate: { type: string }, outstandingPoisha: { type: integer }, text: { $ref: '#/components/schemas/I18nText' } } }
             recentNotes: { type: array, items: { $ref: '#/components/schemas/Note' } }
             lastVisit: { oneOf: [ { $ref: '#/components/schemas/Visit' }, { type: 'null' } ] }
+            recentPromises: { type: array, maxItems: 20, items: { $ref: '#/components/schemas/Promise' }, description: 'Added in 1.45.0 (FR-PRM-006). The customer''s last 20 promises, newest first, with followUpOf / followUpId / attempt, so the chain original → broken → follow-up → kept/broken can be drawn. Present when module.promises is on' }
             version: { type: integer }
     MapPin:
       type: object
@@ -3063,17 +3200,35 @@ components:
         promisedDate: { type: string, format: date }
         promisedAmountPoisha: { type: integer, minimum: 1 }
         note: { type: string }
+        followUpOf: { type: string, description: 'Added in 1.45.0 (FR-PRM-006). Id of the broken or partially kept promise this one follows up (same customer). Omit for a first promise' }
     Promise:
       allOf:
         - $ref: '#/components/schemas/PromiseCreate'
         - type: object
-          properties: { id: { type: string }, ownerId: { type: string }, ownerName: { type: string, description: 'Display name of ownerId, the customer''s assignee (1.31.0)' }, createdBy: { type: string, description: 'The staff member who made the promise (1.31.0); equals ownerId on promises older than 1.31.0' }, createdByName: { type: string, description: 'Display name of createdBy (1.31.0, FR-ACT-002)' }, status: { $ref: '#/components/schemas/PromiseStatus' }, paidTowardsPoisha: { type: integer }, createdAt: { type: string } }
+          properties:
+            id: { type: string }
+            ownerId: { type: string }
+            ownerName: { type: string, description: 'Display name of ownerId, the customer''s assignee (1.31.0)' }
+            createdBy: { type: string, description: 'The staff member who made the promise (1.31.0); equals ownerId on promises older than 1.31.0' }
+            createdByName: { type: string, description: 'Display name of createdBy (1.31.0, FR-ACT-002)' }
+            status: { $ref: '#/components/schemas/PromiseStatus' }
+            paidTowardsPoisha: { type: integer }
+            createdAt: { type: string }
+            followUpOf: { type: [string, 'null'], description: 'Added in 1.45.0. The promise this one follows up; null for a first promise' }
+            followUpId: { type: [string, 'null'], description: 'Added in 1.45.0. The newest follow-up of this promise that is not cancelled; null when nobody followed it up' }
+            attempt: { type: integer, minimum: 1, description: 'Added in 1.45.0. 1 for a first promise, 2 for its follow-up, 3 for the follow-up of that, …' }
+            chainRootId: { type: string, description: 'Added in 1.45.0. Id of the first promise of the chain (its own id for a first promise); GET /promises?customerId= returns the whole chain' }
+            closedAt: { type: [string, 'null'], format: date-time, description: 'Added in 1.45.0. When the promise was kept, broken, superseded or cancelled' }
     VisitListItem:
       description: 'Visit plus display refs, returned by GET /visits (1.4.0)'
       allOf:
         - $ref: '#/components/schemas/Visit'
         - type: object
-          properties: { customer: { type: object, properties: { id: { type: string }, name: { $ref: '#/components/schemas/I18nText' }, code: { type: string } } }, user: { type: object, properties: { id: { type: string }, name: { type: string } } } }
+          properties:
+            customer: { type: object, properties: { id: { type: string }, name: { $ref: '#/components/schemas/I18nText' }, code: { type: string } } }
+            user: { type: object, properties: { id: { type: string }, name: { type: string } } }
+            businessDate: { type: string, format: date, description: 'Added in 1.45.0. Asia/Dhaka business date of checkInAt (the day filters `date` / `from` / `to` use)' }
+            checkInLocalTime: { type: string, pattern: '^\\d{2}:\\d{2}$', description: 'Added in 1.45.0. Asia/Dhaka wall-clock time of checkInAt, HH:mm (24 h), so a table can show date and time without converting' }
     PromiseListItem:
       description: 'Promise plus display refs, returned by GET /promises (1.4.0)'
       allOf:
@@ -3327,7 +3482,7 @@ components:
       required: [mutationId, entity, op, payload]
       properties:
         mutationId: { type: string, format: uuid }
-        entity: { type: string, enum: [visit, collection, note, promise, promise_cancel, deposit, attendance_event, tag, location_proposal, visit_checkout, handover_decision, cash_closing, contact_attempt, broadcast_ack, task_resolve_request, attendance_selfie, customer_phone, collection_withdraw, collection_edit, place, place_edit, place_move_request], description: 'place, place_edit, place_move_request (1.38.0): see the payload description. collection_withdraw (1.32.0) payload { collectionId | clientId, reason? }: same as POST /collections/{id}/withdraw; needs collection.withdraw; send it after the collection (dependsOn). collection_edit (1.32.0) payload { collectionId | clientId, amountPoisha?, note?, payerName? }: same as PATCH /collections/{id}; needs collection.edit; a repeat with the same values is a replay. customer_phone (1.23.0) payload { customerId, phones: [{ number, label? }] }: same body as POST /customers/{id}/phones; needs permission customer.phone.manage; a repeat adds nothing. attendance_selfie (1.21.0) payload { eventClientId, selfieMediaId }: adds the photo to an attendance event that was sent before its photo uploaded; send it after that event (dependsOn).' }
+        entity: { type: string, enum: [visit, collection, note, promise, promise_cancel, deposit, attendance_event, tag, location_proposal, visit_checkout, handover_decision, cash_closing, contact_attempt, broadcast_ack, task_resolve_request, attendance_selfie, customer_phone, collection_withdraw, collection_edit, place, place_edit, place_move_request, prospect], description: 'prospect (1.45.0) payload ProspectCreate (same as POST /prospects; needs prospect.create and module.prospects; idempotent by clientId). promise (1.45.0) may carry followUpOf. place, place_edit, place_move_request (1.38.0): see the payload description. collection_withdraw (1.32.0) payload { collectionId | clientId, reason? }: same as POST /collections/{id}/withdraw; needs collection.withdraw; send it after the collection (dependsOn). collection_edit (1.32.0) payload { collectionId | clientId, amountPoisha?, note?, payerName? }: same as PATCH /collections/{id}; needs collection.edit; a repeat with the same values is a replay. customer_phone (1.23.0) payload { customerId, phones: [{ number, label? }] }: same body as POST /customers/{id}/phones; needs permission customer.phone.manage; a repeat adds nothing. attendance_selfie (1.21.0) payload { eventClientId, selfieMediaId }: adds the photo to an attendance event that was sent before its photo uploaded; send it after that event (dependsOn).' }
         op: { type: string, enum: [create, update] }
         payload:
           type: object
@@ -3383,7 +3538,7 @@ components:
       type: object
       properties:
         seq: { type: integer }
-        entity: { type: string, enum: [customer, collection, visit, note, promise, tag, handover, assignment, area, deposit, attendance_day, notification, broadcast, setting, contact_attempt, location_proposal, cowork_session, task, place] }
+        entity: { type: string, enum: [customer, collection, visit, note, promise, tag, handover, assignment, area, deposit, attendance_day, notification, broadcast, setting, contact_attempt, location_proposal, cowork_session, task, place, prospect] }
         op: { type: string, enum: [upsert, delete] }
         id: { type: string }
         data:
@@ -3397,6 +3552,7 @@ components:
             contact_attempt → ContactAttempt · location_proposal → OwnLocationProposal (1.7.0; sent only to the staff member who proposed, on create and on the manager's decision) ·
             cowork_session → CoworkSession (1.9.0; sent to every invited or member user on each change)
             task → Task (1.20.0; sent to the assignee on every change; the bootstrap snapshot holds open tasks and those closed in the last 30 days)
+            prospect → Prospect (1.45.0; sent to the staff member who created it, on create and on every office change; the bootstrap snapshot holds their prospects of the last 90 days and every one not converted or dropped)
             place → Place (1.38.0; since 1.42.0 (ADR-054) sent to every device of every branch on every change; a deleted place arrives as op=delete reason=deleted; the bootstrap snapshot holds the active places of all branches. Devices whose cursor predates 1.42.0 get CURSOR_EXPIRED once and take a fresh snapshot)
         reason: { type: string }
     ContactAttemptCreate:
@@ -3429,6 +3585,7 @@ components:
         settings: { type: object, additionalProperties: true }
         cash: { $ref: '#/components/schemas/CashPosition' }
         target: { $ref: '#/components/schemas/MyTarget' }
+        attendanceRequired: { $ref: '#/components/schemas/AttendanceRequired' }
         serverTime: { type: string, format: date-time }
     SyncPullResponse:
       type: object
@@ -3441,6 +3598,7 @@ components:
         settings: { type: object, additionalProperties: true }
         cash: { $ref: '#/components/schemas/CashPosition' }
         target: { $ref: '#/components/schemas/MyTarget' }
+        attendanceRequired: { $ref: '#/components/schemas/AttendanceRequired' }
         serverTime: { type: string, format: date-time }
     ActivityItem:
       type: object
@@ -3494,6 +3652,148 @@ components:
         overdue: { type: object, properties: { customers: { type: integer }, amountPoisha: { type: integer }, badSuggested: { type: integer }, tagged: { type: integer } } }
         erp: { $ref: '#/components/schemas/ErpStatus' }
         trend7d: { type: array, items: { type: object, properties: { date: { type: string }, collectedPoisha: { type: integer }, visits: { type: integer } } } }
+        range: { type: object, description: 'Added in 1.45.0', required: [from, to, days], properties: { from: { type: string, format: date }, to: { type: string, format: date }, days: { type: integer } } }
+        collections:
+          type: object
+          description: 'Added in 1.45.0. Field collections (FOS), counted like `collected` (withdrawn and voided left out)'
+          properties:
+            today: { $ref: '#/components/schemas/DashboardAmount' }
+            thisMonth: { $ref: '#/components/schemas/DashboardAmount' }
+            previousMonth: { $ref: '#/components/schemas/DashboardAmount' }
+            inRange: { $ref: '#/components/schemas/DashboardAmount' }
+            series: { type: array, description: 'One entry per day of the range, zeros included', items: { type: object, required: [date, amountPoisha, count], properties: { date: { type: string, format: date }, amountPoisha: { type: integer }, count: { type: integer } } } }
+            byMethod: { type: array, description: 'In range, largest first', items: { allOf: [ { $ref: '#/components/schemas/DashboardAmount' }, { type: object, required: [method], properties: { method: { $ref: '#/components/schemas/PaymentMethod' } } } ] } }
+            erpPosted: { $ref: '#/components/schemas/DashboardAmount' }
+            pendingInField: { allOf: [ { $ref: '#/components/schemas/DashboardAmount' }, { description: 'In range, not yet in the ERP (received, posting, posting_failed, conflict)' } ] }
+        visitStats:
+          type: object
+          description: 'Added in 1.45.0. Visits in range'
+          properties:
+            total: { $ref: '#/components/schemas/DashboardCount' }
+            uniqueCustomers: { type: integer }
+            series: { type: array, items: { type: object, required: [date, count], properties: { date: { type: string, format: date }, count: { type: integer } } } }
+            byOutcome: { type: array, items: { allOf: [ { $ref: '#/components/schemas/DashboardCount' }, { type: object, required: [outcome], properties: { outcome: { type: string } } } ] } }
+        promiseStats:
+          type: object
+          description: 'Added in 1.45.0. Open promises due today / in the next 7 and 15 days (from today), and how the promises due in the range ended'
+          properties:
+            dueToday: { $ref: '#/components/schemas/DashboardAmount' }
+            next7Days: { $ref: '#/components/schemas/DashboardAmount' }
+            next15Days: { $ref: '#/components/schemas/DashboardAmount' }
+            kept: { $ref: '#/components/schemas/DashboardCount' }
+            partiallyKept: { $ref: '#/components/schemas/DashboardCount' }
+            broken: { $ref: '#/components/schemas/DashboardCount' }
+            keptRate: { type: [number, 'null'], description: 'kept ÷ (kept + partiallyKept + broken), 2 decimals; null when none was decided' }
+            brokenRate: { type: [number, 'null'] }
+            brokenWithoutFollowUp: { $ref: '#/components/schemas/DashboardCount' }
+        overdueCustomers: { allOf: [ { $ref: '#/components/schemas/DashboardAmount' }, { description: 'Added in 1.45.0. Same figures as `overdue` with a link' } ] }
+        payStates: { type: array, description: 'Added in 1.45.0. Customers in scope by pin colour', items: { allOf: [ { $ref: '#/components/schemas/DashboardCount' }, { type: object, required: [payState], properties: { payState: { $ref: '#/components/schemas/PayState' } } } ] } }
+        topStaff:
+          type: object
+          description: 'Added in 1.45.0. Top 5 in range'
+          properties:
+            byCollection: { type: array, items: { allOf: [ { $ref: '#/components/schemas/DashboardAmount' }, { type: object, required: [userId, name], properties: { userId: { type: string }, name: { type: string } } } ] } }
+            byVisits: { type: array, items: { allOf: [ { $ref: '#/components/schemas/DashboardCount' }, { type: object, required: [userId, name], properties: { userId: { type: string }, name: { type: string } } } ] } }
+        attendanceToday:
+          type: object
+          description: 'Added in 1.45.0. Today (Asia/Dhaka) whatever the range; users exempt from attendance are not counted'
+          properties:
+            present: { $ref: '#/components/schemas/DashboardCount' }
+            late: { $ref: '#/components/schemas/DashboardCount' }
+            absent: { $ref: '#/components/schemas/DashboardCount' }
+            onLeave: { $ref: '#/components/schemas/DashboardCount' }
+            onDutyNow: { $ref: '#/components/schemas/DashboardCount' }
+        pinApprovals: { allOf: [ { $ref: '#/components/schemas/DashboardCount' }, { description: 'Added in 1.45.0. Customer pin proposals waiting for a decision' } ] }
+        cashInHand: { allOf: [ { $ref: '#/components/schemas/DashboardAmount' }, { description: 'Added in 1.45.0. Cash staff hold now; count = staff holding cash' } ] }
+        coworkStats: { type: object, description: 'Added in 1.45.0. Co-work sessions in range', properties: { sessions: { $ref: '#/components/schemas/DashboardCount' } } }
+        prospectStats:
+          type: object
+          description: 'Added in 1.45.0. Possible customers (module.prospects): created in range, and converted in range'
+          properties:
+            created: { $ref: '#/components/schemas/DashboardCount' }
+            converted: { $ref: '#/components/schemas/DashboardCount' }
+            openNow: { $ref: '#/components/schemas/DashboardCount' }
+    ProspectStatus: { type: string, enum: [new, contacted, converted, dropped], description: 'Added in 1.45.0' }
+    ProspectCreate:
+      type: object
+      description: 'Added in 1.45.0 (FR-PRO-001)'
+      required: [clientId, name]
+      properties:
+        clientId: { type: string, format: uuid }
+        name: { type: string, minLength: 1, maxLength: 120 }
+        phones: { type: array, maxItems: 5, items: { type: object, required: [number], properties: { number: { type: string, description: 'Bangladesh mobile, stored as +8801XXXXXXXXX' }, label: { type: string, maxLength: 40 } } } }
+        address: { type: string, maxLength: 500 }
+        note: { type: string, maxLength: 1000 }
+        location: { oneOf: [ { type: object, required: [lat, lng], properties: { lat: { type: number }, lng: { type: number }, accuracyM: { type: number } } }, { type: 'null' } ] }
+        branchId: { type: string, description: 'Office users only, in scope; field staff always get their home branch' }
+        fromProspectId: { type: string, description: 'Re-entry: the older prospect this one is created from' }
+    ProspectUpdate:
+      type: object
+      description: 'Added in 1.45.0. Only the fields sent change'
+      properties:
+        name: { type: string, minLength: 1, maxLength: 120 }
+        phones: { type: array, maxItems: 5, items: { type: object, required: [number], properties: { number: { type: string }, label: { type: string, maxLength: 40 } } } }
+        address: { type: [string, 'null'], maxLength: 500 }
+        note: { type: [string, 'null'], maxLength: 1000 }
+        location: { oneOf: [ { type: object, required: [lat, lng], properties: { lat: { type: number }, lng: { type: number }, accuracyM: { type: number } } }, { type: 'null' } ] }
+        status: { type: string, enum: [new, contacted, dropped] }
+        reason: { type: string, maxLength: 500, description: 'Why the status changed (kept in history)' }
+    ProspectHistoryEntry:
+      type: object
+      required: [status, at, by]
+      properties:
+        status: { $ref: '#/components/schemas/ProspectStatus' }
+        at: { type: string, format: date-time }
+        by: { type: object, properties: { id: { type: string }, name: { type: string } } }
+        reason: { type: [string, 'null'] }
+        convertedCustomerId: { type: [string, 'null'] }
+        convertedErpCustomerId: { type: [string, 'null'] }
+    Prospect:
+      type: object
+      description: 'Added in 1.45.0 (FR-PRO-001). A possible customer recorded by staff or the office'
+      required: [id, clientId, name, phones, branchId, createdBy, createdAt, status, history, version]
+      properties:
+        id: { type: string }
+        clientId: { type: string }
+        name: { type: string }
+        phones: { type: array, items: { type: object, properties: { number: { type: string }, label: { type: [string, 'null'] } } } }
+        address: { type: [string, 'null'] }
+        note: { type: [string, 'null'] }
+        location: { oneOf: [ { type: object, properties: { lat: { type: number }, lng: { type: number }, accuracyM: { type: [number, 'null'] } } }, { type: 'null' } ] }
+        branchId: { type: string }
+        createdBy: { type: object, required: [id, name], properties: { id: { type: string }, name: { type: string } } }
+        createdAt: { type: string, format: date-time }
+        createdDate: { type: string, format: date, description: 'Asia/Dhaka business date of createdAt' }
+        status: { $ref: '#/components/schemas/ProspectStatus' }
+        statusChangedAt: { type: string, format: date-time }
+        convertedCustomerId: { type: [string, 'null'], description: 'FOS customer id' }
+        convertedErpCustomerId: { type: [string, 'null'], description: 'ERP customer code when known' }
+        convertedAt: { type: [string, 'null'], format: date-time }
+        convertedBy: { oneOf: [ { type: object, properties: { id: { type: string }, name: { type: string } } }, { type: 'null' } ] }
+        fromProspectId: { type: [string, 'null'] }
+        history: { type: array, items: { $ref: '#/components/schemas/ProspectHistoryEntry' } }
+        updatedAt: { type: string, format: date-time }
+        version: { type: integer }
+    DashboardLink:
+      type: object
+      description: 'Added in 1.45.0. The list behind a dashboard number: GET /api/v1{path}?{query}. Query values are strings; arrays are comma separated'
+      required: [path, query]
+      properties:
+        path: { type: string, example: /collections }
+        query: { type: object, additionalProperties: { type: string }, example: { from: '2026-11-01', to: '2026-11-23', method: cash } }
+    DashboardCount:
+      type: object
+      required: [count, link]
+      properties:
+        count: { type: integer }
+        link: { $ref: '#/components/schemas/DashboardLink' }
+    DashboardAmount:
+      type: object
+      required: [amountPoisha, count, link]
+      properties:
+        amountPoisha: { type: integer }
+        count: { type: integer }
+        link: { $ref: '#/components/schemas/DashboardLink' }
     StaffPerformanceRow:
       type: object
       properties:
