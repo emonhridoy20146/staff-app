@@ -3573,4 +3573,33 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get placeMoveSend => 'অফিসে পাঠান';
+
+  @override
+  String get placeMoveNow => 'সরান';
+
+  @override
+  String get placeMoveNowHint =>
+      'পিনটি সঠিক জায়গায় না বসা পর্যন্ত ম্যাপ সরান। সংরক্ষণ করলেই মার্কার সরে যাবে, ইন্টারনেট না থাকলেও।';
+
+  @override
+  String get placeMoveNowSave => 'এখানে সরান';
+
+  @override
+  String get placeMovedNow =>
+      'সরানো হয়েছে। ইন্টারনেট পেলে সার্ভারে পাঠানো হবে।';
+
+  @override
+  String get syncEntityPlace => 'ম্যাপের জায়গা';
+
+  @override
+  String placeProblem(String name, String reason) {
+    return '$name: $reason';
+  }
+
+  @override
+  String get placeProblemMoveBack =>
+      'সরানো গ্রহণ করা হয়নি, তাই মার্কার সার্ভারের জায়গায় ফিরে গেছে।';
+
+  @override
+  String get placeErrMoveNeedsManage => 'সরাসরি জায়গা সরাতে পারে শুধু অফিস।';
 }

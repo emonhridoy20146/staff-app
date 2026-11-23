@@ -2,4 +2,5 @@
 library;
 
 export 'manifest.dart';
-export 'src/places_data.dart' show placesProvider, MapPlace;
+export 'src/places_data.dart' show placesProvider, placeByMutationProvider, MapPlace;
+export 'src/places_ui.dart' show placeErrorText;

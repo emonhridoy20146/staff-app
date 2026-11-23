@@ -6289,6 +6289,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Send to the office'**
   String get placeMoveSend;
+
+  /// No description provided for @placeMoveNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Move'**
+  String get placeMoveNow;
+
+  /// No description provided for @placeMoveNowHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Move the map until the pin sits on the right spot. The marker moves as soon as you save, even without internet.'**
+  String get placeMoveNowHint;
+
+  /// No description provided for @placeMoveNowSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Move here'**
+  String get placeMoveNowSave;
+
+  /// No description provided for @placeMovedNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Moved. It is sent to the server when there is internet.'**
+  String get placeMovedNow;
+
+  /// No description provided for @syncEntityPlace.
+  ///
+  /// In en, this message translates to:
+  /// **'Map place'**
+  String get syncEntityPlace;
+
+  /// No description provided for @placeProblem.
+  ///
+  /// In en, this message translates to:
+  /// **'{name}: {reason}'**
+  String placeProblem(String name, String reason);
+
+  /// No description provided for @placeProblemMoveBack.
+  ///
+  /// In en, this message translates to:
+  /// **'The move was refused, so the marker is back where the server has it.'**
+  String get placeProblemMoveBack;
+
+  /// No description provided for @placeErrMoveNeedsManage.
+  ///
+  /// In en, this message translates to:
+  /// **'Only the office can move a place directly.'**
+  String get placeErrMoveNeedsManage;
 }
 
 class _AppLocalizationsDelegate

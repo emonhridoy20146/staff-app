@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:staff_app/app/app.dart';
+import 'package:staff_app/app/router.dart';
 import 'package:staff_app/core/providers.dart';
+import 'package:staff_app/features/places/src/places_data.dart';
 import 'package:staff_app/features/places/src/places_ui.dart';
 
 import 'helpers.dart';
@@ -22,8 +24,9 @@ void main() {
     }
   }
 
-  Future<Harness> start(WidgetTester t, {double textScale = 1}) async {
+  Future<Harness> start(WidgetTester t, {double textScale = 1, bool manager = false}) async {
     final h = Harness();
+    h.api.placeManager = manager;
     h.api.addPlace('pl-9', name: 'নতুন বাজার', icon: 'market', lat: 22.7072, lng: 90.3452, by: const {'id': 'u-fs-002', 'name': 'সুমন মিয়া'});
     await t.runAsync(h.signIn);
     t.view.physicalSize = const Size(412, 892) * 2;
@@ -86,6 +89,7 @@ void main() {
     expect(find.text('যোগ করেছেন সুমন মিয়া'), findsOneWidget);
     expect(find.byKey(const Key('place-edit')), findsNothing);
     expect(find.byKey(const Key('place-move')), findsOneWidget);
+    expect(find.text('সরাতে বলুন'), findsOneWidget); // field staff: a request, as before
   });
 
   testWidgets('ask to move: the map moves under the pin, the request waits for the office', (t) async {
@@ -106,6 +110,51 @@ void main() {
     final row = await t.runAsync(() => db.select(db.mapPlaces).getSingle());
     expect(row!.lat, 22.7072); // the marker stays where it was
     expect(row.moveReason ?? row.pendingMoveJson, isNotNull);
+  });
+
+  testWidgets('office user (place.manage), offline: "সরান" moves the marker at once, no request, no reason field', (t) async {
+    final h = await start(t, manager: true);
+    h.api.offline = true;
+    await t.tap(marker('নতুন বাজার'));
+    await settle(t);
+    expect(find.text('সরাতে বলুন'), findsNothing);
+    expect(find.widgetWithText(FilledButton, 'সরান'), findsOneWidget);
+    await t.tap(find.byKey(const Key('place-move')));
+    await settle(t);
+    expect(find.byKey(const Key('place-move-reason')), findsNothing);
+    await t.drag(find.byType(FlutterMap).last, const Offset(-120, 80));
+    await settle(t);
+    expect(find.text('এখানে সরান'), findsOneWidget);
+    await t.tap(find.byKey(const Key('place-move-send')));
+    await settle(t, rounds: 12);
+    expect(find.text('সরানো হয়েছে। ইন্টারনেট পেলে সার্ভারে পাঠানো হবে।'), findsOneWidget);
+    final db = h.read(databaseProvider);
+    final row = await t.runAsync(() => db.select(db.mapPlaces).getSingle());
+    expect(row!.lat, isNot(22.7072)); // moved on the phone at once
+    expect([row.moveState, row.moveLat, row.pendingMoveJson], ['moved', 22.7072, null]);
+    final queued = await t.runAsync(() => db.select(db.outbox).get());
+    expect([for (final o in queued!) if (o.entity.startsWith('place')) o.entity], ['place_edit']);
+    expect(queued.single.payloadJson, contains('"location"'));
+  });
+
+  testWidgets('a refused move is listed in Problems with the place name and the reason in words', (t) async {
+    final h = await start(t); // field staff: the server refuses a direct move (MOVE_NEEDS_MANAGE)
+    final db = h.read(databaseProvider);
+    await t.runAsync(() async {
+      final id = (await db.select(db.mapPlaces).getSingle()).localId;
+      await h.read(placeServiceProvider).moveNow(id, lat: 22.708, lng: 90.346); // kicks the app's sync
+    });
+    await settle(t, rounds: 12);
+    h.read(routerProvider).go('/sync');
+    await settle(t);
+    final reason = find.text('নতুন বাজার: সরাসরি জায়গা সরাতে পারে শুধু অফিস।', skipOffstage: false);
+    expect(reason, findsOneWidget);
+    await t.ensureVisible(reason);
+    await settle(t, rounds: 2);
+    expect(find.text('ম্যাপের জায়গা'), findsWidgets); // the card's title (and the waiting list's line)
+    expect(find.text('সরানো গ্রহণ করা হয়নি, তাই মার্কার সার্ভারের জায়গায় ফিরে গেছে।'), findsOneWidget);
+    final row = await t.runAsync(() => db.select(db.mapPlaces).getSingle());
+    expect(row!.lat, 22.7072); // back where the server has it
   });
 
   testWidgets('labels and sheet still fit at 130 % text (FR-M accessibility)', (t) async {

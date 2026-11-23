@@ -16,6 +16,7 @@ import '../../../core/ui/money_text.dart';
 import '../../../core/ui/status_badge.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../cash/cash.dart' show depositByClientIdProvider, depositFailureText, showDepositSheet;
+import '../../places/places.dart' show placeByMutationProvider, placeErrorText;
 
 /// Entities that carry money: never offered for discard (CLAUDE.md §2.2).
 const moneyEntities = {'collection', 'deposit', 'cash_closing'};
@@ -28,6 +29,7 @@ String syncEntityLabel(AppLocalizations l, String e) => switch (e) {
       'deposit' => l.syncEntityDeposit,
       'attendance_event' => l.syncEntityAttendance,
       'tag' => l.syncEntityTag,
+      'place' || 'place_edit' || 'place_move_request' => l.syncEntityPlace,
       _ => l.syncEntityOther,
     };
 
@@ -39,6 +41,7 @@ IconData syncEntityIcon(String e) => switch (e) {
       'deposit' => Icons.savings_rounded,
       'attendance_event' => Icons.badge_rounded,
       'tag' => Icons.flag_rounded,
+      'place' || 'place_edit' || 'place_move_request' => Icons.add_location_alt_rounded,
       _ => Icons.inventory_2_rounded,
     };
 
@@ -189,12 +192,33 @@ class _FailedCard extends ConsumerWidget {
             Text(syncEntityLabel(l, row.entity), style: t.titleMedium),
             Text(f.dateTime(row.createdAt), style: t.bodySmall!.copyWith(color: cs.onSurfaceVariant)),
             const SizedBox(height: Space.s4),
-            Text(l.syncProblemRejected(row.lastError ?? '—'), style: t.bodyMedium),
+            _FailedReason(row: row),
           ]),
         ),
         TextButton(onPressed: () => ref.read(syncEngineProvider).retryFailed(row.mutationId), child: Text(l.actionRetry)),
       ]),
     );
+  }
+}
+
+/// Why a mutation was refused. A place (FR-M-063) says it in words with its name, and a refused direct
+/// move (ADR-M30) adds that the marker went back; everything else shows the server's code.
+class _FailedReason extends ConsumerWidget {
+  const _FailedReason({required this.row});
+  final OutboxRow row;
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context);
+    final t = Theme.of(context).textTheme;
+    final generic = Text(l.syncProblemRejected(row.lastError ?? '—'), style: t.bodyMedium);
+    if (!row.entity.startsWith('place')) return generic;
+    final p = ref.watch(placeByMutationProvider(row.mutationId)).value;
+    if (p == null) return generic;
+    final movedBack = p.moveFailed && p.row.moveMutationId == row.mutationId && row.entity == 'place_edit';
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Text(l.placeProblem(p.name, placeErrorText(l, p.row.errorCode)), style: t.bodyMedium),
+      if (movedBack) Text(l.placeProblemMoveBack, style: t.bodySmall!.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant)),
+    ]);
   }
 }
 

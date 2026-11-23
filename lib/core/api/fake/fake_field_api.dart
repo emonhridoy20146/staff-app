@@ -49,7 +49,9 @@ class FakeFieldApi implements HttpClientAdapter {
   String staffPinApproval = 'when_missing'; // customers.staffPinApproval (1.11.0)
   /// Signed-in user holds `customer.location.approve` (office user, 1.39.0).
   bool pinApprover = false;
-  List<String> get _permissions => [...permissions, if (pinApprover) 'customer.location.approve'];
+  /// Signed-in user holds `place.manage` (super admin, branch manager): moves places at once.
+  bool placeManager = false;
+  List<String> get _permissions => [...permissions, if (pinApprover) 'customer.location.approve', if (placeManager) 'place.manage'];
 
   /// My daily target (1.10.0). The demo shows the leaderboard; the real
   /// default of reports.leaderboardVisibleToStaff is false.
@@ -245,6 +247,14 @@ class FakeFieldApi implements HttpClientAdapter {
     serverChange('place', id, next);
   }
 
+  /// Tests: another office user moves a place directly (its version goes up; this phone does not know yet).
+  void officeMovesPlace(String id, {required double lat, required double lng}) {
+    final p = _places[id]!;
+    final next = {...p, 'location': {'lat': lat, 'lng': lng}, 'pendingMove': null, 'version': (p['version'] as int) + 1, 'updatedAt': clock.nowUtc().toIso8601String()};
+    _places[id] = next;
+    serverChange('place', id, next);
+  }
+
   /// Tests / demo: the office removes a place.
   void deletePlace(String id) {
     _places[id] = {..._places[id]!, 'status': 'deleted'};
@@ -281,15 +291,40 @@ class FakeFieldApi implements HttpClientAdapter {
       return {'mutationId': mutationId, 'result': 'applied', 'entityId': id, 'version': 1};
     }
     final p = find();
+    final moveTo = payload['location'] as Json?;
+    // 1.43.0: a direct move (place_edit with location) on a removed place is 409 PLACE_DELETED.
+    if (p != null && p['status'] == 'deleted' && entity == 'place_edit' && moveTo != null) {
+      return reject(409, 'INVALID_STATE', 'Place deleted', rule: 'PLACE_DELETED');
+    }
     if (p == null || p['status'] == 'deleted') return reject(404, 'NOT_FOUND', 'No such place');
     final id = p['id'] as String;
     if (entity == 'place_edit') {
-      if ((p['createdBy'] as Json)['id'] != user['id']) return reject(403, 'FORBIDDEN', 'not your place', rule: 'NOT_OWNER');
+      // place.manage edits and moves any place (1.42.0/1.43.0); field staff only change the words of their own.
+      const allowed = {'placeId', 'placeClientId', 'name', 'icon', 'note', 'location'};
+      if (payload.keys.any((k) => !allowed.contains(k))) return reject(400, 'VALIDATION_FAILED', 'Unknown field');
+      if (moveTo != null && !placeManager) return reject(403, 'FORBIDDEN', 'place.manage needed', rule: 'MOVE_NEEDS_MANAGE');
+      if (!placeManager && (p['createdBy'] as Json)['id'] != user['id']) return reject(403, 'FORBIDDEN', 'not your place', rule: 'NOT_OWNER');
+      if (moveTo != null) {
+        final lat = (moveTo['lat'] as num).toDouble(), lng = (moveTo['lng'] as num).toDouble();
+        if (lat < 20.5 || lat > 26.7 || lng < 88.0 || lng > 92.7) return reject(422, 'BUSINESS_RULE', 'Outside Bangladesh', rule: 'OUTSIDE_BANGLADESH');
+      }
+      final pm = p['pendingMove'] as Json?;
+      final loc = p['location'] as Json;
+      final samePoint = moveTo != null && moveTo['lat'] == loc['lat'] && moveTo['lng'] == loc['lng'];
+      final words = payload.keys.any((k) => const {'name', 'icon', 'note'}.contains(k));
+      // 1.43.0: the same point again changes nothing (no version bump).
+      if (samePoint && !words) return {'mutationId': mutationId, 'result': 'applied', 'entityId': id, 'version': p['version']};
       final next = {
         ...p,
         if (payload.containsKey('name')) 'name': payload['name'],
         if (payload.containsKey('icon')) 'icon': payload['icon'],
         if (payload.containsKey('note')) 'note': payload['note'],
+        // A direct move closes an open request as rejected ("moved by the office").
+        if (moveTo != null) ...{
+          'location': {'lat': moveTo['lat'], 'lng': moveTo['lng']},
+          'pendingMove': null,
+          if (pm != null) 'lastMoveDecision': {'decision': 'reject', 'by': _me, 'at': at, 'reason': 'Moved by the office', 'requestedBy': pm['requestedBy']},
+        },
         'version': (p['version'] as int) + 1,
         'updatedAt': at,
         'updatedBy': _me,

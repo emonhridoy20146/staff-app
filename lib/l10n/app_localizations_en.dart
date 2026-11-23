@@ -3591,4 +3591,34 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get placeMoveSend => 'Send to the office';
+
+  @override
+  String get placeMoveNow => 'Move';
+
+  @override
+  String get placeMoveNowHint =>
+      'Move the map until the pin sits on the right spot. The marker moves as soon as you save, even without internet.';
+
+  @override
+  String get placeMoveNowSave => 'Move here';
+
+  @override
+  String get placeMovedNow =>
+      'Moved. It is sent to the server when there is internet.';
+
+  @override
+  String get syncEntityPlace => 'Map place';
+
+  @override
+  String placeProblem(String name, String reason) {
+    return '$name: $reason';
+  }
+
+  @override
+  String get placeProblemMoveBack =>
+      'The move was refused, so the marker is back where the server has it.';
+
+  @override
+  String get placeErrMoveNeedsManage =>
+      'Only the office can move a place directly.';
 }

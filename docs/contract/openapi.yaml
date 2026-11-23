@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Howlader Field Operations API
-  version: 1.42.0
+  version: 1.43.0
   description: |
     Contract owned by field-api. Consumers (admin-web, staff-app) generate types from this file.
     Conventions (auth, pagination, idempotency, errors) are described in docs/05-api-contract.md.
@@ -1307,7 +1307,7 @@ paths:
       description: |
         Change name, icon or note (1.38.0, FR-PLC-003). Permission place.create: a field staff member edits only the places they created; other places
         and `location` (a direct move) need place.manage (403 otherwise). 1.42.0 (ADR-054): place.manage works on the places of every branch. A direct move closes an open move request as rejected ("moved by the office").
-        `If-Match: W/"<version>"` is optional; a stale version is 412. Offline phones use the sync mutation `place_edit`.
+        `If-Match: W/"<version>"` is optional; a stale version is 412. Offline phones use the sync mutation `place_edit`, which since 1.43.0 (ADR-055) also carries `location` with the same rules.
         409 INVALID_STATE: PLACE_DELETED. 422 BUSINESS_RULE: OUTSIDE_BANGLADESH.
       parameters: [ { $ref: '#/components/parameters/Id' }, { $ref: '#/components/parameters/IfMatch' } ]
       requestBody:
@@ -3294,7 +3294,11 @@ components:
             1.12.0: broadcast_ack → { broadcastId, at? } (when the staff tapped "read"; kept between sending and now).
             1.20.0: task_resolve_request → { taskId, note?, requestedAt? } (the staff member says the task is done; idempotent, a repeat is a replay). Needs permission task.work.
             1.38.0: place → PlaceCreate (same as POST /places; needs place.create; the result entityId is the server id) ·
-            place_edit → { placeId | placeClientId, name?, icon?, note? } (same as PATCH /places/{id} without location; placeClientId = the clientId of a place this user created, for edits made before the create was synced) ·
+            place_edit → { placeId | placeClientId, name?, icon?, note?, location? } (same as PATCH /places/{id} without If-Match; placeClientId = the clientId of a place this user created, for edits made before the create was synced).
+            1.43.0 (ADR-055): `location` { lat, lng } is a direct move by the office, applied only for place.manage with the PATCH rules: outside Bangladesh → rejected BUSINESS_RULE OUTSIDE_BANGLADESH;
+            deleted place → INVALID_STATE PLACE_DELETED; an open move request is closed as rejected ("Moved by the office"). Without place.manage an item with `location` is rejected
+            as a whole with FORBIDDEN (details.reason MOVE_NEEDS_MANAGE) and nothing in it is applied; send word edits as a separate item. Unknown payload fields are VALIDATION_FAILED.
+            The same point again changes nothing (no version bump). The device's capture time is the mutation's `createdAt`, as for every kind; the server does not use it for places ·
             place_move_request → { placeId | placeClientId, clientId, location, reason? } (same as POST /places/{id}/move-request). Both need place.create.
             Every mutation is idempotent by mutationId; the same id with a different payload is rejected with IDEMPOTENCY_MISMATCH.
         createdAt: { type: string, format: date-time }

@@ -10,11 +10,12 @@ import 'src/places_ui.dart';
 /// Map places (master FR-PLC-001..006, contract 1.38.0, field-api ADR-051): names on the map that
 /// OpenStreetMap lacks, shown on every map (customer map, pin setting) by zoom. Places of all branches
 /// are seen by all staff (contract 1.42.0). Long-press the customer map to add one (works offline);
-/// tap one to see it, change my own, or ask the office to move it.
+/// tap one to see it, change my own, or ask the office to move it. An office user (place.manage)
+/// moves it at once instead (offline-first, `place_edit` with location, ADR-M30).
 final placesManifest = FeatureManifest(
   name: 'places',
   flag: 'module.places',
-  permissions: const [Perm.placeView, Perm.placeCreate],
+  permissions: const [Perm.placeView, Perm.placeCreate, Perm.placeManage],
   routes: [GoRoute(path: '/places/:id/move', builder: (_, s) => PlaceMoveScreen(localId: s.pathParameters['id']!))],
   pullHandlers: [PlacePullHandler()],
   pushHandlers: [PlacePushHandler()],
