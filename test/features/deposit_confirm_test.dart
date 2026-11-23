@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart' show Uint8List;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image/image.dart' as img;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:staff_app/core/format/digits.dart';
@@ -13,7 +15,7 @@ void main() {
   const plan = DepositPlan(cashPoisha: 820000, cashCount: 2, nonCashPoisha: 120000, nonCashCount: 1);
 
   /// Opens the confirm; the returned record holds the answer once the dialog closes.
-  Future<List<bool?>> open(WidgetTester t, {required String lang, required bool online}) async {
+  Future<List<bool?>> open(WidgetTester t, {required String lang, required bool online, Uint8List? slip}) async {
     final fmt = Fmt(lang, lang == 'bn' ? DigitStyle.bangla : DigitStyle.latin);
     final answers = <bool?>[];
     await t.pumpWidget(ProviderScope(
@@ -25,7 +27,7 @@ void main() {
         home: Builder(
           builder: (c) => Scaffold(
             body: TextButton(
-              onPressed: () async => answers.add(await showDialog<bool>(context: c, builder: (_) => DepositConfirmDialog(plan: plan, online: online))),
+              onPressed: () async => answers.add(await showDialog<bool>(context: c, builder: (_) => DepositConfirmDialog(plan: plan, online: online, slip: slip))),
               child: const Text('open'),
             ),
           ),
@@ -77,5 +79,20 @@ void main() {
 
     await open(t, lang: 'en', online: false);
     expect(find.textContaining('as soon as the phone is online'), findsOneWidget);
+  });
+
+  testWidgets('a bank deposit shows its slip photo (FR-M-065); others show none', (t) async {
+    final slip = Uint8List.fromList(img.encodeJpg(img.Image(width: 64, height: 48)));
+    await open(t, lang: 'en', online: true, slip: slip);
+    expect(find.text('Bank deposit slip'), findsOneWidget);
+    expect(find.byType(SlipThumb), findsOneWidget);
+    expect(find.bySemanticsLabel('Bank deposit slip'), findsWidgets);
+    expect(find.text('The deposit is sent once its slip photo is uploaded.'), findsOneWidget);
+    await t.tap(find.text('Cancel'));
+    await t.pumpAndSettle();
+
+    await open(t, lang: 'bn', online: false);
+    expect(find.byType(SlipThumb), findsNothing);
+    expect(find.text('ব্যাংক জমা স্লিপ'), findsNothing);
   });
 }

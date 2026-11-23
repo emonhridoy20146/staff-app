@@ -226,6 +226,16 @@ class MediaService {
 
   static final _memory = <String, Uint8List>{};
 
+  /// The photo as saved on this phone, e.g. for a thumbnail; null once purged or unreadable.
+  Future<Uint8List?> localBytes(MediaQueueRow m) async {
+    if (m.localPath.startsWith('memory://')) return _memory[m.clientId];
+    try {
+      return await File(m.localPath).readAsBytes();
+    } catch (_) {
+      return null;
+    }
+  }
+
   /// Uploads pending media (independent of data sync; Wi-Fi not required).
   Future<void> uploadPending() async {
     if (_uploading) return;

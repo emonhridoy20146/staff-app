@@ -19,7 +19,7 @@ System journeys J-1…J-12 and the FR traceability matrix: `field-api/docs/07-te
 | M-E2 | Airplane mode: 3 collections (cash, bKash, Nagad) + 2 visits with photos + 1 promise → kill app → reboot emulator → network on → all synced once (server count check) |
 | M-E3 | Duplicate tap on hold-to-confirm and network timeout mid-push → single server record |
 | M-E4 | Conflict returned → Problems shows message → manager resolves (API) → app shows resolution after pull |
-| M-E5 | Cash limit: exceed 80 % offline → banner; deposit everything (contract 1.35.0, FR-M-059): confirm names cash, mobile/bank and count; on-hand drops to 0 at once and the collections lock, offline too; a refused deposit shows in Problems and the collections are back in hand (`test/flows/deposit_flow_test.dart`) |
+| M-E5 | Cash limit: exceed 80 % offline → banner; deposit everything (contract 1.35.0, FR-M-059): confirm names cash, mobile/bank and count; on-hand drops to 0 at once and the collections lock, offline too; a refused deposit shows in Problems and the collections are back in hand (`test/flows/deposit_flow_test.dart`). Bank (FR-M-065): Deposit disabled until a camera photo of the slip is taken (no gallery); the slip shows on the confirm and in the history; offline the deposit waits and goes with `slipMediaId` once the photo uploads (`deposit_slip_sheet_test.dart`) |
 | M-E6 | Handover incoming accept → new customers appear; outgoing device keeps queued notes until synced |
 | M-E7 | Permission `tag.set` revoked → tag action disappears after pull |
 | M-E8 | Version gate 426 → update screen, queue intact |

@@ -2065,12 +2065,17 @@
     }
   },
   "cashDepositWaitingLock": "A deposit is still waiting to be sent, so nothing in hand can be changed or deleted now.",
+  "cashSlipTitle": "Bank deposit slip",
+  "cashSlipNeeded": "A bank deposit needs a photo of the deposit slip. Camera only.",
+  "cashSlipTake": "Take a photo of the slip",
+  "cashSlipRetake": "Retake",
+  "cashSlipUploading": "The deposit is sent once its slip photo is uploaded.",
   "cashInHandNonCashTitle": "Mobile / bank collections (go with the deposit)",
   "cashInHandNotSent": "Not sent yet; it can be changed once it is sent",
   "depositFailedMustBeAll": "Not deposited: the server says you hold more cash than this deposit (something changed meanwhile). A deposit must take all of it.",
   "depositFailedExceeds": "Not deposited: the server says you hold less cash than this deposit (a collection was left out or changed).",
   "depositFailedNothing": "Not deposited: there was nothing in hand to deposit.",
-  "depositFailedSlip": "Not deposited: a bank deposit needs a photo of the slip. Deposit to the branch cashier or the manager.",
+  "depositFailedSlip": "Not deposited: the server got no slip photo for this bank deposit. Deposit again and take a photo of the slip, or deposit to the branch cashier or the manager.",
   "depositFailedChanged": "Not deposited: a collection was changed or cancelled while it was being deposited.",
   "depositFailedOther": "Not deposited ({code}).",
   "@depositFailedOther": {

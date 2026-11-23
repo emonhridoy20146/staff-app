@@ -7,6 +7,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../core/api/api_models.dart';
 import '../../../core/db/app_database.dart';
+import '../../../core/media/media.dart';
 import '../../../core/providers.dart';
 import '../../../core/settings/ui_prefs.dart';
 import '../../../core/sync/sync_handlers.dart';
@@ -76,6 +77,14 @@ final depositsProvider = StreamProvider<List<DepositRow>>((ref) {
 final depositByClientIdProvider = StreamProvider.family<DepositRow?, String>((ref, clientId) {
   final db = ref.watch(databaseProvider);
   return (db.select(db.deposits)..where((t) => t.clientId.equals(clientId))).watchSingleOrNull();
+});
+
+/// A bank slip photo kept on this phone, by its media clientId (`deposits.slip_media_client_id`), for
+/// its thumbnail; null once the file is purged or unreadable.
+final depositSlipProvider = FutureProvider.family<Uint8List?, String>((ref, mediaClientId) async {
+  final db = ref.watch(databaseProvider);
+  final m = await (db.select(db.mediaQueue)..where((t) => t.clientId.equals(mediaClientId))).getSingleOrNull();
+  return m == null ? null : ref.read(mediaServiceProvider).localBytes(m);
 });
 
 /// A deposit saved on this phone and not sent yet: until it is, nothing in hand may be changed.
@@ -210,9 +219,11 @@ class _DepositTile extends ConsumerWidget {
       DepositState.deleted => (AppStatus.overdue, l.statusDeleted),
     };
     final count = d.collectionCount;
+    final slipId = d.slipMediaClientId;
+    final slip = slipId == null ? null : ref.watch(depositSlipProvider(slipId)).value;
     return ListTile(
       contentPadding: EdgeInsets.zero,
-      leading: const Icon(Icons.savings_outlined),
+      leading: slip == null ? const Icon(Icons.savings_outlined) : SlipThumb(slip, size: Sizes.minTarget, label: l.cashSlipTitle),
       title: MoneyText(d.amountPoisha, style: t.bodyLarge!.copyWith(fontWeight: FontWeight.w600)),
       subtitle: Text([f.dateTime(d.depositedAt), if (count != null) l.cashDepositLine(f.num(count), f.money(d.nonCashPoisha ?? 0))].join('\n')),
       trailing: StatusBadge(status, dense: true, label: label),
@@ -231,9 +242,12 @@ Future<void> showDepositSheet(BuildContext context) => showModalBottomSheet<void
 /// The confirm before a deposit is saved: what goes, that it goes to the ERP as payments (now when
 /// online, else as soon as the phone is online) and that it cannot be changed or deleted after.
 class DepositConfirmDialog extends ConsumerWidget {
-  const DepositConfirmDialog({super.key, required this.plan, required this.online});
+  const DepositConfirmDialog({super.key, required this.plan, required this.online, this.slip});
   final DepositPlan plan;
   final bool online;
+
+  /// The bank slip photo (bank deposits only).
+  final Uint8List? slip;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -243,7 +257,19 @@ class DepositConfirmDialog extends ConsumerWidget {
     return AlertDialog(
       icon: const Icon(Icons.savings_rounded),
       title: Text(l.cashDepositConfirmTitle),
-      content: Text(online ? l.cashDepositConfirmOnline(cash, nonCash, count) : l.cashDepositConfirmOffline(cash, nonCash, count)),
+      content: SingleChildScrollView(
+        child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          Text(online ? l.cashDepositConfirmOnline(cash, nonCash, count) : l.cashDepositConfirmOffline(cash, nonCash, count)),
+          if (slip != null) ...[
+            const SizedBox(height: Space.s16),
+            Text(l.cashSlipTitle, style: Theme.of(context).textTheme.titleSmall),
+            const SizedBox(height: Space.s8),
+            SlipThumb(slip!, label: l.cashSlipTitle),
+            const SizedBox(height: Space.s8),
+            Text(l.cashSlipUploading, style: Theme.of(context).textTheme.bodySmall),
+          ],
+        ]),
+      ),
       actions: [
         TextButton(onPressed: () => Navigator.pop(context, false), child: Text(l.actionCancel)),
         FilledButton(onPressed: () => Navigator.pop(context, true), child: Text(l.cashDepositSubmit)),
@@ -263,6 +289,16 @@ class _DepositSheetState extends ConsumerState<_DepositSheet> {
   String _dest = 'branch_cashier';
   bool _busy = false;
 
+  /// Camera photo of the bank deposit slip (FR-M-065); only used when [_dest] is bank.
+  Uint8List? _slip;
+
+  bool get _needsSlip => depositNeedsSlip(_dest);
+
+  Future<void> _takeSlip() async {
+    final bytes = await ref.read(photoCapturerProvider).capture(context);
+    if (bytes != null && mounted) setState(() => _slip = bytes);
+  }
+
   @override
   void dispose() {
     _ref.dispose();
@@ -271,12 +307,17 @@ class _DepositSheetState extends ConsumerState<_DepositSheet> {
 
   Future<void> _submit(DepositPlan plan) async {
     final l = AppLocalizations.of(context);
+    final slip = _needsSlip ? _slip : null;
+    if (_needsSlip && slip == null) {
+      showAppSnack(context, l.cashSlipNeeded, icon: Icons.error_outline_rounded);
+      return;
+    }
     final online = (ref.read(syncStatusProvider).value ?? ref.read(syncEngineProvider).current).online;
-    final ok = await showDialog<bool>(context: context, builder: (_) => DepositConfirmDialog(plan: plan, online: online));
+    final ok = await showDialog<bool>(context: context, builder: (_) => DepositConfirmDialog(plan: plan, online: online, slip: slip));
     if (ok != true || !mounted) return;
     setState(() => _busy = true);
     final reference = _ref.text.trim().isEmpty ? null : _ref.text.trim();
-    final r = await ref.read(recordDepositProvider).call(shown: plan, destination: _dest, reference: reference);
+    final r = await ref.read(recordDepositProvider).call(shown: plan, destination: _dest, reference: reference, slipPhoto: slip);
     if (!mounted) return;
     setState(() => _busy = false);
     switch (r) {
@@ -287,6 +328,8 @@ class _DepositSheetState extends ConsumerState<_DepositSheet> {
         showAppSnack(context, l.cashDepositChanged, icon: Icons.error_outline_rounded);
       case DepositSaveResult.nothing:
         showAppSnack(context, l.cashDepositNothing, icon: Icons.error_outline_rounded);
+      case DepositSaveResult.slipRequired:
+        showAppSnack(context, l.cashSlipNeeded, icon: Icons.error_outline_rounded);
     }
   }
 
@@ -336,15 +379,56 @@ class _DepositSheetState extends ConsumerState<_DepositSheet> {
             selected: {_dest},
             onSelectionChanged: (s) => setState(() => _dest = s.first),
           ),
+          // FR-M-065: a bank deposit needs a camera photo of the slip (field-api SLIP_REQUIRED).
+          if (_needsSlip) ...[
+            const SizedBox(height: Space.s16),
+            if (_slip == null) ...[
+              InfoBanner(icon: Icons.receipt_long_rounded, text: l.cashSlipNeeded, tone: BannerTone.warning),
+              const SizedBox(height: Space.s8),
+              OutlinedButton.icon(onPressed: _busy ? null : _takeSlip, icon: const Icon(Icons.photo_camera_rounded), label: Text(l.cashSlipTake)),
+            ] else ...[
+              Text(l.cashSlipTitle, style: t.titleSmall),
+              const SizedBox(height: Space.s8),
+              Stack(children: [
+                SlipThumb(_slip!, label: l.cashSlipTitle),
+                Positioned(
+                  right: Space.s8,
+                  bottom: Space.s8,
+                  child: FilledButton.tonalIcon(onPressed: _busy ? null : _takeSlip, icon: const Icon(Icons.refresh_rounded), label: Text(l.cashSlipRetake)),
+                ),
+              ]),
+            ],
+          ],
           const SizedBox(height: Space.s16),
           TextField(controller: _ref, decoration: InputDecoration(labelText: l.cashReference)),
           const SizedBox(height: Space.s24),
           FilledButton.icon(
-            onPressed: plan == null || plan.isEmpty || _busy ? null : () => _submit(plan),
+            onPressed: plan == null || plan.isEmpty || _busy || (_needsSlip && _slip == null) ? null : () => _submit(plan),
             icon: const Icon(Icons.savings_rounded),
             label: Text(l.cashDepositSubmit),
           ),
         ]),
+      ),
+    );
+  }
+}
+
+/// A bank slip photo: a square thumbnail of [size] or, without it, a 4:3 preview as wide as there is room.
+class SlipThumb extends StatelessWidget {
+  const SlipThumb(this.bytes, {super.key, required this.label, this.size});
+  final Uint8List bytes;
+  final String label;
+  final double? size;
+
+  @override
+  Widget build(BuildContext context) {
+    final image = Image.memory(bytes, fit: BoxFit.cover, gaplessPlayback: true);
+    return Semantics(
+      image: true,
+      label: label,
+      child: ClipRRect(
+        borderRadius: size == null ? Radii.brXl : Radii.brSm,
+        child: size == null ? AspectRatio(aspectRatio: 4 / 3, child: image) : SizedBox.square(dimension: size, child: image),
       ),
     );
   }
