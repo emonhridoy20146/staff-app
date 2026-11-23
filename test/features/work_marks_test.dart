@@ -54,16 +54,18 @@ void main() {
 
   test('invoice totals of the customers in view (FR-M-052): cancelled ones not counted, open = still takes money', () {
     final plans = [
-      (customerId: 'a', status: 'active', outstandingPoisha: 5000),
-      (customerId: 'a', status: 'closed', outstandingPoisha: 0),
-      (customerId: 'a', status: 'cancelled', outstandingPoisha: 900),
-      (customerId: 'b', status: 'active', outstandingPoisha: 0), // paid up, still an invoice
-      (customerId: 'b', status: 'overdue', outstandingPoisha: 100),
-      (customerId: 'c', status: 'active', outstandingPoisha: 100), // not in view
+      (customerId: 'a', status: 'active', outstandingPoisha: 5000, kind: 'installment'),
+      (customerId: 'a', status: 'closed', outstandingPoisha: 0, kind: 'installment'),
+      (customerId: 'a', status: 'cancelled', outstandingPoisha: 900, kind: 'credit'),
+      // a cash sale (1.44.0) still owed is `closed`: counted in the total, never open
+      (customerId: 'a', status: 'closed', outstandingPoisha: 2000, kind: 'cash'),
+      (customerId: 'b', status: 'active', outstandingPoisha: 0, kind: 'installment'), // paid up, still an invoice
+      (customerId: 'b', status: 'overdue', outstandingPoisha: 100, kind: 'credit'),
+      (customerId: 'c', status: 'active', outstandingPoisha: 100, kind: 'installment'), // not in view
     ];
-    expect(invoiceTotals(plans, {'a', 'b'}), (total: 4, open: 2));
-    expect(invoiceTotals(plans, {'a'}), (total: 2, open: 1));
-    expect(invoiceTotals(plans, {'a', 'b', 'c'}), (total: 5, open: 3));
+    expect(invoiceTotals(plans, {'a', 'b'}), (total: 5, open: 2));
+    expect(invoiceTotals(plans, {'a'}), (total: 3, open: 1));
+    expect(invoiceTotals(plans, {'a', 'b', 'c'}), (total: 6, open: 3));
     expect(invoiceTotals(plans, const {}), (total: 0, open: 0));
     expect(invoiceTotals(const [], {'a'}), (total: 0, open: 0));
   });

@@ -92,10 +92,15 @@ class SyncChip extends ConsumerWidget {
   }
 }
 
-/// Always-visible connection line (owner request 2026-11-19): green dot + "অনলাইন" while the server can be
-/// reached, grey dot + "অফলাইন" when the phone has no network or the last sync could not reach the server.
-class OnlineStrip extends ConsumerWidget {
-  const OnlineStrip({super.key});
+/// Always-visible connection mark in the app's top bar, just left of the GPS icon (owner requests 2026-11-19,
+/// 2026-11-23; it was a strip above the bottom navigation before): green dot + "অনলাইন" while the server can be
+/// reached, grey dot + "অফলাইন" when the phone has no network or the last sync could not reach the server. The
+/// word is always there, so the state never rests on colour alone.
+class OnlineDot extends ConsumerWidget {
+  const OnlineDot({super.key, this.color});
+
+  /// Text colour; defaults to `onSurface`. The top bar passes `onPrimaryContainer`.
+  final Color? color;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -104,22 +109,25 @@ class OnlineStrip extends ConsumerWidget {
     final online = (ref.watch(syncStatusProvider).value ?? ref.read(syncEngineProvider).current).online;
     final label = online ? l.networkOnline : l.syncOffline;
     final dot = online ? context.semanticColors.success.fg : cs.outline;
+    final fg = color ?? cs.onSurface;
     return Semantics(
       liveRegion: true,
       label: label,
       excludeSemantics: true,
-      child: ColoredBox(
-        color: cs.surfaceContainer,
-        child: SizedBox(
-          height: 28,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(width: 10, height: 10, decoration: BoxDecoration(color: dot, shape: BoxShape.circle)),
-              const SizedBox(width: Space.s8),
-              Text(label, style: Theme.of(context).textTheme.labelMedium!.copyWith(color: online ? cs.onSurface : cs.onSurfaceVariant)),
-            ],
-          ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: Space.s4),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              key: const Key('online-dot'),
+              width: 10,
+              height: 10,
+              decoration: BoxDecoration(color: dot, shape: BoxShape.circle, border: Border.all(color: cs.surface, width: 1.5)),
+            ),
+            const SizedBox(width: Space.s4),
+            Text(label, style: Theme.of(context).textTheme.labelMedium!.copyWith(color: online ? fg : fg.withValues(alpha: 0.75)), maxLines: 1),
+          ],
         ),
       ),
     );

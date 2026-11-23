@@ -910,7 +910,6 @@
   "todayNotifications": "Notifications",
   "todayProgressTitle": "Today's progress",
   "todayNoTarget": "No target set",
-  "todayCollectFab": "Collect",
   "todayMore": "{count} more",
   "@todayMore": {
     "placeholders": {
@@ -2187,5 +2186,49 @@
     "placeholders": { "name": { "type": "String" }, "reason": { "type": "String" } }
   },
   "placeProblemMoveBack": "The move was refused, so the marker is back where the server has it.",
-  "placeErrMoveNeedsManage": "Only the office can move a place directly."
+  "placeErrMoveNeedsManage": "Only the office can move a place directly.",
+  "filterInstallment": "Installment",
+  "filterCredit": "Credit sale",
+  "kindInstallment": "Installment",
+  "kindCredit": "Credit",
+  "kindInstallmentCount": "{n} installment",
+  "@kindInstallmentCount": {
+    "placeholders": { "n": { "type": "String" } }
+  },
+  "kindCreditCount": "{n} credit",
+  "@kindCreditCount": {
+    "placeholders": { "n": { "type": "String" } }
+  },
+  "kindLabelA11y": "Open invoices: {kinds}",
+  "@kindLabelA11y": {
+    "placeholders": { "kinds": { "type": "String" } }
+  },
+  "monthVisitWho": "Visit: {name}",
+  "@monthVisitWho": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "monthToday": "today",
+  "monthPaidAmount": "Paid: {amount}",
+  "@monthPaidAmount": {
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "monthPromiseAmount": "Promise: {amount}",
+  "@monthPromiseAmount": {
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "promisedBy": "Promised by {name}",
+  "@promisedBy": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "kindCash": "Cash",
+  "kindCashCount": "{n} cash",
+  "@kindCashCount": {
+    "placeholders": { "n": { "type": "String" } }
+  },
+  "planCashSale": "Cash sale",
+  "monthOffice": "office",
+  "monthMore": "+{n}",
+  "@monthMore": {
+    "placeholders": { "n": { "type": "String" } }
+  }
 }

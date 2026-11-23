@@ -1530,9 +1530,6 @@ class AppLocalizationsBn extends AppLocalizations {
   String get todayNoTarget => 'লক্ষ্য ঠিক করা নেই';
 
   @override
-  String get todayCollectFab => 'আদায়';
-
-  @override
   String todayMore(String count) {
     return 'আরও $count জন';
   }
@@ -3602,4 +3599,73 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get placeErrMoveNeedsManage => 'সরাসরি জায়গা সরাতে পারে শুধু অফিস।';
+
+  @override
+  String get filterInstallment => 'কিস্তি';
+
+  @override
+  String get filterCredit => 'বাকি বিক্রি';
+
+  @override
+  String get kindInstallment => 'কিস্তি';
+
+  @override
+  String get kindCredit => 'বাকি';
+
+  @override
+  String kindInstallmentCount(String n) {
+    return '$n কিস্তি';
+  }
+
+  @override
+  String kindCreditCount(String n) {
+    return '$n বাকি';
+  }
+
+  @override
+  String kindLabelA11y(String kinds) {
+    return 'খোলা ইনভয়েস: $kinds';
+  }
+
+  @override
+  String monthVisitWho(String name) {
+    return 'ভিজিট: $name';
+  }
+
+  @override
+  String get monthToday => 'আজ';
+
+  @override
+  String monthPaidAmount(String amount) {
+    return 'পরিশোধ: $amount';
+  }
+
+  @override
+  String monthPromiseAmount(String amount) {
+    return 'প্রতিশ্রুতি: $amount';
+  }
+
+  @override
+  String promisedBy(String name) {
+    return 'প্রতিশ্রুতি নিয়েছেন: $name';
+  }
+
+  @override
+  String get kindCash => 'নগদ';
+
+  @override
+  String kindCashCount(String n) {
+    return '$n নগদ';
+  }
+
+  @override
+  String get planCashSale => 'নগদ বিক্রি';
+
+  @override
+  String get monthOffice => 'অফিস';
+
+  @override
+  String monthMore(String n) {
+    return '+$n';
+  }
 }

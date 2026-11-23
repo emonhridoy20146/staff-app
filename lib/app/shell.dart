@@ -56,23 +56,20 @@ class AppShell extends ConsumerWidget {
           Expanded(child: Builder(builder: (context) => MediaQuery.removePadding(context: context, removeTop: true, child: shell))),
         ],
       ),
-      bottomNavigationBar: Column(mainAxisSize: MainAxisSize.min, children: [
-        const OnlineStrip(),
-        NavigationBar(
-          selectedIndex: shell.currentIndex,
-          onDestinationSelected: (i) => shell.goBranch(i, initialLocation: i == shell.currentIndex),
-          destinations: [
-            NavigationDestination(icon: const Icon(Icons.today_outlined), selectedIcon: const Icon(Icons.today_rounded), label: l.navToday),
-            NavigationDestination(icon: const Icon(Icons.people_alt_outlined), selectedIcon: const Icon(Icons.people_alt_rounded), label: l.navCustomers),
-            NavigationDestination(icon: const Icon(Icons.map_outlined), selectedIcon: const Icon(Icons.map_rounded), label: l.navMap),
-            NavigationDestination(
-              icon: Badge(isLabelVisible: meBadge > 0, label: Text(f.num(meBadge)), child: const Icon(Icons.person_outline_rounded)),
-              selectedIcon: Badge(isLabelVisible: meBadge > 0, label: Text(f.num(meBadge)), child: const Icon(Icons.person_rounded)),
-              label: l.navMe,
-            ),
-          ],
-        ),
-      ]),
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: shell.currentIndex,
+        onDestinationSelected: (i) => shell.goBranch(i, initialLocation: i == shell.currentIndex),
+        destinations: [
+          NavigationDestination(icon: const Icon(Icons.today_outlined), selectedIcon: const Icon(Icons.today_rounded), label: l.navToday),
+          NavigationDestination(icon: const Icon(Icons.people_alt_outlined), selectedIcon: const Icon(Icons.people_alt_rounded), label: l.navCustomers),
+          NavigationDestination(icon: const Icon(Icons.map_outlined), selectedIcon: const Icon(Icons.map_rounded), label: l.navMap),
+          NavigationDestination(
+            icon: Badge(isLabelVisible: meBadge > 0, label: Text(f.num(meBadge)), child: const Icon(Icons.person_outline_rounded)),
+            selectedIcon: Badge(isLabelVisible: meBadge > 0, label: Text(f.num(meBadge)), child: const Icon(Icons.person_rounded)),
+            label: l.navMe,
+          ),
+        ],
+      ),
     );
     // Back from the root of the signed-in app asks before closing it.
     return ExitConfirmScope(child: scaffold);
@@ -178,6 +175,8 @@ class _BranchBar extends StatelessWidget {
                     ),
             ),
             const Spacer(),
+            // Online / offline, just left of the GPS icon (owner request 2026-11-23; was a strip at the bottom).
+            OnlineDot(color: cs.onPrimaryContainer),
             const GpsStatusIcon(),
             IconButton(
               icon: Badge(

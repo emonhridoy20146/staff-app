@@ -14,6 +14,7 @@ import '../../../../core/theme/status_colors.dart';
 import '../../../../core/theme/tokens.dart';
 import '../../../../core/time/clock.dart';
 import '../../../../core/ui/dashed_border.dart';
+import '../../../../core/ui/back_button.dart';
 import '../../../../core/ui/common.dart';
 import '../../../../core/ui/money_text.dart';
 import '../../../../core/ui/status_badge.dart';
@@ -24,10 +25,12 @@ import '../pin_correction.dart';
 import '../customer_providers.dart';
 import '../data/customer_repository.dart';
 import '../domain/customer.dart';
+import '../domain/month_people.dart';
 import '../domain/phones.dart';
 import '../domain/schedule.dart';
 import '../domain/work_marks.dart';
 import '../phone_numbers.dart';
+import 'invoice_kind_label.dart';
 
 Future<void> launchCall(String phone) => launchUrl(Uri(scheme: 'tel', path: phone));
 
@@ -124,6 +127,10 @@ class _DetailState extends ConsumerState<_Detail> {
           SliverAppBar(
             pinned: true,
             backgroundColor: cs.surfaceContainer,
+            // Owner request 2026-11-23: a bigger back button with a tonal background and a visible ripple.
+            automaticallyImplyLeading: false,
+            leading: Navigator.of(context).canPop() ? const AppBackButton() : null,
+            leadingWidth: Sizes.minTarget + Space.s16 + Space.s8,
             title: Text(customer.code, style: AppTheme.mono(Theme.of(context).textTheme.titleMedium!)),
             actions: [
               IconButton(
@@ -296,7 +303,20 @@ class _Header extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(customer.row.nameBn, style: t.titleLarge),
+          // FR-M-066: the open invoices by type at the right of the name ("১ কিস্তি · ২ বাকি").
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(child: Text(customer.row.nameBn, style: t.titleLarge)),
+              if (!customer.kinds.isEmpty) ...[
+                const SizedBox(width: Space.s8),
+                Padding(
+                  padding: const EdgeInsets.only(top: Space.s4),
+                  child: InvoiceKindLabel(key: const Key('header-kinds'), kinds: customer.kinds, counted: true),
+                ),
+              ],
+            ],
+          ),
           if (customer.row.nameEn != null) Text(customer.row.nameEn!, style: t.bodyMedium!.copyWith(color: cs.onSurfaceVariant)),
           const SizedBox(height: Space.s12),
           Wrap(
@@ -674,6 +694,14 @@ class _MonthCard extends ConsumerWidget {
     final plans = ref.watch(customerPlansProvider(customer.id)).value ?? const <PlanWithSchedule>[];
     final invoices = plans.where((p) => p.plan.status != 'cancelled').toList();
     final lastVisit = customer.row.lastVisitAt;
+    // FR-M-068: who did each, from the names on the phone; a name the phone does not have is left out.
+    final who = ref.watch(monthPeopleProvider(customer.id)).value ?? MonthPeople.none;
+    final promiseAmount = customer.row.openPromisePoisha;
+    String? name(Who? w) => w == null ? null : [w.office ? l.monthOffice : w.name, if (w.more > 0) l.monthMore(f.num(w.more))].join(' ');
+    final visitBy = name(who.visitBy);
+    final paidBy = name(who.paidBy);
+    final pendingBy = name(who.pendingBy);
+    final promiseBy = name(who.promiseBy);
     Widget line(IconData icon, Color color, String text) => Padding(
           padding: const EdgeInsets.only(top: Space.s8),
           child: Row(children: [
@@ -701,15 +729,24 @@ class _MonthCard extends ConsumerWidget {
             ],
           ]),
           switch (m.visit) {
-            VisitMark.today => line(Icons.directions_walk_rounded, sem.success.fg, l.marksVisitToday),
-            VisitMark.month => line(Icons.directions_walk_rounded, sem.info.fg, l.monthLastVisit(f.date(businessDateOf(lastVisit!)))),
+            VisitMark.today => line(Icons.directions_walk_rounded, sem.success.fg,
+                visitBy == null ? l.marksVisitToday : '${l.monthVisitWho(visitBy)} · ${l.monthToday}'),
+            VisitMark.month => line(Icons.directions_walk_rounded, sem.info.fg,
+                visitBy == null ? l.monthLastVisit(f.date(businessDateOf(lastVisit!))) : '${l.monthVisitWho(visitBy)} · ${f.date(businessDateOf(lastVisit!))}'),
             VisitMark.none => line(Icons.directions_walk_rounded, cs.outline, l.marksVisitNone),
           },
-          if (paid > 0) line(Icons.payments_rounded, sc.of(AppStatus.paid).fg, l.monthPaid(f.money(paid))),
-          if (customer.row.pendingFieldPoisha > 0) line(Icons.cloud_upload_outlined, sc.of(AppStatus.pending).fg, l.monthPending(f.money(customer.row.pendingFieldPoisha))),
+          // ERP money of the month, with the collector the ERP recorded (an office payment: the person it names).
+          if (paid > 0) line(Icons.payments_rounded, sc.of(AppStatus.paid).fg, [l.monthPaidAmount(f.money(paid)), ?paidBy].join(' · ')),
+          if (customer.row.pendingFieldPoisha > 0) line(Icons.cloud_upload_outlined, sc.of(AppStatus.pending).fg, [l.monthPending(f.money(customer.row.pendingFieldPoisha)), ?pendingBy].join(' · ')),
           if (paid == 0 && customer.row.pendingFieldPoisha == 0) line(Icons.payments_rounded, cs.outline, l.marksPaidNone),
           if (customer.row.openPromiseDate != null)
-            line(Icons.handshake_rounded, sc.of(AppStatus.promised).fg, l.monthPromise(f.date(customer.row.openPromiseDate!)))
+            line(
+              Icons.handshake_rounded,
+              sc.of(AppStatus.promised).fg,
+              promiseAmount == null
+                  ? [l.monthPromise(f.date(customer.row.openPromiseDate!)), ?promiseBy].join(' · ')
+                  : [l.monthPromiseAmount(f.money(promiseAmount)), ?promiseBy, f.date(customer.row.openPromiseDate!)].join(' · '),
+            )
           else
             line(Icons.handshake_rounded, cs.outline, l.marksPromiseNone),
         ]),
@@ -751,7 +788,7 @@ class _Plans extends ConsumerWidget {
                     Text(
                       [
                         if (p.plan.invoiceNo != null) p.plan.invoiceNo!,
-                        if (p.credit) l.planCreditSale else l.detailInstallments(f.num(p.paidCount), f.num(p.shownCount)),
+                        if (p.cash) l.planCashSale else if (p.credit) l.planCreditSale else l.detailInstallments(f.num(p.paidCount), f.num(p.shownCount)),
                         ?_frequency(l, f, p),
                       ].join(' · '),
                       style: t.bodySmall!.copyWith(color: cs.onSurfaceVariant),
@@ -771,7 +808,11 @@ class _Plans extends ConsumerWidget {
                     const SizedBox(height: Space.s4),
                     Text(
                       [
-                        p.credit ? l.planPayBy(f.date(p.plan.finalDueDate, withYear: true)) : l.detailFinalDue(f.date(p.plan.finalDueDate, withYear: true)),
+                        // A cash sale has no due date (contract 1.44.0); the sale date stands instead when known.
+                        if (p.cash)
+                          ?(p.plan.saleDate == null ? null : f.date(p.plan.saleDate!, withYear: true))
+                        else
+                          p.credit ? l.planPayBy(f.date(p.plan.finalDueDate, withYear: true)) : l.detailFinalDue(f.date(p.plan.finalDueDate, withYear: true)),
                         if (p.plan.writtenOffPoisha > 0) l.planWrittenOff(f.money(p.plan.writtenOffPoisha)),
                       ].join(' · '),
                       style: t.bodySmall!.copyWith(color: cs.onSurfaceVariant),
@@ -780,7 +821,7 @@ class _Plans extends ConsumerWidget {
                       const SizedBox(height: Space.s4),
                       Text(
                         [
-                          if (!p.credit) l.planRemainingInstallments(f.num(p.dues.remainingCount)),
+                          if (!p.credit && !p.cash) l.planRemainingInstallments(f.num(p.dues.remainingCount)),
                           if (p.dues.overduePoisha > 0) l.collectChipOverdue(f.money(p.dues.overduePoisha)),
                         ].join(' · '),
                         style: t.bodySmall!.copyWith(
@@ -1087,7 +1128,7 @@ List<PlanWithSchedule> sortedPlans(List<PlanWithSchedule> plans) => [...plans]
   });
 
 String? _frequency(AppLocalizations l, Fmt f, PlanWithSchedule p) {
-  if (p.credit) return null;
+  if (p.credit || p.cash) return null;
   return switch (p.plan.frequency) {
     'monthly' => l.planFreqMonthly,
     'weekly' => l.planFreqWeekly,

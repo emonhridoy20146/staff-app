@@ -10,6 +10,7 @@ import '../../../../core/ui/status_badge.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../customer_providers.dart';
 import '../domain/customer.dart';
+import 'invoice_kind_label.dart';
 import 'work_marks_row.dart';
 
 /// 88 dp customer row (design guide §5.2): status-tinted initial, name,
@@ -77,12 +78,15 @@ class CustomerTile extends ConsumerWidget {
                     // FR-M-038: what was done with the customer this month, in every filter.
                     const SizedBox(height: Space.s4 + 2),
                     WorkMarksRow(customer: customer),
-                    if (badges.isNotEmpty) ...[
+                    if (badges.isNotEmpty || !customer.kinds.isEmpty) ...[
                       const SizedBox(height: Space.s4 + 2),
                       Wrap(
                         spacing: Space.s4 + 2,
                         runSpacing: Space.s4,
+                        crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
+                          // FR-M-066: "কিস্তি" / "বাকি", or the count of each when there are several invoices.
+                          if (!customer.kinds.isEmpty) InvoiceKindLabel(kinds: customer.kinds),
                           for (final b in badges)
                             StatusBadge(
                               b,

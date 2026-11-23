@@ -26,6 +26,12 @@ String filterLabel(AppLocalizations l, CustomerFilter f) => switch (f) {
       CustomerFilter.noPin => l.filterNoPin,
     };
 
+String kindFilterLabel(AppLocalizations l, InvoiceKind k) => switch (k) {
+      InvoiceKind.installment => l.filterInstallment,
+      InvoiceKind.credit => l.filterCredit,
+      InvoiceKind.cash => l.kindCash,
+    };
+
 String sortLabel(AppLocalizations l, CustomerSort s) => switch (s) {
       CustomerSort.distance => l.sortDistance,
       CustomerSort.daysOverdue => l.sortDaysOverdue,
@@ -67,6 +73,7 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
     final t = Theme.of(context).textTheme;
     final cs = Theme.of(context).colorScheme;
     final filter = ref.watch(customerFilterProvider);
+    final kind = ref.watch(customerKindFilterProvider);
     final sort = ref.watch(customerSortProvider);
     final list = ref.watch(filteredCustomersProvider);
     final all = ref.watch(allCustomersProvider).value ?? const [];
@@ -76,7 +83,11 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
     final shown = ref.watch(branchCustomersProvider).value ?? const <Customer>[];
     final paid = ref.watch(paidThisMonthProvider).value ?? const <String, int>{};
     final invoices = ref.watch(branchInvoiceTotalsProvider);
-    int countFor(CustomerFilter x) => shown.where((c) => matchesFilter(c, x, today: today, myUserId: me, paidThisMonth: paid)).length;
+    // Each chip's number is what tapping it would show: the two chip groups combine with AND (FR-M-066).
+    int countFor(CustomerFilter x) =>
+        shown.where((c) => matchesKind(c, kind) && matchesFilter(c, x, today: today, myUserId: me, paidThisMonth: paid)).length;
+    int countKind(InvoiceKind k) =>
+        shown.where((c) => matchesKind(c, k) && matchesFilter(c, filter, today: today, myUserId: me, paidThisMonth: paid)).length;
     // Since 1.19.0 the list holds the whole branch: "Mine" appears once someone else's customers are on the phone.
     final showMine = all.any((c) => c.isOthers(me));
     final sync = ref.watch(syncStatusProvider).value ?? ref.read(syncEngineProvider).current;
@@ -126,10 +137,29 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: Space.screen, vertical: Space.s4),
               children: [
+                // FR-M-066 (owner request 2026-11-23): invoice type first in the same row, then a divider, then the
+                // status chips. One type at a time; tapping the picked one again clears it. The groups combine with AND.
+                for (final k in filterableKinds)
+                  Padding(
+                    padding: const EdgeInsets.only(right: Space.s8),
+                    child: FilterChip(
+                      key: ValueKey('kind-filter-${k.name}'),
+                      selected: kind == k,
+                      showCheckmark: false,
+                      avatar: Icon(k == InvoiceKind.credit ? Icons.receipt_long_rounded : Icons.event_repeat_rounded, size: 18),
+                      label: Text('${kindFilterLabel(l, k)} ${f.num(countKind(k))}'),
+                      onSelected: (_) => ref.read(customerKindFilterProvider.notifier).state = kind == k ? null : k,
+                    ),
+                  ),
+                Padding(
+                  padding: const EdgeInsets.only(right: Space.s8),
+                  child: VerticalDivider(width: Space.s8, indent: Space.s8, endIndent: Space.s8, color: cs.outlineVariant),
+                ),
                 for (final x in CustomerFilter.values.where((x) => x != CustomerFilter.mine || showMine))
                   Padding(
                     padding: const EdgeInsets.only(right: Space.s8),
                     child: FilterChip(
+                      key: ValueKey('filter-${x.name}'),
                       selected: filter == x,
                       showCheckmark: false,
                       label: Text(x == CustomerFilter.all ? filterLabel(l, x) : '${filterLabel(l, x)} ${f.num(countFor(x))}'),

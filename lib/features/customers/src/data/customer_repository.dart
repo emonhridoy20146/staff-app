@@ -6,6 +6,7 @@ import '../../../../core/api/api_models.dart';
 import '../../../../core/db/app_database.dart';
 import '../../../../core/sync/sync_handlers.dart';
 import '../domain/customer.dart';
+import '../domain/month_people.dart';
 import '../domain/phones.dart';
 import '../domain/schedule.dart';
 import '../domain/work_marks.dart';
@@ -85,6 +86,8 @@ class CustomerPullHandler implements PullHandler {
             erpRiskJson: Value(d['erpRisk'] == null ? null : jsonEncode(d['erpRisk'])),
             searchText: Value(search),
             version: Value((d['version'] as num?)?.toInt() ?? 0),
+            // 1.44.0 (FR-M-068): who did this month's work. An older server sends none: keep what we had.
+            activityJson: Value(encodeActivity(d) ?? existing?.activityJson),
           ),
         );
 
@@ -108,7 +111,7 @@ class CustomerPullHandler implements PullHandler {
               outstandingPoisha: (p['outstandingPoisha'] as num?)?.toInt() ?? 0,
               status: (p['status'] as String?) ?? 'active',
               badSuggested: Value((p['badSuggested'] as bool?) ?? false),
-              kind: Value((p['kind'] as String?) ?? 'installment'),
+              kind: Value(planKindOf(p)),
               invoiceNo: Value(p['invoiceNo'] as String?),
               saleDate: Value(p['saleDate'] as String?),
               frequency: Value(p['frequency'] as String?),
@@ -157,6 +160,7 @@ class CustomerPullHandler implements PullHandler {
               reversed: Value((p['reversed'] as bool?) ?? false),
               methodLabel: Value(p['methodLabel'] as String?),
               collectorName: Value(p['collectorName'] as String?),
+              referrerName: Value(p['referrerName'] as String?),
               advance: Value((p['advance'] as bool?) ?? false),
               discountPoisha: Value((p['discountPoisha'] as num?)?.toInt() ?? 0),
             ));
@@ -207,11 +211,15 @@ class PlanWithSchedule {
 
   bool get credit => plan.kind == 'credit';
 
+  /// A cash sale (contract 1.44.0; unknown kinds too): no schedule, never due or collectable.
+  bool get cash => isCashKind(plan.kind);
+
   /// Returned (closed) or cancelled in the ERP: shown muted, never offered for collection.
-  bool get closedInErp => plan.status == 'closed' || plan.status == 'cancelled';
+  /// A cash sale's `closed` means money is still owed (contract 1.44.0), not returned.
+  bool get closedInErp => plan.status == 'cancelled' || (plan.status == 'closed' && !cash);
 
   /// Money can be taken against it: not returned/cancelled/settled and something is still owed.
-  bool get collectable => isCollectablePlan(status: plan.status, outstandingPoisha: plan.outstandingPoisha);
+  bool get collectable => isCollectablePlan(status: plan.status, outstandingPoisha: plan.outstandingPoisha, kind: plan.kind);
 
   List<PlanItem> get items => decodePlanItems(plan.itemsJson);
   Guarantor? get guarantor => Guarantor.parse(plan.guarantorJson);
@@ -222,14 +230,114 @@ class CustomerRepository {
   CustomerRepository(this._db);
   final AppDatabase _db;
 
-  Stream<List<Customer>> watchAll() => (_db.select(_db.customers)
-        ..where((t) => t.assigneeId.isNotValue('__leaving__') | t.assigneeId.isNull())
-        ..orderBy([(t) => OrderingTerm.asc(t.nameBn)]))
-      .watch()
-      .map((rows) => rows.map(Customer.new).toList());
+  /// Every customer with its open invoices counted by kind and their numbers (FR-M-066, FR-M-067), in one
+  /// SQL read: the invoice-type chips, the row label and the Home row read these, never the widgets.
+  Stream<List<Customer>> watchAll() => _withInvoices(
+        "WHERE c.assignee_id IS NULL OR c.assignee_id != '__leaving__' ORDER BY c.name_bn",
+        const [],
+      ).watch().map((rows) => rows.map(_customerOf).toList());
 
   Stream<Customer?> watchOne(String id) =>
-      (_db.select(_db.customers)..where((t) => t.serverId.equals(id))).watchSingleOrNull().map((r) => r == null ? null : Customer(r));
+      _withInvoices('WHERE c.server_id = ?', [Variable.withString(id)]).watch().map((rows) => rows.isEmpty ? null : _customerOf(rows.first));
+
+  /// An installment or credit invoice is open when [isCollectablePlan] says so: something still owed, not
+  /// returned, cancelled or settled. Cash sales (and unknown kinds, [isCashKind]) are never open.
+  static const _open =
+      "p.customer_id = c.server_id AND p.kind IN ('installment', 'credit') AND p.outstanding_poisha > 0 AND p.status NOT IN ('closed', 'cancelled', 'completed')";
+
+  /// A cash sale counts while it stands: anything but cancelled (its `closed` means still owed).
+  static const _cash = "p.customer_id = c.server_id AND p.kind NOT IN ('installment', 'credit') AND p.status != 'cancelled'";
+
+  Selectable<QueryRow> _withInvoices(String tail, List<Variable<Object>> vars) => _db.customSelect(
+        'SELECT c.*, '
+        "(SELECT COUNT(*) FROM plans p WHERE $_open AND p.kind = 'installment') AS open_installment, "
+        "(SELECT COUNT(*) FROM plans p WHERE $_open AND p.kind = 'credit') AS open_credit, "
+        '(SELECT COUNT(*) FROM plans p WHERE $_cash) AS open_cash, '
+        "(SELECT GROUP_CONCAT(invoice_no, char(31)) FROM (SELECT p.invoice_no FROM plans p WHERE $_open AND p.invoice_no IS NOT NULL AND p.invoice_no != '' "
+        'ORDER BY p.sale_date DESC, p.invoice_no DESC)) AS open_invoice_nos '
+        'FROM customers c $tail',
+        variables: vars,
+        readsFrom: {_db.customers, _db.plans},
+      );
+
+  Customer _customerOf(QueryRow r) {
+    final nos = r.readNullable<String>('open_invoice_nos');
+    return Customer(
+      _db.customers.map(r.data),
+      kinds: InvoiceKinds(
+        installment: r.read<int>('open_installment'),
+        credit: r.read<int>('open_credit'),
+        cash: r.read<int>('open_cash'),
+      ),
+      invoiceNos: nos == null || nos.isEmpty ? const [] : nos.split(String.fromCharCode(31)),
+    );
+  }
+
+  /// Who made the open promise of each customer that has one (Home row "promised by", FR-M-067): the
+  /// promise's `createdByName` (contract 1.31.0; null on the phone means the user made it, shown as [myName]),
+  /// else a colleague's promise from `colleague_activities`. Read only; the promises feature owns its table.
+  Stream<Map<String, String>> watchPromiseMakers({required String? myName}) =>
+      _promiseMakersQuery().watch().map((rows) => _promiseMakersOf(rows, myName));
+
+  Selectable<QueryRow> _promiseMakersQuery({String? customerId}) => _db.customSelect(
+        'SELECT c.server_id AS cid, p.client_id AS pid, p.created_by_name AS pname, ca.staff_name AS cname '
+        'FROM customers c '
+        'LEFT JOIN promises p ON p.client_id = c.open_promise_id OR p.server_id = c.open_promise_id '
+        "LEFT JOIN colleague_activities ca ON ca.id = 'promise:' || c.open_promise_id "
+        'WHERE c.open_promise_id IS NOT NULL${customerId == null ? '' : ' AND c.server_id = ?'}',
+        variables: [if (customerId != null) Variable.withString(customerId)],
+        readsFrom: {_db.customers, _db.promises, _db.colleagueActivities},
+      );
+
+  static Map<String, String> _promiseMakersOf(List<QueryRow> rows, String? myName) {
+    final out = <String, String>{};
+    for (final r in rows) {
+      final name = promiseMakerName(
+        ownRow: r.readNullable<String>('pid') != null,
+        createdByName: r.readNullable<String>('pname'),
+        colleagueName: r.readNullable<String>('cname'),
+        myName: myName,
+      );
+      if (name != null) out[r.read<String>('cid')] = name;
+    }
+    return out;
+  }
+
+  /// Who did this month's work on one customer (FR-M-068): the latest visit of the month, the ERP payments'
+  /// collectors and the open promise's maker. Names already on the phone only; each is null when unknown.
+  Stream<MonthPeople> watchMonthPeople(String customerId, {required String today, required String? myName, required String? myUserId}) {
+    final month = today.substring(0, 7);
+    // One drift stream that fires on any change to the tables read below, then reads them once. Several
+    // combined streams would cancel one after another and leave drift's close timers behind the screen.
+    final trigger = _db.customSelect('SELECT 1', readsFrom: {_db.visits, _db.colleagueActivities, _db.erpPayments, _db.promises, _db.customers}).watch();
+    return trigger.asyncMap((_) async {
+      final mine = await (_db.select(_db.visits)
+            ..where((t) => t.customerId.equals(customerId))
+            ..orderBy([(t) => OrderingTerm.desc(t.checkInAt)])
+            ..limit(5))
+          .get();
+      final colleagues = await (_db.select(_db.colleagueActivities)
+            ..where((t) => t.customerId.equals(customerId) & t.kind.equals('visit'))
+            ..orderBy([(t) => OrderingTerm.desc(t.at)])
+            ..limit(5))
+          .get();
+      final payments = await (_db.select(_db.erpPayments)
+            ..where((t) => t.customerId.equals(customerId) & t.date.like('$month%') & t.reversed.equals(false))
+            ..orderBy([(t) => OrderingTerm.desc(t.date)]))
+          .get();
+      final makers = _promiseMakersOf(await _promiseMakersQuery(customerId: customerId).get(), myName);
+      final row = await (_db.select(_db.customers)..where((t) => t.serverId.equals(customerId))).getSingleOrNull();
+      return monthPeopleOf(
+        server: ServerActivity.parse(row?.activityJson),
+        today: today,
+        myName: myName,
+        myVisits: [for (final v in mine) (at: v.checkInAt, userName: v.userName, byMe: v.userId == null || v.userId == myUserId)],
+        colleagueVisits: [for (final a in colleagues) (at: a.at, name: a.staffName)],
+        paymentPeople: [for (final p in payments) paymentPersonName(source: p.source, referrerName: p.referrerName, collectorName: p.collectorName)],
+        promiseBy: makers[customerId],
+      );
+    });
+  }
 
   Future<Customer?> getOne(String id) async {
     final r = await (_db.select(_db.customers)..where((t) => t.serverId.equals(id))).getSingleOrNull();
@@ -260,12 +368,17 @@ class CustomerRepository {
 
   /// Every invoice on the phone, in the shape the invoice totals need (FR-M-052): who it belongs to,
   /// its status and what it still owes.
-  Stream<List<({String customerId, String status, int outstandingPoisha})>> watchPlanSummaries() => (_db.selectOnly(_db.plans)
-        ..addColumns([_db.plans.customerId, _db.plans.status, _db.plans.outstandingPoisha]))
+  Stream<List<({String customerId, String status, int outstandingPoisha, String kind})>> watchPlanSummaries() => (_db.selectOnly(_db.plans)
+        ..addColumns([_db.plans.customerId, _db.plans.status, _db.plans.outstandingPoisha, _db.plans.kind]))
       .watch()
       .map((rows) => [
             for (final r in rows)
-              (customerId: r.read(_db.plans.customerId)!, status: r.read(_db.plans.status)!, outstandingPoisha: r.read(_db.plans.outstandingPoisha)!),
+              (
+                customerId: r.read(_db.plans.customerId)!,
+                status: r.read(_db.plans.status)!,
+                outstandingPoisha: r.read(_db.plans.outstandingPoisha)!,
+                kind: r.read(_db.plans.kind)!,
+              ),
           ]);
 
   /// ERP money per customer in the month of [today] (FR-M-038): only this month's rows are read.

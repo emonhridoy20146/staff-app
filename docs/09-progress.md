@@ -70,6 +70,10 @@ Phases match `field-api/docs/09-progress.md`. Start each phase against the Prism
 | Overtime and break-over-limit marks on the attendance history, schema 10 (FR-M-051) | ✅ 2026-11-21, CI only; device check pending |
 | Notifications (FCM + centre), Sync centre & Problems | ◐ sync centre done; FCM not yet (needs Firebase project) |
 | Onboarding: consent, permissions primer | ✅ |
+| Customer list invoice-type chips (কিস্তি / বাকি বিক্রি, AND with status chips) and row labels (cash "নগদ" label, contract 1.44.0, unknown kinds as cash); header type counts (FR-M-066) | ✅ 2026-11-23 unit + repository + flow tests; ☐ real phone check |
+| Home row in four lines with a Collect button, no FAB, "promised by"; online mark in the top bar (FR-M-067) | ✅ 2026-11-23 flow tests; goldens re-rendered |
+| "This month" says who did the visit, payment, promise; larger tonal back button (FR-M-068) | ✅ 2026-11-23 contract 1.44.0 activity (newest + "+N", office, pending apart) with the phone's names as fallback; schema 16; unit + migration tests |
+| Customer reload `VALIDATION_FAILED`: body-less POSTs no longer say `Content-Type: application/json` (FR-M-063) | ✅ 2026-11-23 unit test |
 **Acceptance:** M-E2…M-E7, M-E9, M-E10 green; manual device checklist (non-location sections) signed off on 4 OEM devices; pilot 5 staff × 2 weeks with zero lost/duplicate collections.
 
 ## Phase 2 — Location

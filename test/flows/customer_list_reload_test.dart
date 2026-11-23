@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:staff_app/app/app.dart';
 import 'package:staff_app/core/providers.dart';
+import 'package:staff_app/core/location/gps_status.dart';
 import 'package:staff_app/core/ui/chips.dart';
 
 import 'helpers.dart';
@@ -50,7 +51,7 @@ void main() {
     expect(await t.runAsync(() => db.select(db.customers).get()), isNotEmpty);
   });
 
-  testWidgets('online / offline line on every screen: green "অনলাইন", grey "অফলাইন" when the server cannot be reached', (t) async {
+  testWidgets('online / offline mark in the top bar on every tab, left of the GPS icon, not at the bottom', (t) async {
     final h = Harness();
     await t.runAsync(h.signIn);
     t.view.physicalSize = const Size(412, 892) * 2;
@@ -58,8 +59,14 @@ void main() {
     addTearDown(t.view.reset);
     await t.pumpWidget(UncontrolledProviderScope(container: h.container, child: const FieldApp(watchConnectivity: false)));
     await settle(t);
-    Finder strip(String text) => find.descendant(of: find.byType(OnlineStrip), matching: find.text(text));
+    Finder strip(String text) => find.descendant(of: find.byType(OnlineDot), matching: find.text(text));
     expect(strip('অনলাইন'), findsOneWidget);
+    // Owner request 2026-11-23: in the top bar just left of the GPS icon; nothing above the bottom navigation.
+    final dot = t.getRect(find.byType(OnlineDot));
+    final gps = t.getRect(find.byType(GpsStatusIcon));
+    expect(dot.right, lessThanOrEqualTo(gps.left + 1));
+    expect((dot.center.dy - gps.center.dy).abs(), lessThan(4));
+    expect(dot.bottom, lessThan(t.getRect(find.byType(NavigationBar)).top - 400));
 
     h.read(syncEngineProvider).markOffline();
     await settle(t, rounds: 2);

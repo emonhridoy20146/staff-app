@@ -60,6 +60,11 @@ class ClientHeadersInterceptor extends Interceptor {
     options.headers['Accept-Language'] = info.language();
     options.headers['X-Request-Id'] = _uuid.v7();
     options.headers['Accept-Encoding'] = 'gzip';
+    // A request with no body must not say it carries JSON. With the base `application/json` content type dio
+    // sent `Content-Type: application/json` and `Content-Length: 0` on body-less POSTs (`/customers/{id}/refresh`,
+    // `/auth/logout`, `/handovers/{id}/accept`, …), and field-api's strict JSON parser answered 400
+    // VALIDATION_FAILED: an empty string is not a JSON document (customer reload, owner report 2026-11-23).
+    if (options.data == null) options.contentType = null;
     handler.next(options);
   }
 }

@@ -7,11 +7,17 @@ import 'phones.dart';
 
 /// Read model of a customer for lists, map and Today.
 class Customer {
-  Customer(this.row, {this.distanceM});
+  Customer(this.row, {this.distanceM, this.kinds = InvoiceKinds.none, this.invoiceNos = const []});
   final CustomerRow row;
 
   /// Distance from the current fix (null when unknown / no pin).
   final int? distanceM;
+
+  /// Open invoices by kind (FR-M-066), counted in the repository's SQL from `plans`.
+  final InvoiceKinds kinds;
+
+  /// Invoice numbers of the open invoices, newest sale first (Home row, FR-M-067).
+  final List<String> invoiceNos;
 
   String get id => row.serverId;
   String get code => row.code;
@@ -60,7 +66,7 @@ class Customer {
   /// Someone else's customer in the same branch (staff see the whole branch since 1.19.0).
   bool isOthers(String? myUserId) => myUserId != null && row.assigneeId != null && row.assigneeId != myUserId;
 
-  Customer withDistance(int? d) => Customer(row, distanceM: d);
+  Customer withDistance(int? d) => Customer(row, distanceM: d, kinds: kinds, invoiceNos: invoiceNos);
 
   /// Badges in display order (max 2 shown in a tile).
   List<AppStatus> badges(String today) => [
@@ -159,8 +165,14 @@ List<PlanItem> decodePlanItems(String? json) {
 }
 
 /// Returned (closed), cancelled and settled invoices take no more money.
-bool isCollectablePlan({required String status, required int outstandingPoisha}) =>
-    outstandingPoisha > 0 && status != 'closed' && status != 'cancelled' && status != 'completed';
+/// A cash sale (contract 1.44.0) is never collectable, whatever it still shows as owed.
+bool isCollectablePlan({required String status, required int outstandingPoisha, String kind = 'installment'}) =>
+    !isCashKind(kind) && outstandingPoisha > 0 && status != 'closed' && status != 'cancelled' && status != 'completed';
+
+/// `plans.kind` that is a cash sale: `cash`, and any value this app does not know (contract 1.44.0: "treat
+/// unknown values like cash"). A cash plan has no schedule, is `completed` when paid and `closed` when money is
+/// still owed, and is never due, overdue, open or collectable.
+bool isCashKind(String kind) => kind != 'installment' && kind != 'credit';
 
 /// `paidThisMonth` / `notPaidThisMonth` (FR-M-046): money this month means an
 /// ERP payment dated this month or field money still waiting for the ERP,
@@ -168,6 +180,50 @@ bool isCollectablePlan({required String status, required int outstandingPoisha})
 enum CustomerFilter { all, dueToday, overdue, promisedToday, paidThisMonth, notPaidThisMonth, mine, badSuggested, tagged, noPin }
 
 enum CustomerSort { distance, daysOverdue, amount, name }
+
+/// The invoice type of a plan (`plans.kind`): installment (কিস্তি), credit sale (বাকি বিক্রি) or cash sale
+/// (নগদ, contract 1.44.0; unknown values count as cash, see [isCashKind]).
+enum InvoiceKind { installment, credit, cash }
+
+/// The types the list can filter by (the owner kept the two chips; cash-only customers are in "All").
+const filterableKinds = [InvoiceKind.installment, InvoiceKind.credit];
+
+/// `plans.kind` from a contract plan; missing means installment (servers before 1.13.0). Any other value is
+/// stored as sent, so a newer server never breaks the phone, and is treated as cash ([isCashKind]).
+String planKindOf(Map<String, dynamic> p) {
+  final kind = p['kind'];
+  return kind is String && kind.trim().isNotEmpty ? kind.trim() : 'installment';
+}
+
+/// How many invoices of each kind a customer has (FR-M-066). Installment and credit invoices count while
+/// open, the collectable rule ([isCollectablePlan]): something is still owed and the invoice is not returned,
+/// cancelled or settled. A cash sale is never open, so it counts while it is not cancelled (its `closed` means
+/// money is still owed, not returned). A customer can have several kinds.
+class InvoiceKinds {
+  const InvoiceKinds({this.installment = 0, this.credit = 0, this.cash = 0});
+  static const none = InvoiceKinds();
+  final int installment;
+  final int credit;
+  final int cash;
+
+  int get total => installment + credit + cash;
+  bool get isEmpty => total == 0;
+  int of(InvoiceKind k) => switch (k) {
+        InvoiceKind.installment => installment,
+        InvoiceKind.credit => credit,
+        InvoiceKind.cash => cash,
+      };
+  bool has(InvoiceKind k) => of(k) > 0;
+
+  @override
+  bool operator ==(Object other) => other is InvoiceKinds && other.installment == installment && other.credit == credit && other.cash == cash;
+  @override
+  int get hashCode => Object.hash(installment, credit, cash);
+}
+
+/// The invoice-type chips (second chip group): null = either kind. Within the
+/// group one chip at a time; across groups the filters combine with AND.
+bool matchesKind(Customer c, InvoiceKind? kind) => kind == null || c.kinds.has(kind);
 
 /// Normalises text for search: lower-case, Bangla digits → Latin, no
 /// punctuation. Applied to name bn/en, code, phones, address.
@@ -207,12 +263,18 @@ List<Customer> applyQuery(
   required String today,
   String search = '',
   CustomerFilter filter = CustomerFilter.all,
+  InvoiceKind? kind,
   CustomerSort sort = CustomerSort.daysOverdue,
   String? myUserId,
   Map<String, int> paidThisMonth = const {},
 }) {
   final q = normalizeSearch(search);
-  final out = all.where((c) => matchesFilter(c, filter, today: today, myUserId: myUserId, paidThisMonth: paidThisMonth) && (q.isEmpty || c.row.searchText.contains(q))).toList();
+  final out = all
+      .where((c) =>
+          matchesFilter(c, filter, today: today, myUserId: myUserId, paidThisMonth: paidThisMonth) &&
+          matchesKind(c, kind) &&
+          (q.isEmpty || c.row.searchText.contains(q)))
+      .toList();
   int byName(Customer a, Customer b) => a.row.nameBn.compareTo(b.row.nameBn);
   switch (sort) {
     case CustomerSort.distance:
