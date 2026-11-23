@@ -2816,12 +2816,6 @@ abstract class AppLocalizations {
   /// **'No target set'**
   String get todayNoTarget;
 
-  /// No description provided for @todayCollectFab.
-  ///
-  /// In en, this message translates to:
-  /// **'Collect'**
-  String get todayCollectFab;
-
   /// No description provided for @todayMore.
   ///
   /// In en, this message translates to:
@@ -6337,6 +6331,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Only the office can move a place directly.'**
   String get placeErrMoveNeedsManage;
+
+  /// No description provided for @filterInstallment.
+  ///
+  /// In en, this message translates to:
+  /// **'Installment'**
+  String get filterInstallment;
+
+  /// No description provided for @filterCredit.
+  ///
+  /// In en, this message translates to:
+  /// **'Credit sale'**
+  String get filterCredit;
+
+  /// No description provided for @kindInstallment.
+  ///
+  /// In en, this message translates to:
+  /// **'Installment'**
+  String get kindInstallment;
+
+  /// No description provided for @kindCredit.
+  ///
+  /// In en, this message translates to:
+  /// **'Credit'**
+  String get kindCredit;
+
+  /// No description provided for @kindInstallmentCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} installment'**
+  String kindInstallmentCount(String n);
+
+  /// No description provided for @kindCreditCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} credit'**
+  String kindCreditCount(String n);
+
+  /// No description provided for @kindLabelA11y.
+  ///
+  /// In en, this message translates to:
+  /// **'Open invoices: {kinds}'**
+  String kindLabelA11y(String kinds);
+
+  /// No description provided for @monthVisitWho.
+  ///
+  /// In en, this message translates to:
+  /// **'Visit: {name}'**
+  String monthVisitWho(String name);
+
+  /// No description provided for @monthToday.
+  ///
+  /// In en, this message translates to:
+  /// **'today'**
+  String get monthToday;
+
+  /// No description provided for @monthPaidAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Paid: {amount}'**
+  String monthPaidAmount(String amount);
+
+  /// No description provided for @monthPromiseAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Promise: {amount}'**
+  String monthPromiseAmount(String amount);
+
+  /// No description provided for @promisedBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Promised by {name}'**
+  String promisedBy(String name);
 }
 
 class _AppLocalizationsDelegate

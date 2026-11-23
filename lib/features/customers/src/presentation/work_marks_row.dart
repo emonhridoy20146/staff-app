@@ -13,8 +13,11 @@ import '../domain/work_marks.dart';
 /// has its status colour and icon; one that is "off" is a grey outline. Each
 /// has its meaning in words for TalkBack (never colour alone).
 class WorkMarksRow extends ConsumerWidget {
-  const WorkMarksRow({super.key, required this.customer});
+  const WorkMarksRow({super.key, required this.customer, this.large = false});
   final Customer customer;
+
+  /// The Home row's bigger marks (owner request 2026-11-23): 32 dp boxes with 20 dp icons instead of 22/14.
+  final bool large;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -29,24 +32,28 @@ class WorkMarksRow extends ConsumerWidget {
       alignment: AlignmentDirectional.centerStart,
       child: Row(mainAxisSize: MainAxisSize.min, children: [
       _Mark(
+        large: large,
         on: m.visit != VisitMark.none,
         style: m.visit == VisitMark.today ? sem.success : sem.info,
         icon: Icons.directions_walk_rounded,
         label: switch (m.visit) { VisitMark.today => l.marksVisitToday, VisitMark.month => l.marksVisitMonth, VisitMark.none => l.marksVisitNone },
       ),
       _Mark(
+        large: large,
         on: m.money != MoneyMark.none,
         style: sc.of(m.money == MoneyMark.pending ? AppStatus.pending : AppStatus.paid),
         icon: m.money == MoneyMark.pending ? Icons.cloud_upload_outlined : Icons.payments_rounded,
         label: switch (m.money) { MoneyMark.paid => l.marksPaid, MoneyMark.pending => l.marksPending, MoneyMark.none => l.marksPaidNone },
       ),
       _Mark(
+        large: large,
         on: m.promise != PromiseMark.none,
         style: sc.of(AppStatus.promised),
         icon: Icons.handshake_rounded,
         label: m.promise == PromiseMark.open ? l.marksPromiseOpen : l.marksPromiseNone,
       ),
       _Mark(
+        large: large,
         on: true,
         style: m.pin ? sem.success : sem.danger,
         icon: m.pin ? Icons.location_on_rounded : Icons.location_off_rounded,
@@ -58,7 +65,8 @@ class WorkMarksRow extends ConsumerWidget {
 }
 
 class _Mark extends StatelessWidget {
-  const _Mark({required this.on, required this.style, required this.icon, required this.label});
+  const _Mark({required this.on, required this.style, required this.icon, required this.label, this.large = false});
+  final bool large;
   final bool on;
   final StatusStyle style;
   final IconData icon;
@@ -70,16 +78,17 @@ class _Mark extends StatelessWidget {
     return Semantics(
       label: label,
       child: Container(
-        width: 22,
-        height: 22,
-        margin: const EdgeInsetsDirectional.only(end: Space.s4),
+        key: large ? const ValueKey('work-mark-large') : null,
+        width: large ? 32 : 22,
+        height: large ? 32 : 22,
+        margin: EdgeInsetsDirectional.only(end: large ? Space.s8 : Space.s4),
         decoration: BoxDecoration(
           color: on ? style.bg : null,
           borderRadius: Radii.brSm,
           border: on ? null : Border.all(color: cs.outlineVariant),
         ),
         alignment: Alignment.center,
-        child: Icon(icon, size: 14, color: on ? style.fg : cs.outline),
+        child: Icon(icon, size: large ? 20 : 14, color: on ? style.fg : cs.outline),
       ),
     );
   }

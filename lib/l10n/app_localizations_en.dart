@@ -1530,9 +1530,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get todayNoTarget => 'No target set';
 
   @override
-  String get todayCollectFab => 'Collect';
-
-  @override
   String todayMore(String count) {
     return '$count more';
   }
@@ -3621,4 +3618,54 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get placeErrMoveNeedsManage =>
       'Only the office can move a place directly.';
+
+  @override
+  String get filterInstallment => 'Installment';
+
+  @override
+  String get filterCredit => 'Credit sale';
+
+  @override
+  String get kindInstallment => 'Installment';
+
+  @override
+  String get kindCredit => 'Credit';
+
+  @override
+  String kindInstallmentCount(String n) {
+    return '$n installment';
+  }
+
+  @override
+  String kindCreditCount(String n) {
+    return '$n credit';
+  }
+
+  @override
+  String kindLabelA11y(String kinds) {
+    return 'Open invoices: $kinds';
+  }
+
+  @override
+  String monthVisitWho(String name) {
+    return 'Visit: $name';
+  }
+
+  @override
+  String get monthToday => 'today';
+
+  @override
+  String monthPaidAmount(String amount) {
+    return 'Paid: $amount';
+  }
+
+  @override
+  String monthPromiseAmount(String amount) {
+    return 'Promise: $amount';
+  }
+
+  @override
+  String promisedBy(String name) {
+    return 'Promised by $name';
+  }
 }

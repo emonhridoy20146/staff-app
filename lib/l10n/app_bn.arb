@@ -453,7 +453,6 @@
   "todayNotifications": "নোটিফিকেশন",
   "todayProgressTitle": "আজকের অগ্রগতি",
   "todayNoTarget": "লক্ষ্য ঠিক করা নেই",
-  "todayCollectFab": "আদায়",
   "todayMore": "আরও {count} জন",
   "todayReceiptsLow": "মাত্র {count}টি রসিদ নম্বর বাকি। আরও পেতে ইন্টারনেটে যুক্ত হোন।",
   "actionMore": "আরও",
@@ -1039,5 +1038,17 @@
   "syncEntityPlace": "ম্যাপের জায়গা",
   "placeProblem": "{name}: {reason}",
   "placeProblemMoveBack": "সরানো গ্রহণ করা হয়নি, তাই মার্কার সার্ভারের জায়গায় ফিরে গেছে।",
-  "placeErrMoveNeedsManage": "সরাসরি জায়গা সরাতে পারে শুধু অফিস।"
+  "placeErrMoveNeedsManage": "সরাসরি জায়গা সরাতে পারে শুধু অফিস।",
+  "filterInstallment": "কিস্তি",
+  "filterCredit": "বাকি বিক্রি",
+  "kindInstallment": "কিস্তি",
+  "kindCredit": "বাকি",
+  "kindInstallmentCount": "{n} কিস্তি",
+  "kindCreditCount": "{n} বাকি",
+  "kindLabelA11y": "খোলা ইনভয়েস: {kinds}",
+  "monthVisitWho": "ভিজিট: {name}",
+  "monthToday": "আজ",
+  "monthPaidAmount": "পরিশোধ: {amount}",
+  "monthPromiseAmount": "প্রতিশ্রুতি: {amount}",
+  "promisedBy": "প্রতিশ্রুতি নিয়েছেন: {name}"
 }

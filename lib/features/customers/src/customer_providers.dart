@@ -10,6 +10,7 @@ import '../../attendance/attendance.dart';
 import '../../auth/auth.dart';
 import 'data/customer_repository.dart';
 import 'domain/customer.dart';
+import 'domain/month_people.dart';
 import 'domain/work_marks.dart';
 
 final customerRepositoryProvider = Provider<CustomerRepository>((ref) => CustomerRepository(ref.watch(databaseProvider)));
@@ -110,6 +111,30 @@ WorkMarks workMarksFor(WidgetRef ref, Customer c) => workMarksOf(
 
 final customerSearchProvider = StateProvider<String>((ref) => '');
 final customerFilterProvider = StateProvider<CustomerFilter>((ref) => CustomerFilter.all);
+
+/// The invoice-type chip picked on the list (FR-M-066): null = either kind. ANDs with [customerFilterProvider].
+final customerKindFilterProvider = StateProvider<InvoiceKind?>((ref) => null);
+
+/// The signed-in user's name in the app language, for "who did it" lines about the user's own work.
+final myDisplayNameProvider = Provider<String?>((ref) {
+  final lang = ref.watch(languageCodeProvider);
+  return ref.watch(sessionProvider.select((s) => s.user?.name.of(lang)));
+});
+
+/// Who took each customer's open promise (FR-M-067): {customerId: name}; a customer whose maker is unknown is absent.
+final promiseMakersProvider = StreamProvider<Map<String, String>>(
+  (ref) => ref.watch(customerRepositoryProvider).watchPromiseMakers(myName: ref.watch(myDisplayNameProvider)),
+);
+
+/// Who did this month's visit, payments and promise on one customer (FR-M-068).
+final monthPeopleProvider = StreamProvider.family<MonthPeople, String>(
+  (ref, id) => ref.watch(customerRepositoryProvider).watchMonthPeople(
+        id,
+        today: ref.watch(todayProvider),
+        myName: ref.watch(myDisplayNameProvider),
+        myUserId: ref.watch(myCustomerUserIdProvider),
+      ),
+);
 final customerSortProvider = StateProvider<CustomerSort>((ref) => CustomerSort.daysOverdue);
 
 final filteredCustomersProvider = Provider<AsyncValue<List<Customer>>>((ref) {
@@ -121,6 +146,7 @@ final filteredCustomersProvider = Provider<AsyncValue<List<Customer>>>((ref) {
       today: today,
       search: ref.watch(customerSearchProvider),
       filter: ref.watch(customerFilterProvider),
+      kind: ref.watch(customerKindFilterProvider),
       sort: ref.watch(customerSortProvider),
       myUserId: ref.watch(myCustomerUserIdProvider),
       paidThisMonth: ref.watch(paidThisMonthProvider).value ?? const {},

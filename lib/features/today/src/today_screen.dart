@@ -58,14 +58,7 @@ class TodayScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: cs.surfaceContainerLowest,
-      floatingActionButton: canCollect
-          ? FloatingActionButton.extended(
-              heroTag: 'collect',
-              onPressed: () => context.push('/collect'),
-              icon: const Icon(Icons.payments_rounded),
-              label: Text(l.todayCollectFab),
-            )
-          : null,
+      // Owner request 2026-11-23: no floating Collect button; each row has its own Collect.
       body: RefreshIndicator(
         onRefresh: () => ref.read(syncEngineProvider).syncNow(),
         child: CustomScrollView(slivers: [
@@ -109,7 +102,7 @@ class TodayScreen extends ConsumerWidget {
                       ),
                   ],
           ),
-          const SliverToBoxAdapter(child: SizedBox(height: 112)),
+          const SliverToBoxAdapter(child: SizedBox(height: Space.s32)),
         ]),
       ),
     );
@@ -128,10 +121,10 @@ class TodayScreen extends ConsumerWidget {
             child: Column(children: [
               for (var i = 0; i < list.length; i++) ...[
                 if (i > 0) const Divider(height: 1, indent: Space.s16, endIndent: Space.s16),
-                CustomerTile(
+                CustomerWorkRow(
                   customer: list[i],
                   onTap: () => context.push('/customers/${list[i].id}'),
-                  trailing: canCollect ? _QuickCollect(customerId: list[i].id) : null,
+                  action: canCollect ? _QuickCollect(customerId: list[i].id) : null,
                 ),
               ],
             ]),
@@ -183,11 +176,13 @@ class _QuickCollect extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
-    return IconButton.filledTonal(
-      tooltip: l.actionCollect,
-      constraints: const BoxConstraints.tightFor(width: Sizes.minTarget, height: Sizes.minTarget),
+    // A button that looks like one (owner request 2026-11-23): tonal, icon and word, 48 dp high.
+    return FilledButton.tonalIcon(
+      key: ValueKey('collect-$customerId'),
+      style: FilledButton.styleFrom(minimumSize: const Size(0, Sizes.minTarget), padding: const EdgeInsets.symmetric(horizontal: Space.s16)),
       onPressed: () => context.push('/collect/$customerId'),
       icon: const Icon(Icons.payments_rounded),
+      label: Text(l.actionCollect),
     );
   }
 }

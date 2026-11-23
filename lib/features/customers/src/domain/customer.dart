@@ -7,11 +7,17 @@ import 'phones.dart';
 
 /// Read model of a customer for lists, map and Today.
 class Customer {
-  Customer(this.row, {this.distanceM});
+  Customer(this.row, {this.distanceM, this.kinds = InvoiceKinds.none, this.invoiceNos = const []});
   final CustomerRow row;
 
   /// Distance from the current fix (null when unknown / no pin).
   final int? distanceM;
+
+  /// Open invoices by kind (FR-M-066), counted in the repository's SQL from `plans`.
+  final InvoiceKinds kinds;
+
+  /// Invoice numbers of the open invoices, newest sale first (Home row, FR-M-067).
+  final List<String> invoiceNos;
 
   String get id => row.serverId;
   String get code => row.code;
@@ -60,7 +66,7 @@ class Customer {
   /// Someone else's customer in the same branch (staff see the whole branch since 1.19.0).
   bool isOthers(String? myUserId) => myUserId != null && row.assigneeId != null && row.assigneeId != myUserId;
 
-  Customer withDistance(int? d) => Customer(row, distanceM: d);
+  Customer withDistance(int? d) => Customer(row, distanceM: d, kinds: kinds, invoiceNos: invoiceNos);
 
   /// Badges in display order (max 2 shown in a tile).
   List<AppStatus> badges(String today) => [
@@ -169,6 +175,32 @@ enum CustomerFilter { all, dueToday, overdue, promisedToday, paidThisMonth, notP
 
 enum CustomerSort { distance, daysOverdue, amount, name }
 
+/// The invoice type of a plan (`plans.kind`): installment (কিস্তি) or credit sale (বাকি বিক্রি).
+enum InvoiceKind { installment, credit }
+
+/// How many open invoices of each kind a customer has (FR-M-066). "Open" is the
+/// collectable rule ([isCollectablePlan]): something is still owed and the
+/// invoice is not returned, cancelled or settled. A customer can have both.
+class InvoiceKinds {
+  const InvoiceKinds({this.installment = 0, this.credit = 0});
+  static const none = InvoiceKinds();
+  final int installment;
+  final int credit;
+
+  int get total => installment + credit;
+  bool get isEmpty => total == 0;
+  bool has(InvoiceKind k) => (k == InvoiceKind.installment ? installment : credit) > 0;
+
+  @override
+  bool operator ==(Object other) => other is InvoiceKinds && other.installment == installment && other.credit == credit;
+  @override
+  int get hashCode => Object.hash(installment, credit);
+}
+
+/// The invoice-type chips (second chip group): null = either kind. Within the
+/// group one chip at a time; across groups the filters combine with AND.
+bool matchesKind(Customer c, InvoiceKind? kind) => kind == null || c.kinds.has(kind);
+
 /// Normalises text for search: lower-case, Bangla digits → Latin, no
 /// punctuation. Applied to name bn/en, code, phones, address.
 String normalizeSearch(String s) {
@@ -207,12 +239,18 @@ List<Customer> applyQuery(
   required String today,
   String search = '',
   CustomerFilter filter = CustomerFilter.all,
+  InvoiceKind? kind,
   CustomerSort sort = CustomerSort.daysOverdue,
   String? myUserId,
   Map<String, int> paidThisMonth = const {},
 }) {
   final q = normalizeSearch(search);
-  final out = all.where((c) => matchesFilter(c, filter, today: today, myUserId: myUserId, paidThisMonth: paidThisMonth) && (q.isEmpty || c.row.searchText.contains(q))).toList();
+  final out = all
+      .where((c) =>
+          matchesFilter(c, filter, today: today, myUserId: myUserId, paidThisMonth: paidThisMonth) &&
+          matchesKind(c, kind) &&
+          (q.isEmpty || c.row.searchText.contains(q)))
+      .toList();
   int byName(Customer a, Customer b) => a.row.nameBn.compareTo(b.row.nameBn);
   switch (sort) {
     case CustomerSort.distance:
