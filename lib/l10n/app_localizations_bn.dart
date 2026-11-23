@@ -3659,14 +3659,6 @@ class AppLocalizationsBn extends AppLocalizations {
   }
 
   @override
-  String get kindOther => 'অন্যান্য';
-
-  @override
-  String kindOtherCount(String n) {
-    return '$n অন্যান্য';
-  }
-
-  @override
   String get planCashSale => 'নগদ বিক্রি';
 
   @override

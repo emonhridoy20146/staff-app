@@ -211,14 +211,15 @@ class PlanWithSchedule {
 
   bool get credit => plan.kind == 'credit';
 
-  /// A cash sale (contract 1.44.0 `saleType: cash`): paid at the counter, nothing is ever due on it.
-  bool get cash => plan.kind == 'cash';
+  /// A cash sale (contract 1.44.0; unknown kinds too): no schedule, never due or collectable.
+  bool get cash => isCashKind(plan.kind);
 
   /// Returned (closed) or cancelled in the ERP: shown muted, never offered for collection.
-  bool get closedInErp => plan.status == 'closed' || plan.status == 'cancelled';
+  /// A cash sale's `closed` means money is still owed (contract 1.44.0), not returned.
+  bool get closedInErp => plan.status == 'cancelled' || (plan.status == 'closed' && !cash);
 
   /// Money can be taken against it: not returned/cancelled/settled and something is still owed.
-  bool get collectable => isCollectablePlan(status: plan.status, outstandingPoisha: plan.outstandingPoisha);
+  bool get collectable => isCollectablePlan(status: plan.status, outstandingPoisha: plan.outstandingPoisha, kind: plan.kind);
 
   List<PlanItem> get items => decodePlanItems(plan.itemsJson);
   Guarantor? get guarantor => Guarantor.parse(plan.guarantorJson);
@@ -239,20 +240,19 @@ class CustomerRepository {
   Stream<Customer?> watchOne(String id) =>
       _withInvoices('WHERE c.server_id = ?', [Variable.withString(id)]).watch().map((rows) => rows.isEmpty ? null : _customerOf(rows.first));
 
-  /// An invoice is open when [isCollectablePlan] says so: something still owed, not returned, cancelled or settled.
-  static const _open = "p.customer_id = c.server_id AND p.outstanding_poisha > 0 AND p.status NOT IN ('closed', 'cancelled', 'completed')";
+  /// An installment or credit invoice is open when [isCollectablePlan] says so: something still owed, not
+  /// returned, cancelled or settled. Cash sales (and unknown kinds, [isCashKind]) are never open.
+  static const _open =
+      "p.customer_id = c.server_id AND p.kind IN ('installment', 'credit') AND p.outstanding_poisha > 0 AND p.status NOT IN ('closed', 'cancelled', 'completed')";
 
-  /// A cash sale is never owed (contract 1.44.0): it counts while it stands, that is, not returned or cancelled.
-  static const _standing = "p.customer_id = c.server_id AND p.status NOT IN ('closed', 'cancelled')";
-
-  static const _known = "('installment', 'credit', 'cash')";
+  /// A cash sale counts while it stands: anything but cancelled (its `closed` means still owed).
+  static const _cash = "p.customer_id = c.server_id AND p.kind NOT IN ('installment', 'credit') AND p.status != 'cancelled'";
 
   Selectable<QueryRow> _withInvoices(String tail, List<Variable<Object>> vars) => _db.customSelect(
         'SELECT c.*, '
         "(SELECT COUNT(*) FROM plans p WHERE $_open AND p.kind = 'installment') AS open_installment, "
         "(SELECT COUNT(*) FROM plans p WHERE $_open AND p.kind = 'credit') AS open_credit, "
-        "(SELECT COUNT(*) FROM plans p WHERE $_standing AND p.kind = 'cash') AS open_cash, "
-        '(SELECT COUNT(*) FROM plans p WHERE $_open AND p.kind NOT IN $_known) AS open_other, '
+        '(SELECT COUNT(*) FROM plans p WHERE $_cash) AS open_cash, '
         "(SELECT GROUP_CONCAT(invoice_no, char(31)) FROM (SELECT p.invoice_no FROM plans p WHERE $_open AND p.invoice_no IS NOT NULL AND p.invoice_no != '' "
         'ORDER BY p.sale_date DESC, p.invoice_no DESC)) AS open_invoice_nos '
         'FROM customers c $tail',
@@ -268,7 +268,6 @@ class CustomerRepository {
         installment: r.read<int>('open_installment'),
         credit: r.read<int>('open_credit'),
         cash: r.read<int>('open_cash'),
-        other: r.read<int>('open_other'),
       ),
       invoiceNos: nos == null || nos.isEmpty ? const [] : nos.split(String.fromCharCode(31)),
     );
@@ -369,12 +368,17 @@ class CustomerRepository {
 
   /// Every invoice on the phone, in the shape the invoice totals need (FR-M-052): who it belongs to,
   /// its status and what it still owes.
-  Stream<List<({String customerId, String status, int outstandingPoisha})>> watchPlanSummaries() => (_db.selectOnly(_db.plans)
-        ..addColumns([_db.plans.customerId, _db.plans.status, _db.plans.outstandingPoisha]))
+  Stream<List<({String customerId, String status, int outstandingPoisha, String kind})>> watchPlanSummaries() => (_db.selectOnly(_db.plans)
+        ..addColumns([_db.plans.customerId, _db.plans.status, _db.plans.outstandingPoisha, _db.plans.kind]))
       .watch()
       .map((rows) => [
             for (final r in rows)
-              (customerId: r.read(_db.plans.customerId)!, status: r.read(_db.plans.status)!, outstandingPoisha: r.read(_db.plans.outstandingPoisha)!),
+              (
+                customerId: r.read(_db.plans.customerId)!,
+                status: r.read(_db.plans.status)!,
+                outstandingPoisha: r.read(_db.plans.outstandingPoisha)!,
+                kind: r.read(_db.plans.kind)!,
+              ),
           ]);
 
   /// ERP money per customer in the month of [today] (FR-M-038): only this month's rows are read.

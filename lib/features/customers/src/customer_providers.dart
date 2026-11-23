@@ -95,7 +95,7 @@ final branchInvoiceTotalsProvider = Provider<({int total, int open})>((ref) {
   return invoiceTotals(plans, {for (final c in customers) c.id});
 });
 
-final _planSummariesProvider = StreamProvider<List<({String customerId, String status, int outstandingPoisha})>>(
+final _planSummariesProvider = StreamProvider<List<({String customerId, String status, int outstandingPoisha, String kind})>>(
   (ref) => ref.watch(customerRepositoryProvider).watchPlanSummaries(),
 );
 

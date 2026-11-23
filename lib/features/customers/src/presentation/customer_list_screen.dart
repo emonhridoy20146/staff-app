@@ -30,7 +30,6 @@ String kindFilterLabel(AppLocalizations l, InvoiceKind k) => switch (k) {
       InvoiceKind.installment => l.filterInstallment,
       InvoiceKind.credit => l.filterCredit,
       InvoiceKind.cash => l.kindCash,
-      InvoiceKind.other => l.kindOther,
     };
 
 String sortLabel(AppLocalizations l, CustomerSort s) => switch (s) {

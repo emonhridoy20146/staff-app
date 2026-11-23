@@ -165,8 +165,14 @@ List<PlanItem> decodePlanItems(String? json) {
 }
 
 /// Returned (closed), cancelled and settled invoices take no more money.
-bool isCollectablePlan({required String status, required int outstandingPoisha}) =>
-    outstandingPoisha > 0 && status != 'closed' && status != 'cancelled' && status != 'completed';
+/// A cash sale (contract 1.44.0) is never collectable, whatever it still shows as owed.
+bool isCollectablePlan({required String status, required int outstandingPoisha, String kind = 'installment'}) =>
+    !isCashKind(kind) && outstandingPoisha > 0 && status != 'closed' && status != 'cancelled' && status != 'completed';
+
+/// `plans.kind` that is a cash sale: `cash`, and any value this app does not know (contract 1.44.0: "treat
+/// unknown values like cash"). A cash plan has no schedule, is `completed` when paid and `closed` when money is
+/// still owed, and is never due, overdue, open or collectable.
+bool isCashKind(String kind) => kind != 'installment' && kind != 'credit';
 
 /// `paidThisMonth` / `notPaidThisMonth` (FR-M-046): money this month means an
 /// ERP payment dated this month or field money still waiting for the ERP,
@@ -175,49 +181,44 @@ enum CustomerFilter { all, dueToday, overdue, promisedToday, paidThisMonth, notP
 
 enum CustomerSort { distance, daysOverdue, amount, name }
 
-/// The invoice type of a plan (`plans.kind`): installment (কিস্তি), credit sale (বাকি বিক্রি), cash sale
-/// (নগদ, contract 1.44.0) or a type this app does not know yet (অন্যান্য).
-enum InvoiceKind { installment, credit, cash, other }
+/// The invoice type of a plan (`plans.kind`): installment (কিস্তি), credit sale (বাকি বিক্রি) or cash sale
+/// (নগদ, contract 1.44.0; unknown values count as cash, see [isCashKind]).
+enum InvoiceKind { installment, credit, cash }
 
 /// The types the list can filter by (the owner kept the two chips; cash-only customers are in "All").
 const filterableKinds = [InvoiceKind.installment, InvoiceKind.credit];
 
-/// `plans.kind` from a contract plan: `kind`, or since 1.44.0 `saleType` (`cash`). Missing means installment
-/// (older servers); an unknown value is kept as sent, so a newer server never breaks the phone.
+/// `plans.kind` from a contract plan; missing means installment (servers before 1.13.0). Any other value is
+/// stored as sent, so a newer server never breaks the phone, and is treated as cash ([isCashKind]).
 String planKindOf(Map<String, dynamic> p) {
-  final sale = p['saleType'];
-  if (sale is String && sale.trim().isNotEmpty) return sale.trim();
   final kind = p['kind'];
   return kind is String && kind.trim().isNotEmpty ? kind.trim() : 'installment';
 }
 
-/// How many invoices of each kind a customer has (FR-M-066). Installment, credit and unknown types count
-/// while open, the collectable rule ([isCollectablePlan]): something is still owed and the invoice is not
-/// returned, cancelled or settled. A cash sale is never owed, so it counts while it is not returned or
-/// cancelled. A customer can have several kinds.
+/// How many invoices of each kind a customer has (FR-M-066). Installment and credit invoices count while
+/// open, the collectable rule ([isCollectablePlan]): something is still owed and the invoice is not returned,
+/// cancelled or settled. A cash sale is never open, so it counts while it is not cancelled (its `closed` means
+/// money is still owed, not returned). A customer can have several kinds.
 class InvoiceKinds {
-  const InvoiceKinds({this.installment = 0, this.credit = 0, this.cash = 0, this.other = 0});
+  const InvoiceKinds({this.installment = 0, this.credit = 0, this.cash = 0});
   static const none = InvoiceKinds();
   final int installment;
   final int credit;
   final int cash;
-  final int other;
 
-  int get total => installment + credit + cash + other;
+  int get total => installment + credit + cash;
   bool get isEmpty => total == 0;
   int of(InvoiceKind k) => switch (k) {
         InvoiceKind.installment => installment,
         InvoiceKind.credit => credit,
         InvoiceKind.cash => cash,
-        InvoiceKind.other => other,
       };
   bool has(InvoiceKind k) => of(k) > 0;
 
   @override
-  bool operator ==(Object other) =>
-      other is InvoiceKinds && other.installment == installment && other.credit == credit && other.cash == cash && other.other == this.other;
+  bool operator ==(Object other) => other is InvoiceKinds && other.installment == installment && other.credit == credit && other.cash == cash;
   @override
-  int get hashCode => Object.hash(installment, credit, cash, other);
+  int get hashCode => Object.hash(installment, credit, cash);
 }
 
 /// The invoice-type chips (second chip group): null = either kind. Within the

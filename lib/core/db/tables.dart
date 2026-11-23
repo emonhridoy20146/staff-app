@@ -77,7 +77,7 @@ class Plans extends Table {
   TextColumn get status => text()();
   BoolColumn get badSuggested => boolean().withDefault(const Constant(false))();
   // v7 (0.10.0, contract 1.13.0): one plan = one ERP invoice.
-  /// installment | credit | cash (contract 1.44.0 `saleType`); any other value is kept as sent and shown as "other"
+  /// installment | credit | cash (contract 1.44.0); any other value is kept as sent and treated as cash
   TextColumn get kind => text().withDefault(const Constant('installment'))();
   TextColumn get invoiceNo => text().nullable()();
   TextColumn get saleDate => text().nullable()();

@@ -66,9 +66,10 @@ Map<String, int> paidThisMonth(Iterable<({String customerId, String date, int am
 
 /// How many invoices the customers on a list have, and how many still take money
 /// (FR-M-052, master FR-CUS-018): the same rule as the customer page's
-/// "ইনভয়েস N টি · বাকি আছে M টি". Cancelled invoices are not counted at all.
+/// "ইনভয়েস N টি · বাকি আছে M টি". Cancelled invoices are not counted at all; a cash sale (1.44.0) counts in
+/// the total and is never open.
 ({int total, int open}) invoiceTotals(
-  Iterable<({String customerId, String status, int outstandingPoisha})> plans,
+  Iterable<({String customerId, String status, int outstandingPoisha, String kind})> plans,
   Set<String> customerIds,
 ) {
   var total = 0;
@@ -76,7 +77,7 @@ Map<String, int> paidThisMonth(Iterable<({String customerId, String date, int am
   for (final p in plans) {
     if (!customerIds.contains(p.customerId) || p.status == 'cancelled') continue;
     total++;
-    if (isCollectablePlan(status: p.status, outstandingPoisha: p.outstandingPoisha)) open++;
+    if (isCollectablePlan(status: p.status, outstandingPoisha: p.outstandingPoisha, kind: p.kind)) open++;
   }
   return (total: total, open: open);
 }

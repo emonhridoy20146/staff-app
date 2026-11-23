@@ -195,7 +195,7 @@ Full-screen card: date, shift, GPS status, optional selfie (front camera), big b
 | `DutyChip` | off duty (neutral) · on duty (success dot, "ট্র্যাকিং চালু") · on break (warning) |
 | `CustomerTile` | 88 dp, see §5.2 |
 | `CustomerWorkRow` | Home row, four lines, see §5.1 (2026-11-23) |
-| `InvoiceKindLabel` | one chip per kind, radius 6, labelMedium, h-padding 8 / v-padding 2: installment on secondaryContainer / onSecondaryContainer, credit on tertiaryContainer / onTertiaryContainer, cash ("নগদ", contract 1.44.0) on primaryContainer / onPrimaryContainer, an unknown type ("অন্যান্য") on surfaceContainerHighest / onSurfaceVariant; word for one invoice, counts for several (always counts with `counted`, the customer page) |
+| `InvoiceKindLabel` | one chip per kind, radius 6, labelMedium, h-padding 8 / v-padding 2: installment on secondaryContainer / onSecondaryContainer, credit on tertiaryContainer / onTertiaryContainer, cash ("নগদ", contract 1.44.0; unknown kinds too) on primaryContainer / onPrimaryContainer; word for one invoice, counts for several (always counts with `counted`, the customer page) |
 | `AppBackButton` | `IconButton.filledTonal`, fixed 48 × 48 dp, `BackButtonIcon` at 28 dp, secondaryContainer / onSecondaryContainer, ink ripple (`InkRipple`, overlay onSecondaryContainer), 12 dp start inset; app bar `leadingWidth` 72; shown only when the route can pop |
 | `OnlineDot` | see §5.1b |
 | `AmountKeypad` | 3×4 grid, keys 72 dp, haptic on press, backspace long-press clears |

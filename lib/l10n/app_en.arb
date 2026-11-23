@@ -2225,11 +2225,6 @@
   "@kindCashCount": {
     "placeholders": { "n": { "type": "String" } }
   },
-  "kindOther": "Other",
-  "kindOtherCount": "{n} other",
-  "@kindOtherCount": {
-    "placeholders": { "n": { "type": "String" } }
-  },
   "planCashSale": "Cash sale",
   "monthOffice": "office",
   "monthMore": "+{n}",

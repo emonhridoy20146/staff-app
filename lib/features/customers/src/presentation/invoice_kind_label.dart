@@ -16,20 +16,17 @@ List<(InvoiceKind, String)> invoiceKindTexts(AppLocalizations l, Fmt f, InvoiceK
       InvoiceKind.installment => withCounts ? l.kindInstallmentCount(n) : l.kindInstallment,
       InvoiceKind.credit => withCounts ? l.kindCreditCount(n) : l.kindCredit,
       InvoiceKind.cash => withCounts ? l.kindCashCount(n) : l.kindCash,
-      InvoiceKind.other => withCounts ? l.kindOtherCount(n) : l.kindOther,
     };
   }
 
   return [for (final kind in InvoiceKind.values) if (k.has(kind)) (kind, text(kind))];
 }
 
-/// Chip colours per kind, all theme tokens: installment secondary, credit tertiary, cash primary container,
-/// unknown neutral.
+/// Chip colours per kind, all theme tokens: installment secondary, credit tertiary, cash primary container.
 (Color, Color) invoiceKindColors(ColorScheme cs, InvoiceKind k) => switch (k) {
       InvoiceKind.installment => (cs.secondaryContainer, cs.onSecondaryContainer),
       InvoiceKind.credit => (cs.tertiaryContainer, cs.onTertiaryContainer),
       InvoiceKind.cash => (cs.primaryContainer, cs.onPrimaryContainer),
-      InvoiceKind.other => (cs.surfaceContainerHighest, cs.onSurfaceVariant),
     };
 
 /// Small token-coloured chips that say what kind of invoices a customer has: installment on the secondary

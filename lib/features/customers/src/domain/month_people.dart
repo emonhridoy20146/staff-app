@@ -66,6 +66,7 @@ class ServerActivity {
     required this.month,
     this.lastVisitByName,
     this.lastPaidByName,
+    this.rowLastVisitByName,
     this.visitedBy = const [],
     this.paidBy = const [],
     this.promisedBy = const [],
@@ -73,6 +74,9 @@ class ServerActivity {
   final String? month;
   final String? lastVisitByName;
   final String? lastPaidByName;
+
+  /// Who made the visit at the customer's `lastVisitAt`, whatever the month (`CustomerListItem.lastVisitByName`).
+  final String? rowLastVisitByName;
   final List<ActivityEntry> visitedBy;
   final List<ActivityEntry> paidBy;
   final List<ActivityEntry> promisedBy;
@@ -94,6 +98,7 @@ class ServerActivity {
       month: m['month'] as String?,
       lastVisitByName: _clean(m['lastVisitByName'] as String?),
       lastPaidByName: _clean(m['lastPaidByName'] as String?),
+      rowLastVisitByName: _clean(m['rowLastVisitByName'] as String?),
       visitedBy: [for (final e in people(m['visitedBy'])) if (e.name.isNotEmpty) e],
       paidBy: people(m['paidBy']),
       promisedBy: [for (final e in people(m['promisedBy'])) if (e.name.isNotEmpty) e],
@@ -101,14 +106,15 @@ class ServerActivity {
   }
 }
 
-/// What the customer pull stores in `customers.activity_json` (1.44.0): the `activity` object, with the list
-/// row's `lastVisitByName` added when the activity itself has none. Null when the server sent neither.
+/// What the customer pull stores in `customers.activity_json` (1.44.0): the `activity` object, plus the list
+/// row's `lastVisitByName` as `rowLastVisitByName`. That one names the visit at `lastVisitAt` in any month, so it
+/// is kept apart from the month's own names. Null when the server sent neither.
 String? encodeActivity(Map<String, dynamic> customer) {
   final activity = customer['activity'];
   final rowName = customer['lastVisitByName'];
   if (activity is! Map && rowName == null) return null;
   final out = <String, dynamic>{...(activity is Map ? activity.cast<String, dynamic>() : const <String, dynamic>{})};
-  if (out['lastVisitByName'] == null && rowName != null) out['lastVisitByName'] = rowName;
+  if (rowName != null) out['rowLastVisitByName'] = rowName;
   return jsonEncode(out);
 }
 
@@ -160,7 +166,9 @@ MonthPeople monthPeopleOf({
       if (!inMonth(v.at)) continue;
       if (latest == null || v.at.isAfter(latest.at)) latest = (at: v.at, name: _clean(v.name));
     }
-    visit = _who(latest?.name);
+    // Last, the name of the customer's latest visit. The visit line only shows a name when that visit is in
+    // this month, so it never names last month's visitor.
+    visit = _who(latest?.name) ?? _who(server?.rowLastVisitByName);
   }
 
   // Paid: the server's payers in the ERP, else the people of this month's ERP payments on the phone.

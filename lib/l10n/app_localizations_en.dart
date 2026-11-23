@@ -3678,14 +3678,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get kindOther => 'Other';
-
-  @override
-  String kindOtherCount(String n) {
-    return '$n other';
-  }
-
-  @override
   String get planCashSale => 'Cash sale';
 
   @override

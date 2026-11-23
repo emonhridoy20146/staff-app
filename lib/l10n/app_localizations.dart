@@ -6416,18 +6416,6 @@ abstract class AppLocalizations {
   /// **'{n} cash'**
   String kindCashCount(String n);
 
-  /// No description provided for @kindOther.
-  ///
-  /// In en, this message translates to:
-  /// **'Other'**
-  String get kindOther;
-
-  /// No description provided for @kindOtherCount.
-  ///
-  /// In en, this message translates to:
-  /// **'{n} other'**
-  String kindOtherCount(String n);
-
   /// No description provided for @planCashSale.
   ///
   /// In en, this message translates to:

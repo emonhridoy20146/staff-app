@@ -176,7 +176,8 @@ void main() {
       final p = monthPeopleOf(today: '2026-11-15', myName: 'রহিম', myVisits: [(at: DateTime.utc(2026, 11, 3, 5), userName: null, byMe: true)], colleagueVisits: const [], paymentPeople: const [], promiseBy: null, server: old);
       expect(p.visitBy, const Who('রহিম'));
       final row = ServerActivity.parse(encodeActivity({'lastVisitByName': 'সালমা', 'activity': {'month': '2026-11'}}));
-      expect(row!.lastVisitByName, 'সালমা');
+      expect(row!.lastVisitByName, isNull); // the row's name is not this month's
+      expect(row.rowLastVisitByName, 'সালমা');
       expect(monthPeopleOf(today: '2026-11-15', myName: null, myVisits: const [], colleagueVisits: const [], paymentPeople: const [], promiseBy: null, server: row).visitBy, const Who('সালমা'));
       expect(encodeActivity({'name': 'x'}), isNull);
       expect(ServerActivity.parse(null), isNull);
@@ -197,14 +198,16 @@ void main() {
   });
 
   group('cash sales and unknown types (contract 1.44.0)', () {
-    test('saleType wins over kind; missing is installment; an unknown value is kept', () {
-      expect(planKindOf({'saleType': 'cash', 'kind': 'installment'}), 'cash');
+    test('kind is stored as sent; missing is installment; unknown kinds are cash', () {
+      expect(planKindOf({'kind': 'cash'}), 'cash');
       expect(planKindOf({'kind': 'credit'}), 'credit');
       expect(planKindOf(const {}), 'installment');
-      expect(planKindOf({'saleType': 'lease'}), 'lease');
+      expect(planKindOf({'kind': 'lease'}), 'lease');
+      expect(isCashKind('lease'), isTrue);
+      expect(isCashKind('installment') || isCashKind('credit'), isFalse);
     });
 
-    test('cash counts while it stands, even with nothing due; unknown types are "other"; filters ignore both', () async {
+    test('a cash sale counts until cancelled (its closed = still owed), is never open or collectable; filters ignore it', () async {
       final h = Harness();
       addTearDown(h.dispose);
       await h.signIn();
@@ -213,27 +216,34 @@ void main() {
       await db.delete(db.scheduleLines).go();
       await db.delete(db.plans).go();
       await db.batch((b) => b.insertAll(db.plans, [
-            plan('c1', id, kind: 'cash', outstanding: 0, status: 'completed'),
-            plan('c2', id, kind: 'cash', outstanding: 0, status: 'cancelled'),
-            plan('i1', id),
-            plan('x1', id, kind: 'lease'),
+            plan('c1', id, kind: 'cash', outstanding: 0, status: 'completed', invoiceNo: 'CS-1'),
+            plan('c2', id, kind: 'cash', outstanding: 5000, status: 'closed', invoiceNo: 'CS-2'),
+            plan('c3', id, kind: 'cash', status: 'cancelled'),
+            plan('x1', id, kind: 'lease', outstanding: 5000, invoiceNo: 'LS-1'),
+            plan('i1', id, invoiceNo: 'INV-1'),
           ]));
-      final c = (await CustomerRepository(db).watchOne(id).first)!;
-      expect(c.kinds, const InvoiceKinds(installment: 1, cash: 1, other: 1));
+      final repo = CustomerRepository(db);
+      final c = (await repo.watchOne(id).first)!;
+      expect(c.kinds, const InvoiceKinds(installment: 1, cash: 3));
+      expect(c.invoiceNos, ['INV-1']); // only open invoices are listed for collection
       expect(matchesKind(c, InvoiceKind.installment), isTrue);
       expect(matchesKind(c, InvoiceKind.credit), isFalse);
       expect(filterableKinds, [InvoiceKind.installment, InvoiceKind.credit]);
-      // a cash sale with nothing due is never collectable
-      expect(isCollectablePlan(status: 'completed', outstandingPoisha: 0), isFalse);
+      final plans = {for (final p in await repo.watchPlans(id).first) p.plan.erpPlanId: p};
+      expect(plans['c2']!.cash, isTrue);
+      expect(plans['c2']!.collectable, isFalse);
+      expect(plans['c2']!.closedInErp, isFalse); // owed, not returned
+      expect(plans['x1']!.collectable, isFalse);
+      expect(plans['c3']!.closedInErp, isTrue);
+      expect(plans['i1']!.collectable, isTrue);
     });
 
-    test('label texts: "১ কিস্তি · ১ নগদ"; one cash sale alone reads "নগদ"; unknown reads "অন্যান্য"', () {
+    test('label texts: "১ কিস্তি · ১ নগদ"; one cash sale alone reads "নগদ"', () {
       final l = lookupAppLocalizations(const Locale('bn'));
       const f = Fmt('bn', DigitStyle.bangla);
       List<String> texts(InvoiceKinds k, {bool counted = false}) => invoiceKindTexts(l, f, k, counted: counted).map((e) => e.$2).toList();
       expect(texts(const InvoiceKinds(installment: 1, cash: 1)), ['১ কিস্তি', '১ নগদ']);
       expect(texts(const InvoiceKinds(cash: 1)), ['নগদ']);
-      expect(texts(const InvoiceKinds(other: 1)), ['অন্যান্য']);
       expect(texts(const InvoiceKinds(credit: 1), counted: true), ['১ বাকি']);
     });
   });
