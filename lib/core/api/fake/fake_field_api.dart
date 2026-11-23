@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:crypto/crypto.dart' as crypto;
 import 'package:dio/dio.dart';
 
 import '../../time/clock.dart';
@@ -40,6 +41,8 @@ class FakeFieldApi implements HttpClientAdapter {
   bool uploadsFail = false; // the storage host refuses photos (e.g. a misconfigured server)
   String trackingProvider = 'free'; // admin setting location.trackingProvider
   bool selfieRequired = true; // attendance.selfieRequired (master switch)
+  /// Contract 1.45.0 `attendanceRequired` on login, `/auth/me` and the sync snapshot; null = not sent (older server).
+  bool? attendanceRequired;
   /// Events the server already has for today (`GET /attendance/me/today`, 1.36.0).
   List<Json> todayAttendanceEvents = [];
   int meTodayCalls = 0;
@@ -84,6 +87,14 @@ class FakeFieldApi implements HttpClientAdapter {
   var _mediaSeq = 0;
   final _mediaBySha = <String, String>{};
   final uploadedMedia = <String>[]; // tests
+  /// Signed upload grants (`/storage/o?t=`): token → media id, size, sha256 (field-api ADR-039/053).
+  final _grants = <String, ({String mediaId, int size, String sha256, String contentType})>{};
+  final _storedMedia = <String>{};
+  /// field-api answers `uploadUrl` relative to its own origin (`/api/v1/storage/o?t=…`) when set (tests).
+  bool relativeUploadUrl = false;
+  /// Every `POST /media/upload-url` body and every storage PUT as the server saw it (tests).
+  final presignBodies = <Json>[];
+  final storagePuts = <({String? contentType, String? contentLength, bool hadAuth, int bodyLength})>[];
   final locationPoints = <Json>[]; // tests
   final heartbeats = <Json>[]; // tests
   var _password = 'demo1234';
@@ -119,14 +130,14 @@ class FakeFieldApi implements HttpClientAdapter {
     'branch.view', 'customer.view', 'customer.location.propose', 'customer.phone.manage', 'tag.view', 'tag.set', //
     'collection.record', 'collection.view', 'cash.view', 'cash.deposit.record', 'assignment.view',
     'visit.record', 'visit.view', 'note.create', 'note.view', 'promise.create', 'promise.view',
-    'attendance.record', 'leave.request', 'cowork.use', 'task.work', 'place.view', 'place.create',
+    'attendance.record', 'leave.request', 'cowork.use', 'task.work', 'place.view', 'place.create', 'prospect.create',
   ];
 
   static const flags = {
     'module.customers': true, 'module.tags': true, 'module.collections': true, 'module.cash': true, //
     'module.visits': true, 'module.notes': true, 'module.promises': true, 'module.attendance': true,
     'module.handovers': true, 'module.location': true, 'module.notifications': true, 'module.sync': true,
-    'module.cowork': true, 'module.targets': true, 'module.reports': true, 'module.tasks': true, 'module.places': true, 'module.microfinance': false,
+    'module.cowork': true, 'module.targets': true, 'module.reports': true, 'module.tasks': true, 'module.places': true, 'module.prospects': true, 'module.microfinance': false,
   };
 
   Json get _settings => {
@@ -262,6 +273,52 @@ class FakeFieldApi implements HttpClientAdapter {
   }
 
   /// The server's rules for the three place mutations (FR-PLC-002..004).
+  /// Possible customers (provisional contract 1.45.0): `prospect` create / update. Server id `pr-<clientId>`.
+  final prospects = <String, Json>{};
+
+  /// Tests / demo: the office changes a prospect's status (it then can no longer be changed by staff).
+  void setProspectStatus(String clientId, String status) {
+    final p = prospects['pr-$clientId']!;
+    p['status'] = status;
+    serverChange('prospect', 'pr-$clientId', Map<String, dynamic>.of(p));
+  }
+
+  /// `prospect` (contract 1.45.0): `ProspectCreate` only, idempotent by clientId; numbers stored as +8801XXXXXXXXX.
+  /// Unknown fields are refused like field-api's strict schema.
+  Json _prospectMutation(String mutationId, String op, Json payload) {
+    Json invalid(String what) => {'mutationId': mutationId, 'result': 'rejected', 'error': _problem(400, 'VALIDATION_FAILED', what)};
+    const allowed = {'clientId', 'name', 'phones', 'address', 'note', 'location', 'branchId', 'fromProspectId'};
+    if (op != 'create' || payload.keys.any((k) => !allowed.contains(k))) return invalid('unknown field');
+    final name = (payload['name'] as String?)?.trim() ?? '';
+    final phones = (payload['phones'] as List?) ?? const [];
+    if (name.isEmpty || name.length > 120 || phones.length > 5) return invalid('name or phones');
+    final numbers = <String>[];
+    for (final p in phones) {
+      final n = p is Map ? p['number'] as String? : null;
+      if (n == null || !RegExp(r'^01[3-9]\d{8}$').hasMatch(n)) return invalid('phones');
+      numbers.add('+88$n');
+    }
+    final id = 'pr-${payload['clientId']}';
+    if (prospects.containsKey(id)) return {'mutationId': mutationId, 'result': 'applied', 'entityId': id}; // replay
+    prospects[id] = {
+      'id': id,
+      'clientId': payload['clientId'],
+      'name': name,
+      'phones': [for (final n in numbers) {'number': n, 'label': null}],
+      'address': payload['address'],
+      'note': payload['note'],
+      'location': payload['location'],
+      'branchId': 'b-1',
+      'status': 'new',
+      'history': [{'status': 'new', 'at': clock.nowUtc().toIso8601String(), 'by': {'id': user['id'], 'name': 'রহিম উদ্দিন'}}],
+      'version': 1,
+      'createdBy': {'id': user['id'], 'name': 'রহিম উদ্দিন'},
+      'createdAt': clock.nowUtc().toIso8601String(),
+    };
+    serverChange('prospect', id, Map<String, dynamic>.of(prospects[id]!));
+    return {'mutationId': mutationId, 'result': 'applied', 'entityId': id};
+  }
+
   Json _placeMutation(String mutationId, String entity, Json payload) {
     Json? find() {
       final pid = payload['placeId'] as String?;
@@ -463,6 +520,30 @@ class FakeFieldApi implements HttpClientAdapter {
   void serverChange(String entity, String id, Json data, {String op = 'upsert'}) =>
       _log.add(_Change(entity, id, op, data));
 
+  /// Tests / demo: the server marks a promise broken (FR-PRM-003) and sends it on the change feed with the
+  /// follow-up fields of contract 1.45.0.
+  /// [followUpId]: somebody (e.g. a colleague) already followed it up on the server.
+  void breakPromise(String mutationId, {String? followUpId}) {
+    final p = appliedPayloads[mutationId]!;
+    serverChange('promise', 'promise-$mutationId', {
+      ...p,
+      'id': 'promise-$mutationId',
+      'status': 'broken',
+      'attempt': _promiseAttempt(p),
+      'followUpId': followUpId,
+      'chainRootId': 'promise-$mutationId',
+      'createdAt': clock.nowUtc().toIso8601String(),
+    });
+  }
+
+  /// 1.45.0: a follow-up is one attempt after the promise it names; a promise without `followUpOf` is attempt 1.
+  int _promiseAttempt(Json p) {
+    final of = p['followUpOf'] as String?;
+    if (of == null) return 1;
+    final prev = appliedPayloads[of.replaceFirst('promise-', '')];
+    return prev == null ? 2 : _promiseAttempt(prev) + 1;
+  }
+
   /// Tests / demo: a manager decides a pin proposal (contract 1.7.0).
   void decideProposal(String clientId, String status, {String? reason}) {
     final last = _log.lastWhere((c) => c.entity == 'location_proposal' && c.data?['clientId'] == clientId);
@@ -650,7 +731,8 @@ class FakeFieldApi implements HttpClientAdapter {
     if (offline) {
       throw DioException.connectionError(requestOptions: o, reason: 'offline (fake)');
     }
-    final body = o.uri.path.contains('/upload/') ? null : await _readBody(o, requestStream);
+    final isStorage = o.uri.path.endsWith('/storage/o');
+    final body = isStorage ? null : await _readBody(o, requestStream);
     final path = o.uri.path.replaceFirst(RegExp(r'^.*/api/v1'), '');
     if (upgradeRequired && path != '/meta/app-config') {
       return _json(426, _problem(426, 'UPGRADE_REQUIRED', 'Update required'));
@@ -658,7 +740,8 @@ class FakeFieldApi implements HttpClientAdapter {
     final auth = o.headers['Authorization'] as String?;
     final authed = auth != null && _tokens.contains(auth.replaceFirst('Bearer ', ''));
     final public = {'/meta/app-config', '/auth/login', '/auth/refresh', '/system/health'};
-    if (!public.contains(path) && !path.startsWith('/upload/') && !authed) {
+    if (isStorage) return _storagePut(o, requestStream);
+    if (!public.contains(path) && !authed) {
       return _json(401, _problem(401, 'TOKEN_EXPIRED', 'Unauthorized'));
     }
 
@@ -734,24 +817,40 @@ class FakeFieldApi implements HttpClientAdapter {
         heartbeats.add(body as Json);
         return _json(204, null);
       case ('POST', '/media/upload-url'):
+        // Validated like field-api: required fields, the enums, size ≤ 1 MiB and RFC 3339 times WITH an offset.
         final b = body as Json;
-        final id = 'm-${++_mediaSeq}';
-        final exists = _mediaBySha.containsKey(b['sha256']);
-        if (!exists) _mediaBySha[b['sha256'] as String] = id;
-        return _json(200, {
-          'mediaId': _mediaBySha[b['sha256']],
-          'alreadyExists': exists,
-          if (!exists) 'uploadUrl': 'https://demo.invalid/upload/$id',
-          'headers': const {},
+        presignBodies.add(b);
+        final bad = <String>[
+          if (!const {'visit_photo', 'deposit_slip', 'selfie', 'location_proof', 'refund_proof', 'voice_note'}.contains(b['kind'])) 'kind',
+          if (!const {'image/jpeg', 'image/webp', 'audio/aac', 'audio/mp4'}.contains(b['contentType'])) 'contentType',
+          if (b['sizeBytes'] is! int || (b['sizeBytes'] as int) <= 0 || (b['sizeBytes'] as int) > 1048576) 'sizeBytes',
+          if (b['sha256'] is! String || !RegExp(r'^[0-9a-f]{64}$').hasMatch(b['sha256'] as String)) 'sha256',
+          if (b.containsKey('capturedAt') && !isRfc3339(b['capturedAt'])) 'capturedAt',
+        ];
+        if (bad.isNotEmpty) {
+          return _json(400, {..._problem(400, 'VALIDATION_FAILED', 'Invalid request'), 'errors': [for (final f in bad) {'path': f, 'message': 'invalid'}]});
+        }
+        final sha = b['sha256'] as String;
+        final known = _mediaBySha[sha];
+        final exists = known != null && _storedMedia.contains(known);
+        final id = known ?? 'm-${++_mediaSeq}';
+        _mediaBySha[sha] = id;
+        if (exists) return _json(201, {'mediaId': id, 'alreadyExists': true});
+        final t = 'g${_grants.length + 1}.${base64Url.encode(utf8.encode(id)).replaceAll('=', '')}';
+        _grants[t] = (mediaId: id, size: b['sizeBytes'] as int, sha256: sha, contentType: b['contentType'] as String);
+        final url = '/api/v1/storage/o?t=$t';
+        return _json(201, {
+          'mediaId': id,
+          'alreadyExists': false,
+          'uploadUrl': relativeUploadUrl ? url : 'https://demo.invalid$url',
+          'headers': {'Content-Type': b['contentType']},
+          'expiresAt': clock.nowUtc().add(const Duration(minutes: 5)).toIso8601String(),
         });
       default:
-        if (o.method == 'PUT' && path.startsWith('/upload/')) {
-          if (uploadsFail) return _json(503, {'code': 'UNAVAILABLE'});
-          uploadedMedia.add(path.substring('/upload/'.length));
-          return _json(200, null);
-        }
         final mc = RegExp(r'^/media/([^/]+)/confirm$').firstMatch(path);
         if (mc != null && o.method == 'POST') {
+          // field-api: confirming a photo whose bytes never arrived is 409 INVALID_STATE.
+          if (!_storedMedia.contains(mc.group(1))) return _json(409, {..._problem(409, 'INVALID_STATE', 'Upload not received'), 'details': {'reason': 'NOT_UPLOADED'}});
           return _json(200, {'mediaId': mc.group(1), 'status': 'confirmed'});
         }
         final ho = RegExp(r'^/handovers/([^/]+)/(accept|reject)$').firstMatch(path);
@@ -848,6 +947,7 @@ class FakeFieldApi implements HttpClientAdapter {
       'permissions': _permissions,
       'flags': flags,
       'serverTime': clock.nowUtc().toIso8601String(),
+      if (attendanceRequired != null) 'attendanceRequired': attendanceRequired,
     };
   }
 
@@ -867,6 +967,7 @@ class FakeFieldApi implements HttpClientAdapter {
       'nextCursor': '$end',
       'hasMore': end < _log.length,
       'permissions': {'version': 1, 'keys': _permissions},
+      if (attendanceRequired != null) 'attendanceRequired': attendanceRequired,
       'flags': flags,
       'settings': _settings,
       'cash': {
@@ -1153,6 +1254,8 @@ class FakeFieldApi implements HttpClientAdapter {
         r = _deposit(id, payload);
       } else if (entity == 'place' || entity == 'place_edit' || entity == 'place_move_request') {
         r = _placeMutation(id, entity, payload);
+      } else if (entity == 'prospect') {
+        r = _prospectMutation(id, (m['op'] as String?) ?? 'create', payload);
       } else {
         r = {'mutationId': id, 'result': 'applied', 'entityId': '$entity-$id', 'status': entity == 'collection' ? 'received' : 'ok'};
         if (entity == 'collection' && payload['method'] == 'cash') _cashOnHand += payload['amountPoisha'] as int;
@@ -1248,6 +1351,25 @@ class FakeFieldApi implements HttpClientAdapter {
   Json _problem(int status, String code, String title) =>
       {'type': 'about:blank', 'status': status, 'code': code, 'title': title};
 
+  /// `PUT /api/v1/storage/o?t=…` (field-api ADR-039/053): no bearer token, the body must match the signed type,
+  /// size and sha256.
+  Future<ResponseBody> _storagePut(RequestOptions o, Stream<Uint8List>? s) async {
+    final bytes = s == null ? <int>[] : await s.fold<List<int>>(<int>[], (a, b) => a..addAll(b));
+    final ct = o.headers[Headers.contentTypeHeader]?.toString();
+    final cl = o.headers[Headers.contentLengthHeader]?.toString();
+    storagePuts.add((contentType: ct, contentLength: cl, hadAuth: o.headers.containsKey('Authorization'), bodyLength: bytes.length));
+    if (o.method != 'PUT') return _json(405, _problem(405, 'METHOD_NOT_ALLOWED', 'PUT only'));
+    final g = _grants[o.uri.queryParameters['t']];
+    if (g == null) return _json(403, _problem(403, 'FORBIDDEN', 'Bad or expired signature'));
+    if (uploadsFail) return _json(503, _problem(503, 'UNAVAILABLE', 'Storage unavailable'));
+    if (ct != g.contentType) return _json(400, _problem(400, 'VALIDATION_FAILED', 'Content type does not match the signature'));
+    if (bytes.length != g.size || (cl != null && cl != '${g.size}')) return _json(400, _problem(400, 'VALIDATION_FAILED', 'Size does not match the signature'));
+    if (crypto.sha256.convert(bytes).toString() != g.sha256) return _json(400, _problem(400, 'VALIDATION_FAILED', 'sha256 does not match the signature'));
+    _storedMedia.add(g.mediaId);
+    uploadedMedia.add(g.mediaId);
+    return _json(200, {'stored': true});
+  }
+
   Future<Object?> _readBody(RequestOptions o, Stream<Uint8List>? s) async {
     if (o.data is Map) return Map<String, dynamic>.from(o.data as Map);
     if (s == null) return null;
@@ -1275,3 +1397,6 @@ class _Change {
   final String op;
   final Json? data;
 }
+
+/// RFC 3339 date-time as JSON Schema `format: date-time` checks it: the offset (`Z` or `±hh:mm`) is required.
+bool isRfc3339(Object? v) => v is String && RegExp(r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})$').hasMatch(v);

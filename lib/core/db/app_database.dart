@@ -44,13 +44,14 @@ part 'app_database.g.dart';
     KvSettings,
     ColleagueActivities,
     MapPlaces,
+    Prospects,
   ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 16;
+  int get schemaVersion => 17;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -181,6 +182,19 @@ class AppDatabase extends _$AppDatabase {
           if (from < 16) {
             await _ensureColumn(m, customers, customers.activityJson);
             await _ensureColumn(m, erpPayments, erpPayments.referrerName);
+          }
+          // v17 (FR-M-069, FR-M-072): why a photo upload failed and when it was last tried (sync centre), and the
+          // promise follow-up chain, and the prospects table. New columns (nullable or with a default) and a new table only;
+          // nothing unsynced is touched.
+          if (from < 17) {
+            await _ensureColumn(m, mediaQueue, mediaQueue.lastError);
+            await _ensureColumn(m, mediaQueue, mediaQueue.lastAttemptAt);
+            // contract 1.45.0 (FR-M-072): promise follow-up chain. Existing promises are attempt 1.
+            await _ensureColumn(m, promises, promises.followUpOf);
+            await _ensureColumn(m, promises, promises.followUpId);
+            await _ensureColumn(m, promises, promises.attempt);
+            // contract 1.45.0 (FR-M-073): possible customers. A new table only.
+            if (!await _hasTable('prospects')) await m.createTable(prospects);
           }
         },
         beforeOpen: (details) async {

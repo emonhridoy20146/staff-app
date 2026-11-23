@@ -28,7 +28,7 @@ class MeScreen extends ConsumerWidget {
       for (final m in ref.watch(featureManifestsProvider))
         if (access.flag(m.flag))
           for (final e in m.meEntries)
-            if (e.permission == null || access.can(e.permission!)) e,
+            if ((e.permission == null || access.can(e.permission!)) && (e.visible?.call(ref) ?? true)) e,
     ]..sort((a, b) => a.order.compareTo(b.order));
     final name = user?.name.of(lang) ?? '';
 

@@ -48,11 +48,13 @@ class _FieldAppState extends ConsumerState<FieldApp> with WidgetsBindingObserver
       _net = Connectivity().onConnectivityChanged.listen(_onNetwork);
       unawaited(Connectivity().checkConnectivity().then(_onNetwork).catchError((Object _) {}));
     }
-    // After each successful sync: upload photos (independent of data
-    // sync) and purge old confirmed media / done outbox rows.
+    // After each sync that reached the server: upload photos. Photos are independent of data sync (FR-M-069):
+    // a sync that ended with a server error (one bad pull, a 5xx) must not hold them back, so only "offline"
+    // skips them. Before 2026-11-23 they waited for a fully successful sync.
     _status = ref.read(syncEngineProvider).status.listen((s) {
-      if (s.running || s.lastErrorCode != null || s.lastSuccessAt == null) return;
+      if (s.running || !s.online) return;
       unawaited(ref.read(mediaServiceProvider).uploadPending().catchError((Object _) {}));
+      if (s.lastErrorCode != null || s.lastSuccessAt == null) return;
       // FR-M-061: after a reinstall, today's work-in comes back from the server instead of being asked again.
       unawaited(ref.read(attendanceServiceProvider).restoreTodayIfMissing().catchError((Object _) => 0));
     });

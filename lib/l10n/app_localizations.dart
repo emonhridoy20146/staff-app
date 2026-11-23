@@ -6457,6 +6457,408 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'+{n}'**
   String monthMore(String n);
+
+  /// No description provided for @mediaQueueHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Photos go to the server on their own, separately from the other work. Nothing is deleted from this phone until the server has the photo.'**
+  String get mediaQueueHint;
+
+  /// No description provided for @mediaKindSelfie.
+  ///
+  /// In en, this message translates to:
+  /// **'Attendance photo'**
+  String get mediaKindSelfie;
+
+  /// No description provided for @mediaKindVisit.
+  ///
+  /// In en, this message translates to:
+  /// **'Visit photo'**
+  String get mediaKindVisit;
+
+  /// No description provided for @mediaKindSlip.
+  ///
+  /// In en, this message translates to:
+  /// **'Deposit slip'**
+  String get mediaKindSlip;
+
+  /// No description provided for @mediaKindPin.
+  ///
+  /// In en, this message translates to:
+  /// **'Map pin photo'**
+  String get mediaKindPin;
+
+  /// No description provided for @mediaKindOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo'**
+  String get mediaKindOther;
+
+  /// No description provided for @mediaStateWaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting to upload'**
+  String get mediaStateWaiting;
+
+  /// No description provided for @mediaStateFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Not uploaded yet: {reason}'**
+  String mediaStateFailed(String reason);
+
+  /// No description provided for @mediaNextTry.
+  ///
+  /// In en, this message translates to:
+  /// **'Tried {tries} times · tries again at {time}'**
+  String mediaNextTry(String tries, String time);
+
+  /// No description provided for @mediaRetryAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload all now'**
+  String get mediaRetryAll;
+
+  /// No description provided for @mediaReasonNetwork.
+  ///
+  /// In en, this message translates to:
+  /// **'no connection to the server'**
+  String get mediaReasonNetwork;
+
+  /// No description provided for @mediaReasonTimeout.
+  ///
+  /// In en, this message translates to:
+  /// **'the network was too slow'**
+  String get mediaReasonTimeout;
+
+  /// No description provided for @mediaReasonMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'the photo file is no longer on this phone'**
+  String get mediaReasonMissing;
+
+  /// No description provided for @mediaReasonDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'the office deleted this photo on the server'**
+  String get mediaReasonDeleted;
+
+  /// No description provided for @mediaReasonInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'the server did not accept the photo\'s details'**
+  String get mediaReasonInvalid;
+
+  /// No description provided for @mediaReasonSignature.
+  ///
+  /// In en, this message translates to:
+  /// **'the upload link was refused or had expired'**
+  String get mediaReasonSignature;
+
+  /// No description provided for @mediaReasonNotUploaded.
+  ///
+  /// In en, this message translates to:
+  /// **'the server did not receive the photo'**
+  String get mediaReasonNotUploaded;
+
+  /// No description provided for @mediaReasonServer.
+  ///
+  /// In en, this message translates to:
+  /// **'the server is not answering right now'**
+  String get mediaReasonServer;
+
+  /// No description provided for @mediaReasonCode.
+  ///
+  /// In en, this message translates to:
+  /// **'the server answered {code}'**
+  String mediaReasonCode(String code);
+
+  /// No description provided for @mediaStepPresign.
+  ///
+  /// In en, this message translates to:
+  /// **'{reason} (getting the upload link)'**
+  String mediaStepPresign(String reason);
+
+  /// No description provided for @mediaStepUpload.
+  ///
+  /// In en, this message translates to:
+  /// **'{reason} (sending the photo)'**
+  String mediaStepUpload(String reason);
+
+  /// No description provided for @mediaStepConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'{reason} (confirming)'**
+  String mediaStepConfirm(String reason);
+
+  /// No description provided for @attNotRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account does not give attendance. There is nothing to do here.'**
+  String get attNotRequired;
+
+  /// No description provided for @leaderboardMeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Who collected the most this month'**
+  String get leaderboardMeSubtitle;
+
+  /// No description provided for @promiseFollowUpAction.
+  ///
+  /// In en, this message translates to:
+  /// **'New promise (follow-up)'**
+  String get promiseFollowUpAction;
+
+  /// No description provided for @promiseFollowUpOf.
+  ///
+  /// In en, this message translates to:
+  /// **'Follow-up of the broken promise of {amount} for {date}'**
+  String promiseFollowUpOf(String amount, String date);
+
+  /// No description provided for @promiseAttempt.
+  ///
+  /// In en, this message translates to:
+  /// **'Attempt {n}'**
+  String promiseAttempt(String n);
+
+  /// No description provided for @todayBrokenTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Broken promises to follow up'**
+  String get todayBrokenTitle;
+
+  /// No description provided for @todayBrokenRow.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} · was due {date}'**
+  String todayBrokenRow(String amount, String date);
+
+  /// No description provided for @prospectsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Possible customers'**
+  String get prospectsTitle;
+
+  /// No description provided for @prospectsMeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'People who may buy: note them, the office follows up'**
+  String get prospectsMeSubtitle;
+
+  /// No description provided for @prospectAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get prospectAdd;
+
+  /// No description provided for @prospectsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No possible customers yet'**
+  String get prospectsEmpty;
+
+  /// No description provided for @prospectsEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Met someone who may buy? Add them here, even without internet.'**
+  String get prospectsEmptyBody;
+
+  /// No description provided for @prospectStatusNew.
+  ///
+  /// In en, this message translates to:
+  /// **'New'**
+  String get prospectStatusNew;
+
+  /// No description provided for @prospectStatusContacted.
+  ///
+  /// In en, this message translates to:
+  /// **'Contacted'**
+  String get prospectStatusContacted;
+
+  /// No description provided for @prospectStatusConverted.
+  ///
+  /// In en, this message translates to:
+  /// **'Became a customer'**
+  String get prospectStatusConverted;
+
+  /// No description provided for @prospectStatusClosed.
+  ///
+  /// In en, this message translates to:
+  /// **'Dropped'**
+  String get prospectStatusClosed;
+
+  /// No description provided for @prospectByMe.
+  ///
+  /// In en, this message translates to:
+  /// **'you'**
+  String get prospectByMe;
+
+  /// No description provided for @prospectAddedBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Added by {name} · {time}'**
+  String prospectAddedBy(String name, String time);
+
+  /// No description provided for @prospectHasLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Location saved'**
+  String get prospectHasLocation;
+
+  /// No description provided for @prospectWaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting to be sent'**
+  String get prospectWaiting;
+
+  /// No description provided for @prospectRefused.
+  ///
+  /// In en, this message translates to:
+  /// **'Not accepted by the server: {code}'**
+  String prospectRefused(String code);
+
+  /// No description provided for @prospectEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Change'**
+  String get prospectEdit;
+
+  /// No description provided for @prospectNewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New possible customer'**
+  String get prospectNewTitle;
+
+  /// No description provided for @prospectEditTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Change possible customer'**
+  String get prospectEditTitle;
+
+  /// No description provided for @prospectName.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get prospectName;
+
+  /// No description provided for @prospectPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Mobile number'**
+  String get prospectPhone;
+
+  /// No description provided for @prospectPhoneMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Another mobile number (optional)'**
+  String get prospectPhoneMore;
+
+  /// No description provided for @prospectAddPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a number'**
+  String get prospectAddPhone;
+
+  /// No description provided for @prospectAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Address (optional)'**
+  String get prospectAddress;
+
+  /// No description provided for @prospectNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Note (optional)'**
+  String get prospectNote;
+
+  /// No description provided for @prospectLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Save where I am now'**
+  String get prospectLocation;
+
+  /// No description provided for @prospectLocationHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Only if you are with the person now'**
+  String get prospectLocationHint;
+
+  /// No description provided for @prospectLocationOffDuty.
+  ///
+  /// In en, this message translates to:
+  /// **'Location is used only while you are on duty'**
+  String get prospectLocationOffDuty;
+
+  /// No description provided for @prospectSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved. It goes to the office when there is internet.'**
+  String get prospectSaved;
+
+  /// No description provided for @prospectOfflineHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Works without internet. You can change it until it is sent.'**
+  String get prospectOfflineHint;
+
+  /// No description provided for @prospectErrName.
+  ///
+  /// In en, this message translates to:
+  /// **'Write a name'**
+  String get prospectErrName;
+
+  /// No description provided for @prospectErrNameLong.
+  ///
+  /// In en, this message translates to:
+  /// **'The name is too long (at most 120 letters)'**
+  String get prospectErrNameLong;
+
+  /// No description provided for @prospectErrPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Write at least one mobile number'**
+  String get prospectErrPhone;
+
+  /// No description provided for @prospectErrPhoneInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'A mobile number is not valid (01XXXXXXXXX)'**
+  String get prospectErrPhoneInvalid;
+
+  /// No description provided for @prospectErrPhoneRepeated.
+  ///
+  /// In en, this message translates to:
+  /// **'The same number is written twice'**
+  String get prospectErrPhoneRepeated;
+
+  /// No description provided for @prospectErrAddressLong.
+  ///
+  /// In en, this message translates to:
+  /// **'The address is too long (at most 500 letters)'**
+  String get prospectErrAddressLong;
+
+  /// No description provided for @prospectErrNoteLong.
+  ///
+  /// In en, this message translates to:
+  /// **'The note is too long (at most 1000 letters)'**
+  String get prospectErrNoteLong;
+
+  /// No description provided for @prospectErrNotEditable.
+  ///
+  /// In en, this message translates to:
+  /// **'It has been sent; only the office can change it now'**
+  String get prospectErrNotEditable;
+
+  /// No description provided for @prospectRefusedInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'The server did not accept the name or a number'**
+  String get prospectRefusedInvalid;
+
+  /// No description provided for @prospectRefusedNotAllowed.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account may not add possible customers'**
+  String get prospectRefusedNotAllowed;
 }
 
 class _AppLocalizationsDelegate

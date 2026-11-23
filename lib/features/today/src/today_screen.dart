@@ -77,7 +77,7 @@ class TodayScreen extends ConsumerWidget {
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(Space.screen, Space.s16, Space.screen, 0),
             sliver: SliverList.list(children: [
-              if (access.flag('module.attendance') && access.can(Perm.attendanceRecord)) ...[const DutyCard(), const SizedBox(height: Space.cardGap)],
+              if (ref.watch(attendanceShownProvider)) ...[const DutyCard(), const SizedBox(height: Space.cardGap)],
               _QuickActions(access: access),
               const SizedBox(height: Space.cardGap),
               const _ProgressCard(),
@@ -199,7 +199,7 @@ class _QuickActions extends ConsumerWidget {
     // FR-M-042: the attendance tile says whether today's attendance is still to be given.
     final day = ref.watch(todayAttendanceProvider).value;
     final attended = day != null && day.status != DayStatus.notStarted;
-    final showAttendance = access.flag('module.attendance') && access.can(Perm.attendanceRecord);
+    final showAttendance = ref.watch(attendanceShownProvider); // FR-M-070: never for a super admin
     final showReports = access.flag('module.reports');
     if (!showAttendance && !showReports) return const SizedBox.shrink();
     return Row(children: [

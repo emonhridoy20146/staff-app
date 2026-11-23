@@ -14,3 +14,4 @@ export 'src/presentation/customer_work_row.dart' show CustomerWorkRow, OpenDetai
 export 'src/presentation/invoice_kind_label.dart' show InvoiceKindLabel;
 export 'src/pin_correction.dart' show openPinCorrection, submitLocationProposal;
 export 'src/presentation/map_pin_screen.dart' show MapPinScreen;
+export 'src/domain/phones.dart' show normalizeMobile;

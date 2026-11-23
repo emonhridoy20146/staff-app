@@ -26,6 +26,10 @@ Phases match `field-api/docs/09-progress.md`. Start each phase against the Prism
 | Collect flow, receipt blocks, receipt share image | ✅ |
 | Cash: position, limit, deposits with slip, end-of-day closing | ◐ slip photo and closing not yet |
 | Visits with camera, media queue | ✅ |
+| Photo uploads fixed (UTC `capturedAt`), queue with reasons and Retry in the sync centre (FR-M-069, schema 17) | ✅ 2026-11-23 flow + widget tests; ☐ real phone check against field-api (cloudinary) |
+| Possible customers (prospects): Me entry, list with status and maker, add offline with optional on-duty location, edit own until sent (FR-M-073, schema 17) | ✅ 2026-11-23 flow + widget tests, contract 1.45.0; ☐ real phone check |
+| Promise follow-up: "New promise (follow-up)" on a broken promise, attempt chain on the timeline, Home card of broken promises without follow-up (FR-M-072) | ✅ 2026-11-23 flow + widget tests, contract 1.45.0 (`followUpOf`, `followUpId`, `attempt`); ☐ real phone check |
+| No attendance for super admin (`attendanceRequired`, FR-M-070) | ✅ 2026-11-23 tests, contract 1.45.0; ☐ real phone check with a super admin |
 | Notes, promises, local reminders | ✅ |
 | Tags (with reason), pin correction proposals | ✅ tags; pin correction in 0.3.0 (flow test + screenshots); map pin screen in 0.8.0 (contract 1.11.0: map moves under a fixed pin, typed coordinates, optional photo, set at once for customers without a location; flow + widget tests, screenshot) |
 | Attendance: work-in/out, breaks, summary | ✅ |
@@ -105,7 +109,7 @@ My performance, targets progress, day route suggestion.
 |---|---|
 | Today progress against my daily target (amount + visit credit, day off) | ✅ 0.7.0, flow test + screenshots |
 | My performance (month, cached offline, daily chart, rank) | ✅ 0.7.0, flow test + screenshot |
-| Leaderboard (when visible to staff) | ✅ 0.7.0, flow test + screenshot |
+| Leaderboard (when visible to staff) | ✅ 0.7.0, flow test + screenshot; own Me entry 2026-11-23 (FR-M-071), widget test |
 | Day route suggestion | ☐ |
 
 ## Phase 4 — Premium (as approved)

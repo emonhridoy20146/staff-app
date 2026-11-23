@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/feature/feature_manifest.dart';
@@ -9,6 +10,8 @@ import 'src/leave_screens.dart';
 
 /// Attendance: work-in/out, breaks, summary, leave requests, holidays and
 /// my shift (FR-ATT-001, 002, 005, 007, 008, FR-SET-002/003, FR-M-028).
+bool _required(WidgetRef ref) => ref.watch(attendanceShownProvider);
+
 final attendanceManifest = FeatureManifest(
   name: 'attendance',
   flag: 'module.attendance',
@@ -24,7 +27,7 @@ final attendanceManifest = FeatureManifest(
   pullHandlers: [AttendanceDayPullHandler()],
   pushHandlers: [AttendancePushHandler()],
   meEntries: [
-    MeEntryDef(id: 'attendance', order: 0, permission: Perm.attendanceRecord, builder: (_) => const AttendanceCard()),
+    MeEntryDef(id: 'attendance', order: 0, permission: Perm.attendanceRecord, builder: (_) => const AttendanceCard(), visible: _required),
     // Leave, holidays and my shift (FR-M-028, contract 1.12.0).
     MeEntryDef(id: 'leave', order: 1, permission: Perm.attendanceRecord, builder: (_) => const LeaveMeEntry()),
   ],

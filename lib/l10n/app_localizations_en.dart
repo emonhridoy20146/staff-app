@@ -3699,4 +3699,244 @@ class AppLocalizationsEn extends AppLocalizations {
   String monthMore(String n) {
     return '+$n';
   }
+
+  @override
+  String get mediaQueueHint =>
+      'Photos go to the server on their own, separately from the other work. Nothing is deleted from this phone until the server has the photo.';
+
+  @override
+  String get mediaKindSelfie => 'Attendance photo';
+
+  @override
+  String get mediaKindVisit => 'Visit photo';
+
+  @override
+  String get mediaKindSlip => 'Deposit slip';
+
+  @override
+  String get mediaKindPin => 'Map pin photo';
+
+  @override
+  String get mediaKindOther => 'Photo';
+
+  @override
+  String get mediaStateWaiting => 'Waiting to upload';
+
+  @override
+  String mediaStateFailed(String reason) {
+    return 'Not uploaded yet: $reason';
+  }
+
+  @override
+  String mediaNextTry(String tries, String time) {
+    return 'Tried $tries times · tries again at $time';
+  }
+
+  @override
+  String get mediaRetryAll => 'Upload all now';
+
+  @override
+  String get mediaReasonNetwork => 'no connection to the server';
+
+  @override
+  String get mediaReasonTimeout => 'the network was too slow';
+
+  @override
+  String get mediaReasonMissing => 'the photo file is no longer on this phone';
+
+  @override
+  String get mediaReasonDeleted =>
+      'the office deleted this photo on the server';
+
+  @override
+  String get mediaReasonInvalid =>
+      'the server did not accept the photo\'s details';
+
+  @override
+  String get mediaReasonSignature =>
+      'the upload link was refused or had expired';
+
+  @override
+  String get mediaReasonNotUploaded => 'the server did not receive the photo';
+
+  @override
+  String get mediaReasonServer => 'the server is not answering right now';
+
+  @override
+  String mediaReasonCode(String code) {
+    return 'the server answered $code';
+  }
+
+  @override
+  String mediaStepPresign(String reason) {
+    return '$reason (getting the upload link)';
+  }
+
+  @override
+  String mediaStepUpload(String reason) {
+    return '$reason (sending the photo)';
+  }
+
+  @override
+  String mediaStepConfirm(String reason) {
+    return '$reason (confirming)';
+  }
+
+  @override
+  String get attNotRequired =>
+      'Your account does not give attendance. There is nothing to do here.';
+
+  @override
+  String get leaderboardMeSubtitle => 'Who collected the most this month';
+
+  @override
+  String get promiseFollowUpAction => 'New promise (follow-up)';
+
+  @override
+  String promiseFollowUpOf(String amount, String date) {
+    return 'Follow-up of the broken promise of $amount for $date';
+  }
+
+  @override
+  String promiseAttempt(String n) {
+    return 'Attempt $n';
+  }
+
+  @override
+  String get todayBrokenTitle => 'Broken promises to follow up';
+
+  @override
+  String todayBrokenRow(String amount, String date) {
+    return '$amount · was due $date';
+  }
+
+  @override
+  String get prospectsTitle => 'Possible customers';
+
+  @override
+  String get prospectsMeSubtitle =>
+      'People who may buy: note them, the office follows up';
+
+  @override
+  String get prospectAdd => 'Add';
+
+  @override
+  String get prospectsEmpty => 'No possible customers yet';
+
+  @override
+  String get prospectsEmptyBody =>
+      'Met someone who may buy? Add them here, even without internet.';
+
+  @override
+  String get prospectStatusNew => 'New';
+
+  @override
+  String get prospectStatusContacted => 'Contacted';
+
+  @override
+  String get prospectStatusConverted => 'Became a customer';
+
+  @override
+  String get prospectStatusClosed => 'Dropped';
+
+  @override
+  String get prospectByMe => 'you';
+
+  @override
+  String prospectAddedBy(String name, String time) {
+    return 'Added by $name · $time';
+  }
+
+  @override
+  String get prospectHasLocation => 'Location saved';
+
+  @override
+  String get prospectWaiting => 'Waiting to be sent';
+
+  @override
+  String prospectRefused(String code) {
+    return 'Not accepted by the server: $code';
+  }
+
+  @override
+  String get prospectEdit => 'Change';
+
+  @override
+  String get prospectNewTitle => 'New possible customer';
+
+  @override
+  String get prospectEditTitle => 'Change possible customer';
+
+  @override
+  String get prospectName => 'Name';
+
+  @override
+  String get prospectPhone => 'Mobile number';
+
+  @override
+  String get prospectPhoneMore => 'Another mobile number (optional)';
+
+  @override
+  String get prospectAddPhone => 'Add a number';
+
+  @override
+  String get prospectAddress => 'Address (optional)';
+
+  @override
+  String get prospectNote => 'Note (optional)';
+
+  @override
+  String get prospectLocation => 'Save where I am now';
+
+  @override
+  String get prospectLocationHint => 'Only if you are with the person now';
+
+  @override
+  String get prospectLocationOffDuty =>
+      'Location is used only while you are on duty';
+
+  @override
+  String get prospectSaved =>
+      'Saved. It goes to the office when there is internet.';
+
+  @override
+  String get prospectOfflineHint =>
+      'Works without internet. You can change it until it is sent.';
+
+  @override
+  String get prospectErrName => 'Write a name';
+
+  @override
+  String get prospectErrNameLong =>
+      'The name is too long (at most 120 letters)';
+
+  @override
+  String get prospectErrPhone => 'Write at least one mobile number';
+
+  @override
+  String get prospectErrPhoneInvalid =>
+      'A mobile number is not valid (01XXXXXXXXX)';
+
+  @override
+  String get prospectErrPhoneRepeated => 'The same number is written twice';
+
+  @override
+  String get prospectErrAddressLong =>
+      'The address is too long (at most 500 letters)';
+
+  @override
+  String get prospectErrNoteLong =>
+      'The note is too long (at most 1000 letters)';
+
+  @override
+  String get prospectErrNotEditable =>
+      'It has been sent; only the office can change it now';
+
+  @override
+  String get prospectRefusedInvalid =>
+      'The server did not accept the name or a number';
+
+  @override
+  String get prospectRefusedNotAllowed =>
+      'Your account may not add possible customers';
 }

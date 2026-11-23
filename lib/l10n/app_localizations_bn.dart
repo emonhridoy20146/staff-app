@@ -3680,4 +3680,235 @@ class AppLocalizationsBn extends AppLocalizations {
   String monthMore(String n) {
     return '+$n';
   }
+
+  @override
+  String get mediaQueueHint =>
+      'ছবিগুলো অন্য কাজ থেকে আলাদাভাবে নিজে থেকেই সার্ভারে যায়। সার্ভার ছবি না পাওয়া পর্যন্ত এই ফোন থেকে কিছু মোছা হয় না।';
+
+  @override
+  String get mediaKindSelfie => 'হাজিরার ছবি';
+
+  @override
+  String get mediaKindVisit => 'ভিজিটের ছবি';
+
+  @override
+  String get mediaKindSlip => 'জমার স্লিপ';
+
+  @override
+  String get mediaKindPin => 'পিনের ছবি';
+
+  @override
+  String get mediaKindOther => 'ছবি';
+
+  @override
+  String get mediaStateWaiting => 'আপলোডের অপেক্ষায়';
+
+  @override
+  String mediaStateFailed(String reason) {
+    return 'এখনো আপলোড হয়নি: $reason';
+  }
+
+  @override
+  String mediaNextTry(String tries, String time) {
+    return '$tries বার চেষ্টা হয়েছে · $time-এ আবার চেষ্টা করবে';
+  }
+
+  @override
+  String get mediaRetryAll => 'সব এখন আপলোড করুন';
+
+  @override
+  String get mediaReasonNetwork => 'সার্ভারের সাথে সংযোগ নেই';
+
+  @override
+  String get mediaReasonTimeout => 'নেটওয়ার্ক খুব ধীর ছিল';
+
+  @override
+  String get mediaReasonMissing => 'ছবির ফাইল এই ফোনে আর নেই';
+
+  @override
+  String get mediaReasonDeleted => 'অফিস সার্ভার থেকে এই ছবি মুছে ফেলেছে';
+
+  @override
+  String get mediaReasonInvalid => 'সার্ভার ছবির তথ্য গ্রহণ করেনি';
+
+  @override
+  String get mediaReasonSignature => 'আপলোড লিংক গ্রহণ হয়নি বা মেয়াদ শেষ';
+
+  @override
+  String get mediaReasonNotUploaded => 'সার্ভার ছবিটি পায়নি';
+
+  @override
+  String get mediaReasonServer => 'সার্ভার এখন উত্তর দিচ্ছে না';
+
+  @override
+  String mediaReasonCode(String code) {
+    return 'সার্ভারের উত্তর: $code';
+  }
+
+  @override
+  String mediaStepPresign(String reason) {
+    return '$reason (আপলোড লিংক নেওয়ার সময়)';
+  }
+
+  @override
+  String mediaStepUpload(String reason) {
+    return '$reason (ছবি পাঠানোর সময়)';
+  }
+
+  @override
+  String mediaStepConfirm(String reason) {
+    return '$reason (নিশ্চিত করার সময়)';
+  }
+
+  @override
+  String get attNotRequired =>
+      'আপনার অ্যাকাউন্টে হাজিরা দিতে হয় না। এখানে কিছু করার নেই।';
+
+  @override
+  String get leaderboardMeSubtitle => 'এই মাসে কে সবচেয়ে বেশি আদায় করেছেন';
+
+  @override
+  String get promiseFollowUpAction => 'নতুন প্রতিশ্রুতি (ফলো-আপ)';
+
+  @override
+  String promiseFollowUpOf(String amount, String date) {
+    return '$date তারিখের $amount এর ভাঙা প্রতিশ্রুতির ফলো-আপ';
+  }
+
+  @override
+  String promiseAttempt(String n) {
+    return 'চেষ্টা $n';
+  }
+
+  @override
+  String get todayBrokenTitle => 'ভাঙা প্রতিশ্রুতি: ফলো-আপ করুন';
+
+  @override
+  String todayBrokenRow(String amount, String date) {
+    return '$amount · $date তারিখে দেওয়ার কথা ছিল';
+  }
+
+  @override
+  String get prospectsTitle => 'সম্ভাব্য গ্রাহক';
+
+  @override
+  String get prospectsMeSubtitle =>
+      'যারা কিনতে পারেন: লিখে রাখুন, অফিস যোগাযোগ করবে';
+
+  @override
+  String get prospectAdd => 'যোগ করুন';
+
+  @override
+  String get prospectsEmpty => 'এখনো কোনো সম্ভাব্য গ্রাহক নেই';
+
+  @override
+  String get prospectsEmptyBody =>
+      'কেউ কিনতে পারেন মনে হলে এখানে যোগ করুন, ইন্টারনেট ছাড়াও।';
+
+  @override
+  String get prospectStatusNew => 'নতুন';
+
+  @override
+  String get prospectStatusContacted => 'যোগাযোগ হয়েছে';
+
+  @override
+  String get prospectStatusConverted => 'গ্রাহক হয়েছেন';
+
+  @override
+  String get prospectStatusClosed => 'বাদ দেওয়া হয়েছে';
+
+  @override
+  String get prospectByMe => 'আপনি';
+
+  @override
+  String prospectAddedBy(String name, String time) {
+    return 'যোগ করেছেন $name · $time';
+  }
+
+  @override
+  String get prospectHasLocation => 'জায়গা সংরক্ষিত';
+
+  @override
+  String get prospectWaiting => 'পাঠানোর অপেক্ষায়';
+
+  @override
+  String prospectRefused(String code) {
+    return 'সার্ভার গ্রহণ করেনি: $code';
+  }
+
+  @override
+  String get prospectEdit => 'পরিবর্তন';
+
+  @override
+  String get prospectNewTitle => 'নতুন সম্ভাব্য গ্রাহক';
+
+  @override
+  String get prospectEditTitle => 'সম্ভাব্য গ্রাহক পরিবর্তন';
+
+  @override
+  String get prospectName => 'নাম';
+
+  @override
+  String get prospectPhone => 'মোবাইল নম্বর';
+
+  @override
+  String get prospectPhoneMore => 'আরেকটি মোবাইল নম্বর (ঐচ্ছিক)';
+
+  @override
+  String get prospectAddPhone => 'নম্বর যোগ করুন';
+
+  @override
+  String get prospectAddress => 'ঠিকানা (ঐচ্ছিক)';
+
+  @override
+  String get prospectNote => 'নোট (ঐচ্ছিক)';
+
+  @override
+  String get prospectLocation => 'এখন যেখানে আছি তা সংরক্ষণ';
+
+  @override
+  String get prospectLocationHint => 'শুধু যদি এখন তাঁর কাছে থাকেন';
+
+  @override
+  String get prospectLocationOffDuty => 'ডিউটিতে থাকলেই শুধু জায়গা নেওয়া হয়';
+
+  @override
+  String get prospectSaved => 'সংরক্ষিত। ইন্টারনেট পেলে অফিসে যাবে।';
+
+  @override
+  String get prospectOfflineHint =>
+      'ইন্টারনেট ছাড়াও চলে। পাঠানোর আগ পর্যন্ত পরিবর্তন করা যায়।';
+
+  @override
+  String get prospectErrName => 'একটি নাম লিখুন';
+
+  @override
+  String get prospectErrNameLong => 'নাম খুব বড় (সর্বোচ্চ ১২০ অক্ষর)';
+
+  @override
+  String get prospectErrPhone => 'অন্তত একটি মোবাইল নম্বর লিখুন';
+
+  @override
+  String get prospectErrPhoneInvalid =>
+      'একটি মোবাইল নম্বর সঠিক নয় (01XXXXXXXXX)';
+
+  @override
+  String get prospectErrPhoneRepeated => 'একই নম্বর দুবার লেখা হয়েছে';
+
+  @override
+  String get prospectErrAddressLong => 'ঠিকানা খুব বড় (সর্বোচ্চ ৫০০ অক্ষর)';
+
+  @override
+  String get prospectErrNoteLong => 'নোট খুব বড় (সর্বোচ্চ ১০০০ অক্ষর)';
+
+  @override
+  String get prospectErrNotEditable =>
+      'এটি পাঠানো হয়ে গেছে; এখন শুধু অফিস পরিবর্তন করতে পারে';
+
+  @override
+  String get prospectRefusedInvalid => 'সার্ভার নাম বা কোনো নম্বর গ্রহণ করেনি';
+
+  @override
+  String get prospectRefusedNotAllowed =>
+      'আপনার অ্যাকাউন্টে সম্ভাব্য গ্রাহক যোগ করার অনুমতি নেই';
 }

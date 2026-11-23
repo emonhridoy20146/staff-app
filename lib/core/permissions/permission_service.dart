@@ -31,10 +31,15 @@ abstract final class Perm {
   /// Office users (super admin, branch manager): move any place at once, no request (`place_edit` with location, contract 1.43.0).
   static const placeManage = 'place.manage';
 
+  /// Possible customers (contract 1.45.0, FR-M-073): field staff create and see their own.
+  static const prospectCreate = 'prospect.create';
+  static const prospectView = 'prospect.view';
+
   static const all = [
     customerView, customerLocationPropose, customerLocationApprove, customerPhoneManage, tagView, tagSet, collectionRecord, collectionView, //
     cashView, cashDepositRecord, visitRecord, visitView, noteCreate, noteView, promiseCreate,
     promiseView, attendanceRecord, leaveRequest, handoverRequest, coworkUse, placeView, placeCreate, placeManage,
+    prospectCreate, prospectView,
   ];
 }
 

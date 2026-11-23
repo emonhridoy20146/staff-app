@@ -363,6 +363,13 @@ class Promises extends Table {
   /// a customer assigned to me stays here (it is mine to follow up) and says who made it.
   TextColumn get createdByName => text().nullable()();
 
+  /// Follow-up of a broken promise (v17, contract 1.45.0, FR-M-072): the broken promise's server id (or its
+  /// clientId while unsent), and the attempt number in the chain (1 = the first promise).
+  TextColumn get followUpOf => text().nullable()();
+  /// The server's newest follow-up of this promise that is not cancelled (anyone's, also a colleague's); null = none.
+  TextColumn get followUpId => text().nullable()();
+  IntColumn get attempt => integer().withDefault(const Constant(1))();
+
   @override
   Set<Column> get primaryKey => {clientId};
 }
@@ -488,6 +495,10 @@ class MediaQueue extends Table {
   TextColumn get state => text().withDefault(const Constant('pending'))();
   IntColumn get attempts => integer().withDefault(const Constant(0))();
   DateTimeColumn get nextAttemptAt => dateTime().nullable()();
+  /// Why the last try failed, as `<step>:<code>` (`presign:VALIDATION_FAILED`, `upload:HTTP_403`, `upload:NETWORK`,
+  /// `file:MISSING`, …); null after a success or before the first try (schema 17).
+  TextColumn get lastError => text().nullable()();
+  DateTimeColumn get lastAttemptAt => dateTime().nullable()();
 
   @override
   Set<Column> get primaryKey => {clientId};
@@ -760,4 +771,35 @@ class MapPlaces extends Table {
 
   @override
   Set<Column> get primaryKey => {localId};
+}
+
+/// A possible customer (prospect) a staff member noted in the field (v17, contract 1.45.0, FR-M-073). Mine are
+/// saved here at once (`client_id` = my clientId) and sent as the `prospect` mutation; the server sends mine
+/// (and, when it decides so, others') on the change feed. Never deleted while unsent.
+@DataClassName('ProspectRow')
+class Prospects extends Table {
+  TextColumn get clientId => text()();
+  TextColumn get serverId => text().nullable()();
+  TextColumn get name => text()();
+  /// JSON list of phone numbers as typed (normalized to 01XXXXXXXXX).
+  TextColumn get phonesJson => text().withDefault(const Constant('[]'))();
+  TextColumn get address => text().nullable()();
+  TextColumn get note => text().nullable()();
+  RealColumn get lat => real().nullable()();
+  RealColumn get lng => real().nullable()();
+  RealColumn get accuracyM => real().nullable()();
+  /// The server's status (`new` until the office acts; unknown values kept as sent).
+  TextColumn get status => text().withDefault(const Constant('new'))();
+  TextColumn get createdById => text().nullable()();
+  TextColumn get createdByName => text().nullable()();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get updatedAt => dateTime().nullable()();
+  /// `queued` (not on the server yet), `synced`, `failed` (refused; kept, shown in Problems).
+  TextColumn get syncState => text().withDefault(const Constant('queued'))();
+  /// An edit of mine not yet sent: `queued`; refused: `failed`; else `none`.
+  TextColumn get editState => text().withDefault(const Constant('none'))();
+  TextColumn get errorCode => text().nullable()();
+
+  @override
+  Set<Column> get primaryKey => {clientId};
 }

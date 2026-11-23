@@ -117,6 +117,11 @@ final fieldApiProvider = Provider<FieldApi>((ref) {
     try {
       final r = await api.refresh(rt);
       await tokens.save(r.accessToken, r.refreshToken.isEmpty ? rt : r.refreshToken);
+      // 1.45.0: the refresh answer says too whether this user gives attendance (FR-M-070).
+      if (r.attendanceRequired != null) {
+        ref.read(attendanceRequiredProvider.notifier).state = r.attendanceRequired!;
+        unawaited(ref.read(databaseProvider).kvSet('attendance_required', jsonEncode(r.attendanceRequired)));
+      }
       return r.accessToken;
     } on ApiException catch (e) {
       // Offline: keep the session, just fail this request.
@@ -129,6 +134,10 @@ final fieldApiProvider = Provider<FieldApi>((ref) {
 
 final outboxWriterProvider = Provider<OutboxWriter>((ref) => OutboxWriter(ref.watch(databaseProvider), ref.watch(clockProvider)));
 final outboxReaderProvider = Provider<OutboxReader>((ref) => OutboxReader(ref.watch(databaseProvider)));
+
+/// Does this user give attendance? Contract 1.45.0 `attendanceRequired` from login, `/auth/me` and the sync
+/// snapshot; false for a super admin. A server that does not send it (older than 1.45.0) means true (FR-M-070).
+final attendanceRequiredProvider = StateProvider<bool>((ref) => true);
 
 /// Server-provided org settings (duty hours, thresholds, targets…).
 final serverSettingsProvider = StateProvider<Json>((ref) => const {});
@@ -155,6 +164,10 @@ final syncEngineProvider = Provider<SyncEngine>((ref) {
           'permissions': ref.read(accessProvider).permissions.toList(),
           'flags': ref.read(accessProvider).flags,
         })));
+      }
+      if (s.attendanceRequired != null) {
+        ref.read(attendanceRequiredProvider.notifier).state = s.attendanceRequired!;
+        unawaited(db.kvSet('attendance_required', jsonEncode(s.attendanceRequired)));
       }
       if (s.settings != null) {
         ref.read(serverSettingsProvider.notifier).state = s.settings!;

@@ -40,6 +40,9 @@ Devices (minimum set): **Xiaomi Redmi (MIUI/HyperOS, 2–3 GB)**, **Samsung Gala
 - [ ] Network flaps during upload; no duplicates (verify in admin)
 - [ ] App force-stopped and phone rebooted with queue → queue intact
 - [ ] Places (FR-M-063): long-press the map in airplane mode, add a place, edit it, ask to move a colleague's place; back online they reach the admin panel once each; labels readable on a 5" phone at 130 % text
+- [ ] Photos (FR-M-069): take an attendance selfie and a visit photo against the live server (cloudinary); each leaves the sync centre's photo list within a minute online; in airplane mode the list says "no connection" with a next try time, and Retry uploads it once back online
+- [ ] Super admin (FR-M-070): log in as a super admin on a 1.45.0 server: no duty card, no attendance tile, no attendance card in Me, no location notification
+- [ ] Possible customers (FR-M-073): add one in airplane mode off duty (location switch disabled), one on duty with location; change one before it is sent; back online both reach the admin panel once with the changed words
 - [ ] Storage nearly full → photo capture shows clear error, data still saved
 **Money**
 - [ ] Collection flow ≤ 15 s for experienced user; amount in words correct for 1, 15, 101, 1,000, 1,00,000, 12,50,500

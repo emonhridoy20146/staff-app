@@ -2,4 +2,4 @@
 library;
 
 export 'manifest.dart';
-export 'src/sync_centre.dart' show SyncCentreScreen, SyncProblemsBanner;
+export 'src/sync_centre.dart' show MediaQueueCard, SyncCentreScreen, SyncProblemsBanner, mediaFailureText, mediaKindLabel;

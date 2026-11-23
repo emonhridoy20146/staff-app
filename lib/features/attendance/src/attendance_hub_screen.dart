@@ -64,6 +64,13 @@ class _AttendanceHubState extends ConsumerState<AttendanceHubScreen> with Widget
     final t = Theme.of(context).textTheme;
     final cs = Theme.of(context).colorScheme;
     final sem = context.semanticColors;
+    if (!ref.watch(attendanceRequiredProvider)) {
+      // FR-M-070: a user who gives no attendance (super admin) never sees the work-in button, even by a link.
+      return Scaffold(
+        appBar: AppBar(title: Text(l.attHubTitle)),
+        body: Padding(padding: const EdgeInsets.all(Space.screen), child: InfoBanner(icon: Icons.info_rounded, tone: BannerTone.info, text: l.attNotRequired)),
+      );
+    }
     ref.watch(minuteTickerProvider);
     final day = ref.watch(todayAttendanceProvider).value;
     final history = ref.watch(recentAttendanceDaysProvider).value ?? const <AttendanceDayRow>[];
