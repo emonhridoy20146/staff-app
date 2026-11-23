@@ -6589,6 +6589,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{reason} (confirming)'**
   String mediaStepConfirm(String reason);
+
+  /// No description provided for @attNotRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account does not give attendance. There is nothing to do here.'**
+  String get attNotRequired;
+
+  /// No description provided for @leaderboardMeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Who collected the most this month'**
+  String get leaderboardMeSubtitle;
 }
 
 class _AppLocalizationsDelegate

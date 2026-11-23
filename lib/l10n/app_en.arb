@@ -2275,5 +2275,6 @@
   "@mediaStepConfirm": {
     "placeholders": { "reason": { "type": "String" } }
   },
-  "attNotRequired": "Your account does not give attendance. There is nothing to do here."
+  "attNotRequired": "Your account does not give attendance. There is nothing to do here.",
+  "leaderboardMeSubtitle": "Who collected the most this month"
 }

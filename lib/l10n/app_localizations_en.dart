@@ -3781,4 +3781,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String mediaStepConfirm(String reason) {
     return '$reason (confirming)';
   }
+
+  @override
+  String get attNotRequired =>
+      'Your account does not give attendance. There is nothing to do here.';
+
+  @override
+  String get leaderboardMeSubtitle => 'Who collected the most this month';
 }

@@ -3759,4 +3759,11 @@ class AppLocalizationsBn extends AppLocalizations {
   String mediaStepConfirm(String reason) {
     return '$reason (নিশ্চিত করার সময়)';
   }
+
+  @override
+  String get attNotRequired =>
+      'আপনার অ্যাকাউন্টে হাজিরা দিতে হয় না। এখানে কিছু করার নেই।';
+
+  @override
+  String get leaderboardMeSubtitle => 'এই মাসে কে সবচেয়ে বেশি আদায় করেছেন';
 }

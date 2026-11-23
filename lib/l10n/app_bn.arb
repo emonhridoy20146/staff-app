@@ -1082,5 +1082,6 @@
   "mediaStepPresign": "{reason} (আপলোড লিংক নেওয়ার সময়)",
   "mediaStepUpload": "{reason} (ছবি পাঠানোর সময়)",
   "mediaStepConfirm": "{reason} (নিশ্চিত করার সময়)",
-  "attNotRequired": "আপনার অ্যাকাউন্টে হাজিরা দিতে হয় না। এখানে কিছু করার নেই।"
+  "attNotRequired": "আপনার অ্যাকাউন্টে হাজিরা দিতে হয় না। এখানে কিছু করার নেই।",
+  "leaderboardMeSubtitle": "এই মাসে কে সবচেয়ে বেশি আদায় করেছেন"
 }
