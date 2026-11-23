@@ -742,7 +742,7 @@ class MapPlaces extends Table {
   TextColumn get editMutationId => text().nullable()();
 
   /// My move request: none | queued | sent | failed (the server's `pendingMove` takes over once sent).
-  /// `moved` (ADR-M29): an office user's direct move waits to be sent; moveLat/moveLng then hold the server's
+  /// `moved` (ADR-M30): an office user's direct move waits to be sent; moveLat/moveLng then hold the server's
   /// point to go back to if it is refused (failed).
   TextColumn get moveState => text().withDefault(const Constant('none'))();
   TextColumn get moveMutationId => text().nullable()();

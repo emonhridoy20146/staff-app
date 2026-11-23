@@ -202,7 +202,7 @@ class _FailedCard extends ConsumerWidget {
 }
 
 /// Why a mutation was refused. A place (FR-M-063) says it in words with its name, and a refused direct
-/// move (ADR-M29) adds that the marker went back; everything else shows the server's code.
+/// move (ADR-M30) adds that the marker went back; everything else shows the server's code.
 class _FailedReason extends ConsumerWidget {
   const _FailedReason({required this.row});
   final OutboxRow row;

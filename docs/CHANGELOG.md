@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 
-### Changed (owner decision 2026-11-22: the office moves a place at once, offline too; FR-M-063, master FR-PLC-003, ADR-M29, contract 1.43.0)
+### Changed (owner decision 2026-11-22: the office moves a place at once, offline too; FR-M-063, master FR-PLC-003, ADR-M30, contract 1.43.0)
 - **"সরান / Move" for office users:** a holder of `place.manage` (super admin, branch manager; from the server snapshot, new `Perm.placeManage`) sees "সরান" instead of "সরাতে বলুন" on any place, also while a request is open. The move screen has no reason field and saves with "এখানে সরান".
 - **Offline-first:** the marker moves on the phone at once and `place_edit` with `location` is queued (`PlaceService.moveNow`; contract 1.43.0, field-api ADR-055). No "waiting for the office" state; the server closes any open request. The row remembers the server's point (`moveState = moved`, `moveLat`/`moveLng`; no schema change) and a pull keeps my point while it is unsent. A place I made offline can be moved before it is sent (`placeClientId`, after the create).
 - **Refusals:** the marker goes back to the server's point at once and the item is listed in **Problems** with the place name and the reason in words (`OUTSIDE_BANGLADESH`, `PLACE_DELETED`, new `MOVE_NEEDS_MANAGE`, …; bn + en). Problems now names place items "ম্যাপের জায়গা / Map place".
@@ -10,6 +10,14 @@
 - Contract copy `docs/contract/openapi.yaml` → **1.43.0** (from field-api main). **Needs field-api 1.43.0** for office moves; an older server would refuse them (they come back with the reason).
 - Fake API follows 1.43.0: `place_edit` with `location` (place.manage only, `MOVE_NEEDS_MANAGE`, outside Bangladesh, `PLACE_DELETED`, closes an open request, same point is a no-op, unknown fields `VALIDATION_FAILED`); `placeManager` and `officeMovesPlace` test hooks.
 - Tests: `places_flow_test.dart` (moves at once offline with only a `place_edit` queued, a pull keeps my point, closes an open request, a refused second move goes back, field staff refused with `MOVE_NEEDS_MANAGE`, removed place, a place made offline), `places_screens_test.dart` ("সরান" for office users offline with the row moved and `place_edit` queued, field staff still see "সরাতে বলুন", the refusal in Problems in words).
+
+### Fixed (bank deposits were always refused; FR-M-065, ADR-M29)
+- **A bank deposit now carries a photo of its slip.** field-api refuses a bank deposit without `slipMediaId` (`SLIP_REQUIRED`), and the app never sent one, so every bank deposit ended in Problems. When **Bank** is chosen on the deposit sheet, a warning asks for the slip and **জমা দিন / Deposit** stays disabled until a photo is taken with the camera (no gallery). The photo shows on the sheet (Retake), on the confirm and as a thumbnail in the deposit history.
+- **Offline-first:** the slip goes through the media queue (kind `deposit_slip`: presign, PUT, confirm) and the deposit is saved in the same transaction with its mutation `held`; the collections lock at once as before. When the slip is confirmed, the new `deposit` media hook releases the deposit with `slipMediaId` and starts a sync. A bank deposit is never sent without its slip. The existing column `deposits.slip_media_client_id` now holds the slip's media id; no schema change.
+- Branch cashier and manager deposits need no slip and are unchanged (not held, no `slipMediaId`).
+- If the server still answers `SLIP_REQUIRED`, Problems now says "the server got no slip photo for this bank deposit; deposit again and take a photo of the slip, or deposit to the branch cashier or the manager" (bn/en).
+- New `MediaService.localBytes` reads a queued photo back for thumbnails.
+- Tests: `deposit_flow_test.dart` (bank without slip is not saved; with slip it is held until the photo uploads, then sent with the server's media id; a second confirm changes nothing; cashier deposit unchanged; server `SLIP_REQUIRED` in words), `deposit_slip_sheet_test.dart` (button disabled until the photo, slip on the confirm, manager needs none, history thumbnail), `deposit_confirm_test.dart` (slip on the confirm). The deposit flow tests now wait for a background sync before closing the database.
 
 ### Changed (CI, owner decision 2026-11-22)
 - **A pull request builds the APK only when it can break the Android build:** `pubspec.yaml`/`pubspec.lock`, `android/`, `config/`, the workflows or build config (new `changes` job, plain `git diff`, no third-party action). Other pull requests run the tests only, about 8 minutes faster; a skipped `apk` job counts as passed.

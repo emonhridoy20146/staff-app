@@ -9,7 +9,7 @@ import 'helpers.dart';
 
 /// Master FR-PLC-002..005 (contract 1.38.0): a place is added offline, changed before it was sent,
 /// gets its server id from the sync; a move request waits for the office, whose decision comes back.
-/// An office user (place.manage) moves a place at once, offline-first (FR-PLC-003, ADR-M29).
+/// An office user (place.manage) moves a place at once, offline-first (FR-PLC-003, ADR-M30).
 void main() {
   late Harness h;
   setUp(() => h = Harness());

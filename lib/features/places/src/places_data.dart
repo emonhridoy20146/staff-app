@@ -21,7 +21,7 @@ import '../../auth/auth.dart';
 /// I may change the words of places I made (`place_edit`) and ask the office
 /// to move any place (`place_move_request`): the marker moves only when the
 /// office approves. An office user (`place.manage`) moves a place at once
-/// instead: `place_edit` with `location` (contract 1.43.0, ADR-M29), offline
+/// instead: `place_edit` with `location` (contract 1.43.0, ADR-M30), offline
 /// like every other change; the marker goes back if the server refuses.
 
 /// The fixed icon list, in the order the picker shows them.
@@ -52,7 +52,7 @@ class PlacePullHandler implements PullHandler {
       name: Value(keepWords ? existing.name : (d['name'] as String?) ?? ''),
       icon: Value(keepWords ? existing.icon : (d['icon'] as String?) ?? 'other'),
       note: Value(keepWords ? existing.note : d['note'] as String?),
-      // My direct move not sent yet (ADR-M29) keeps its point; the server's goes to moveLat/moveLng for a refusal.
+      // My direct move not sent yet (ADR-M30) keeps its point; the server's goes to moveLat/moveLng for a refusal.
       lat: Value(moved ? existing.lat : (loc['lat'] as num?)?.toDouble() ?? existing?.lat ?? 0),
       lng: Value(moved ? existing.lng : (loc['lng'] as num?)?.toDouble() ?? existing?.lng ?? 0),
       moveLat: moved ? Value((loc['lat'] as num?)?.toDouble() ?? existing.moveLat) : const Value.absent(),
@@ -96,7 +96,7 @@ class PlacePushHandler implements PushResultHandler {
               editState: Value(rejected ? 'failed' : 'none'),
               errorCode: Value(code),
             ));
-        // An office user's direct move (ADR-M29). Refused: the marker goes back to the server's point at once and
+        // An office user's direct move (ADR-M30). Refused: the marker goes back to the server's point at once and
         // the item stays in Problems with its reason; a retry from there that succeeds clears it.
         final move = await (db.select(db.mapPlaces)..where((t) => t.moveMutationId.equals(m.mutationId) & t.moveState.isIn(const ['moved', 'failed']))).getSingleOrNull();
         if (move == null) break;
@@ -142,7 +142,7 @@ class MapPlace {
   /// My move request is saved here and waits for the network.
   bool get moveQueued => row.moveState == 'queued';
 
-  /// An office user's direct move (ADR-M29) is on the map and waits for the network: no office approval.
+  /// An office user's direct move (ADR-M30) is on the map and waits for the network: no office approval.
   bool get movedUnsent => row.moveState == 'moved';
   bool get moveFailed => row.moveState == 'failed';
 
@@ -296,7 +296,7 @@ class PlaceService {
     return queued;
   }
 
-  /// FR-PLC-003 by the office (owner decision 2026-11-22, ADR-M29): a holder of `place.manage` moves the
+  /// FR-PLC-003 by the office (owner decision 2026-11-22, ADR-M30): a holder of `place.manage` moves the
   /// marker at once, no request. Offline-first like every change: the row takes the new point now and
   /// `place_edit` with `location` (contract 1.43.0) is queued. The point the server last had is kept in
   /// `moveLat`/`moveLng` (`moveState = moved`), so a refusal puts the marker back at once; the next pull

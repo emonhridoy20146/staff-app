@@ -292,7 +292,7 @@ class PlaceDetailsSheet extends ConsumerWidget {
     final me = ref.watch(sessionProvider).user?.id;
     if (p == null) return Padding(padding: const EdgeInsets.all(Space.s24), child: Text(l.placeGone));
     final mine = p.isMine(me);
-    // ADR-M29: an office user (place.manage, from the server snapshot) moves the place itself, no request.
+    // ADR-M30: an office user (place.manage, from the server snapshot) moves the place itself, no request.
     final manage = ref.watch(accessProvider).can(Perm.placeManage);
     final decision = p.lastDecision;
     final error = p.createFailed || p.editFailed || p.moveFailed ? placeErrorText(l, p.row.errorCode) : null;
@@ -389,7 +389,7 @@ class _Note extends StatelessWidget {
 
 /// FR-PLC-004: move the map under the fixed pin to the right spot, say why, send. The marker stays
 /// where it is until the office approves. An office user (place.manage) moves it at once instead
-/// (FR-PLC-003, ADR-M29): no reason field, offline-first, the marker moves now and goes back if refused.
+/// (FR-PLC-003, ADR-M30): no reason field, offline-first, the marker moves now and goes back if refused.
 class PlaceMoveScreen extends ConsumerStatefulWidget {
   const PlaceMoveScreen({super.key, required this.localId});
   final String localId;

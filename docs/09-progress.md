@@ -57,7 +57,8 @@ Phases match `field-api/docs/09-progress.md`. Start each phase against the Prism
 | Remove an added phone number from the customer page, online (FR-M-053) | ✅ 2026-11-21, CI only; device check pending |
 | Same device id after a reinstall (ANDROID_ID); attendance restored from the server after a reinstall; no photo at breaks by default; 09:00–21:00 without shift data (FR-M-060, FR-M-061, ADR-M25, contract 1.36.0) | 🚧 2026-11-22, unit + flow tests; needs field-api 1.36.0; device check pending (reinstall on a real phone) |
 | Customer page: reload button and pull down refresh this customer from the server (ERP figures, invoices, payments), then sync; offline says internet is needed and keeps the saved data (FR-M-063, ADR-M27) | 🚧 2026-11-22, flow tests (button, pull, offline, English); device check pending |
-| Deposit everything; collections of any method editable until deposited; locked after; refused deposit in Problems (FR-M-059, ADR-M24, contract 1.35.0, schema 14) | 🚧 2026-11-22, unit + widget + flow tests; needs field-api 1.35.0; device check pending; bank slip photo still missing (a bank deposit is refused `SLIP_REQUIRED`) |
+| Deposit everything; collections of any method editable until deposited; locked after; refused deposit in Problems (FR-M-059, ADR-M24, contract 1.35.0, schema 14) | 🚧 2026-11-22, unit + widget + flow tests; needs field-api 1.35.0; device check pending |
+| Bank deposit slip photo: camera only, required for Bank, held deposit released with `slipMediaId` after upload; thumbnail on the confirm and in the history (FR-M-065, ADR-M29) | 🚧 2026-11-22, unit + widget + flow tests; device check pending (camera, upload on a real phone) |
 | Co-work: the requester can cancel; a group of one ends (contract 1.34.0) | ✅ 2026-11-22, CI only; device check pending |
 | Visit outcome "পলাতক / Runaway" (FR-M-064, contract 1.41.0) | 🚧 2026-11-22, unit test; needs field-api 1.41.0 |
 | Cash in hand: change or delete until deposited; other staff's work list; PIN progress (FR-M-058, ADR-M23, contract 1.32.0) | 🚧 2026-11-22, CI only; needs field-api 1.32.0; device check pending |
@@ -87,7 +88,7 @@ LocationEngine spike (ADR-009) → duty-aware tracking, adaptive sampling, filte
 | Battery level in heartbeat | ☐ blocked (`battery_plus` dependency conflict) |
 | Real-device checks (battery, OEM killing, reboot) | ☐ needs phones |
 | Places on the map: long-press add, labels, own edit, move request, offline (FR-M-063, contract 1.38.0) | ✅ flow + widget tests; ☐ real phone check |
-| Office users (place.manage) move a place at once, offline-first via `place_edit` + location; field staff still ask (FR-M-063, ADR-M29, contract 1.43.0) | ✅ 2026-11-23 flow + widget tests; ☐ real phone check against field-api 1.43.0 |
+| Office users (place.manage) move a place at once, offline-first via `place_edit` + location; field staff still ask (FR-M-063, ADR-M30, contract 1.43.0) | ✅ 2026-11-23 flow + widget tests; ☐ real phone check against field-api 1.43.0 |
 | Places on every map by zoom (none / square icon / icon + name), pin screen landmarks, all branches, Galachipa default centre (FR-M-063, ADR-M28) | ✅ 2026-11-22 widget tests; ☐ real phone check of the zoom steps |
 
 ## Phase 3 — Reports in app

@@ -5870,6 +5870,36 @@ abstract class AppLocalizations {
   /// **'A deposit is still waiting to be sent, so nothing in hand can be changed or deleted now.'**
   String get cashDepositWaitingLock;
 
+  /// No description provided for @cashSlipTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Bank deposit slip'**
+  String get cashSlipTitle;
+
+  /// No description provided for @cashSlipNeeded.
+  ///
+  /// In en, this message translates to:
+  /// **'A bank deposit needs a photo of the deposit slip. Camera only.'**
+  String get cashSlipNeeded;
+
+  /// No description provided for @cashSlipTake.
+  ///
+  /// In en, this message translates to:
+  /// **'Take a photo of the slip'**
+  String get cashSlipTake;
+
+  /// No description provided for @cashSlipRetake.
+  ///
+  /// In en, this message translates to:
+  /// **'Retake'**
+  String get cashSlipRetake;
+
+  /// No description provided for @cashSlipUploading.
+  ///
+  /// In en, this message translates to:
+  /// **'The deposit is sent once its slip photo is uploaded.'**
+  String get cashSlipUploading;
+
   /// No description provided for @cashInHandNonCashTitle.
   ///
   /// In en, this message translates to:
@@ -5903,7 +5933,7 @@ abstract class AppLocalizations {
   /// No description provided for @depositFailedSlip.
   ///
   /// In en, this message translates to:
-  /// **'Not deposited: a bank deposit needs a photo of the slip. Deposit to the branch cashier or the manager.'**
+  /// **'Not deposited: the server got no slip photo for this bank deposit. Deposit again and take a photo of the slip, or deposit to the branch cashier or the manager.'**
   String get depositFailedSlip;
 
   /// No description provided for @depositFailedChanged.

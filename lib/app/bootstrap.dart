@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 
@@ -15,6 +17,7 @@ import '../core/providers.dart';
 import '../core/sync/sync_handlers.dart';
 import '../core/time/clock.dart';
 import '../features/attendance/attendance.dart';
+import '../features/cash/cash.dart';
 import '../features/customers/customers.dart';
 import '../features/location/location.dart';
 import '../features/visits/visits.dart';
@@ -50,6 +53,11 @@ Future<ProviderContainer> bootstrap(Env env, {List<Override> extra = const []}) 
       'visit': (db, owner, ids) => linkVisitPhotos(container.read(outboxWriterProvider), db, owner, ids),
       'location_proposal': (db, owner, ids) => submitLocationProposal(container.read(outboxWriterProvider), db, owner, ids),
       'attendance_event': (db, owner, ids) => linkAttendanceSelfie(container.read(outboxWriterProvider), db, owner, ids),
+      // A bank deposit held for its slip goes as soon as the slip is on the server.
+      'deposit': (db, owner, ids) async {
+        await linkDepositSlip(container.read(outboxWriterProvider), db, owner, ids);
+        unawaited(container.read(syncEngineProvider).kick(reason: 'money'));
+      },
     }),
     if (env.isDemo) ...[
       fakeApiProvider.overrideWithValue(FakeFieldApi(clock: clock)),
@@ -103,6 +111,11 @@ ProviderContainer buildTestContainer({required Clock clock, FakeFieldApi? api, L
       'visit': (db, owner, ids) => linkVisitPhotos(c.read(outboxWriterProvider), db, owner, ids),
       'location_proposal': (db, owner, ids) => submitLocationProposal(c.read(outboxWriterProvider), db, owner, ids),
       'attendance_event': (db, owner, ids) => linkAttendanceSelfie(c.read(outboxWriterProvider), db, owner, ids),
+      // A bank deposit held for its slip goes as soon as the slip is on the server.
+      'deposit': (db, owner, ids) async {
+        await linkDepositSlip(c.read(outboxWriterProvider), db, owner, ids);
+        unawaited(c.read(syncEngineProvider).kick(reason: 'money'));
+      },
     }),
     fakeApiProvider.overrideWithValue(api ?? FakeFieldApi(clock: clock, latency: Duration.zero)),
     locationEngineProvider.overrideWithValue(FakeLocationEngine()),
