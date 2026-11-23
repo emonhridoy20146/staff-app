@@ -48,7 +48,9 @@ final currentFixProvider = StreamProvider<GeoFix?>((ref) {
   return out.stream;
 });
 
-const fixRefresh = Duration(minutes: 2);
+/// Owner 2026-11-23: a new fix re-sorts the near-me lists, which looked like the page reloading; at most every
+/// 15 minutes. Opening a list or pulling it down still reads a fresh position.
+const fixRefresh = Duration(minutes: 15);
 
 /// Business date "today" in Dhaka, server-corrected.
 final todayProvider = Provider<String>((ref) => ref.watch(clockProvider).businessDate());

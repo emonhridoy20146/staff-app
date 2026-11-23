@@ -74,6 +74,9 @@ Phases match `field-api/docs/09-progress.md`. Start each phase against the Prism
 | Home row in four lines with a Collect button, no FAB, "promised by"; online mark in the top bar (FR-M-067) | ✅ 2026-11-23 flow tests; goldens re-rendered |
 | "This month" says who did the visit, payment, promise; larger tonal back button (FR-M-068) | ✅ 2026-11-23 contract 1.44.0 activity (newest + "+N", office, pending apart) with the phone's names as fallback; schema 16; unit + migration tests |
 | Customer reload `VALIDATION_FAILED`: body-less POSTs no longer say `Content-Type: application/json` (FR-M-063) | ✅ 2026-11-23 unit test |
+| Customer page address: blank ERP address falls back to detailed address / area, else "no address" (FR-M-005) | ✅ 2026-11-23 unit test |
+| No reload every few minutes: sync and distance fix every 15 min, online only; resume syncs only when stale | ✅ 2026-11-23 |
+| Customer list in the Home row style with an arrow; compact collection card and duty card with a "বিস্তারিত" pill | ✅ 2026-11-23 flow tests; ☐ real phone check |
 **Acceptance:** M-E2…M-E7, M-E9, M-E10 green; manual device checklist (non-location sections) signed off on 4 OEM devices; pilot 5 staff × 2 weeks with zero lost/duplicate collections.
 
 ## Phase 2 — Location

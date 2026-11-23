@@ -22,7 +22,9 @@ class Customer {
   String get id => row.serverId;
   String get code => row.code;
   String nameOf(String lang) => lang == 'en' ? (row.nameEn ?? row.nameBn) : row.nameBn;
-  String? get address => row.address;
+  /// The address to show: the ERP address, or when the ERP left it blank its detailed address, or the area
+  /// (owner 2026-11-23: a blank ERP address showed the pin icon with nothing beside it). Null when none is known.
+  String? get address => _text(row.address) ?? _text(row.detailedAddress) ?? _text(row.areaName);
   String? get areaName => row.areaName;
   bool get hasPin => row.lat != null && row.lng != null && row.locationStatus != 'missing' && row.locationStatus != 'invalid';
 
@@ -43,7 +45,13 @@ class Customer {
   Guarantor? get guarantor => Guarantor.parse(row.guarantorJson);
 
   /// ERP extras (contract 1.13.0): the ERP's longer address and how to find the house.
-  String? get detailedAddress => (row.detailedAddress?.trim().isEmpty ?? true) || row.detailedAddress == row.address ? null : row.detailedAddress;
+  /// Null when it is already shown as [address].
+  String? get detailedAddress {
+    final d = _text(row.detailedAddress);
+    return d == null || d == address ? null : d;
+  }
+
+  static String? _text(String? v) => (v == null || v.trim().isEmpty) ? null : v.trim();
   String? get directions => (row.directions?.trim().isEmpty ?? true) ? null : row.directions;
 
   /// The ERP's own risk grade, read only (never a FOS tag).

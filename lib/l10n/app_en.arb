@@ -178,6 +178,9 @@
   "dutyStartBreak": "Start break",
   "dutyEndBreak": "End break",
   "dutyDetails": "Today's duty details",
+  "expandShow": "Details",
+  "expandHide": "Hide",
+  "todayCollectedDetails": "Today's collection details",
   "dutyRowShift": "Office time",
   "dutyRowIn": "Attendance",
   "dutyRowBreak": "Break",
@@ -1819,6 +1822,7 @@
     }
   },
   "detailDirections": "Directions",
+  "detailNoAddress": "No address in the ERP",
   "erpRiskBadge": "ERP grade {grade}",
   "@erpRiskBadge": {
     "placeholders": {

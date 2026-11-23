@@ -11,7 +11,7 @@ import '../../../../core/ui/common.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../customer_providers.dart';
 import '../domain/customer.dart';
-import 'customer_tile.dart';
+import 'customer_work_row.dart';
 
 String filterLabel(AppLocalizations l, CustomerFilter f) => switch (f) {
       CustomerFilter.all => l.filterAll,
@@ -218,8 +218,15 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
                         physics: const AlwaysScrollableScrollPhysics(),
                         padding: const EdgeInsets.only(bottom: 96),
                         itemCount: items.length,
-                        separatorBuilder: (_, _) => const Divider(indent: 76, height: 1),
-                        itemBuilder: (_, i) => CustomerTile(customer: items[i], onTap: () => context.push('/customers/${items[i].id}')),
+                        separatorBuilder: (_, _) => const Divider(indent: Space.s16, endIndent: Space.s16, height: 1),
+                        // Owner request 2026-11-23: the Home row layout, with an arrow to the details page instead of Collect.
+                        itemBuilder: (_, i) => CustomerWorkRow(
+                          key: ValueKey('customer-row-${items[i].id}'),
+                          customer: items[i],
+                          listDetails: true,
+                          onTap: () => context.push('/customers/${items[i].id}'),
+                          action: const OpenDetailsArrow(key: Key('open-details-arrow')),
+                        ),
                       ),
               ),
             ),

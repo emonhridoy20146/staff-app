@@ -12,6 +12,7 @@ import '../../../core/theme/status_colors.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/ui/chips.dart';
 import '../../../core/ui/common.dart';
+import '../../../core/ui/expand_hint.dart';
 import '../../../core/ui/money_text.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../attendance/attendance.dart';
@@ -275,10 +276,19 @@ class _QuickTile extends StatelessWidget {
   }
 }
 
-class _ProgressCard extends ConsumerWidget {
+/// Today's collection. Owner request 2026-11-23: compact by default (amount, target and its bar); a tap opens
+/// the visit target, cash / mobile / visits and the cash meter. The "Details ▾" pill says it can be opened.
+class _ProgressCard extends ConsumerStatefulWidget {
   const _ProgressCard();
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_ProgressCard> createState() => _ProgressCardState();
+}
+
+class _ProgressCardState extends ConsumerState<_ProgressCard> {
+  bool _open = false;
+
+  @override
+  Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
     final t = Theme.of(context).textTheme;
     final cs = Theme.of(context).colorScheme;
@@ -299,35 +309,7 @@ class _ProgressCard extends ConsumerWidget {
     final showCash = access.flag('module.cash') && access.can(Perm.cashView);
     final done = context.semanticColors.success.fg;
 
-    return AppCard(
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Row(children: [
-          Expanded(child: Text(l.todayCollected, style: t.bodyMedium!.copyWith(color: cs.onSurfaceVariant))),
-          if (ratio >= 1)
-            _TargetMet(label: l.todayTargetMet)
-          else if (mine?.source == 'personal' && target > 0)
-            Text(l.todayTargetPersonal, style: t.labelMedium!.copyWith(color: cs.primary)),
-        ]),
-        const SizedBox(height: 2),
-        Row(crossAxisAlignment: CrossAxisAlignment.baseline, textBaseline: TextBaseline.alphabetic, children: [
-          MoneyText(totals.total, style: t.headlineMedium!.copyWith(fontWeight: FontWeight.w700)),
-          const SizedBox(width: Space.s8),
-          Expanded(
-            child: Text(
-              target > 0 ? l.todayOfTarget(f.money(target)) : (offDay ? l.todayOffDay : l.todayNoTarget),
-              style: t.bodyMedium!.copyWith(color: cs.onSurfaceVariant),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ]),
-        if (target > 0) ...[
-          const SizedBox(height: Space.s8),
-          ClipRRect(
-            borderRadius: const BorderRadius.all(Radius.circular(Radii.full)),
-            child: LinearProgressIndicator(value: ratio, minHeight: 10, color: ratio >= 1 ? done : cs.primary),
-          ),
-        ],
+    final details = <Widget>[
         if (visitTarget > 0) ...[
           const SizedBox(height: Space.s12),
           Row(children: [
@@ -362,7 +344,53 @@ class _ProgressCard extends ConsumerWidget {
           const Divider(height: Space.s32),
           const CashMeter(compact: true),
         ],
+    ];
+
+    return Semantics(
+      button: true,
+      expanded: _open,
+      label: l.todayCollectedDetails,
+      child: AppCard(
+        key: const Key('today-progress-card'),
+        onTap: () => setState(() => _open = !_open),
+        padding: const EdgeInsets.fromLTRB(Space.s16, Space.s12, Space.s12, Space.s12),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          Expanded(child: Text(l.todayCollected, style: t.bodyMedium!.copyWith(color: cs.onSurfaceVariant))),
+          // Flexible: with the Details pill beside them they must shrink at large text sizes, not overflow.
+          if (ratio >= 1)
+            Flexible(child: _TargetMet(label: l.todayTargetMet))
+          else if (mine?.source == 'personal' && target > 0)
+            Flexible(child: Text(l.todayTargetPersonal, style: t.labelMedium!.copyWith(color: cs.primary), maxLines: 1, overflow: TextOverflow.ellipsis)),
+          const SizedBox(width: Space.s8),
+          ExpandHint(open: _open),
+        ]),
+        Row(crossAxisAlignment: CrossAxisAlignment.baseline, textBaseline: TextBaseline.alphabetic, children: [
+          MoneyText(totals.total, style: t.headlineSmall!.copyWith(fontWeight: FontWeight.w700)),
+          const SizedBox(width: Space.s8),
+          Expanded(
+            child: Text(
+              target > 0 ? l.todayOfTarget(f.money(target)) : (offDay ? l.todayOffDay : l.todayNoTarget),
+              style: t.bodyMedium!.copyWith(color: cs.onSurfaceVariant),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ]),
+        if (target > 0) ...[
+          const SizedBox(height: Space.s8),
+          ClipRRect(
+            borderRadius: const BorderRadius.all(Radius.circular(Radii.full)),
+            child: LinearProgressIndicator(value: ratio, minHeight: 10, color: ratio >= 1 ? done : cs.primary),
+          ),
+        ],
+        AnimatedSize(
+          duration: const Duration(milliseconds: 180),
+          alignment: Alignment.topCenter,
+          child: _open ? Column(crossAxisAlignment: CrossAxisAlignment.start, children: details) : const SizedBox(width: double.infinity),
+        ),
       ]),
+      ),
     );
   }
 }
@@ -381,7 +409,7 @@ class _TargetMet extends StatelessWidget {
         child: Row(mainAxisSize: MainAxisSize.min, children: [
           Icon(Icons.emoji_events_rounded, size: 16, color: st.fg),
           const SizedBox(width: Space.s4),
-          Text(label, style: Theme.of(context).textTheme.labelMedium!.copyWith(color: st.fg)),
+          Flexible(child: Text(label, style: Theme.of(context).textTheme.labelMedium!.copyWith(color: st.fg), maxLines: 1, overflow: TextOverflow.ellipsis)),
         ]),
       ),
     );

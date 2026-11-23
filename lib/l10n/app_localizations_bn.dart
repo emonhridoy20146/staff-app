@@ -370,6 +370,15 @@ class AppLocalizationsBn extends AppLocalizations {
   String get dutyDetails => 'আজকের ডিউটির তথ্য';
 
   @override
+  String get expandShow => 'বিস্তারিত';
+
+  @override
+  String get expandHide => 'লুকান';
+
+  @override
+  String get todayCollectedDetails => 'আজকের আদায়ের বিস্তারিত';
+
+  @override
   String get dutyRowShift => 'অফিস সময়';
 
   @override
@@ -2943,6 +2952,9 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get detailDirections => 'যাওয়ার পথ';
+
+  @override
+  String get detailNoAddress => 'ERP তে ঠিকানা নেই';
 
   @override
   String erpRiskBadge(String grade) {

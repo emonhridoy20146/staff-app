@@ -15,6 +15,7 @@ import '../../../core/theme/status_colors.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/ui/chips.dart';
 import '../../../core/ui/common.dart';
+import '../../../core/ui/expand_hint.dart';
 import '../../../core/ui/money_text.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../collections/collections.dart';
@@ -159,7 +160,7 @@ class _DutyCardState extends ConsumerState<DutyCard> {
                         Text(f.date(businessDate, withYear: true), style: t.bodySmall!.copyWith(color: tone == null ? cs.onSurfaceVariant : fg)),
                       ]),
                     ),
-                    Icon(_open ? Icons.expand_less_rounded : Icons.expand_more_rounded, color: fg),
+                    ExpandHint(open: _open, color: tone == null ? null : fg),
                   ]),
                 ),
               ),

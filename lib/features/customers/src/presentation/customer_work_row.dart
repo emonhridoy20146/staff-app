@@ -9,6 +9,7 @@ import '../../../../core/ui/money_text.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../customer_providers.dart';
 import '../domain/customer.dart';
+import 'invoice_kind_label.dart';
 import 'work_marks_row.dart';
 
 /// The Home work-list row (FR-M-067, owner request 2026-11-23, design guide §5.1), four lines:
@@ -16,10 +17,16 @@ import 'work_marks_row.dart';
 /// 2. branch and invoice numbers, full width;
 /// 3. the larger work marks (visit, paid this month, promise, map pin) and, at the right, [action] (Collect);
 /// 4. how long it is overdue, full width; and for an open promise, who took it.
+///
+/// The Customers list uses the same row (owner request 2026-11-23) with [listDetails]: line 2 then also says the
+/// invoice type and how far away the customer is, and [action] is an arrow to the details page instead of Collect.
 class CustomerWorkRow extends ConsumerWidget {
-  const CustomerWorkRow({super.key, required this.customer, this.onTap, this.action});
+  const CustomerWorkRow({super.key, required this.customer, this.onTap, this.action, this.listDetails = false});
   final Customer customer;
   final VoidCallback? onTap;
+
+  /// Customers list: show the invoice type (FR-M-066) and the distance on line 2.
+  final bool listDetails;
 
   /// The button at the end of line 3 (Home passes Collect); null leaves the marks alone on the line.
   final Widget? action;
@@ -52,7 +59,24 @@ class CustomerWorkRow extends ConsumerWidget {
                 MoneyText(customer.outstanding, key: const Key('work-row-amount'), style: AppTheme.tabular(t.titleMedium!)),
               ],
             ),
-            if (where.isNotEmpty) ...[
+            if (listDetails && (!customer.kinds.isEmpty || where.isNotEmpty || customer.distanceM != null)) ...[
+              const SizedBox(height: Space.s4),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  if (!customer.kinds.isEmpty) ...[InvoiceKindLabel(kinds: customer.kinds), const SizedBox(width: Space.s8)],
+                  Expanded(
+                    child: Text(
+                      [...where, if (customer.distanceM != null) f.distance(customer.distanceM!)].join(' · '),
+                      key: const Key('work-row-where'),
+                      style: t.bodySmall!.copyWith(color: cs.onSurfaceVariant),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ] else if (where.isNotEmpty) ...[
               const SizedBox(height: Space.s2),
               Text(where.join(' · '), key: const Key('work-row-where'), style: t.bodySmall!.copyWith(color: cs.onSurfaceVariant), maxLines: 2, overflow: TextOverflow.ellipsis),
             ],
@@ -81,6 +105,25 @@ class CustomerWorkRow extends ConsumerWidget {
             ],
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// The Customers-list end of line 3: an arrow that says "tap to open the details" (owner request 2026-11-23).
+class OpenDetailsArrow extends StatelessWidget {
+  const OpenDetailsArrow({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return ExcludeSemantics(
+      child: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(color: cs.secondaryContainer, shape: BoxShape.circle),
+        alignment: Alignment.center,
+        child: Icon(Icons.chevron_right_rounded, size: 28, color: cs.onSecondaryContainer),
       ),
     );
   }
