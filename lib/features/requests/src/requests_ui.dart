@@ -209,8 +209,10 @@ class _RequestCard extends ConsumerWidget {
           Row(mainAxisSize: MainAxisSize.min, children: [
             Icon(important ? Icons.priority_high_rounded : Icons.person_rounded, size: 16, color: important ? s.danger.fg : cs.onSurfaceVariant),
             const SizedBox(width: Space.s2),
-            Text(important ? l.requestPriorityImportantShort : l.requestPriorityNormalShort,
-                style: t.bodySmall!.copyWith(color: important ? s.danger.fg : cs.onSurfaceVariant, fontWeight: important ? FontWeight.w700 : FontWeight.w400)),
+            Flexible(
+              child: Text(important ? l.requestPriorityImportantShort : l.requestPriorityNormalShort,
+                  style: t.bodySmall!.copyWith(color: important ? s.danger.fg : cs.onSurfaceVariant, fontWeight: important ? FontWeight.w700 : FontWeight.w400)),
+            ),
           ]),
           if (r.row.customerName != null) Text(r.row.customerName!, style: t.bodySmall!.copyWith(color: cs.onSurfaceVariant)),
           Text(f.dateTime(r.row.createdAt), style: t.bodySmall!.copyWith(color: cs.onSurfaceVariant)),
@@ -219,7 +221,7 @@ class _RequestCard extends ConsumerWidget {
             Row(mainAxisSize: MainAxisSize.min, children: [
               Icon(Icons.fiber_new_rounded, size: 18, color: s.info.fg),
               const SizedBox(width: Space.s4),
-              Text(l.requestNewsMark, style: t.bodySmall!.copyWith(color: s.info.fg, fontWeight: FontWeight.w700)),
+              Flexible(child: Text(l.requestNewsMark, style: t.bodySmall!.copyWith(color: s.info.fg, fontWeight: FontWeight.w700))),
             ]),
         ]),
         if (r.refused) ...[

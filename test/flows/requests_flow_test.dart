@@ -224,9 +224,9 @@ void main() {
       await settle(t);
     }
 
-    Future<void> tapVisible(WidgetTester t, Finder f) async {
+    Future<void> tapVisible(WidgetTester t, Finder f, {bool up = false}) async {
       // Lists build lazily: scroll the page until the widget exists.
-      if (f.evaluate().isEmpty) await t.scrollUntilVisible(f, 200, scrollable: find.byType(Scrollable).last);
+      if (f.evaluate().isEmpty) await t.scrollUntilVisible(f, up ? -200 : 200, scrollable: find.byWidgetPredicate((w) => w is Scrollable && w.axisDirection == AxisDirection.down && w.restorationId != 'editable').first);
       await t.ensureVisible(f);
       await settle(t, rounds: 2);
       await t.tap(f);
@@ -248,7 +248,7 @@ void main() {
       await tapVisible(t, find.byKey(const Key('request-save')));
       expect(find.text('বিষয় লিখুন'), findsOneWidget);
 
-      await tapVisible(t, find.byKey(const Key('request-type-complaint')));
+      await tapVisible(t, find.byKey(const Key('request-type-complaint')), up: true);
       await tapVisible(t, find.byKey(const Key('request-priority-important')));
       await t.enterText(find.byKey(const Key('request-title')), 'টাকা নিয়ে ঝামেলা');
       await t.enterText(find.byKey(const Key('request-details')), 'গ্রাহক বলছেন টাকা দিয়েছেন');
@@ -271,12 +271,13 @@ void main() {
 
       // Detail: timeline and a comment (offline-first).
       h.api.forwardRequest(saved['id'] as String, to: const {'id': 'u-am-001', 'name': 'আমিনুল ইসলাম'});
-      await t.runAsync(() => h.read(syncEngineProvider).kick(reason: 'test'));
+      h.read(syncEngineProvider).kick(reason: 'test').ignore();
       await settle(t, rounds: 12);
       await tapVisible(t, find.text('টাকা নিয়ে ঝামেলা'));
       expect(find.text('ইতিহাস'), findsOneWidget);
       expect(find.text('আমিনুল ইসলাম-এর কাছে পাঠানো হয়েছে'), findsOneWidget);
       h.api.offline = true;
+      await tapVisible(t, find.byKey(const Key('request-comment')));
       await t.enterText(find.byKey(const Key('request-comment')), 'কাগজ নিয়ে আসছি');
       await tapVisible(t, find.byKey(const Key('request-comment-send')));
       expect(find.text('কাগজ নিয়ে আসছি'), findsOneWidget);
