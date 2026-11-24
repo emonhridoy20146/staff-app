@@ -5,7 +5,7 @@ import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:staff_app/core/db/app_database.dart';
 
-/// Every released schema upgrades to the current one (v17) and
+/// Every released schema upgrades to the current one (v18) and
 /// existing rows survive.
 void main() {
   test('migrates a 0.1.0 database to the current schema without losing outbox rows', () async {
@@ -39,7 +39,7 @@ void main() {
     await v1.close();
 
     final v2 = AppDatabase(NativeDatabase(file));
-    expect(v2.schemaVersion, 17);
+    expect(v2.schemaVersion, 18);
     expect(await v2.select(v2.coworkSessions).get(), isEmpty);
     final props = await v2.select(v2.locationProposals).get();
     expect(props.single.decisionReason, isNull);
@@ -283,7 +283,7 @@ void main() {
     await v8.close();
 
     final v9 = AppDatabase(NativeDatabase(file));
-    expect(v9.schemaVersion, 17);
+    expect(v9.schemaVersion, 18);
     expect(await v9.select(v9.tasks).get(), isEmpty);
     // The new table works, with its defaults.
     await v9.into(v9.tasks).insert(TasksCompanion.insert(serverId: 't-1', title: 'কাজ', createdAt: DateTime.utc(2026, 11, 18)));
@@ -316,7 +316,7 @@ void main() {
     await v9.close();
 
     final v10 = AppDatabase(NativeDatabase(file));
-    expect(v10.schemaVersion, 17);
+    expect(v10.schemaVersion, 18);
     final day = (await v10.select(v10.attendanceDays).get()).single;
     expect(day.businessDate, '2026-11-20');
     expect(day.lateMin, 25);
@@ -351,7 +351,7 @@ void main() {
     await v10.close();
 
     final v11 = AppDatabase(NativeDatabase(file));
-    expect(v11.schemaVersion, 17);
+    expect(v11.schemaVersion, 18);
     final line = (await v11.select(v11.scheduleLines).get()).single;
     expect([line.seq, line.amountPoisha, line.paidPoisha], [1, 500000, 500000]);
     expect(line.paidOn, isNull);
@@ -376,7 +376,7 @@ void main() {
     await v11.close();
 
     final v12 = AppDatabase(NativeDatabase(file));
-    expect(v12.schemaVersion, 17);
+    expect(v12.schemaVersion, 18);
     expect(await v12.select(v12.colleagueActivities).get(), isEmpty);
     expect((await v12.select(v12.outbox).get()).single.mutationId, 'col-11');
     expect((await v12.select(v12.promises).get()).single.clientId, 'pr-1');
@@ -402,7 +402,7 @@ void main() {
     await v12.close();
 
     final v13 = AppDatabase(NativeDatabase(file));
-    expect(v13.schemaVersion, 17);
+    expect(v13.schemaVersion, 18);
     expect((await v13.select(v13.promises).get()).single.createdByName, isNull);
     expect(await v13.select(v13.collections).get(), isEmpty);
     expect(await v13.select(v13.colleagueActivities).get(), isEmpty);
@@ -426,7 +426,7 @@ void main() {
     await v13.close();
 
     final v14 = AppDatabase(NativeDatabase(file));
-    expect(v14.schemaVersion, 17);
+    expect(v14.schemaVersion, 18);
     final c = (await v14.select(v14.collections).get()).single;
     expect([c.clientId, c.amountPoisha, c.depositId, c.depositedAt], ['col-13', 150000, null, null]);
     final d = (await v14.select(v14.deposits).get()).single;
@@ -449,7 +449,7 @@ void main() {
     await v14.close();
 
     final v15 = AppDatabase(NativeDatabase(file));
-    expect(v15.schemaVersion, 17);
+    expect(v15.schemaVersion, 18);
     expect(await v15.select(v15.mapPlaces).get(), isEmpty);
     // the new table works: a place made offline is stored with its queued create
     await v15.into(v15.mapPlaces).insert(MapPlacesCompanion.insert(localId: 'c-1', clientId: const Value('c-1'), name: 'করিম স্টোর', icon: 'shop', lat: 22.7, lng: 90.37, createState: const Value('queued')));
@@ -473,7 +473,7 @@ void main() {
     await v15.close();
 
     final v16 = AppDatabase(NativeDatabase(file));
-    expect(v16.schemaVersion, 17);
+    expect(v16.schemaVersion, 18);
     final c = (await v16.select(v16.customers).get()).single;
     expect([c.serverId, c.activityJson], ['c-15', null]);
     final p = (await v16.select(v16.erpPayments).get()).single;
@@ -500,7 +500,7 @@ void main() {
     await v16.close();
 
     final v17 = AppDatabase(NativeDatabase(file));
-    expect(v17.schemaVersion, 17);
+    expect(v17.schemaVersion, 18);
     final m = (await v17.select(v17.mediaQueue).get()).single;
     expect([m.clientId, m.state, m.attempts, m.lastError, m.lastAttemptAt], ['md-16', 'failed', 7, null, null]);
     expect((await v17.select(v17.outbox).get()).single.mutationId, 'a-16');
@@ -514,11 +514,49 @@ void main() {
     await v17.close();
     await dir.delete(recursive: true);
   });
+
+  test('migrates a schema 17 database: the request tables are added, prospects, queued photos and the outbox stay', () async {
+    final dir = await Directory.systemTemp.createTemp('mig17');
+    final file = File('${dir.path}/app.db');
+    final v17 = AppDatabase(NativeDatabase(file));
+    await v17.customStatement('SELECT 1');
+    await _dropV18(v17);
+    await v17.customStatement("INSERT INTO prospects (client_id, name, phones_json, status, created_at, sync_state, edit_state) VALUES ('pr-17', 'জামাল', '[]', 'new', 0, 'queued', 'none')");
+    await v17.customStatement("INSERT INTO outbox (mutation_id, entity, op, payload_json, created_at) VALUES ('pr-17', 'prospect', 'create', '{}', 0)");
+    await v17.customStatement(
+        "INSERT INTO media_queue (client_id, kind, local_path, sha256, size_bytes, captured_at, owner_entity, owner_client_id, state, attempts) VALUES ('md-17', 'visit_photo', '/x/md-17.jpg', 'ab', 10, 0, 'visit', 'v-17', 'pending', 0)");
+    await v17.customStatement('PRAGMA user_version = 17');
+    await v17.close();
+
+    final v18 = AppDatabase(NativeDatabase(file));
+    expect(v18.schemaVersion, 18);
+    expect((await v18.select(v18.prospects).get()).single.syncState, 'queued');
+    expect((await v18.select(v18.outbox).get()).single.mutationId, 'pr-17');
+    expect((await v18.select(v18.mediaQueue).get()).single.state, 'pending');
+    // the request tables exist and work
+    await v18.into(v18.staffRequests).insert(StaffRequestsCompanion.insert(clientId: 'rq-1', type: 'report', title: 'দোকান বন্ধ', createdAt: DateTime.utc(2026, 11, 24)));
+    final r = (await v18.select(v18.staffRequests).get()).single;
+    expect([r.priority, r.status, r.syncState, r.eventsJson], ['normal', 'open', 'queued', '[]']);
+    await v18.into(v18.requestComments).insert(RequestCommentsCompanion.insert(clientId: 'cm-1', requestClientId: 'rq-1', body: 'আজও বন্ধ', createdAt: DateTime.utc(2026, 11, 24)));
+    expect((await v18.select(v18.requestComments).get()).single.syncState, 'queued');
+    final idx = await v18.customSelect("SELECT name FROM sqlite_master WHERE type = 'index' AND name = 'idx_staff_requests_created'").get();
+    expect(idx, hasLength(1));
+    await v18.close();
+    await dir.delete(recursive: true);
+  });
+}
+
+/// What schema 18 (FR-M-075, contract 1.48.0) added: staff requests and my comments on them.
+Future<void> _dropV18(AppDatabase db) async {
+  await db.customStatement('DROP INDEX IF EXISTS idx_staff_requests_created');
+  await db.customStatement('DROP TABLE staff_requests');
+  await db.customStatement('DROP TABLE request_comments');
 }
 
 /// What schema 17 (FR-M-069, FR-M-072) added: why a photo upload failed and when it was last tried; the promise
 /// follow-up chain; the prospects table.
 Future<void> _dropV17(AppDatabase db) async {
+  await _dropV18(db);
   await db.customStatement('ALTER TABLE media_queue DROP COLUMN last_error');
   await db.customStatement('ALTER TABLE media_queue DROP COLUMN last_attempt_at');
   await db.customStatement('ALTER TABLE promises DROP COLUMN follow_up_of');

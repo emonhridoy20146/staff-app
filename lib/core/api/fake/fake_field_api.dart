@@ -132,14 +132,14 @@ class FakeFieldApi implements HttpClientAdapter {
     'branch.view', 'customer.view', 'customer.location.propose', 'customer.phone.manage', 'tag.view', 'tag.set', //
     'collection.record', 'collection.view', 'cash.view', 'cash.deposit.record', 'assignment.view',
     'visit.record', 'visit.view', 'note.create', 'note.view', 'promise.create', 'promise.view',
-    'attendance.record', 'leave.request', 'cowork.use', 'task.work', 'place.view', 'place.create', 'prospect.create',
+    'attendance.record', 'leave.request', 'cowork.use', 'task.work', 'place.view', 'place.create', 'prospect.create', 'request.create',
   ];
 
   static const flags = {
     'module.customers': true, 'module.tags': true, 'module.collections': true, 'module.cash': true, //
     'module.visits': true, 'module.notes': true, 'module.promises': true, 'module.attendance': true,
     'module.handovers': true, 'module.location': true, 'module.notifications': true, 'module.sync': true,
-    'module.cowork': true, 'module.targets': true, 'module.reports': true, 'module.tasks': true, 'module.places': true, 'module.prospects': true, 'module.microfinance': false,
+    'module.cowork': true, 'module.targets': true, 'module.reports': true, 'module.tasks': true, 'module.places': true, 'module.prospects': true, 'module.requests': true, 'module.microfinance': false,
   };
 
   Json get _settings => {
@@ -275,6 +275,102 @@ class FakeFieldApi implements HttpClientAdapter {
   }
 
   /// The server's rules for the three place mutations (FR-PLC-002..004).
+  // ── staff requests (planned contract 1.48.0, FR-M-075) ────────────────────
+
+  /// Requests on the server by id: mine (`rq-<clientId>`) and those the office gave me.
+  final requests = <String, Json>{};
+
+  /// Comments by clientId (replays answer once).
+  final _requestComments = <String>{};
+
+  static const _superAdmin = {'id': 'u-sa-001', 'name': 'সুপার অ্যাডমিন'};
+
+  /// Tests: the server refuses every new request with this problem code (e.g. `FORBIDDEN`).
+  String? refuseRequests;
+
+  void _requestStep(String id, Json event, {Json? patch}) {
+    final r = requests[id]!;
+    r.addAll(patch ?? const {});
+    r['events'] = [...(r['events'] as List), event];
+    r['updatedAt'] = event['at'];
+    serverChange('request', id, Map<String, dynamic>.of(r));
+  }
+
+  /// Tests / demo: the office forwards a request to someone ([to] = me gives it to me).
+  void forwardRequest(String id, {Json? to, Json? by, String? note}) {
+    final who = to ?? _superAdmin;
+    _requestStep(id, {'type': 'forwarded', 'by': by ?? _office, 'to': who, 'note': note, 'at': clock.nowUtc().toIso8601String()}, patch: {'status': 'forwarded', 'assignee': who});
+  }
+
+  /// Tests / demo: the office assigns a request to someone.
+  void assignRequest(String id, {required Json to, Json? by, String? note}) =>
+      _requestStep(id, {'type': 'assigned', 'by': by ?? _office, 'to': to, 'note': note, 'at': clock.nowUtc().toIso8601String()}, patch: {'status': 'assigned', 'assignee': to});
+
+  /// Tests / demo: the office comments.
+  void commentOnRequest(String id, String text, {Json? by}) =>
+      _requestStep(id, {'type': 'comment', 'by': by ?? _office, 'note': text, 'at': clock.nowUtc().toIso8601String()});
+
+  /// Tests / demo: the office resolves it with a note.
+  void resolveRequest(String id, {String? note, Json? by}) =>
+      _requestStep(id, {'type': 'resolved', 'by': by ?? _office, 'note': note, 'at': clock.nowUtc().toIso8601String()}, patch: {'status': 'resolved'});
+
+  /// Tests / demo: the office reopens it.
+  void reopenRequest(String id, {String? note, Json? by}) =>
+      _requestStep(id, {'type': 'reopened', 'by': by ?? _office, 'note': note, 'at': clock.nowUtc().toIso8601String()}, patch: {'status': 'open'});
+
+  /// Tests / demo: a colleague's request the office gave to me.
+  void addRequestForMe(String id, {required String title, String details = '', String type = 'report', String priority = 'normal', Json? from}) {
+    final at = clock.nowUtc().toIso8601String();
+    final maker = from ?? {'id': 'u-fs-020', 'name': 'সজীব আহমেদ'};
+    requests[id] = {
+      'id': id, 'clientId': null, 'type': type, 'priority': priority, 'title': title, 'details': details, 'customerId': null,
+      'status': 'assigned', 'createdBy': maker, 'assignee': _me, 'photoMediaIds': <String>[], 'createdAt': at, 'updatedAt': at,
+      'events': [
+        {'type': 'created', 'by': maker, 'at': at},
+        {'type': 'assigned', 'by': _office, 'to': _me, 'at': at},
+      ],
+    };
+    serverChange('request', id, Map<String, dynamic>.of(requests[id]!));
+  }
+
+  /// `request` (planned 1.48.0 `RequestCreate`): idempotent by clientId; unknown fields refused like a strict schema.
+  Json _requestMutation(String mutationId, Json payload) {
+    Json invalid(String what) => {'mutationId': mutationId, 'result': 'rejected', 'error': _problem(400, 'VALIDATION_FAILED', what)};
+    const allowed = {'clientId', 'type', 'priority', 'title', 'details', 'customerId', 'photoMediaIds'};
+    if (refuseRequests != null) return {'mutationId': mutationId, 'result': 'rejected', 'error': _problem(403, refuseRequests!, 'refused')};
+    if (payload.keys.any((k) => !allowed.contains(k))) return invalid('unknown field');
+    if (!['request', 'report', 'inform', 'complaint'].contains(payload['type'])) return invalid('type');
+    if (!['normal', 'important'].contains(payload['priority'])) return invalid('priority');
+    final title = (payload['title'] as String?)?.trim() ?? '';
+    if (title.isEmpty || title.length > 120) return invalid('title');
+    final id = 'rq-${payload['clientId']}';
+    if (requests.containsKey(id)) return {'mutationId': mutationId, 'result': 'applied', 'entityId': id}; // replay
+    final at = clock.nowUtc().toIso8601String();
+    final owner = payload['priority'] == 'important' ? _superAdmin : _office;
+    requests[id] = {
+      'id': id, 'clientId': payload['clientId'], 'type': payload['type'], 'priority': payload['priority'], 'title': title,
+      'details': payload['details'], 'customerId': payload['customerId'], 'status': 'open', 'createdBy': _me, 'assignee': owner,
+      'photoMediaIds': payload['photoMediaIds'] ?? <String>[], 'createdAt': at, 'updatedAt': at,
+      'events': [{'type': 'created', 'by': _me, 'to': owner, 'at': at}],
+    };
+    serverChange('request', id, Map<String, dynamic>.of(requests[id]!));
+    return {'mutationId': mutationId, 'result': 'applied', 'entityId': id};
+  }
+
+  /// `request_comment` (planned 1.48.0): on a request I may see, by its id or (unsent before) its clientId.
+  Json _requestCommentMutation(String mutationId, Json payload) {
+    final id = (payload['requestId'] as String?) ?? (payload['requestClientId'] == null ? null : 'rq-${payload['requestClientId']}');
+    final r = id == null ? null : requests[id];
+    if (r == null) return {'mutationId': mutationId, 'result': 'rejected', 'error': _problem(404, 'NOT_FOUND', 'No such request')};
+    if (r['status'] == 'resolved' || r['status'] == 'closed') return {'mutationId': mutationId, 'result': 'rejected', 'error': _problem(409, 'INVALID_STATE', 'REQUEST_CLOSED')};
+    final text = (payload['text'] as String?)?.trim() ?? '';
+    if (text.isEmpty || text.length > 1000) return {'mutationId': mutationId, 'result': 'rejected', 'error': _problem(400, 'VALIDATION_FAILED', 'text')};
+    if (_requestComments.add(payload['clientId'] as String)) {
+      _requestStep(id!, {'type': 'comment', 'by': _me, 'note': text, 'clientId': payload['clientId'], 'at': clock.nowUtc().toIso8601String()});
+    }
+    return {'mutationId': mutationId, 'result': 'applied', 'entityId': id};
+  }
+
   /// Possible customers (provisional contract 1.45.0): `prospect` create / update. Server id `pr-<clientId>`.
   final prospects = <String, Json>{};
 
@@ -824,7 +920,7 @@ class FakeFieldApi implements HttpClientAdapter {
         final b = body as Json;
         presignBodies.add(b);
         final bad = <String>[
-          if (!const {'visit_photo', 'deposit_slip', 'selfie', 'location_proof', 'refund_proof', 'voice_note'}.contains(b['kind'])) 'kind',
+          if (!const {'visit_photo', 'deposit_slip', 'selfie', 'location_proof', 'refund_proof', 'voice_note', 'request_photo' /* planned 1.48.0 */}.contains(b['kind'])) 'kind',
           if (!const {'image/jpeg', 'image/webp', 'audio/aac', 'audio/mp4'}.contains(b['contentType'])) 'contentType',
           if (b['sizeBytes'] is! int || (b['sizeBytes'] as int) <= 0 || (b['sizeBytes'] as int) > 1048576) 'sizeBytes',
           if (b['sha256'] is! String || !RegExp(r'^[0-9a-f]{64}$').hasMatch(b['sha256'] as String)) 'sha256',
@@ -1259,6 +1355,10 @@ class FakeFieldApi implements HttpClientAdapter {
         r = _placeMutation(id, entity, payload);
       } else if (entity == 'prospect') {
         r = _prospectMutation(id, (m['op'] as String?) ?? 'create', payload);
+      } else if (entity == 'request') {
+        r = _requestMutation(id, payload);
+      } else if (entity == 'request_comment') {
+        r = _requestCommentMutation(id, payload);
       } else {
         r = {'mutationId': id, 'result': 'applied', 'entityId': '$entity-$id', 'status': entity == 'collection' ? 'received' : 'ok'};
         if (entity == 'collection' && payload['method'] == 'cash') _cashOnHand += payload['amountPoisha'] as int;
