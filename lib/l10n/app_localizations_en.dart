@@ -3975,4 +3975,273 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get prospectRefusedNotAllowed =>
       'Your account may not add possible customers';
+
+  @override
+  String get requestsTitle => 'My requests';
+
+  @override
+  String get requestsMeSubtitle => 'Report, inform or ask the office';
+
+  @override
+  String get requestNew => 'New request';
+
+  @override
+  String get requestNewTitle => 'New request or report';
+
+  @override
+  String get requestDetailTitle => 'Request';
+
+  @override
+  String get requestTypeLabel => 'What kind';
+
+  @override
+  String get requestTypeRequest => 'Request';
+
+  @override
+  String get requestTypeReport => 'Report';
+
+  @override
+  String get requestTypeInform => 'Information';
+
+  @override
+  String get requestTypeComplaint => 'Complaint';
+
+  @override
+  String get requestSendTo => 'Send to';
+
+  @override
+  String get requestToAreaManager => 'To the area manager';
+
+  @override
+  String get requestToAreaManagerHint => 'Regular matters';
+
+  @override
+  String get requestToSuperAdmin => 'To the super admin — very important';
+
+  @override
+  String get requestToSuperAdminHint => 'Only for very important matters';
+
+  @override
+  String get requestPriorityNormalShort => 'Area manager';
+
+  @override
+  String get requestPriorityImportantShort => 'Super admin · very important';
+
+  @override
+  String get requestTitleField => 'Subject';
+
+  @override
+  String get requestDetailsField => 'Details';
+
+  @override
+  String get requestCustomer => 'Customer';
+
+  @override
+  String get requestCustomerRemove => 'Remove the customer';
+
+  @override
+  String get requestCustomerAction => 'Tell the office';
+
+  @override
+  String requestPhotos(String max) {
+    return 'Photos (optional, at most $max)';
+  }
+
+  @override
+  String get requestPhotosShort => 'Photos';
+
+  @override
+  String get requestAddPhoto => 'Take a photo';
+
+  @override
+  String get requestRemovePhoto => 'Remove photo';
+
+  @override
+  String get requestSend => 'Send';
+
+  @override
+  String get requestSaved => 'Saved. It goes to the office when online.';
+
+  @override
+  String get requestOfflineHint =>
+      'Works without internet: it is kept on the phone and goes by itself when online.';
+
+  @override
+  String get requestErrTitle => 'Write a subject';
+
+  @override
+  String get requestErrTitleLong =>
+      'The subject is too long (at most 120 letters)';
+
+  @override
+  String get requestErrDetails => 'Write the details';
+
+  @override
+  String get requestErrDetailsLong =>
+      'The details are too long (at most 2000 letters)';
+
+  @override
+  String get requestErrPhotos => 'At most 3 photos';
+
+  @override
+  String get requestErrComment => 'Write a comment';
+
+  @override
+  String get requestErrCommentLong =>
+      'The comment is too long (at most 1000 letters)';
+
+  @override
+  String get requestErrNotOpen => 'This request takes no more comments';
+
+  @override
+  String requestRefused(String code) {
+    return 'The server did not accept it: $code';
+  }
+
+  @override
+  String get requestRefusedInvalid =>
+      'The server did not accept the subject or details';
+
+  @override
+  String get requestRefusedNotAllowed => 'Your account may not send requests';
+
+  @override
+  String get requestFilterOpen => 'Open';
+
+  @override
+  String get requestFilterResolved => 'Resolved';
+
+  @override
+  String get requestsAssignedToMe => 'Assigned to me';
+
+  @override
+  String get requestsMine => 'Sent by me';
+
+  @override
+  String get requestsEmpty => 'No requests';
+
+  @override
+  String get requestsEmptyBody =>
+      'Tap \"New request\" to tell or ask the office something';
+
+  @override
+  String get requestStatusOpen => 'Open';
+
+  @override
+  String get requestStatusForwarded => 'Forwarded';
+
+  @override
+  String get requestStatusAssigned => 'Assigned';
+
+  @override
+  String get requestStatusInProgress => 'In progress';
+
+  @override
+  String get requestStatusResolved => 'Resolved';
+
+  @override
+  String get requestStatusClosed => 'Closed';
+
+  @override
+  String get requestStatusReopened => 'Reopened';
+
+  @override
+  String get requestStatusQueued => 'Waiting to send';
+
+  @override
+  String get requestStatusRefused => 'Not accepted';
+
+  @override
+  String requestFrom(String name) {
+    return 'From $name';
+  }
+
+  @override
+  String get requestNewsMark => 'New update';
+
+  @override
+  String get requestHolder => 'Now with';
+
+  @override
+  String get requestSentBy => 'Sent by';
+
+  @override
+  String get requestCreatedAt => 'Sent at';
+
+  @override
+  String get requestPhotosWaiting =>
+      'Waiting for the photos to upload; then it is sent';
+
+  @override
+  String get requestTimeline => 'History';
+
+  @override
+  String get requestByMe => 'Me';
+
+  @override
+  String get requestEventCreated => 'Sent';
+
+  @override
+  String requestEventForwarded(String name) {
+    return 'Forwarded to $name';
+  }
+
+  @override
+  String get requestEventForwardedNoName => 'Forwarded';
+
+  @override
+  String requestEventAssigned(String name) {
+    return 'Assigned to $name';
+  }
+
+  @override
+  String get requestEventAssignedNoName => 'Assigned';
+
+  @override
+  String get requestEventComment => 'Comment';
+
+  @override
+  String get requestEventResolved => 'Resolved';
+
+  @override
+  String get requestEventReopened => 'Reopened';
+
+  @override
+  String get requestCommentHint => 'Write a comment';
+
+  @override
+  String get requestCommentSend => 'Send comment';
+
+  @override
+  String get requestCommentSaved => 'Comment saved. It goes when online.';
+
+  @override
+  String get requestCommentPending => 'Waiting to send';
+
+  @override
+  String get requestCommentFailed => 'The server did not accept this comment';
+
+  @override
+  String get requestClosedNoComment =>
+      'This is resolved. Send a new request to tell something new.';
+
+  @override
+  String alertRequestChanged(String title) {
+    return 'Update on your request: $title';
+  }
+
+  @override
+  String alertRequestAssigned(String title) {
+    return 'Assigned to you: $title';
+  }
+
+  @override
+  String alertRequestResolved(String title) {
+    return 'Resolved: $title';
+  }
+
+  @override
+  String alertRequestComment(String title) {
+    return 'New comment: $title';
+  }
 }

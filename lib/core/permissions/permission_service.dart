@@ -35,11 +35,14 @@ abstract final class Perm {
   static const prospectCreate = 'prospect.create';
   static const prospectView = 'prospect.view';
 
+  /// Staff requests (contract 1.48.0, FR-M-075): report, tell or ask the area manager or the super admin.
+  static const requestCreate = 'request.create';
+
   static const all = [
     customerView, customerLocationPropose, customerLocationApprove, customerPhoneManage, tagView, tagSet, collectionRecord, collectionView, //
     cashView, cashDepositRecord, visitRecord, visitView, noteCreate, noteView, promiseCreate,
     promiseView, attendanceRecord, leaveRequest, handoverRequest, coworkUse, placeView, placeCreate, placeManage,
-    prospectCreate, prospectView,
+    prospectCreate, prospectView, requestCreate,
   ];
 }
 

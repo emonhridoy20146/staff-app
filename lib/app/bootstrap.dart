@@ -20,6 +20,7 @@ import '../features/attendance/attendance.dart';
 import '../features/cash/cash.dart';
 import '../features/customers/customers.dart';
 import '../features/location/location.dart';
+import '../features/requests/requests.dart';
 import '../features/visits/visits.dart';
 import 'features.dart';
 
@@ -53,6 +54,11 @@ Future<ProviderContainer> bootstrap(Env env, {List<Override> extra = const []}) 
       'visit': (db, owner, ids) => linkVisitPhotos(container.read(outboxWriterProvider), db, owner, ids),
       'location_proposal': (db, owner, ids) => submitLocationProposal(container.read(outboxWriterProvider), db, owner, ids),
       'attendance_event': (db, owner, ids) => linkAttendanceSelfie(container.read(outboxWriterProvider), db, owner, ids),
+      // A request held for its photos goes once all of them are on the server (FR-M-075).
+      requestMediaOwner: (db, owner, ids) async {
+        await linkRequestPhotos(container.read(outboxWriterProvider), db, owner, ids);
+        unawaited(container.read(syncEngineProvider).kick(reason: 'request'));
+      },
       // A bank deposit held for its slip goes as soon as the slip is on the server.
       'deposit': (db, owner, ids) async {
         await linkDepositSlip(container.read(outboxWriterProvider), db, owner, ids);
@@ -111,6 +117,11 @@ ProviderContainer buildTestContainer({required Clock clock, FakeFieldApi? api, L
       'visit': (db, owner, ids) => linkVisitPhotos(c.read(outboxWriterProvider), db, owner, ids),
       'location_proposal': (db, owner, ids) => submitLocationProposal(c.read(outboxWriterProvider), db, owner, ids),
       'attendance_event': (db, owner, ids) => linkAttendanceSelfie(c.read(outboxWriterProvider), db, owner, ids),
+      // A request held for its photos goes once all of them are on the server (FR-M-075).
+      requestMediaOwner: (db, owner, ids) async {
+        await linkRequestPhotos(c.read(outboxWriterProvider), db, owner, ids);
+        unawaited(c.read(syncEngineProvider).kick(reason: 'request'));
+      },
       // A bank deposit held for its slip goes as soon as the slip is on the server.
       'deposit': (db, owner, ids) async {
         await linkDepositSlip(c.read(outboxWriterProvider), db, owner, ids);

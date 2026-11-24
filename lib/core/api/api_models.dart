@@ -215,6 +215,7 @@ class SyncMutation {
     'customer_phone', // 1.23.0
     'place', 'place_edit', 'place_move_request', // 1.38.0
     'prospect', // 1.45.0 (FR-M-073; create and update ops)
+    'request', 'request_comment', // 1.48.0 (FR-M-075, staff requests)
   };
 }
 

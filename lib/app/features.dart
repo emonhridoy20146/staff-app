@@ -16,6 +16,7 @@ import '../features/places/places.dart';
 import '../features/promises/promises.dart';
 import '../features/prospects/prospects.dart';
 import '../features/reports/reports.dart';
+import '../features/requests/requests.dart';
 import '../features/settings/settings.dart';
 import '../features/sync/sync.dart';
 import '../features/tags/tags.dart';
@@ -45,6 +46,7 @@ List<FeatureManifest> buildFeatureManifests(SyncHandlerRegistry Function() regis
       mapManifest,
       placesManifest,
       prospectsManifest,
+      requestsManifest,
       reportsManifest,
       syncManifest,
       settingsManifest,

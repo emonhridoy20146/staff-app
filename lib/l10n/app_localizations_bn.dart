@@ -3946,4 +3946,271 @@ class AppLocalizationsBn extends AppLocalizations {
   @override
   String get prospectRefusedNotAllowed =>
       'আপনার অ্যাকাউন্টে সম্ভাব্য গ্রাহক যোগ করার অনুমতি নেই';
+
+  @override
+  String get requestsTitle => 'আমার অনুরোধ';
+
+  @override
+  String get requestsMeSubtitle => 'অফিসকে জানান, রিপোর্ট বা অনুরোধ করুন';
+
+  @override
+  String get requestNew => 'নতুন অনুরোধ';
+
+  @override
+  String get requestNewTitle => 'নতুন অনুরোধ / রিপোর্ট';
+
+  @override
+  String get requestDetailTitle => 'অনুরোধ';
+
+  @override
+  String get requestTypeLabel => 'কী ধরনের';
+
+  @override
+  String get requestTypeRequest => 'অনুরোধ';
+
+  @override
+  String get requestTypeReport => 'রিপোর্ট';
+
+  @override
+  String get requestTypeInform => 'জানানো';
+
+  @override
+  String get requestTypeComplaint => 'অভিযোগ';
+
+  @override
+  String get requestSendTo => 'কাকে পাঠাবেন';
+
+  @override
+  String get requestToAreaManager => 'এরিয়া ম্যানেজারকে';
+
+  @override
+  String get requestToAreaManagerHint => 'সাধারণ বিষয়';
+
+  @override
+  String get requestToSuperAdmin => 'সুপার অ্যাডমিনকে — খুব জরুরি';
+
+  @override
+  String get requestToSuperAdminHint => 'শুধু খুব জরুরি বিষয়ে';
+
+  @override
+  String get requestPriorityNormalShort => 'এরিয়া ম্যানেজার';
+
+  @override
+  String get requestPriorityImportantShort => 'সুপার অ্যাডমিন · খুব জরুরি';
+
+  @override
+  String get requestTitleField => 'বিষয়';
+
+  @override
+  String get requestDetailsField => 'বিস্তারিত';
+
+  @override
+  String get requestCustomer => 'গ্রাহক';
+
+  @override
+  String get requestCustomerRemove => 'গ্রাহক বাদ দিন';
+
+  @override
+  String get requestCustomerAction => 'অফিসকে জানান';
+
+  @override
+  String requestPhotos(String max) {
+    return 'ছবি (ঐচ্ছিক, সর্বোচ্চ $maxটি)';
+  }
+
+  @override
+  String get requestPhotosShort => 'ছবি';
+
+  @override
+  String get requestAddPhoto => 'ক্যামেরায় ছবি তুলুন';
+
+  @override
+  String get requestRemovePhoto => 'ছবি বাদ দিন';
+
+  @override
+  String get requestSend => 'পাঠান';
+
+  @override
+  String get requestSaved => 'সংরক্ষিত। নেট পেলে অফিসে যাবে।';
+
+  @override
+  String get requestOfflineHint =>
+      'ইন্টারনেট ছাড়াও পাঠানো যায়: ফোনে রাখা হয়, নেট পেলে নিজে থেকেই যায়।';
+
+  @override
+  String get requestErrTitle => 'বিষয় লিখুন';
+
+  @override
+  String get requestErrTitleLong => 'বিষয় অনেক লম্বা (সর্বোচ্চ ১২০ অক্ষর)';
+
+  @override
+  String get requestErrDetails => 'বিস্তারিত লিখুন';
+
+  @override
+  String get requestErrDetailsLong =>
+      'বিস্তারিত অনেক লম্বা (সর্বোচ্চ ২০০০ অক্ষর)';
+
+  @override
+  String get requestErrPhotos => 'সর্বোচ্চ ৩টি ছবি দেওয়া যায়';
+
+  @override
+  String get requestErrComment => 'মন্তব্য লিখুন';
+
+  @override
+  String get requestErrCommentLong =>
+      'মন্তব্য অনেক লম্বা (সর্বোচ্চ ১০০০ অক্ষর)';
+
+  @override
+  String get requestErrNotOpen => 'এই অনুরোধে আর মন্তব্য করা যায় না';
+
+  @override
+  String requestRefused(String code) {
+    return 'সার্ভার গ্রহণ করেনি: $code';
+  }
+
+  @override
+  String get requestRefusedInvalid => 'সার্ভার বিষয় বা বিস্তারিত গ্রহণ করেনি';
+
+  @override
+  String get requestRefusedNotAllowed =>
+      'আপনার অ্যাকাউন্ট থেকে অনুরোধ পাঠানো যায় না';
+
+  @override
+  String get requestFilterOpen => 'খোলা';
+
+  @override
+  String get requestFilterResolved => 'সমাধান হয়েছে';
+
+  @override
+  String get requestsAssignedToMe => 'আমাকে দেওয়া হয়েছে';
+
+  @override
+  String get requestsMine => 'আমার পাঠানো';
+
+  @override
+  String get requestsEmpty => 'কোনো অনুরোধ নেই';
+
+  @override
+  String get requestsEmptyBody =>
+      'অফিসকে কিছু জানাতে বা চাইতে \"নতুন অনুরোধ\" চাপুন';
+
+  @override
+  String get requestStatusOpen => 'খোলা';
+
+  @override
+  String get requestStatusForwarded => 'পাঠানো হয়েছে';
+
+  @override
+  String get requestStatusAssigned => 'দায়িত্ব দেওয়া হয়েছে';
+
+  @override
+  String get requestStatusInProgress => 'কাজ চলছে';
+
+  @override
+  String get requestStatusResolved => 'সমাধান হয়েছে';
+
+  @override
+  String get requestStatusClosed => 'বন্ধ';
+
+  @override
+  String get requestStatusReopened => 'আবার খোলা';
+
+  @override
+  String get requestStatusQueued => 'পাঠানোর অপেক্ষায়';
+
+  @override
+  String get requestStatusRefused => 'গ্রহণ হয়নি';
+
+  @override
+  String requestFrom(String name) {
+    return 'পাঠিয়েছেন $name';
+  }
+
+  @override
+  String get requestNewsMark => 'নতুন আপডেট';
+
+  @override
+  String get requestHolder => 'এখন যার কাছে';
+
+  @override
+  String get requestSentBy => 'পাঠিয়েছেন';
+
+  @override
+  String get requestCreatedAt => 'পাঠানোর সময়';
+
+  @override
+  String get requestPhotosWaiting => 'ছবি আপলোডের অপেক্ষায়; তারপর অনুরোধ যাবে';
+
+  @override
+  String get requestTimeline => 'ইতিহাস';
+
+  @override
+  String get requestByMe => 'আমি';
+
+  @override
+  String get requestEventCreated => 'পাঠানো হয়েছে';
+
+  @override
+  String requestEventForwarded(String name) {
+    return '$name-এর কাছে পাঠানো হয়েছে';
+  }
+
+  @override
+  String get requestEventForwardedNoName => 'অন্য কারো কাছে পাঠানো হয়েছে';
+
+  @override
+  String requestEventAssigned(String name) {
+    return 'দায়িত্ব দেওয়া হয়েছে: $name';
+  }
+
+  @override
+  String get requestEventAssignedNoName => 'দায়িত্ব দেওয়া হয়েছে';
+
+  @override
+  String get requestEventComment => 'মন্তব্য';
+
+  @override
+  String get requestEventResolved => 'সমাধান হয়েছে';
+
+  @override
+  String get requestEventReopened => 'আবার খোলা হয়েছে';
+
+  @override
+  String get requestCommentHint => 'মন্তব্য লিখুন';
+
+  @override
+  String get requestCommentSend => 'মন্তব্য পাঠান';
+
+  @override
+  String get requestCommentSaved => 'মন্তব্য সংরক্ষিত। নেট পেলে যাবে।';
+
+  @override
+  String get requestCommentPending => 'পাঠানোর অপেক্ষায়';
+
+  @override
+  String get requestCommentFailed => 'সার্ভার মন্তব্যটি গ্রহণ করেনি';
+
+  @override
+  String get requestClosedNoComment =>
+      'এটি সমাধান হয়ে গেছে। নতুন কিছু জানাতে নতুন অনুরোধ করুন।';
+
+  @override
+  String alertRequestChanged(String title) {
+    return 'আপনার অনুরোধে আপডেট: $title';
+  }
+
+  @override
+  String alertRequestAssigned(String title) {
+    return 'আপনাকে দেওয়া হয়েছে: $title';
+  }
+
+  @override
+  String alertRequestResolved(String title) {
+    return 'সমাধান হয়েছে: $title';
+  }
+
+  @override
+  String alertRequestComment(String title) {
+    return 'নতুন মন্তব্য: $title';
+  }
 }
