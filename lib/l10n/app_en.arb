@@ -35,7 +35,26 @@
   "loginButton": "Sign in",
   "loginErrorInvalid": "Phone number or password is wrong",
   "loginErrorNetwork": "No internet. The first sign-in needs internet.",
-  "loginErrorLocked": "Account locked. Contact your branch manager.",
+  "loginErrorLocked": "Too many wrong passwords. Try again after {time}.",
+  "@loginErrorLocked": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "loginErrorLockedNoTime": "Too many wrong passwords. Try again a little later.",
+  "loginDeviceNotApproved": "This phone is new. An approval request has been sent to the office. Sign in again once your manager approves it.",
+  "loginRetry": "Try again",
+  "loginErrorOtherUserUnsynced": "This phone still has data from the previous user that hasn't been sent to the office. Ask that user to sign in on this phone and send everything, then sign in again.",
+  "loginErrorForbidden": "Can't sign in (code: {code}). Tell your branch manager this code.",
+  "@loginErrorForbidden": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
   "loginDemoHint": "Demo: 01712345678 / demo1234",
   "showPassword": "Show password",
   "hidePassword": "Hide password",

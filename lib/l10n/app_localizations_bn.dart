@@ -117,8 +117,29 @@ class AppLocalizationsBn extends AppLocalizations {
       'ইন্টারনেট নেই। প্রথমবার লগইনে ইন্টারনেট লাগবে।';
 
   @override
-  String get loginErrorLocked =>
-      'অ্যাকাউন্ট বন্ধ। ব্রাঞ্চ ম্যানেজারের সাথে যোগাযোগ করুন।';
+  String loginErrorLocked(String time) {
+    return 'অনেকবার ভুল পাসওয়ার্ড। $time এর পর আবার চেষ্টা করুন।';
+  }
+
+  @override
+  String get loginErrorLockedNoTime =>
+      'অনেকবার ভুল পাসওয়ার্ড। কিছুক্ষণ পর আবার চেষ্টা করুন।';
+
+  @override
+  String get loginDeviceNotApproved =>
+      'এই ফোনটি নতুন। অনুমোদনের অনুরোধ অফিসে পাঠানো হয়েছে। ম্যানেজার অনুমোদন দিলে আবার লগইন করুন।';
+
+  @override
+  String get loginRetry => 'আবার চেষ্টা';
+
+  @override
+  String get loginErrorOtherUserUnsynced =>
+      'এই ফোনে আগের ব্যবহারকারীর কিছু তথ্য এখনও অফিসে পাঠানো হয়নি। আগের ব্যবহারকারীকে এই ফোনে লগইন করে সব তথ্য পাঠাতে বলুন, তারপর আবার লগইন করুন।';
+
+  @override
+  String loginErrorForbidden(String code) {
+    return 'লগইন করা যাচ্ছে না (কোড: $code)। এই কোডটি ব্রাঞ্চ ম্যানেজারকে জানান।';
+  }
 
   @override
   String get loginDemoHint => 'ডেমো: 01712345678 / demo1234';

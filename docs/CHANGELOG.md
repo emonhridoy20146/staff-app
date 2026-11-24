@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+### Fixed (owner report 2026-11-24: "account blocked" until the office approved the phone; FR-M-074, ADR-M37, ADR-M25 amendment)
+- **Login refusals have their own words** instead of all reading "Account locked. Contact your branch manager.", read from the server's problem `code`:
+  - 403 `DEVICE_NOT_APPROVED`: "এই ফোনটি নতুন। অনুমোদনের অনুরোধ অফিসে পাঠানো হয়েছে। ম্যানেজার অনুমোদন দিলে আবার লগইন করুন।" as an info banner (not an error) with an "আবার চেষ্টা / Try again" button (48 dp).
+  - 423 `ACCOUNT_LOCKED`: "অনেকবার ভুল পাসওয়ার্ড। <time> এর পর আবার চেষ্টা করুন।" with `details.until` in Dhaka time via `core/format` (date added when it is not today; "a little later" without a time).
+  - Another user's unsynced data on the phone: its own message telling that user to sign in and send it (nothing deleted).
+  - Any other 403: "Can't sign in (code: …)".
+- `LoginError` gains `deviceNotApproved`, `otherUserUnsynced`, `forbidden`; `LoginFailure` carries `code` and `until`. l10n: `loginErrorLocked` now takes `{time}`; new `loginErrorLockedNoTime`, `loginDeviceNotApproved`, `loginRetry`, `loginErrorOtherUserUnsynced`, `loginErrorForbidden`.
+- **Device id (FR-M-060, ADR-M25):** unchanged behaviour, moved into `DeviceIdentity.resolveDeviceId` so it is tested: a reinstall with the same ANDROID_ID gives the same id; an update keeps the stored id. **Known one-time case:** a phone that ran a build from before ADR-M25 (random id) and is then uninstalled and reinstalled with a newer build needs one approval; after that, reinstalls keep the id as long as the release signing key stays the same (ANDROID_ID on Android 8+ depends on the signing key, ADR-M26).
+- Fake API hook `loginRefusal`. Tests: `test/features/login_errors_test.dart` (every mapping, bn/en words, Dhaka midnight, the unsynced-user case, login screen in bn and en with info state and retry, lock as danger banner), `test/core/device_identity_test.dart`.
+
 ### Changed (contract 1.45.0/1.46.0 pinned; items FR-M-070, 072, 073 aligned)
 - Contract copy `docs/contract/openapi.yaml` → **1.46.0** (field-api main, merged from `claude/contract-1-45`; 1.46.0 is additive: customer list paging). 1.45.0 also accepts an offset-less `capturedAt` (read as Asia/Dhaka); the app sends UTC anyway.
 - **attendanceRequired** is top level on login, refresh, `/auth/me` and sync (permission `attendance.exempt`); the refresh answer now updates it too.

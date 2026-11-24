@@ -18,18 +18,7 @@ class DeviceIdentity {
   final bool isPhysical;
 
   static Future<DeviceIdentity> load(SecureStore store) async {
-    // A phone that already has an id keeps it (it is the one the office approved).
-    var id = await store.read('device_id');
-    if (id == null) {
-      // FR-M-060 (ADR-M25): derive the id from Android's ANDROID_ID, so a reinstall on the same phone gives the
-      // same id and needs no new approval. A random id only when the phone does not give one.
-      String? androidId;
-      try {
-        androidId = await const MethodChannel('com.howlader.staff/permissions').invokeMethod<String>('androidId');
-      } catch (_) {}
-      id = stableDeviceId(androidId) ?? const Uuid().v7();
-      await store.write('device_id', id);
-    }
+    final id = await resolveDeviceId(store, () => const MethodChannel('com.howlader.staff/permissions').invokeMethod<String>('androidId'));
     final pkg = await PackageInfo.fromPlatform();
     var label = 'android';
     var manufacturer = '';
@@ -41,6 +30,22 @@ class DeviceIdentity {
       physical = a.isPhysicalDevice;
     } catch (_) {}
     return DeviceIdentity(deviceId: id, appVersion: pkg.version, label: label, manufacturer: manufacturer, isPhysical: physical);
+  }
+
+  /// The id this install uses (FR-M-060, ADR-M25). A stored id is kept, so an app update never changes it (it is
+  /// the one the office approved). Without one (first install, or a reinstall: Android wipes secure storage on
+  /// uninstall) it is derived from ANDROID_ID, so a reinstall on the same phone gives the same id and needs no new
+  /// approval. A random id only when the phone does not give a usable ANDROID_ID.
+  static Future<String> resolveDeviceId(SecureStore store, Future<String?> Function() readAndroidId) async {
+    final stored = await store.read('device_id');
+    if (stored != null) return stored;
+    String? androidId;
+    try {
+      androidId = await readAndroidId();
+    } catch (_) {}
+    final id = stableDeviceId(androidId) ?? const Uuid().v7();
+    await store.write('device_id', id);
+    return id;
   }
 
   /// The same UUID for the same ANDROID_ID every time (name-based v5), or null without one.

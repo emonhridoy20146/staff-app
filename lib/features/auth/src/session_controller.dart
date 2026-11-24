@@ -29,11 +29,53 @@ class SessionState {
       SessionState(stage: stage ?? this.stage, user: user ?? this.user, pinFailures: pinFailures ?? this.pinFailures, lockedOut: lockedOut ?? this.lockedOut);
 }
 
-enum LoginError { invalid, network, locked, other }
+/// Why a password login did not go through. Each has its own words on the
+/// login screen (owner report 2026-11-24: three different cases used to read
+/// "Account locked").
+enum LoginError {
+  invalid,
+  network,
+
+  /// 423 `ACCOUNT_LOCKED`: too many wrong passwords; [LoginFailure.until] is the unlock time.
+  locked,
+
+  /// 403 `DEVICE_NOT_APPROVED`: the server has already asked the office to approve this phone. Not an error.
+  deviceNotApproved,
+
+  /// Another user's unsynced data is still on this phone (never deleted, CLAUDE.md §2.3).
+  otherUserUnsynced,
+
+  /// Any other 403; [LoginFailure.code] is shown.
+  forbidden,
+  other,
+}
 
 class LoginFailure implements Exception {
-  const LoginFailure(this.error);
+  const LoginFailure(this.error, {this.code, this.until});
   final LoginError error;
+
+  /// The server's problem `code` (shown for [LoginError.forbidden]).
+  final String? code;
+
+  /// UTC unlock time from `details.until` (423).
+  final DateTime? until;
+
+  /// Maps a failed `POST /auth/login` by its status and problem `code`.
+  static LoginFailure fromApi(ApiException e) {
+    if (e.isNetwork) return const LoginFailure(LoginError.network);
+    final code = e.problem?.code;
+    final rawUntil = e.problem?.details?['until'];
+    final until = rawUntil is String ? DateTime.tryParse(rawUntil)?.toUtc() : null;
+    if (e.statusCode == 401) return const LoginFailure(LoginError.invalid);
+    // The lock is read from the code first; a 423 without one is still a lock.
+    if (code == 'ACCOUNT_LOCKED' || e.statusCode == 423) return LoginFailure(LoginError.locked, code: code, until: until);
+    if (code == 'DEVICE_NOT_APPROVED') return LoginFailure(LoginError.deviceNotApproved, code: code);
+    if (e.statusCode == 403) return LoginFailure(LoginError.forbidden, code: e.code);
+    return LoginFailure(LoginError.other, code: code);
+  }
+
+  @override
+  String toString() => 'LoginFailure($error, $code, $until)';
 }
 
 const maxPinFailures = 5;
@@ -116,10 +158,7 @@ class SessionController extends Notifier<SessionState> {
     try {
       r = await api.login(phone: phone.trim(), password: password);
     } on ApiException catch (e) {
-      if (e.isNetwork) throw const LoginFailure(LoginError.network);
-      if (e.statusCode == 401) throw const LoginFailure(LoginError.invalid);
-      if (e.statusCode == 423 || e.statusCode == 403) throw const LoginFailure(LoginError.locked);
-      throw const LoginFailure(LoginError.other);
+      throw LoginFailure.fromApi(e);
     }
     // A different user on this phone: only allowed when nothing is unsynced
     // (never delete unsynced data — CLAUDE.md §2.3).
@@ -128,7 +167,7 @@ class SessionController extends Notifier<SessionState> {
     final prevId = lockedUser ?? (prevJson == null ? null : (jsonDecode(prevJson) as Json)['id'] as String?);
     if (prevId != null && prevId != r.user.id) {
       final unsynced = await ref.read(outboxReaderProvider).unsyncedCount();
-      if (unsynced > 0) throw const LoginFailure(LoginError.locked);
+      if (unsynced > 0) throw const LoginFailure(LoginError.otherUserUnsynced);
       await ref.read(databaseProvider).wipeAll();
       await store.delete(_kPinHash);
     }
