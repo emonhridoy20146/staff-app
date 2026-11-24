@@ -111,6 +111,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         tone: f.error == LoginError.deviceNotApproved ? BannerTone.info : BannerTone.danger,
                       ),
                       if (f.error == LoginError.deviceNotApproved) ...[
+                        if (f.requestId case final id?) ...[
+                          const SizedBox(height: Space.s8),
+                          SelectableText(l.loginDeviceRequestId(id), style: t.bodyMedium!.copyWith(color: cs.onSurfaceVariant)),
+                        ],
                         const SizedBox(height: Space.s8),
                         OutlinedButton.icon(
                           onPressed: _busy ? null : _submit,
@@ -146,9 +150,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 String loginFailureText(LoginFailure f, AppLocalizations l, Fmt fmt, Clock clock) => switch (f.error) {
       LoginError.invalid => l.loginErrorInvalid,
       LoginError.network => l.loginErrorNetwork,
-      LoginError.locked => switch (f.until) {
-          null => l.loginErrorLockedNoTime,
-          final u => l.loginErrorLocked(businessDateOf(u) == businessDateOf(clock.nowUtc()) ? fmt.time(u) : fmt.dateTime(u)),
+      LoginError.locked => switch ((f.until, f.networkLock)) {
+          (null, false) => l.loginErrorLockedNoTime,
+          (null, true) => l.loginErrorLockedIpNoTime,
+          (final u?, final ip) => (ip ? l.loginErrorLockedIp : l.loginErrorLocked)(
+              businessDateOf(u) == businessDateOf(clock.nowUtc()) ? fmt.time(u) : fmt.dateTime(u),
+            ),
         },
       LoginError.deviceNotApproved => l.loginDeviceNotApproved,
       LoginError.otherUserUnsynced => l.loginErrorOtherUserUnsynced,

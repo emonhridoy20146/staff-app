@@ -320,6 +320,24 @@ abstract class AppLocalizations {
   /// **'Too many wrong passwords. Try again a little later.'**
   String get loginErrorLockedNoTime;
 
+  /// No description provided for @loginErrorLockedIp.
+  ///
+  /// In en, this message translates to:
+  /// **'Too many wrong attempts from this network. Try again after {time}.'**
+  String loginErrorLockedIp(String time);
+
+  /// No description provided for @loginErrorLockedIpNoTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Too many wrong attempts from this network. Try again a little later.'**
+  String get loginErrorLockedIpNoTime;
+
+  /// No description provided for @loginDeviceRequestId.
+  ///
+  /// In en, this message translates to:
+  /// **'Request number: {id}'**
+  String loginDeviceRequestId(String id);
+
   /// No description provided for @loginDeviceNotApproved.
   ///
   /// In en, this message translates to:

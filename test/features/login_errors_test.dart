@@ -34,6 +34,23 @@ void main() {
       expect(f.until, DateTime.utc(2026, 11, 15, 4, 30));
     });
 
+    test('contract 1.47.0: scope ip is a network lock; retryAfterSec gives the time when until is missing', () {
+      final ip = LoginFailure.fromApi(problem(423, 'ACCOUNT_LOCKED', {'until': '2026-11-15T04:30:00Z', 'retryAfterSec': 1800, 'scope': 'ip'}));
+      expect(ip.networkLock, isTrue);
+      expect(ip.until, DateTime.utc(2026, 11, 15, 4, 30));
+      expect(LoginFailure.fromApi(problem(423, 'ACCOUNT_LOCKED', {'until': '2026-11-15T04:30:00Z', 'scope': 'account'})).networkLock, isFalse);
+      final byRetry = LoginFailure.fromApi(problem(423, 'ACCOUNT_LOCKED', {'retryAfterSec': 900}), now: testNow);
+      expect(byRetry.until, testNow.add(const Duration(minutes: 15)));
+    });
+
+    test('contract 1.47.0: DEVICE_NOT_APPROVED carries the pending request id', () {
+      final f = LoginFailure.fromApi(
+        problem(403, 'DEVICE_NOT_APPROVED', {'pendingDeviceId': 'dev_123', 'deviceId': 'x', 'status': 'pending_approval', 'maxActiveDevices': 2}),
+      );
+      expect(f.requestId, 'dev_123');
+      expect(LoginFailure.fromApi(problem(403, 'DEVICE_NOT_APPROVED')).requestId, isNull);
+    });
+
     test('a lock without (or with a broken) until has no time', () {
       expect(LoginFailure.fromApi(problem(423, 'ACCOUNT_LOCKED')).until, isNull);
       expect(LoginFailure.fromApi(problem(423, 'ACCOUNT_LOCKED', {'until': 'soon'})).until, isNull);
@@ -82,6 +99,15 @@ void main() {
       expect(text(const LoginFailure(LoginError.locked), en, enFmt), 'Too many wrong passwords. Try again a little later.');
     });
 
+    test('network lock (scope ip) names the network, not the account', () {
+      final f = LoginFailure(LoginError.locked, until: DateTime.utc(2026, 11, 15, 4, 30), networkLock: true);
+      expect(text(f, bn, bnFmt), 'এই নেটওয়ার্ক থেকে অনেকবার ভুল চেষ্টা হয়েছে। ১০:৩০ AM এর পর আবার চেষ্টা করুন।');
+      expect(text(f, en, enFmt), 'Too many wrong attempts from this network. Try again after 10:30 AM.');
+      const noTime = LoginFailure(LoginError.locked, networkLock: true);
+      expect(text(noTime, bn, bnFmt), contains('এই নেটওয়ার্ক থেকে'));
+      expect(text(noTime, en, enFmt), 'Too many wrong attempts from this network. Try again a little later.');
+    });
+
     test('another user\'s unsynced data says what to do', () {
       const f = LoginFailure(LoginError.otherUserUnsynced);
       expect(text(f, bn, bnFmt), contains('আগের ব্যবহারকারীকে'));
@@ -114,7 +140,7 @@ void main() {
   });
 
   for (final lang in ['bn', 'en']) {
-    testWidgets('login screen ($lang): a new phone is an info state; "try again" signs in once approved', (t) async {
+    testWidgets(timeout: const Timeout(Duration(seconds: 60)), 'login screen ($lang): a new phone is an info state; "try again" signs in once approved', (t) async {
       final h = Harness();
       t.view.physicalSize = const Size(412, 2400) * 2;
       t.view.devicePixelRatio = 2;
@@ -123,7 +149,15 @@ void main() {
         await h.read(uiPrefsProvider.notifier).update(UiPrefs(language: lang));
         await h.read(sessionProvider.notifier).restore();
       });
-      h.api.loginRefusal = (status: 403, body: {'status': 403, 'code': 'DEVICE_NOT_APPROVED', 'title': 'Device not approved'});
+      h.api.loginRefusal = (
+        status: 403,
+        body: {
+          'status': 403,
+          'code': 'DEVICE_NOT_APPROVED',
+          'title': 'Device not approved',
+          'details': {'pendingDeviceId': 'dev_77', 'deviceId': 'x', 'status': 'pending_approval'},
+        },
+      );
       Future<void> settle() async {
         for (var i = 0; i < 6; i++) {
           await t.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 30)));
@@ -141,6 +175,7 @@ void main() {
       final banner = t.widget<InfoBanner>(find.byKey(const ValueKey('login-failure')));
       expect(banner.text, l.loginDeviceNotApproved);
       expect(banner.tone, BannerTone.info);
+      expect(find.text(l.loginDeviceRequestId('dev_77')), findsOneWidget);
       final retry = find.text(l.loginRetry);
       expect(retry, findsOneWidget);
       expect(t.getSize(find.ancestor(of: retry, matching: find.byType(OutlinedButton))).height, greaterThanOrEqualTo(48));
@@ -152,12 +187,11 @@ void main() {
       expect(find.byKey(const ValueKey('login-failure')), findsNothing);
       expect(h.read(sessionProvider).user, isNotNull);
 
-      await t.pumpWidget(const SizedBox());
-      await settle();
+      await _close(t, h);
     });
   }
 
-  testWidgets('login screen: a lock shows the time as a danger banner', (t) async {
+  testWidgets(timeout: const Timeout(Duration(seconds: 60)), 'login screen: a lock shows the time as a danger banner', (t) async {
     final h = Harness();
     t.view.physicalSize = const Size(412, 2400) * 2;
     t.view.devicePixelRatio = 2;
@@ -187,9 +221,19 @@ void main() {
     expect(banner.text, 'Too many wrong passwords. Try again after 10:30 AM.');
     expect(banner.tone, BannerTone.danger);
     expect(find.text('Try again'), findsNothing);
-    await t.pumpWidget(const SizedBox());
-    await settle();
+    await _close(t, h);
   });
+}
+
+/// Unmount first and dispose the container, so no drift stream query started by a widget (in the fake-async zone)
+/// is still waiting on a fake timer; only then close the database for real. Closing it while widgets still watch
+/// it waited forever on those queries (the hang seen while writing this test).
+Future<void> _close(WidgetTester t, Harness h) async {
+  final db = h.read(databaseProvider);
+  await t.pumpWidget(const SizedBox.shrink());
+  h.container.dispose();
+  await t.pump(const Duration(milliseconds: 50));
+  await t.runAsync(db.close);
 }
 
 class _Unsynced extends OutboxReader {

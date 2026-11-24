@@ -44,6 +44,23 @@
     }
   },
   "loginErrorLockedNoTime": "Too many wrong passwords. Try again a little later.",
+  "loginErrorLockedIp": "Too many wrong attempts from this network. Try again after {time}.",
+  "@loginErrorLockedIp": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "loginErrorLockedIpNoTime": "Too many wrong attempts from this network. Try again a little later.",
+  "loginDeviceRequestId": "Request number: {id}",
+  "@loginDeviceRequestId": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
   "loginDeviceNotApproved": "This phone is new. An approval request has been sent to the office. Sign in again once your manager approves it.",
   "loginRetry": "Try again",
   "loginErrorOtherUserUnsynced": "This phone still has data from the previous user that hasn't been sent to the office. Ask that user to sign in on this phone and send everything, then sign in again.",

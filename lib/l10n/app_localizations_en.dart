@@ -126,6 +126,20 @@ class AppLocalizationsEn extends AppLocalizations {
       'Too many wrong passwords. Try again a little later.';
 
   @override
+  String loginErrorLockedIp(String time) {
+    return 'Too many wrong attempts from this network. Try again after $time.';
+  }
+
+  @override
+  String get loginErrorLockedIpNoTime =>
+      'Too many wrong attempts from this network. Try again a little later.';
+
+  @override
+  String loginDeviceRequestId(String id) {
+    return 'Request number: $id';
+  }
+
+  @override
   String get loginDeviceNotApproved =>
       'This phone is new. An approval request has been sent to the office. Sign in again once your manager approves it.';
 

@@ -51,8 +51,14 @@ enum LoginError {
 }
 
 class LoginFailure implements Exception {
-  const LoginFailure(this.error, {this.code, this.until});
+  const LoginFailure(this.error, {this.code, this.until, this.networkLock = false, this.requestId});
   final LoginError error;
+
+  /// 423 with `details.scope: ip` (contract 1.47.0): this network is locked, not the account.
+  final bool networkLock;
+
+  /// 403 `details.pendingDeviceId` (1.47.0): the approval request the office approves.
+  final String? requestId;
 
   /// The server's problem `code` (shown for [LoginError.forbidden]).
   final String? code;
@@ -60,16 +66,27 @@ class LoginFailure implements Exception {
   /// UTC unlock time from `details.until` (423).
   final DateTime? until;
 
-  /// Maps a failed `POST /auth/login` by its status and problem `code`.
-  static LoginFailure fromApi(ApiException e) {
+  /// Maps a failed `POST /auth/login` by its status and problem `code` (contract 1.47.0 details).
+  /// [now] (server-offset UTC) turns `details.retryAfterSec` into a time when `until` is missing.
+  static LoginFailure fromApi(ApiException e, {DateTime? now}) {
     if (e.isNetwork) return const LoginFailure(LoginError.network);
     final code = e.problem?.code;
-    final rawUntil = e.problem?.details?['until'];
-    final until = rawUntil is String ? DateTime.tryParse(rawUntil)?.toUtc() : null;
+    final details = e.problem?.details ?? const <String, dynamic>{};
     if (e.statusCode == 401) return const LoginFailure(LoginError.invalid);
     // The lock is read from the code first; a 423 without one is still a lock.
-    if (code == 'ACCOUNT_LOCKED' || e.statusCode == 423) return LoginFailure(LoginError.locked, code: code, until: until);
-    if (code == 'DEVICE_NOT_APPROVED') return LoginFailure(LoginError.deviceNotApproved, code: code);
+    if (code == 'ACCOUNT_LOCKED' || e.statusCode == 423) {
+      final rawUntil = details['until'];
+      final retryAfter = details['retryAfterSec'];
+      var until = rawUntil is String ? DateTime.tryParse(rawUntil)?.toUtc() : null;
+      if (until == null && retryAfter is num && retryAfter > 0 && now != null) {
+        until = now.toUtc().add(Duration(seconds: retryAfter.toInt()));
+      }
+      return LoginFailure(LoginError.locked, code: code, until: until, networkLock: details['scope'] == 'ip');
+    }
+    if (code == 'DEVICE_NOT_APPROVED') {
+      final id = details['pendingDeviceId'];
+      return LoginFailure(LoginError.deviceNotApproved, code: code, requestId: id is String && id.isNotEmpty ? id : null);
+    }
     if (e.statusCode == 403) return LoginFailure(LoginError.forbidden, code: e.code);
     return LoginFailure(LoginError.other, code: code);
   }
@@ -158,7 +175,7 @@ class SessionController extends Notifier<SessionState> {
     try {
       r = await api.login(phone: phone.trim(), password: password);
     } on ApiException catch (e) {
-      throw LoginFailure.fromApi(e);
+      throw LoginFailure.fromApi(e, now: ref.read(clockProvider).nowUtc());
     }
     // A different user on this phone: only allowed when nothing is unsynced
     // (never delete unsynced data — CLAUDE.md §2.3).

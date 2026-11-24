@@ -126,6 +126,20 @@ class AppLocalizationsBn extends AppLocalizations {
       'অনেকবার ভুল পাসওয়ার্ড। কিছুক্ষণ পর আবার চেষ্টা করুন।';
 
   @override
+  String loginErrorLockedIp(String time) {
+    return 'এই নেটওয়ার্ক থেকে অনেকবার ভুল চেষ্টা হয়েছে। $time এর পর আবার চেষ্টা করুন।';
+  }
+
+  @override
+  String get loginErrorLockedIpNoTime =>
+      'এই নেটওয়ার্ক থেকে অনেকবার ভুল চেষ্টা হয়েছে। কিছুক্ষণ পর আবার চেষ্টা করুন।';
+
+  @override
+  String loginDeviceRequestId(String id) {
+    return 'অনুরোধ নম্বর: $id';
+  }
+
+  @override
   String get loginDeviceNotApproved =>
       'এই ফোনটি নতুন। অনুমোদনের অনুরোধ অফিসে পাঠানো হয়েছে। ম্যানেজার অনুমোদন দিলে আবার লগইন করুন।';
 
