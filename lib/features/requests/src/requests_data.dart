@@ -15,7 +15,7 @@ import '../../../core/sync/outbox.dart';
 import '../../../core/sync/sync_handlers.dart';
 import 'requests_domain.dart';
 
-/// Staff requests (FR-M-075, contract 1.48.0): data, sync and the use cases.
+/// Staff requests (FR-M-075, contract 1.48.0, field-api ADR-066): data, sync and the use cases.
 ///
 /// * Mine are saved on the phone at once and queued as the `request` mutation (idempotent by clientId). With
 ///   photos the mutation waits `held` until every photo is on the server, then goes with `photoMediaIds`.
@@ -25,8 +25,9 @@ import 'requests_domain.dart';
 /// Media owner entity of a request's photos.
 const requestMediaOwner = 'request';
 
-/// Photo kind sent to `POST /media/upload-url`.
-const requestPhotoKind = 'request_photo';
+/// Photo kind sent to `POST /media/upload-url`. Contract 1.48.0 adds no kind for requests; a field photo of the
+/// enum (`visit_photo`) is used (ADR-M38).
+const requestPhotoKind = 'visit_photo';
 
 String? _nameOf(Object? o) {
   if (o is! Map) return null;
@@ -50,17 +51,17 @@ class RequestPullHandler implements PullHandler {
         .getSingleOrNull();
     final key = existing?.clientId ?? clientId ?? id;
     final by = d['createdBy'];
-    final assignee = d['assignee'] ?? d['assignedTo'];
+    final assignee = d['assignee'];
     final customer = d['customer'];
-    final photos = (d['photoMediaIds'] ?? d['photos']) as List?;
-    final events = (d['events'] ?? d['timeline']) as List?;
+    final photos = d['photoMediaIds'] as List?;
+    final events = d['timeline'] as List?;
     await db.into(db.staffRequests).insertOnConflictUpdate(StaffRequestsCompanion(
           clientId: Value(key),
           serverId: Value(id),
           type: Value((d['type'] as String?) ?? existing?.type ?? 'request'),
           priority: Value((d['priority'] as String?) ?? existing?.priority ?? 'normal'),
           title: Value((d['title'] as String?) ?? existing?.title ?? ''),
-          details: Value((d['details'] as String?) ?? existing?.details ?? ''),
+          details: Value((d['body'] as String?) ?? existing?.details ?? ''),
           customerId: Value(customer is Map ? customer['id'] as String? : (d['customerId'] as String?) ?? existing?.customerId),
           customerName: Value(customer is Map ? _nameOf(customer) : existing?.customerName),
           status: Value((d['status'] as String?) ?? 'open'),
@@ -68,6 +69,8 @@ class RequestPullHandler implements PullHandler {
           createdByName: Value(_nameOf(by) ?? existing?.createdByName),
           assigneeId: Value(assignee is Map ? assignee['id'] as String? : d['assigneeId'] as String?),
           assigneeName: Value(_nameOf(assignee)),
+          currentQueue: Value(d['currentQueue'] as String?),
+          level: Value(d['level'] as String?),
           photoIdsJson: Value(jsonEncode([for (final p in photos ?? const []) p is Map ? p['id'] : p])),
           eventsJson: Value(jsonEncode(events ?? const [])),
           createdAt: Value(_time(d['createdAt']) ?? existing?.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0, isUtc: true)),
@@ -232,7 +235,7 @@ class RequestService {
     final v = validateComment(text);
     if (v.error != null) throw RequestInvalid(v.error!);
     final row = await (_db.select(_db.staffRequests)..where((t) => t.clientId.equals(requestKey))).getSingleOrNull();
-    if (row == null || row.syncState == 'failed' || closedRequestStatuses.contains(row.status)) throw const RequestInvalid(RequestError.notOpen);
+    if (row == null || row.syncState == 'failed' || row.status == 'closed') throw const RequestInvalid(RequestError.notOpen);
     final id = const Uuid().v7();
     final now = _ref.read(clockProvider).nowUtc();
     await _db.transaction(() async {
@@ -252,6 +255,19 @@ class RequestService {
     });
     _kick();
     return id;
+  }
+
+  /// Reopens my resolved or closed request with a note: online only (POST /requests/{id}/reopen, contract 1.48.0;
+  /// there is no sync mutation for it, ADR-M08). The answer is stored like a pull. Throws [ApiException] when the
+  /// server cannot be reached or refuses.
+  Future<void> reopen(String requestKey, String note) async {
+    final v = validateReopenNote(note);
+    if (v.error != null) throw RequestInvalid(v.error!);
+    final row = await (_db.select(_db.staffRequests)..where((t) => t.clientId.equals(requestKey))).getSingleOrNull();
+    if (row?.serverId == null) throw const RequestInvalid(RequestError.notOpen);
+    final r = await _ref.read(fieldApiProvider).reopenRequest(row!.serverId!, note: v.text!);
+    await _db.transaction(() => RequestPullHandler().upsert(_db, row.serverId!, r));
+    await markSeen(requestKey);
   }
 
   /// Opening a request clears its alert.

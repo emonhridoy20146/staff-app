@@ -2404,12 +2404,12 @@
   "requestSaved": "Saved. It goes to the office when online.",
   "requestOfflineHint": "Works without internet: it is kept on the phone and goes by itself when online.",
   "requestErrTitle": "Write a subject",
-  "requestErrTitleLong": "The subject is too long (at most 120 letters)",
+  "requestErrTitleLong": "The subject is too long (at most 160 letters)",
   "requestErrDetails": "Write the details",
-  "requestErrDetailsLong": "The details are too long (at most 2000 letters)",
-  "requestErrPhotos": "At most 3 photos",
+  "requestErrDetailsLong": "The details are too long (at most 4000 letters)",
+  "requestErrPhotos": "At most 5 photos",
   "requestErrComment": "Write a comment",
-  "requestErrCommentLong": "The comment is too long (at most 1000 letters)",
+  "requestErrCommentLong": "The comment is too long (at most 2000 letters)",
   "requestErrNotOpen": "This request takes no more comments",
   "requestRefused": "The server did not accept it: {code}",
   "@requestRefused": {
@@ -2462,7 +2462,7 @@
   "requestCommentSaved": "Comment saved. It goes when online.",
   "requestCommentPending": "Waiting to send",
   "requestCommentFailed": "The server did not accept this comment",
-  "requestClosedNoComment": "This is resolved. Send a new request to tell something new.",
+  "requestClosedNoComment": "This is closed. Reopen it to comment.",
   "alertRequestChanged": "Update on your request: {title}",
   "@alertRequestChanged": {
     "placeholders": { "title": { "type": "String" } }
@@ -2478,5 +2478,25 @@
   "alertRequestComment": "New comment: {title}",
   "@alertRequestComment": {
     "placeholders": { "title": { "type": "String" } }
-  }
+  },
+  "requestQueueAreaManager": "Area manager",
+  "requestQueueSuperAdmin": "Super admin",
+  "requestEventStatusChanged": "Status changed: {status}",
+  "@requestEventStatusChanged": {
+    "placeholders": { "status": { "type": "String" } }
+  },
+  "requestEventClosed": "Closed",
+  "requestResolution": "Resolution",
+  "requestReopen": "Reopen",
+  "requestReopenTitle": "Reopen this request?",
+  "requestReopenBody": "Say why you reopen it. This needs the internet.",
+  "requestReopenNoteHint": "Reason",
+  "requestReopenDone": "Reopened",
+  "requestReopenOffline": "No internet. Try again when online.",
+  "requestReopenFailed": "Could not reopen: {code}",
+  "@requestReopenFailed": {
+    "placeholders": { "code": { "type": "String" } }
+  },
+  "requestErrNote": "Write the reason",
+  "requestErrNoteLong": "The reason is too long (at most 1000 letters)"
 }

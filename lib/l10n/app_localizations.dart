@@ -7091,7 +7091,7 @@ abstract class AppLocalizations {
   /// No description provided for @requestErrTitleLong.
   ///
   /// In en, this message translates to:
-  /// **'The subject is too long (at most 120 letters)'**
+  /// **'The subject is too long (at most 160 letters)'**
   String get requestErrTitleLong;
 
   /// No description provided for @requestErrDetails.
@@ -7103,13 +7103,13 @@ abstract class AppLocalizations {
   /// No description provided for @requestErrDetailsLong.
   ///
   /// In en, this message translates to:
-  /// **'The details are too long (at most 2000 letters)'**
+  /// **'The details are too long (at most 4000 letters)'**
   String get requestErrDetailsLong;
 
   /// No description provided for @requestErrPhotos.
   ///
   /// In en, this message translates to:
-  /// **'At most 3 photos'**
+  /// **'At most 5 photos'**
   String get requestErrPhotos;
 
   /// No description provided for @requestErrComment.
@@ -7121,7 +7121,7 @@ abstract class AppLocalizations {
   /// No description provided for @requestErrCommentLong.
   ///
   /// In en, this message translates to:
-  /// **'The comment is too long (at most 1000 letters)'**
+  /// **'The comment is too long (at most 2000 letters)'**
   String get requestErrCommentLong;
 
   /// No description provided for @requestErrNotOpen.
@@ -7367,7 +7367,7 @@ abstract class AppLocalizations {
   /// No description provided for @requestClosedNoComment.
   ///
   /// In en, this message translates to:
-  /// **'This is resolved. Send a new request to tell something new.'**
+  /// **'This is closed. Reopen it to comment.'**
   String get requestClosedNoComment;
 
   /// No description provided for @alertRequestChanged.
@@ -7393,6 +7393,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'New comment: {title}'**
   String alertRequestComment(String title);
+
+  /// No description provided for @requestQueueAreaManager.
+  ///
+  /// In en, this message translates to:
+  /// **'Area manager'**
+  String get requestQueueAreaManager;
+
+  /// No description provided for @requestQueueSuperAdmin.
+  ///
+  /// In en, this message translates to:
+  /// **'Super admin'**
+  String get requestQueueSuperAdmin;
+
+  /// No description provided for @requestEventStatusChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'Status changed: {status}'**
+  String requestEventStatusChanged(String status);
+
+  /// No description provided for @requestEventClosed.
+  ///
+  /// In en, this message translates to:
+  /// **'Closed'**
+  String get requestEventClosed;
+
+  /// No description provided for @requestResolution.
+  ///
+  /// In en, this message translates to:
+  /// **'Resolution'**
+  String get requestResolution;
+
+  /// No description provided for @requestReopen.
+  ///
+  /// In en, this message translates to:
+  /// **'Reopen'**
+  String get requestReopen;
+
+  /// No description provided for @requestReopenTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reopen this request?'**
+  String get requestReopenTitle;
+
+  /// No description provided for @requestReopenBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Say why you reopen it. This needs the internet.'**
+  String get requestReopenBody;
+
+  /// No description provided for @requestReopenNoteHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Reason'**
+  String get requestReopenNoteHint;
+
+  /// No description provided for @requestReopenDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Reopened'**
+  String get requestReopenDone;
+
+  /// No description provided for @requestReopenOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'No internet. Try again when online.'**
+  String get requestReopenOffline;
+
+  /// No description provided for @requestReopenFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not reopen: {code}'**
+  String requestReopenFailed(String code);
+
+  /// No description provided for @requestErrNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Write the reason'**
+  String get requestErrNote;
+
+  /// No description provided for @requestErrNoteLong.
+  ///
+  /// In en, this message translates to:
+  /// **'The reason is too long (at most 1000 letters)'**
+  String get requestErrNoteLong;
 }
 
 class _AppLocalizationsDelegate

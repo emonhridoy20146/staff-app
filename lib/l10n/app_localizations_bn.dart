@@ -4041,24 +4041,24 @@ class AppLocalizationsBn extends AppLocalizations {
   String get requestErrTitle => 'বিষয় লিখুন';
 
   @override
-  String get requestErrTitleLong => 'বিষয় অনেক লম্বা (সর্বোচ্চ ১২০ অক্ষর)';
+  String get requestErrTitleLong => 'বিষয় অনেক লম্বা (সর্বোচ্চ ১৬০ অক্ষর)';
 
   @override
   String get requestErrDetails => 'বিস্তারিত লিখুন';
 
   @override
   String get requestErrDetailsLong =>
-      'বিস্তারিত অনেক লম্বা (সর্বোচ্চ ২০০০ অক্ষর)';
+      'বিস্তারিত অনেক লম্বা (সর্বোচ্চ ৪০০০ অক্ষর)';
 
   @override
-  String get requestErrPhotos => 'সর্বোচ্চ ৩টি ছবি দেওয়া যায়';
+  String get requestErrPhotos => 'সর্বোচ্চ ৫টি ছবি দেওয়া যায়';
 
   @override
   String get requestErrComment => 'মন্তব্য লিখুন';
 
   @override
   String get requestErrCommentLong =>
-      'মন্তব্য অনেক লম্বা (সর্বোচ্চ ১০০০ অক্ষর)';
+      'মন্তব্য অনেক লম্বা (সর্বোচ্চ ২০০০ অক্ষর)';
 
   @override
   String get requestErrNotOpen => 'এই অনুরোধে আর মন্তব্য করা যায় না';
@@ -4192,7 +4192,7 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get requestClosedNoComment =>
-      'এটি সমাধান হয়ে গেছে। নতুন কিছু জানাতে নতুন অনুরোধ করুন।';
+      'এটি বন্ধ করা হয়েছে। মন্তব্য করতে আগে আবার খুলুন।';
 
   @override
   String alertRequestChanged(String title) {
@@ -4213,4 +4213,52 @@ class AppLocalizationsBn extends AppLocalizations {
   String alertRequestComment(String title) {
     return 'নতুন মন্তব্য: $title';
   }
+
+  @override
+  String get requestQueueAreaManager => 'এরিয়া ম্যানেজার';
+
+  @override
+  String get requestQueueSuperAdmin => 'সুপার অ্যাডমিন';
+
+  @override
+  String requestEventStatusChanged(String status) {
+    return 'অবস্থা বদলেছে: $status';
+  }
+
+  @override
+  String get requestEventClosed => 'বন্ধ করা হয়েছে';
+
+  @override
+  String get requestResolution => 'সমাধানের কথা';
+
+  @override
+  String get requestReopen => 'আবার খুলুন';
+
+  @override
+  String get requestReopenTitle => 'অনুরোধ আবার খুলবেন?';
+
+  @override
+  String get requestReopenBody =>
+      'কেন আবার খুলছেন লিখুন। এর জন্য ইন্টারনেট লাগবে।';
+
+  @override
+  String get requestReopenNoteHint => 'কারণ';
+
+  @override
+  String get requestReopenDone => 'আবার খোলা হয়েছে';
+
+  @override
+  String get requestReopenOffline =>
+      'ইন্টারনেট নেই। নেট পেলে আবার চেষ্টা করুন।';
+
+  @override
+  String requestReopenFailed(String code) {
+    return 'আবার খোলা যায়নি: $code';
+  }
+
+  @override
+  String get requestErrNote => 'কারণ লিখুন';
+
+  @override
+  String get requestErrNoteLong => 'কারণ অনেক লম্বা (সর্বোচ্চ ১০০০ অক্ষর)';
 }

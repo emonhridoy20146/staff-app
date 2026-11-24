@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/legacy.dart' show StateProvider;
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../core/api/field_api.dart' show ApiException;
 import '../../../core/media/media.dart';
 import '../../../core/settings/ui_prefs.dart';
 import '../../../core/theme/status_colors.dart';
@@ -39,6 +40,13 @@ String requestStatusLabel(AppLocalizations l, String s) => switch (s) {
       _ => s,
     };
 
+/// A queue (1.48.0 `RequestQueue`) in words; unknown kept as sent.
+String requestQueueLabel(AppLocalizations l, String q) => switch (q) {
+      'area_manager' => l.requestQueueAreaManager,
+      'super_admin' => l.requestQueueSuperAdmin,
+      _ => q,
+    };
+
 /// Who it goes to, in words.
 String requestRecipientLabel(AppLocalizations l, RequestPriority p) => p == RequestPriority.important ? l.requestToSuperAdmin : l.requestToAreaManager;
 
@@ -51,6 +59,8 @@ String requestErrorText(AppLocalizations l, RequestError e) => switch (e) {
       RequestError.commentMissing => l.requestErrComment,
       RequestError.commentTooLong => l.requestErrCommentLong,
       RequestError.notOpen => l.requestErrNotOpen,
+      RequestError.noteMissing => l.requestErrNote,
+      RequestError.noteTooLong => l.requestErrNoteLong,
     };
 
 /// Why the server refused a request or a comment, in words; else its code.
@@ -459,6 +469,23 @@ class _RequestDetailState extends ConsumerState<RequestDetailScreen> {
     if (mounted) setState(() => _busy = false);
   }
 
+  /// Reopen needs a reason and the internet (contract 1.48.0 has no sync mutation for it).
+  Future<void> _reopen() async {
+    final l = AppLocalizations.of(context);
+    final note = await showDialog<String>(context: context, builder: (_) => const _ReopenDialog());
+    if (note == null || !mounted) return;
+    setState(() => _busy = true);
+    try {
+      await ref.read(requestServiceProvider).reopen(widget.requestKey, note);
+      if (mounted) showAppSnack(context, l.requestReopenDone);
+    } on RequestInvalid catch (e) {
+      if (mounted) showAppSnack(context, requestErrorText(l, e.error), icon: Icons.error_rounded);
+    } on ApiException catch (e) {
+      if (mounted) showAppSnack(context, e.isNetwork ? l.requestReopenOffline : l.requestReopenFailed(e.problem?.details?['reason'] as String? ?? e.code), icon: Icons.error_rounded);
+    }
+    if (mounted) setState(() => _busy = false);
+  }
+
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
@@ -488,10 +515,12 @@ class _RequestDetailState extends ConsumerState<RequestDetailScreen> {
               const SizedBox(height: Space.s8),
               KeyValueRow(label: l.requestTypeLabel, value: Text(requestTypeLabel(l, r.row.type))),
               KeyValueRow(label: l.requestSendTo, value: Text(requestRecipientLabel(l, r.priority))),
-              if (r.row.assigneeName != null) KeyValueRow(label: l.requestHolder, value: Text(r.row.assigneeName!)),
+              if (r.row.assigneeName != null || r.row.currentQueue != null)
+                KeyValueRow(label: l.requestHolder, value: Text(r.row.assigneeName ?? requestQueueLabel(l, r.row.currentQueue!))),
               if (!r.mine && r.row.createdByName != null) KeyValueRow(label: l.requestSentBy, value: Text(r.row.createdByName!)),
               if (r.row.customerName != null || r.row.customerId != null) KeyValueRow(label: l.requestCustomer, value: Text(r.row.customerName ?? r.row.customerId!)),
               KeyValueRow(label: l.requestCreatedAt, value: Text(f.dateTime(r.row.createdAt))),
+              if (r.row.status == 'resolved' && r.resolutionNote != null) KeyValueRow(label: l.requestResolution, value: Text(r.resolutionNote!)),
               if (r.photoCount > 0) KeyValueRow(label: l.requestPhotosShort, value: Text(f.num(r.photoCount))),
               const SizedBox(height: Space.s8),
               Text(r.row.details, style: t.bodyLarge),
@@ -546,6 +575,19 @@ class _RequestDetailState extends ConsumerState<RequestDetailScreen> {
             ),
           ] else if (r.isClosed)
             Text(l.requestClosedNoComment, style: t.bodyMedium!.copyWith(color: cs.onSurfaceVariant)),
+          if (r.canReopen) ...[
+            const SizedBox(height: Space.s8),
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: OutlinedButton.icon(
+                key: const Key('request-reopen'),
+                style: OutlinedButton.styleFrom(minimumSize: const Size(48, 48)),
+                onPressed: _busy ? null : _reopen,
+                icon: const Icon(Icons.replay_rounded),
+                label: Text(l.requestReopen),
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -566,7 +608,7 @@ class _TimelineTile extends ConsumerWidget {
     final s = context.semanticColors;
     final f = ref.watch(fmtProvider);
     final e = event;
-    final to = e.toName ?? (e.toId != null && e.toId == me ? l.requestByMe : null);
+    final to = e.toId != null && e.toId == me ? l.requestByMe : e.toName ?? (e.toQueue == null ? null : requestQueueLabel(l, e.toQueue!));
     final (icon, color, title) = switch (e.type) {
       'created' => (Icons.add_circle_rounded, s.info.fg, l.requestEventCreated),
       'forwarded' => (Icons.forward_rounded, s.warning.fg, to == null ? l.requestEventForwardedNoName : l.requestEventForwarded(to)),
@@ -574,6 +616,8 @@ class _TimelineTile extends ConsumerWidget {
       'comment' => (Icons.chat_bubble_rounded, cs.primary, l.requestEventComment),
       'resolved' => (Icons.check_circle_rounded, s.success.fg, l.requestEventResolved),
       'reopened' => (Icons.replay_rounded, s.warning.fg, l.requestEventReopened),
+      'closed' => (Icons.block_rounded, cs.onSurfaceVariant, l.requestEventClosed),
+      'status_changed' => (Icons.sync_alt_rounded, cs.onSurfaceVariant, l.requestEventStatusChanged(requestStatusLabel(l, e.toStatus ?? '—'))),
       _ => (Icons.circle_outlined, cs.onSurfaceVariant, e.type),
     };
     final by = e.byId != null && e.byId == me ? l.requestByMe : e.byName;
@@ -600,6 +644,60 @@ class _TimelineTile extends ConsumerWidget {
           ),
         ),
       ]),
+    );
+  }
+}
+
+/// Asks for the reason to reopen. It owns its text controller, so the controller lives exactly as long as the dialog.
+class _ReopenDialog extends StatefulWidget {
+  const _ReopenDialog();
+  @override
+  State<_ReopenDialog> createState() => _ReopenDialogState();
+}
+
+class _ReopenDialogState extends State<_ReopenDialog> {
+  final _controller = TextEditingController();
+  RequestError? _error;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    return AlertDialog(
+      title: Text(l.requestReopenTitle),
+      content: SingleChildScrollView(
+        child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(l.requestReopenBody),
+          const SizedBox(height: Space.s12),
+          TextField(
+            key: const Key('request-reopen-note'),
+            controller: _controller,
+            maxLines: 3,
+            maxLength: requestNoteMax,
+            decoration: InputDecoration(hintText: l.requestReopenNoteHint, errorText: _error == null ? null : requestErrorText(l, _error!)),
+          ),
+        ]),
+      ),
+      actions: [
+        TextButton(onPressed: () => Navigator.of(context).pop(), child: Text(l.actionCancel)),
+        FilledButton(
+          key: const Key('request-reopen-send'),
+          onPressed: () {
+            final v = validateReopenNote(_controller.text);
+            if (v.error != null) {
+              setState(() => _error = v.error);
+              return;
+            }
+            Navigator.of(context).pop(v.text);
+          },
+          child: Text(l.requestReopen),
+        ),
+      ],
     );
   }
 }

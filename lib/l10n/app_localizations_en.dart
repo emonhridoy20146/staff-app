@@ -4071,24 +4071,24 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get requestErrTitleLong =>
-      'The subject is too long (at most 120 letters)';
+      'The subject is too long (at most 160 letters)';
 
   @override
   String get requestErrDetails => 'Write the details';
 
   @override
   String get requestErrDetailsLong =>
-      'The details are too long (at most 2000 letters)';
+      'The details are too long (at most 4000 letters)';
 
   @override
-  String get requestErrPhotos => 'At most 3 photos';
+  String get requestErrPhotos => 'At most 5 photos';
 
   @override
   String get requestErrComment => 'Write a comment';
 
   @override
   String get requestErrCommentLong =>
-      'The comment is too long (at most 1000 letters)';
+      'The comment is too long (at most 2000 letters)';
 
   @override
   String get requestErrNotOpen => 'This request takes no more comments';
@@ -4222,8 +4222,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get requestCommentFailed => 'The server did not accept this comment';
 
   @override
-  String get requestClosedNoComment =>
-      'This is resolved. Send a new request to tell something new.';
+  String get requestClosedNoComment => 'This is closed. Reopen it to comment.';
 
   @override
   String alertRequestChanged(String title) {
@@ -4244,4 +4243,52 @@ class AppLocalizationsEn extends AppLocalizations {
   String alertRequestComment(String title) {
     return 'New comment: $title';
   }
+
+  @override
+  String get requestQueueAreaManager => 'Area manager';
+
+  @override
+  String get requestQueueSuperAdmin => 'Super admin';
+
+  @override
+  String requestEventStatusChanged(String status) {
+    return 'Status changed: $status';
+  }
+
+  @override
+  String get requestEventClosed => 'Closed';
+
+  @override
+  String get requestResolution => 'Resolution';
+
+  @override
+  String get requestReopen => 'Reopen';
+
+  @override
+  String get requestReopenTitle => 'Reopen this request?';
+
+  @override
+  String get requestReopenBody =>
+      'Say why you reopen it. This needs the internet.';
+
+  @override
+  String get requestReopenNoteHint => 'Reason';
+
+  @override
+  String get requestReopenDone => 'Reopened';
+
+  @override
+  String get requestReopenOffline => 'No internet. Try again when online.';
+
+  @override
+  String requestReopenFailed(String code) {
+    return 'Could not reopen: $code';
+  }
+
+  @override
+  String get requestErrNote => 'Write the reason';
+
+  @override
+  String get requestErrNoteLong =>
+      'The reason is too long (at most 1000 letters)';
 }

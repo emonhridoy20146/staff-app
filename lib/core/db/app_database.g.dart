@@ -24694,6 +24694,26 @@ class $StaffRequestsTable extends StaffRequests
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _currentQueueMeta = const VerificationMeta(
+    'currentQueue',
+  );
+  @override
+  late final GeneratedColumn<String> currentQueue = GeneratedColumn<String>(
+    'current_queue',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _levelMeta = const VerificationMeta('level');
+  @override
+  late final GeneratedColumn<String> level = GeneratedColumn<String>(
+    'level',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _photoIdsJsonMeta = const VerificationMeta(
     'photoIdsJson',
   );
@@ -24787,6 +24807,8 @@ class $StaffRequestsTable extends StaffRequests
     createdByName,
     assigneeId,
     assigneeName,
+    currentQueue,
+    level,
     photoIdsJson,
     eventsJson,
     createdAt,
@@ -24903,6 +24925,21 @@ class $StaffRequestsTable extends StaffRequests
         ),
       );
     }
+    if (data.containsKey('current_queue')) {
+      context.handle(
+        _currentQueueMeta,
+        currentQueue.isAcceptableOrUnknown(
+          data['current_queue']!,
+          _currentQueueMeta,
+        ),
+      );
+    }
+    if (data.containsKey('level')) {
+      context.handle(
+        _levelMeta,
+        level.isAcceptableOrUnknown(data['level']!, _levelMeta),
+      );
+    }
     if (data.containsKey('photo_ids_json')) {
       context.handle(
         _photoIdsJsonMeta,
@@ -25011,6 +25048,14 @@ class $StaffRequestsTable extends StaffRequests
         DriftSqlType.string,
         data['${effectivePrefix}assignee_name'],
       ),
+      currentQueue: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}current_queue'],
+      ),
+      level: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}level'],
+      ),
       photoIdsJson: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}photo_ids_json'],
@@ -25058,6 +25103,8 @@ class StaffRequestRow extends DataClass implements Insertable<StaffRequestRow> {
   /// `normal` (area manager) or `important` (super admin).
   final String priority;
   final String title;
+
+  /// The request's `body` (1.48.0).
   final String details;
   final String? customerId;
   final String? customerName;
@@ -25071,10 +25118,15 @@ class StaffRequestRow extends DataClass implements Insertable<StaffRequestRow> {
   final String? assigneeId;
   final String? assigneeName;
 
+  /// Where it waits now (1.48.0 `currentQueue`: `area_manager`, `super_admin`, `assignee`) and the queue responsible
+  /// for it (`level`).
+  final String? currentQueue;
+  final String? level;
+
   /// Server media ids of its photos (photos still on this phone are in `media_queue`, owner `request`).
   final String photoIdsJson;
 
-  /// The server's timeline as sent (created, forwarded, assigned, comment, resolved, reopened…).
+  /// The server's `timeline` as sent (created, comment, forwarded, assigned, status_changed, resolved, reopened, closed).
   final String eventsJson;
   final DateTime createdAt;
   final DateTime? updatedAt;
@@ -25099,6 +25151,8 @@ class StaffRequestRow extends DataClass implements Insertable<StaffRequestRow> {
     this.createdByName,
     this.assigneeId,
     this.assigneeName,
+    this.currentQueue,
+    this.level,
     required this.photoIdsJson,
     required this.eventsJson,
     required this.createdAt,
@@ -25136,6 +25190,12 @@ class StaffRequestRow extends DataClass implements Insertable<StaffRequestRow> {
     }
     if (!nullToAbsent || assigneeName != null) {
       map['assignee_name'] = Variable<String>(assigneeName);
+    }
+    if (!nullToAbsent || currentQueue != null) {
+      map['current_queue'] = Variable<String>(currentQueue);
+    }
+    if (!nullToAbsent || level != null) {
+      map['level'] = Variable<String>(level);
     }
     map['photo_ids_json'] = Variable<String>(photoIdsJson);
     map['events_json'] = Variable<String>(eventsJson);
@@ -25182,6 +25242,12 @@ class StaffRequestRow extends DataClass implements Insertable<StaffRequestRow> {
       assigneeName: assigneeName == null && nullToAbsent
           ? const Value.absent()
           : Value(assigneeName),
+      currentQueue: currentQueue == null && nullToAbsent
+          ? const Value.absent()
+          : Value(currentQueue),
+      level: level == null && nullToAbsent
+          ? const Value.absent()
+          : Value(level),
       photoIdsJson: Value(photoIdsJson),
       eventsJson: Value(eventsJson),
       createdAt: Value(createdAt),
@@ -25217,6 +25283,8 @@ class StaffRequestRow extends DataClass implements Insertable<StaffRequestRow> {
       createdByName: serializer.fromJson<String?>(json['createdByName']),
       assigneeId: serializer.fromJson<String?>(json['assigneeId']),
       assigneeName: serializer.fromJson<String?>(json['assigneeName']),
+      currentQueue: serializer.fromJson<String?>(json['currentQueue']),
+      level: serializer.fromJson<String?>(json['level']),
       photoIdsJson: serializer.fromJson<String>(json['photoIdsJson']),
       eventsJson: serializer.fromJson<String>(json['eventsJson']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
@@ -25243,6 +25311,8 @@ class StaffRequestRow extends DataClass implements Insertable<StaffRequestRow> {
       'createdByName': serializer.toJson<String?>(createdByName),
       'assigneeId': serializer.toJson<String?>(assigneeId),
       'assigneeName': serializer.toJson<String?>(assigneeName),
+      'currentQueue': serializer.toJson<String?>(currentQueue),
+      'level': serializer.toJson<String?>(level),
       'photoIdsJson': serializer.toJson<String>(photoIdsJson),
       'eventsJson': serializer.toJson<String>(eventsJson),
       'createdAt': serializer.toJson<DateTime>(createdAt),
@@ -25267,6 +25337,8 @@ class StaffRequestRow extends DataClass implements Insertable<StaffRequestRow> {
     Value<String?> createdByName = const Value.absent(),
     Value<String?> assigneeId = const Value.absent(),
     Value<String?> assigneeName = const Value.absent(),
+    Value<String?> currentQueue = const Value.absent(),
+    Value<String?> level = const Value.absent(),
     String? photoIdsJson,
     String? eventsJson,
     DateTime? createdAt,
@@ -25290,6 +25362,8 @@ class StaffRequestRow extends DataClass implements Insertable<StaffRequestRow> {
         : this.createdByName,
     assigneeId: assigneeId.present ? assigneeId.value : this.assigneeId,
     assigneeName: assigneeName.present ? assigneeName.value : this.assigneeName,
+    currentQueue: currentQueue.present ? currentQueue.value : this.currentQueue,
+    level: level.present ? level.value : this.level,
     photoIdsJson: photoIdsJson ?? this.photoIdsJson,
     eventsJson: eventsJson ?? this.eventsJson,
     createdAt: createdAt ?? this.createdAt,
@@ -25325,6 +25399,10 @@ class StaffRequestRow extends DataClass implements Insertable<StaffRequestRow> {
       assigneeName: data.assigneeName.present
           ? data.assigneeName.value
           : this.assigneeName,
+      currentQueue: data.currentQueue.present
+          ? data.currentQueue.value
+          : this.currentQueue,
+      level: data.level.present ? data.level.value : this.level,
       photoIdsJson: data.photoIdsJson.present
           ? data.photoIdsJson.value
           : this.photoIdsJson,
@@ -25355,6 +25433,8 @@ class StaffRequestRow extends DataClass implements Insertable<StaffRequestRow> {
           ..write('createdByName: $createdByName, ')
           ..write('assigneeId: $assigneeId, ')
           ..write('assigneeName: $assigneeName, ')
+          ..write('currentQueue: $currentQueue, ')
+          ..write('level: $level, ')
           ..write('photoIdsJson: $photoIdsJson, ')
           ..write('eventsJson: $eventsJson, ')
           ..write('createdAt: $createdAt, ')
@@ -25367,7 +25447,7 @@ class StaffRequestRow extends DataClass implements Insertable<StaffRequestRow> {
   }
 
   @override
-  int get hashCode => Object.hash(
+  int get hashCode => Object.hashAll([
     clientId,
     serverId,
     type,
@@ -25381,6 +25461,8 @@ class StaffRequestRow extends DataClass implements Insertable<StaffRequestRow> {
     createdByName,
     assigneeId,
     assigneeName,
+    currentQueue,
+    level,
     photoIdsJson,
     eventsJson,
     createdAt,
@@ -25388,7 +25470,7 @@ class StaffRequestRow extends DataClass implements Insertable<StaffRequestRow> {
     seenAt,
     syncState,
     errorCode,
-  );
+  ]);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -25406,6 +25488,8 @@ class StaffRequestRow extends DataClass implements Insertable<StaffRequestRow> {
           other.createdByName == this.createdByName &&
           other.assigneeId == this.assigneeId &&
           other.assigneeName == this.assigneeName &&
+          other.currentQueue == this.currentQueue &&
+          other.level == this.level &&
           other.photoIdsJson == this.photoIdsJson &&
           other.eventsJson == this.eventsJson &&
           other.createdAt == this.createdAt &&
@@ -25429,6 +25513,8 @@ class StaffRequestsCompanion extends UpdateCompanion<StaffRequestRow> {
   final Value<String?> createdByName;
   final Value<String?> assigneeId;
   final Value<String?> assigneeName;
+  final Value<String?> currentQueue;
+  final Value<String?> level;
   final Value<String> photoIdsJson;
   final Value<String> eventsJson;
   final Value<DateTime> createdAt;
@@ -25451,6 +25537,8 @@ class StaffRequestsCompanion extends UpdateCompanion<StaffRequestRow> {
     this.createdByName = const Value.absent(),
     this.assigneeId = const Value.absent(),
     this.assigneeName = const Value.absent(),
+    this.currentQueue = const Value.absent(),
+    this.level = const Value.absent(),
     this.photoIdsJson = const Value.absent(),
     this.eventsJson = const Value.absent(),
     this.createdAt = const Value.absent(),
@@ -25474,6 +25562,8 @@ class StaffRequestsCompanion extends UpdateCompanion<StaffRequestRow> {
     this.createdByName = const Value.absent(),
     this.assigneeId = const Value.absent(),
     this.assigneeName = const Value.absent(),
+    this.currentQueue = const Value.absent(),
+    this.level = const Value.absent(),
     this.photoIdsJson = const Value.absent(),
     this.eventsJson = const Value.absent(),
     required DateTime createdAt,
@@ -25500,6 +25590,8 @@ class StaffRequestsCompanion extends UpdateCompanion<StaffRequestRow> {
     Expression<String>? createdByName,
     Expression<String>? assigneeId,
     Expression<String>? assigneeName,
+    Expression<String>? currentQueue,
+    Expression<String>? level,
     Expression<String>? photoIdsJson,
     Expression<String>? eventsJson,
     Expression<DateTime>? createdAt,
@@ -25523,6 +25615,8 @@ class StaffRequestsCompanion extends UpdateCompanion<StaffRequestRow> {
       if (createdByName != null) 'created_by_name': createdByName,
       if (assigneeId != null) 'assignee_id': assigneeId,
       if (assigneeName != null) 'assignee_name': assigneeName,
+      if (currentQueue != null) 'current_queue': currentQueue,
+      if (level != null) 'level': level,
       if (photoIdsJson != null) 'photo_ids_json': photoIdsJson,
       if (eventsJson != null) 'events_json': eventsJson,
       if (createdAt != null) 'created_at': createdAt,
@@ -25548,6 +25642,8 @@ class StaffRequestsCompanion extends UpdateCompanion<StaffRequestRow> {
     Value<String?>? createdByName,
     Value<String?>? assigneeId,
     Value<String?>? assigneeName,
+    Value<String?>? currentQueue,
+    Value<String?>? level,
     Value<String>? photoIdsJson,
     Value<String>? eventsJson,
     Value<DateTime>? createdAt,
@@ -25571,6 +25667,8 @@ class StaffRequestsCompanion extends UpdateCompanion<StaffRequestRow> {
       createdByName: createdByName ?? this.createdByName,
       assigneeId: assigneeId ?? this.assigneeId,
       assigneeName: assigneeName ?? this.assigneeName,
+      currentQueue: currentQueue ?? this.currentQueue,
+      level: level ?? this.level,
       photoIdsJson: photoIdsJson ?? this.photoIdsJson,
       eventsJson: eventsJson ?? this.eventsJson,
       createdAt: createdAt ?? this.createdAt,
@@ -25624,6 +25722,12 @@ class StaffRequestsCompanion extends UpdateCompanion<StaffRequestRow> {
     if (assigneeName.present) {
       map['assignee_name'] = Variable<String>(assigneeName.value);
     }
+    if (currentQueue.present) {
+      map['current_queue'] = Variable<String>(currentQueue.value);
+    }
+    if (level.present) {
+      map['level'] = Variable<String>(level.value);
+    }
     if (photoIdsJson.present) {
       map['photo_ids_json'] = Variable<String>(photoIdsJson.value);
     }
@@ -25667,6 +25771,8 @@ class StaffRequestsCompanion extends UpdateCompanion<StaffRequestRow> {
           ..write('createdByName: $createdByName, ')
           ..write('assigneeId: $assigneeId, ')
           ..write('assigneeName: $assigneeName, ')
+          ..write('currentQueue: $currentQueue, ')
+          ..write('level: $level, ')
           ..write('photoIdsJson: $photoIdsJson, ')
           ..write('eventsJson: $eventsJson, ')
           ..write('createdAt: $createdAt, ')
@@ -37837,6 +37943,8 @@ typedef $$StaffRequestsTableCreateCompanionBuilder =
       Value<String?> createdByName,
       Value<String?> assigneeId,
       Value<String?> assigneeName,
+      Value<String?> currentQueue,
+      Value<String?> level,
       Value<String> photoIdsJson,
       Value<String> eventsJson,
       required DateTime createdAt,
@@ -37861,6 +37969,8 @@ typedef $$StaffRequestsTableUpdateCompanionBuilder =
       Value<String?> createdByName,
       Value<String?> assigneeId,
       Value<String?> assigneeName,
+      Value<String?> currentQueue,
+      Value<String?> level,
       Value<String> photoIdsJson,
       Value<String> eventsJson,
       Value<DateTime> createdAt,
@@ -37942,6 +38052,16 @@ class $$StaffRequestsTableFilterComposer
 
   ColumnFilters<String> get assigneeName => $composableBuilder(
     column: $table.assigneeName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get currentQueue => $composableBuilder(
+    column: $table.currentQueue,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get level => $composableBuilder(
+    column: $table.level,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -38055,6 +38175,16 @@ class $$StaffRequestsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get currentQueue => $composableBuilder(
+    column: $table.currentQueue,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get level => $composableBuilder(
+    column: $table.level,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get photoIdsJson => $composableBuilder(
     column: $table.photoIdsJson,
     builder: (column) => ColumnOrderings(column),
@@ -38151,6 +38281,14 @@ class $$StaffRequestsTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<String> get currentQueue => $composableBuilder(
+    column: $table.currentQueue,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get level =>
+      $composableBuilder(column: $table.level, builder: (column) => column);
+
   GeneratedColumn<String> get photoIdsJson => $composableBuilder(
     column: $table.photoIdsJson,
     builder: (column) => column,
@@ -38221,6 +38359,8 @@ class $$StaffRequestsTableTableManager
                 Value<String?> createdByName = const Value.absent(),
                 Value<String?> assigneeId = const Value.absent(),
                 Value<String?> assigneeName = const Value.absent(),
+                Value<String?> currentQueue = const Value.absent(),
+                Value<String?> level = const Value.absent(),
                 Value<String> photoIdsJson = const Value.absent(),
                 Value<String> eventsJson = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
@@ -38243,6 +38383,8 @@ class $$StaffRequestsTableTableManager
                 createdByName: createdByName,
                 assigneeId: assigneeId,
                 assigneeName: assigneeName,
+                currentQueue: currentQueue,
+                level: level,
                 photoIdsJson: photoIdsJson,
                 eventsJson: eventsJson,
                 createdAt: createdAt,
@@ -38267,6 +38409,8 @@ class $$StaffRequestsTableTableManager
                 Value<String?> createdByName = const Value.absent(),
                 Value<String?> assigneeId = const Value.absent(),
                 Value<String?> assigneeName = const Value.absent(),
+                Value<String?> currentQueue = const Value.absent(),
+                Value<String?> level = const Value.absent(),
                 Value<String> photoIdsJson = const Value.absent(),
                 Value<String> eventsJson = const Value.absent(),
                 required DateTime createdAt,
@@ -38289,6 +38433,8 @@ class $$StaffRequestsTableTableManager
                 createdByName: createdByName,
                 assigneeId: assigneeId,
                 assigneeName: assigneeName,
+                currentQueue: currentQueue,
+                level: level,
                 photoIdsJson: photoIdsJson,
                 eventsJson: eventsJson,
                 createdAt: createdAt,

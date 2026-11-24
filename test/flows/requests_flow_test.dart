@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:staff_app/app/app.dart';
 import 'package:staff_app/app/router.dart';
+import 'package:staff_app/core/api/field_api.dart' show ApiException;
 import 'package:staff_app/core/db/app_database.dart';
 import 'package:staff_app/core/feature/feature_manifest.dart';
 import 'package:staff_app/core/media/media.dart';
@@ -18,7 +19,7 @@ import 'package:staff_app/features/requests/src/requests_data.dart' show Request
 
 import 'helpers.dart';
 
-/// Staff requests (FR-M-075, contract 1.48.0 planned): offline create and comments sent once, photos held until
+/// Staff requests (FR-M-075, contract 1.48.0): offline create and comments sent once, photos held until
 /// uploaded, the office's steps on the timeline and behind the bell, given-to-me items, refusals in words.
 void main() {
   const report = (type: RequestType.report, priority: RequestPriority.normal, title: 'দোকান বন্ধ', details: 'গ্রাহকের দোকান তিন দিন বন্ধ', customerId: 'c-1001', customerName: null, photoCount: 0);
@@ -78,7 +79,7 @@ void main() {
       final ob = await (db().select(db().outbox)..orderBy([(t) => OrderingTerm.asc(t.createdAt)])).get();
       final mine = ob.where((o) => o.entity.startsWith('request')).toList();
       expect([for (final o in mine) (o.entity, o.mutationId, o.state)], [('request', key, 'pending'), ('request_comment', cm, 'pending')]);
-      expect(jsonDecode(mine[0].payloadJson), {'clientId': key, 'type': 'report', 'priority': 'normal', 'title': 'দোকান বন্ধ', 'details': 'গ্রাহকের দোকান তিন দিন বন্ধ', 'customerId': 'c-1001'});
+      expect(jsonDecode(mine[0].payloadJson), {'clientId': key, 'type': 'report', 'priority': 'normal', 'title': 'দোকান বন্ধ', 'body': 'গ্রাহকের দোকান তিন দিন বন্ধ', 'customerId': 'c-1001'});
       expect(jsonDecode(mine[1].payloadJson), {'clientId': cm, 'requestClientId': key, 'text': 'আজও বন্ধ'});
       expect(jsonDecode(mine[1].dependsOnJson), [key], reason: 'the comment waits for its request');
 
@@ -89,8 +90,8 @@ void main() {
       r = await row(key);
       expect([r.syncState, r.serverId, r.status], ['synced', 'rq-$key', 'open']);
       expect(h.api.requests.length, 1, reason: 'sent once whatever the retries');
-      final events = h.api.requests['rq-$key']!['events'] as List;
-      expect(events.map((e) => (e as Map)['type']), ['created', 'comment']);
+      final events = h.api.requests['rq-$key']!['timeline'] as List;
+      expect(events.map((e) => (e as Map)['kind']), ['created', 'comment']);
       expect((events.last as Map)['clientId'], cm);
       final req = (await reqs()).single;
       expect(req.timeline.map((e) => e.type), ['created', 'comment'], reason: 'my comment shown once');
@@ -112,7 +113,7 @@ void main() {
       expect(h.api.requests['rq-$key']!['priority'], 'important');
       expect((h.api.requests['rq-$key']!['photoMediaIds'] as List).length, 2);
       final media = await (db().select(db().mediaQueue)..where((t) => t.ownerEntity.equals(requestMediaOwner))).get();
-      expect(media.map((m) => (m.kind, m.state)).toSet(), {('request_photo', 'confirmed')});
+      expect(media.map((m) => (m.kind, m.state)).toSet(), {('visit_photo', 'confirmed')});
     });
 
     test('a photo not uploaded keeps the request held (never sent without it, never deleted)', () async {
@@ -128,7 +129,7 @@ void main() {
       expect((await reqs()).single.localPhotos, 1);
     });
 
-    test('the office forwards, comments and resolves: the timeline and the bell show it; opening it clears the alert', () async {
+    test('the office forwards, comments and resolves; I reopen online: the timeline and the bell show it; opening it clears the alert', () async {
       await h.signIn();
       final key = await h.read(requestServiceProvider).create(report);
       await sync();
@@ -139,7 +140,8 @@ void main() {
       await sync();
       var r = (await reqs()).single;
       expect(r.timeline.map((e) => e.type), ['created', 'forwarded', 'comment']);
-      expect([r.row.status, r.row.assigneeName], ['forwarded', 'সুপার অ্যাডমিন']);
+      expect([r.row.status, r.row.assigneeName, r.row.currentQueue, r.row.level], ['forwarded', null, 'super_admin', 'super_admin']);
+      expect([r.timeline[1].toQueue, r.timeline[1].note, r.timeline[1].byName], ['super_admin', 'সুপার অ্যাডমিন দেখবেন', 'মোস্তফা কামাল']);
       expect(r.unseenChange?.type, 'comment');
       final alert = (await alerts()).where((a) => a.id == 'request/$key').single;
       expect(alert.route, '/requests/$key');
@@ -151,29 +153,43 @@ void main() {
       h.api.resolveRequest('rq-$key', note: 'দোকান খুলেছে');
       await sync();
       r = (await reqs()).single;
-      expect([r.isClosed, r.canComment, r.unseenChange?.type, r.unseenChange?.note], [true, false, 'resolved', 'দোকান খুলেছে']);
+      expect([r.isClosed, r.canReopen, r.unseenChange?.type, r.unseenChange?.note, r.resolutionNote], [true, true, 'resolved', 'দোকান খুলেছে', 'দোকান খুলেছে']);
       expect(filterRequests([r], RequestFilter.resolved), [r]);
-      await expectLater(h.read(requestServiceProvider).comment(key, 'ধন্যবাদ'), throwsA(isA<RequestInvalid>()));
+      expect(r.canComment, isTrue, reason: '1.48.0: a resolved request still takes comments');
 
       h.clock.advance(const Duration(minutes: 5));
-      h.api.reopenRequest('rq-$key', note: 'আবার বন্ধ');
+      h.api.closeRequest('rq-$key');
       await sync();
       r = (await reqs()).single;
-      expect([r.isClosed, r.canComment, r.timeline.last.type], [false, true, 'reopened']);
+      expect([r.isClosed, r.canComment, r.canReopen], [true, false, true]);
+      await expectLater(h.read(requestServiceProvider).comment(key, 'ধন্যবাদ'), throwsA(isA<RequestInvalid>()));
+
+      // Reopen is online only: offline it fails and nothing changes.
+      await expectLater(h.read(requestServiceProvider).reopen(key, ' '), throwsA(isA<RequestInvalid>()));
+      h.api.offline = true;
+      await expectLater(h.read(requestServiceProvider).reopen(key, 'আবার বন্ধ'), throwsA(isA<ApiException>()));
+      expect((await row(key)).status, 'closed');
+      h.api.offline = false;
+      h.clock.advance(const Duration(minutes: 5));
+      await h.read(requestServiceProvider).reopen(key, 'আবার বন্ধ');
+      r = (await reqs()).single;
+      expect([r.row.status, r.isClosed, r.canComment, r.timeline.last.type, r.timeline.last.note], ['reopened', false, true, 'reopened', 'আবার বন্ধ']);
+      expect(await news(), isEmpty, reason: 'my own reopen is no news');
     });
 
     test('given to me: a colleague\'s request the office assigned to me is listed apart and on the bell; I can comment', () async {
-      h.api.addRequestForMe('rq-col-1', title: 'গ্রাহকের ঠিকানা বদল', details: 'নতুন ঠিকানা দেখে আসুন');
+      h.api.addRequestForMe('rq-col-1', title: 'গ্রাহকের ঠিকানা বদল', body: 'নতুন ঠিকানা দেখে আসুন');
       await h.signIn();
       final all = await reqs();
       expect(assignedRequests(all).single.row.title, 'গ্রাহকের ঠিকানা বদল');
       expect(filterRequests(all, RequestFilter.open), isEmpty, reason: 'not mine');
-      final a = (await alerts()).where((a) => a.id == 'request/rq-col-1').single;
+      final a = (await alerts()).where((a) => a.id == 'request/cl-rq-col-1').single;
       expect(a.kind, AlertKind.task);
-      await h.read(requestServiceProvider).comment('rq-col-1', 'দেখে এসেছি');
+      await h.read(requestServiceProvider).comment('cl-rq-col-1', 'দেখে এসেছি');
       await sync();
-      final events = h.api.requests['rq-col-1']!['events'] as List;
-      expect(((events.last as Map)['note'], (events.last as Map)['by']['id']), ('দেখে এসেছি', 'u-fs-014'));
+      final last = (h.api.requests['rq-col-1']!['timeline'] as List).last as Map<String, dynamic>;
+      expect((last['note'], (last['actor'] as Map)['id']), ('দেখে এসেছি', 'u-fs-014'));
+      expect(assignedRequests(await reqs()).single.row.status, 'in_progress');
     });
 
     test('refused: kept with its reason, in Problems; a pull never deletes an unsent one', () async {
@@ -304,7 +320,7 @@ void main() {
     });
 
     testWidgets('English at 130 % text: form, list and detail fit; given-to-me section', (t) async {
-      final h = await start(t, lang: 'en', textScale: 1.3, seed: (h) => h.api.addRequestForMe('rq-col-1', title: 'Customer moved', details: 'Check the new address'));
+      final h = await start(t, lang: 'en', textScale: 1.3, seed: (h) => h.api.addRequestForMe('rq-col-1', title: 'Customer moved', body: 'Check the new address'));
       h.read(routerProvider).go('/requests');
       await settle(t);
       expect(find.text('Assigned to me'), findsOneWidget);
@@ -319,6 +335,30 @@ void main() {
       await tapVisible(t, find.byKey(const Key('request-save')));
       expect(find.text('Write a subject'), findsOneWidget);
       expect(t.takeException(), isNull);
+      await finish(t, h);
+    });
+
+    testWidgets('a resolved request of mine: the resolution is shown; reopen asks for a reason and goes online', (t) async {
+      final h = await start(t);
+      final key = (await t.runAsync(() => h.read(requestServiceProvider).create(report)))!;
+      await settle(t, rounds: 12);
+      h.api.resolveRequest('rq-$key', note: 'দোকান খুলেছে');
+      h.read(syncEngineProvider).kick(reason: 'test').ignore();
+      await settle(t, rounds: 12);
+      h.read(routerProvider).go('/requests/$key');
+      await settle(t);
+      expect(find.text('সমাধানের কথা'), findsOneWidget);
+      await tapVisible(t, find.byKey(const Key('request-reopen')));
+      expect(find.text('অনুরোধ আবার খুলবেন?'), findsOneWidget);
+      await t.tap(find.byKey(const Key('request-reopen-send')));
+      await settle(t, rounds: 2);
+      expect(find.text('কারণ লিখুন'), findsOneWidget);
+      await t.enterText(find.byKey(const Key('request-reopen-note')), 'আবার বন্ধ পেয়েছি');
+      await t.tap(find.byKey(const Key('request-reopen-send')));
+      await settle(t, rounds: 12);
+      expect(h.api.requests['rq-$key']!['status'], 'reopened');
+      expect(find.text('আবার খোলা হয়েছে'), findsWidgets);
+      expect(find.byKey(const Key('request-reopen')), findsNothing);
       await finish(t, h);
     });
 

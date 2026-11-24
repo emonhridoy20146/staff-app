@@ -23,6 +23,8 @@ void main() {
         createdByName: null,
         assigneeId: assignee,
         assigneeName: null,
+        currentQueue: null,
+        level: null,
         photoIdsJson: '[]',
         eventsJson: jsonEncode(events),
         createdAt: DateTime.utc(2026, 11, 24, 4),
@@ -32,31 +34,35 @@ void main() {
         errorCode: null,
       );
 
+  // 1.48.0 `RequestTimelineEntry`: kind, at, actor, note, to { queue, user }.
   Map<String, dynamic> ev(String type, int minute, {String by = 'u-bm-001', String? to, String? note, String? clientId}) => {
-        'type': type,
+        'id': 'e-$minute',
+        'kind': type,
         'at': DateTime.utc(2026, 11, 24, 4, minute).toIso8601String(),
-        'by': {'id': by, 'name': 'মোস্তফা কামাল'},
-        if (to != null) 'to': {'id': to, 'name': 'রাকিব'},
+        'actor': {'id': by, 'name': 'মোস্তফা কামাল'},
+        if (to != null) 'to': {'queue': 'assignee', 'user': {'id': to, 'name': 'রাকিব'}},
         'note': ?note,
         'clientId': ?clientId,
       };
 
-  test('a subject and details are needed; words are trimmed; at most 3 photos', () {
+  test('a subject and details are needed; words are trimmed; limits of 1.48.0', () {
     expect(validateRequest(draft(title: '  ')).error, RequestError.titleMissing);
-    expect(validateRequest(draft(title: 'ক' * 121)).error, RequestError.titleTooLong);
+    expect(validateRequest(draft(title: 'ক' * 161)).error, RequestError.titleTooLong);
     expect(validateRequest(draft(details: ' ')).error, RequestError.detailsMissing);
-    expect(validateRequest(draft(details: 'ক' * 2001)).error, RequestError.detailsTooLong);
-    expect(validateRequest(draft(photos: 4)).error, RequestError.tooManyPhotos);
+    expect(validateRequest(draft(details: 'ক' * 4001)).error, RequestError.detailsTooLong);
+    expect(validateRequest(draft(photos: 6)).error, RequestError.tooManyPhotos);
     final ok = validateRequest(draft(title: ' দোকান বন্ধ ', customerId: ' ')).draft!;
     expect([ok.title, ok.customerId], ['দোকান বন্ধ', null]);
     expect(validateComment('  ').error, RequestError.commentMissing);
-    expect(validateComment('ক' * 1001).error, RequestError.commentTooLong);
+    expect(validateComment('ক' * 2001).error, RequestError.commentTooLong);
     expect(validateComment(' ঠিক আছে ').text, 'ঠিক আছে');
+    expect(validateReopenNote(' ').error, RequestError.noteMissing);
+    expect(validateReopenNote('ক' * 1001).error, RequestError.noteTooLong);
   });
 
   test('payload: the two choices map to normal (area manager) and important (super admin); customer only when given', () {
     final normal = requestPayload('c-1', validateRequest(draft()).draft!);
-    expect(normal, {'clientId': 'c-1', 'type': 'report', 'priority': 'normal', 'title': 'দোকান বন্ধ', 'details': 'গ্রাহকের দোকান তিন দিন বন্ধ'});
+    expect(normal, {'clientId': 'c-1', 'type': 'report', 'priority': 'normal', 'title': 'দোকান বন্ধ', 'body': 'গ্রাহকের দোকান তিন দিন বন্ধ'});
     final important = requestPayload('c-2', validateRequest(draft(p: RequestPriority.important, customerId: 'c-1001')).draft!);
     expect([important['priority'], important['customerId']], ['important', 'c-1001']);
     expect(RequestPriority.fromWire('anything'), RequestPriority.normal);
@@ -70,6 +76,9 @@ void main() {
     r = StaffRequest(row(events: [ev('created', 0, by: 'me'), ev('forwarded', 10, to: 'u-sa-001'), ev('comment', 30, by: 'me', note: 'আরও জানাই', clientId: 'cm-1')]), me: 'me', myComments: [comment]);
     expect(r.timeline.map((e) => e.type).toList(), ['created', 'forwarded', 'comment'], reason: 'the server holds my comment: shown once');
     expect(r.timeline[1].toName, 'রাকিব');
+    final queue = RequestEvent.fromJson({'kind': 'forwarded', 'at': '2026-11-24T04:10:00Z', 'actor': {'id': 'u', 'name': 'ক'}, 'to': {'queue': 'super_admin', 'user': null}, 'status': {'from': 'open', 'to': 'forwarded'}})!;
+    expect([queue.toQueue, queue.toId, queue.toStatus], ['super_admin', null, 'forwarded']);
+    expect(RequestEvent.fromJson({'kind': 'x'}), isNull, reason: 'no time: dropped, never a crash');
   });
 
   test('news: the last step by someone else after I opened it; my own steps never count', () {
@@ -95,10 +104,15 @@ void main() {
     expect(assignedRequests([given, mine, resolved]), [given]);
   });
 
-  test('comments: none on a refused or resolved request', () {
+  test('comments: none on a refused or closed request; reopen only mine, sent, resolved or closed', () {
     expect(StaffRequest(row(), me: 'me').canComment, isTrue);
     expect(StaffRequest(row(sync: 'queued'), me: 'me').canComment, isTrue, reason: 'offline: waits for the request');
     expect(StaffRequest(row(sync: 'failed'), me: 'me').canComment, isFalse);
-    expect(StaffRequest(row(status: 'resolved'), me: 'me').canComment, isFalse);
+    expect(StaffRequest(row(status: 'resolved'), me: 'me').canComment, isTrue);
+    expect(StaffRequest(row(status: 'closed'), me: 'me').canComment, isFalse);
+    expect(StaffRequest(row(status: 'resolved'), me: 'me').canReopen, isTrue);
+    expect(StaffRequest(row(status: 'closed'), me: 'me').canReopen, isTrue);
+    expect(StaffRequest(row(), me: 'me').canReopen, isFalse);
+    expect(StaffRequest(row(status: 'resolved', createdBy: 'u-fs-020', assignee: 'me'), me: 'me').canReopen, isFalse);
   });
 }

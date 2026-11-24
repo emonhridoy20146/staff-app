@@ -2,16 +2,18 @@ import 'dart:convert';
 
 import '../../../core/db/app_database.dart';
 
-/// Staff requests (FR-M-075, contract 1.48.0): the rules, without the database or the UI.
+/// Staff requests (FR-M-075, contract 1.48.0, field-api ADR-066): the rules, without the database or the UI.
 ///
 /// A staff member reports, tells or asks something. `normal` goes to the area manager, `important` to the super
 /// admin. The office forwards it, assigns it (it can come back to a staff member), comments and resolves it; every
 /// step is on the server's timeline.
 
-const requestTitleMax = 120;
-const requestDetailsMax = 2000;
-const requestCommentMax = 1000;
-const requestMaxPhotos = 3;
+/// Limits of contract 1.48.0 (`RequestCreate`, `RequestComment`, `RequestNote`).
+const requestTitleMax = 160;
+const requestDetailsMax = 4000;
+const requestCommentMax = 2000;
+const requestNoteMax = 1000;
+const requestMaxPhotos = 5;
 
 /// What kind of item it is (contract `type`).
 enum RequestType {
@@ -37,7 +39,7 @@ enum RequestPriority {
   static RequestPriority fromWire(String? w) => w == 'important' ? important : normal;
 }
 
-enum RequestError { titleMissing, titleTooLong, detailsMissing, detailsTooLong, tooManyPhotos, commentMissing, commentTooLong, notOpen }
+enum RequestError { titleMissing, titleTooLong, detailsMissing, detailsTooLong, tooManyPhotos, commentMissing, commentTooLong, notOpen, noteMissing, noteTooLong }
 
 class RequestInvalid implements Exception {
   const RequestInvalid(this.error);
@@ -73,31 +75,47 @@ typedef RequestDraft = ({RequestType type, RequestPriority priority, String titl
   return (text: t, error: null);
 }
 
-/// The `request` mutation's payload (planned contract 1.48.0 `RequestCreate`, idempotent by clientId).
+/// A reopen note (required by POST /requests/{id}/reopen) cleaned, or the problem.
+({String? text, RequestError? error}) validateReopenNote(String raw) {
+  final t = raw.trim();
+  if (t.isEmpty) return (text: null, error: RequestError.noteMissing);
+  if (t.length > requestNoteMax) return (text: null, error: RequestError.noteTooLong);
+  return (text: t, error: null);
+}
+
+/// The `request` mutation's payload (contract 1.48.0 `RequestCreate`, idempotent by clientId; the details go as `body`).
 /// `photoMediaIds` is added when the photos are on the server (the mutation waits `held` until then).
 Map<String, dynamic> requestPayload(String clientId, RequestDraft d) => {
       'clientId': clientId,
       'type': d.type.wire,
       'priority': d.priority.wire,
       'title': d.title,
-      'details': d.details,
+      'body': d.details,
       if (d.customerId != null) 'customerId': d.customerId,
     };
 
-/// Statuses that mean the office has finished with it.
+/// Statuses that mean the office has finished with it (1.48.0 `RequestStatus`: open, in_progress, forwarded, resolved,
+/// closed, reopened).
 const closedRequestStatuses = {'resolved', 'closed'};
 
 /// One step on a request's timeline.
 class RequestEvent {
-  const RequestEvent({required this.type, required this.at, this.byId, this.byName, this.toId, this.toName, this.note, this.clientId, this.pending = false, this.failed = false});
+  const RequestEvent({required this.type, required this.at, this.byId, this.byName, this.toId, this.toName, this.toQueue, this.toStatus, this.note, this.clientId, this.pending = false, this.failed = false});
 
-  /// `created`, `forwarded`, `assigned`, `comment`, `resolved`, `reopened` (unknown kept as sent).
+  /// 1.48.0 `RequestTimelineEntry.kind`: `created`, `comment`, `forwarded`, `assigned`, `status_changed`, `resolved`,
+  /// `reopened`, `closed` (unknown kept as sent).
   final String type;
   final DateTime at;
   final String? byId;
   final String? byName;
   final String? toId;
   final String? toName;
+
+  /// Where it went when that is a queue (`area_manager`, `super_admin`), not a person.
+  final String? toQueue;
+
+  /// The status this step set, if it changed one.
+  final String? toStatus;
   final String? note;
 
   /// A comment's clientId (to match my own comment once the server has it).
@@ -119,19 +137,24 @@ class RequestEvent {
 
   static RequestEvent? fromJson(Object? raw) {
     if (raw is! Map) return null;
-    final at = DateTime.tryParse('${raw['at'] ?? raw['createdAt'] ?? ''}');
-    final type = raw['type'];
+    final at = DateTime.tryParse('${raw['at'] ?? ''}');
+    final type = raw['kind'] ?? raw['type'];
     if (at == null || type is! String) return null;
-    final by = raw['by'] ?? raw['actor'];
-    final to = raw['to'] ?? raw['assignee'];
+    final by = raw['actor'] ?? raw['by'];
+    // 1.48.0 `RequestTarget`: { queue, user }; a person when `user` is set.
+    final to = raw['to'];
+    final user = to is Map && to.containsKey('queue') ? to['user'] : to;
+    final queue = to is Map && to['queue'] is String && to['queue'] != 'assignee' ? to['queue'] as String : null;
     return RequestEvent(
       type: type,
       at: at.toUtc(),
       byId: by is Map ? by['id'] as String? : null,
       byName: _name(by),
-      toId: to is Map ? to['id'] as String? : null,
-      toName: _name(to),
-      note: (raw['note'] ?? raw['text'] ?? raw['body']) as String?,
+      toId: user is Map ? user['id'] as String? : null,
+      toName: _name(user),
+      toQueue: queue,
+      toStatus: raw['status'] is Map ? (raw['status'] as Map)['to'] as String? : null,
+      note: (raw['note'] ?? raw['text']) as String?,
       clientId: raw['clientId'] as String?,
     );
   }
@@ -162,8 +185,15 @@ class StaffRequest {
   bool get waiting => row.syncState == 'queued';
   bool get refused => row.syncState == 'failed';
 
-  /// Comments are possible once it can reach the server (offline too) and while the office has not closed it.
-  bool get canComment => !refused && !isClosed;
+  /// Comments are possible once it can reach the server (offline too) and until it is closed (1.48.0: a closed
+  /// request refuses comments with REQUEST_CLOSED; a resolved one takes them).
+  bool get canComment => !refused && row.status != 'closed';
+
+  /// I made it, the server has it and it is resolved or closed: I may reopen it with a note (online, 1.48.0).
+  bool get canReopen => mine && row.serverId != null && row.syncState == 'synced' && isClosed;
+
+  /// The note of the last `resolved` step (1.48.0 `resolutionNote` is the same text).
+  String? get resolutionNote => serverEvents.where((e) => e.type == 'resolved').lastOrNull?.note;
 
   int get photoCount => (jsonDecode(row.photoIdsJson) as List).length + localPhotos;
 

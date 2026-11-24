@@ -804,7 +804,7 @@ class Prospects extends Table {
   Set<Column> get primaryKey => {clientId};
 }
 
-// ── staff requests (schema 18, FR-M-075, contract 1.48.0 planned) ───────────
+// ── staff requests (schema 18, FR-M-075, contract 1.48.0) ───────────────────
 /// Something a staff member reports, tells or asks the office (a request, report, information or complaint):
 /// `normal` goes to the area manager, `important` to the super admin. Mine are made on the phone first (`request`
 /// mutation, [clientId] = my UUIDv7); those the office forwarded or assigned to me arrive on the pull (entity
@@ -819,6 +819,7 @@ class StaffRequests extends Table {
   /// `normal` (area manager) or `important` (super admin).
   TextColumn get priority => text().withDefault(const Constant('normal'))();
   TextColumn get title => text()();
+  /// The request's `body` (1.48.0).
   TextColumn get details => text().withDefault(const Constant(''))();
   TextColumn get customerId => text().nullable()();
   TextColumn get customerName => text().nullable()();
@@ -829,9 +830,13 @@ class StaffRequests extends Table {
   /// Who holds it now (the server's assignee); null = the office of its priority.
   TextColumn get assigneeId => text().nullable()();
   TextColumn get assigneeName => text().nullable()();
+  /// Where it waits now (1.48.0 `currentQueue`: `area_manager`, `super_admin`, `assignee`) and the queue responsible
+  /// for it (`level`).
+  TextColumn get currentQueue => text().nullable()();
+  TextColumn get level => text().nullable()();
   /// Server media ids of its photos (photos still on this phone are in `media_queue`, owner `request`).
   TextColumn get photoIdsJson => text().withDefault(const Constant('[]'))();
-  /// The server's timeline as sent (created, forwarded, assigned, comment, resolved, reopened…).
+  /// The server's `timeline` as sent (created, comment, forwarded, assigned, status_changed, resolved, reopened, closed).
   TextColumn get eventsJson => text().withDefault(const Constant('[]'))();
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime().nullable()();
