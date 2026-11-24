@@ -117,7 +117,43 @@ class AppLocalizationsEn extends AppLocalizations {
       'No internet. The first sign-in needs internet.';
 
   @override
-  String get loginErrorLocked => 'Account locked. Contact your branch manager.';
+  String loginErrorLocked(String time) {
+    return 'Too many wrong passwords. Try again after $time.';
+  }
+
+  @override
+  String get loginErrorLockedNoTime =>
+      'Too many wrong passwords. Try again a little later.';
+
+  @override
+  String loginErrorLockedIp(String time) {
+    return 'Too many wrong attempts from this network. Try again after $time.';
+  }
+
+  @override
+  String get loginErrorLockedIpNoTime =>
+      'Too many wrong attempts from this network. Try again a little later.';
+
+  @override
+  String loginDeviceRequestId(String id) {
+    return 'Request number: $id';
+  }
+
+  @override
+  String get loginDeviceNotApproved =>
+      'This phone is new. An approval request has been sent to the office. Sign in again once your manager approves it.';
+
+  @override
+  String get loginRetry => 'Try again';
+
+  @override
+  String get loginErrorOtherUserUnsynced =>
+      'This phone still has data from the previous user that hasn\'t been sent to the office. Ask that user to sign in on this phone and send everything, then sign in again.';
+
+  @override
+  String loginErrorForbidden(String code) {
+    return 'Can\'t sign in (code: $code). Tell your branch manager this code.';
+  }
 
   @override
   String get loginDemoHint => 'Demo: 01712345678 / demo1234';

@@ -33,6 +33,8 @@ class FakeFieldApi implements HttpClientAdapter {
 
   /// Test hooks.
   bool offline = false;
+  /// A refusal `POST /auth/login` answers with a right password (status + problem body), e.g. 403 DEVICE_NOT_APPROVED.
+  ({int status, Json body})? loginRefusal;
   bool expireCursor = false;
 
   /// `POST /customers/{id}/refresh` calls (FR-M-063 tests).
@@ -765,6 +767,7 @@ class FakeFieldApi implements HttpClientAdapter {
         if (b['password'] != _password || (b['phone'] as String?)?.replaceAll(RegExp(r'\D'), '') != '01712345678') {
           return _json(401, _problem(401, 'INVALID_CREDENTIALS', 'Phone or password is wrong'));
         }
+        if (loginRefusal case final r?) return _json(r.status, r.body);
         return _json(200, _loginBody());
       case ('POST', '/auth/refresh'):
         return _json(200, _loginBody());

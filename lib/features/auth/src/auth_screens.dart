@@ -5,6 +5,8 @@ import '../../../core/api/field_api.dart';
 import '../../../core/auth/pin.dart';
 import '../../../core/format/digits.dart';
 import '../../../core/providers.dart';
+import '../../../core/settings/ui_prefs.dart';
+import '../../../core/time/clock.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/ui/amount_keypad.dart';
 import '../../../core/ui/brand.dart';
@@ -23,7 +25,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _password = TextEditingController();
   bool _obscure = true;
   bool _busy = false;
-  String? _error;
+  LoginFailure? _failure;
 
   @override
   void dispose() {
@@ -33,20 +35,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   Future<void> _submit() async {
-    final l = AppLocalizations.of(context);
     setState(() {
       _busy = true;
-      _error = null;
+      _failure = null;
     });
     try {
       await ref.read(sessionProvider.notifier).login(toLatinDigits(_phone.text), _password.text);
     } on LoginFailure catch (f) {
-      setState(() => _error = switch (f.error) {
-            LoginError.invalid => l.loginErrorInvalid,
-            LoginError.network => l.loginErrorNetwork,
-            LoginError.locked => l.loginErrorLocked,
-            LoginError.other => l.errorGeneric,
-          });
+      if (mounted) setState(() => _failure = f);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -105,9 +101,27 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ),
                       ),
                     ),
-                    if (_error != null) ...[
+                    if (_failure case final f?) ...[
                       const SizedBox(height: Space.s16),
-                      InfoBanner(icon: Icons.error_outline_rounded, text: _error!, tone: BannerTone.danger),
+                      InfoBanner(
+                        key: const ValueKey('login-failure'),
+                        icon: f.error == LoginError.deviceNotApproved ? Icons.hourglass_top_rounded : Icons.error_outline_rounded,
+                        text: loginFailureText(f, l, ref.read(fmtProvider), ref.read(clockProvider)),
+                        // A new phone waiting for the office is a normal step, not an error.
+                        tone: f.error == LoginError.deviceNotApproved ? BannerTone.info : BannerTone.danger,
+                      ),
+                      if (f.error == LoginError.deviceNotApproved) ...[
+                        if (f.requestId case final id?) ...[
+                          const SizedBox(height: Space.s8),
+                          SelectableText(l.loginDeviceRequestId(id), style: t.bodyMedium!.copyWith(color: cs.onSurfaceVariant)),
+                        ],
+                        const SizedBox(height: Space.s8),
+                        OutlinedButton.icon(
+                          onPressed: _busy ? null : _submit,
+                          icon: const Icon(Icons.refresh_rounded),
+                          label: Text(l.loginRetry),
+                        ),
+                      ],
                     ],
                     const SizedBox(height: Space.s24),
                     FilledButton(
@@ -130,6 +144,24 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
   }
 }
+
+/// The words for a failed login (owner report 2026-11-24). The unlock time is
+/// Dhaka time: only the time on the same Dhaka day, otherwise date and time.
+String loginFailureText(LoginFailure f, AppLocalizations l, Fmt fmt, Clock clock) => switch (f.error) {
+      LoginError.invalid => l.loginErrorInvalid,
+      LoginError.network => l.loginErrorNetwork,
+      LoginError.locked => switch ((f.until, f.networkLock)) {
+          (null, false) => l.loginErrorLockedNoTime,
+          (null, true) => l.loginErrorLockedIpNoTime,
+          (final u?, final ip) => (ip ? l.loginErrorLockedIp : l.loginErrorLocked)(
+              businessDateOf(u) == businessDateOf(clock.nowUtc()) ? fmt.time(u) : fmt.dateTime(u),
+            ),
+        },
+      LoginError.deviceNotApproved => l.loginDeviceNotApproved,
+      LoginError.otherUserUnsynced => l.loginErrorOtherUserUnsynced,
+      LoginError.forbidden => l.loginErrorForbidden(f.code ?? 'HTTP_403'),
+      LoginError.other => l.errorGeneric,
+    };
 
 class ChangePasswordScreen extends ConsumerStatefulWidget {
   const ChangePasswordScreen({super.key});

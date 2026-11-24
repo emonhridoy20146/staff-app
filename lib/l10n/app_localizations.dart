@@ -311,8 +311,56 @@ abstract class AppLocalizations {
   /// No description provided for @loginErrorLocked.
   ///
   /// In en, this message translates to:
-  /// **'Account locked. Contact your branch manager.'**
-  String get loginErrorLocked;
+  /// **'Too many wrong passwords. Try again after {time}.'**
+  String loginErrorLocked(String time);
+
+  /// No description provided for @loginErrorLockedNoTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Too many wrong passwords. Try again a little later.'**
+  String get loginErrorLockedNoTime;
+
+  /// No description provided for @loginErrorLockedIp.
+  ///
+  /// In en, this message translates to:
+  /// **'Too many wrong attempts from this network. Try again after {time}.'**
+  String loginErrorLockedIp(String time);
+
+  /// No description provided for @loginErrorLockedIpNoTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Too many wrong attempts from this network. Try again a little later.'**
+  String get loginErrorLockedIpNoTime;
+
+  /// No description provided for @loginDeviceRequestId.
+  ///
+  /// In en, this message translates to:
+  /// **'Request number: {id}'**
+  String loginDeviceRequestId(String id);
+
+  /// No description provided for @loginDeviceNotApproved.
+  ///
+  /// In en, this message translates to:
+  /// **'This phone is new. An approval request has been sent to the office. Sign in again once your manager approves it.'**
+  String get loginDeviceNotApproved;
+
+  /// No description provided for @loginRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get loginRetry;
+
+  /// No description provided for @loginErrorOtherUserUnsynced.
+  ///
+  /// In en, this message translates to:
+  /// **'This phone still has data from the previous user that hasn\'t been sent to the office. Ask that user to sign in on this phone and send everything, then sign in again.'**
+  String get loginErrorOtherUserUnsynced;
+
+  /// No description provided for @loginErrorForbidden.
+  ///
+  /// In en, this message translates to:
+  /// **'Can\'t sign in (code: {code}). Tell your branch manager this code.'**
+  String loginErrorForbidden(String code);
 
   /// No description provided for @loginDemoHint.
   ///
