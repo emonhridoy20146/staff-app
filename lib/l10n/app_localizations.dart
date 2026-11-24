@@ -6907,6 +6907,576 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your account may not add possible customers'**
   String get prospectRefusedNotAllowed;
+
+  /// No description provided for @requestsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'My requests'**
+  String get requestsTitle;
+
+  /// No description provided for @requestsMeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Report, inform or ask the office'**
+  String get requestsMeSubtitle;
+
+  /// No description provided for @requestNew.
+  ///
+  /// In en, this message translates to:
+  /// **'New request'**
+  String get requestNew;
+
+  /// No description provided for @requestNewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New request or report'**
+  String get requestNewTitle;
+
+  /// No description provided for @requestDetailTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Request'**
+  String get requestDetailTitle;
+
+  /// No description provided for @requestTypeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'What kind'**
+  String get requestTypeLabel;
+
+  /// No description provided for @requestTypeRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'Request'**
+  String get requestTypeRequest;
+
+  /// No description provided for @requestTypeReport.
+  ///
+  /// In en, this message translates to:
+  /// **'Report'**
+  String get requestTypeReport;
+
+  /// No description provided for @requestTypeInform.
+  ///
+  /// In en, this message translates to:
+  /// **'Information'**
+  String get requestTypeInform;
+
+  /// No description provided for @requestTypeComplaint.
+  ///
+  /// In en, this message translates to:
+  /// **'Complaint'**
+  String get requestTypeComplaint;
+
+  /// No description provided for @requestSendTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Send to'**
+  String get requestSendTo;
+
+  /// No description provided for @requestToAreaManager.
+  ///
+  /// In en, this message translates to:
+  /// **'To the area manager'**
+  String get requestToAreaManager;
+
+  /// No description provided for @requestToAreaManagerHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Regular matters'**
+  String get requestToAreaManagerHint;
+
+  /// No description provided for @requestToSuperAdmin.
+  ///
+  /// In en, this message translates to:
+  /// **'To the super admin — very important'**
+  String get requestToSuperAdmin;
+
+  /// No description provided for @requestToSuperAdminHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Only for very important matters'**
+  String get requestToSuperAdminHint;
+
+  /// No description provided for @requestPriorityNormalShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Area manager'**
+  String get requestPriorityNormalShort;
+
+  /// No description provided for @requestPriorityImportantShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Super admin · very important'**
+  String get requestPriorityImportantShort;
+
+  /// No description provided for @requestTitleField.
+  ///
+  /// In en, this message translates to:
+  /// **'Subject'**
+  String get requestTitleField;
+
+  /// No description provided for @requestDetailsField.
+  ///
+  /// In en, this message translates to:
+  /// **'Details'**
+  String get requestDetailsField;
+
+  /// No description provided for @requestCustomer.
+  ///
+  /// In en, this message translates to:
+  /// **'Customer'**
+  String get requestCustomer;
+
+  /// No description provided for @requestCustomerRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove the customer'**
+  String get requestCustomerRemove;
+
+  /// No description provided for @requestCustomerAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell the office'**
+  String get requestCustomerAction;
+
+  /// No description provided for @requestPhotos.
+  ///
+  /// In en, this message translates to:
+  /// **'Photos (optional, at most {max})'**
+  String requestPhotos(String max);
+
+  /// No description provided for @requestPhotosShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Photos'**
+  String get requestPhotosShort;
+
+  /// No description provided for @requestAddPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Take a photo'**
+  String get requestAddPhoto;
+
+  /// No description provided for @requestRemovePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove photo'**
+  String get requestRemovePhoto;
+
+  /// No description provided for @requestSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get requestSend;
+
+  /// No description provided for @requestSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved. It goes to the office when online.'**
+  String get requestSaved;
+
+  /// No description provided for @requestOfflineHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Works without internet: it is kept on the phone and goes by itself when online.'**
+  String get requestOfflineHint;
+
+  /// No description provided for @requestErrTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Write a subject'**
+  String get requestErrTitle;
+
+  /// No description provided for @requestErrTitleLong.
+  ///
+  /// In en, this message translates to:
+  /// **'The subject is too long (at most 160 letters)'**
+  String get requestErrTitleLong;
+
+  /// No description provided for @requestErrDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Write the details'**
+  String get requestErrDetails;
+
+  /// No description provided for @requestErrDetailsLong.
+  ///
+  /// In en, this message translates to:
+  /// **'The details are too long (at most 4000 letters)'**
+  String get requestErrDetailsLong;
+
+  /// No description provided for @requestErrPhotos.
+  ///
+  /// In en, this message translates to:
+  /// **'At most 5 photos'**
+  String get requestErrPhotos;
+
+  /// No description provided for @requestErrComment.
+  ///
+  /// In en, this message translates to:
+  /// **'Write a comment'**
+  String get requestErrComment;
+
+  /// No description provided for @requestErrCommentLong.
+  ///
+  /// In en, this message translates to:
+  /// **'The comment is too long (at most 2000 letters)'**
+  String get requestErrCommentLong;
+
+  /// No description provided for @requestErrNotOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'This request takes no more comments'**
+  String get requestErrNotOpen;
+
+  /// No description provided for @requestRefused.
+  ///
+  /// In en, this message translates to:
+  /// **'The server did not accept it: {code}'**
+  String requestRefused(String code);
+
+  /// No description provided for @requestRefusedInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'The server did not accept the subject or details'**
+  String get requestRefusedInvalid;
+
+  /// No description provided for @requestRefusedNotAllowed.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account may not send requests'**
+  String get requestRefusedNotAllowed;
+
+  /// No description provided for @requestFilterOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get requestFilterOpen;
+
+  /// No description provided for @requestFilterResolved.
+  ///
+  /// In en, this message translates to:
+  /// **'Resolved'**
+  String get requestFilterResolved;
+
+  /// No description provided for @requestsAssignedToMe.
+  ///
+  /// In en, this message translates to:
+  /// **'Assigned to me'**
+  String get requestsAssignedToMe;
+
+  /// No description provided for @requestsMine.
+  ///
+  /// In en, this message translates to:
+  /// **'Sent by me'**
+  String get requestsMine;
+
+  /// No description provided for @requestsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No requests'**
+  String get requestsEmpty;
+
+  /// No description provided for @requestsEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap \"New request\" to tell or ask the office something'**
+  String get requestsEmptyBody;
+
+  /// No description provided for @requestStatusOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get requestStatusOpen;
+
+  /// No description provided for @requestStatusForwarded.
+  ///
+  /// In en, this message translates to:
+  /// **'Forwarded'**
+  String get requestStatusForwarded;
+
+  /// No description provided for @requestStatusAssigned.
+  ///
+  /// In en, this message translates to:
+  /// **'Assigned'**
+  String get requestStatusAssigned;
+
+  /// No description provided for @requestStatusInProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'In progress'**
+  String get requestStatusInProgress;
+
+  /// No description provided for @requestStatusResolved.
+  ///
+  /// In en, this message translates to:
+  /// **'Resolved'**
+  String get requestStatusResolved;
+
+  /// No description provided for @requestStatusClosed.
+  ///
+  /// In en, this message translates to:
+  /// **'Closed'**
+  String get requestStatusClosed;
+
+  /// No description provided for @requestStatusReopened.
+  ///
+  /// In en, this message translates to:
+  /// **'Reopened'**
+  String get requestStatusReopened;
+
+  /// No description provided for @requestStatusQueued.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting to send'**
+  String get requestStatusQueued;
+
+  /// No description provided for @requestStatusRefused.
+  ///
+  /// In en, this message translates to:
+  /// **'Not accepted'**
+  String get requestStatusRefused;
+
+  /// No description provided for @requestFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'From {name}'**
+  String requestFrom(String name);
+
+  /// No description provided for @requestNewsMark.
+  ///
+  /// In en, this message translates to:
+  /// **'New update'**
+  String get requestNewsMark;
+
+  /// No description provided for @requestHolder.
+  ///
+  /// In en, this message translates to:
+  /// **'Now with'**
+  String get requestHolder;
+
+  /// No description provided for @requestSentBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Sent by'**
+  String get requestSentBy;
+
+  /// No description provided for @requestCreatedAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Sent at'**
+  String get requestCreatedAt;
+
+  /// No description provided for @requestPhotosWaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for the photos to upload; then it is sent'**
+  String get requestPhotosWaiting;
+
+  /// No description provided for @requestTimeline.
+  ///
+  /// In en, this message translates to:
+  /// **'History'**
+  String get requestTimeline;
+
+  /// No description provided for @requestByMe.
+  ///
+  /// In en, this message translates to:
+  /// **'Me'**
+  String get requestByMe;
+
+  /// No description provided for @requestEventCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Sent'**
+  String get requestEventCreated;
+
+  /// No description provided for @requestEventForwarded.
+  ///
+  /// In en, this message translates to:
+  /// **'Forwarded to {name}'**
+  String requestEventForwarded(String name);
+
+  /// No description provided for @requestEventForwardedNoName.
+  ///
+  /// In en, this message translates to:
+  /// **'Forwarded'**
+  String get requestEventForwardedNoName;
+
+  /// No description provided for @requestEventAssigned.
+  ///
+  /// In en, this message translates to:
+  /// **'Assigned to {name}'**
+  String requestEventAssigned(String name);
+
+  /// No description provided for @requestEventAssignedNoName.
+  ///
+  /// In en, this message translates to:
+  /// **'Assigned'**
+  String get requestEventAssignedNoName;
+
+  /// No description provided for @requestEventComment.
+  ///
+  /// In en, this message translates to:
+  /// **'Comment'**
+  String get requestEventComment;
+
+  /// No description provided for @requestEventResolved.
+  ///
+  /// In en, this message translates to:
+  /// **'Resolved'**
+  String get requestEventResolved;
+
+  /// No description provided for @requestEventReopened.
+  ///
+  /// In en, this message translates to:
+  /// **'Reopened'**
+  String get requestEventReopened;
+
+  /// No description provided for @requestCommentHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Write a comment'**
+  String get requestCommentHint;
+
+  /// No description provided for @requestCommentSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Send comment'**
+  String get requestCommentSend;
+
+  /// No description provided for @requestCommentSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Comment saved. It goes when online.'**
+  String get requestCommentSaved;
+
+  /// No description provided for @requestCommentPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting to send'**
+  String get requestCommentPending;
+
+  /// No description provided for @requestCommentFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The server did not accept this comment'**
+  String get requestCommentFailed;
+
+  /// No description provided for @requestClosedNoComment.
+  ///
+  /// In en, this message translates to:
+  /// **'This is closed. Reopen it to comment.'**
+  String get requestClosedNoComment;
+
+  /// No description provided for @alertRequestChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'Update on your request: {title}'**
+  String alertRequestChanged(String title);
+
+  /// No description provided for @alertRequestAssigned.
+  ///
+  /// In en, this message translates to:
+  /// **'Assigned to you: {title}'**
+  String alertRequestAssigned(String title);
+
+  /// No description provided for @alertRequestResolved.
+  ///
+  /// In en, this message translates to:
+  /// **'Resolved: {title}'**
+  String alertRequestResolved(String title);
+
+  /// No description provided for @alertRequestComment.
+  ///
+  /// In en, this message translates to:
+  /// **'New comment: {title}'**
+  String alertRequestComment(String title);
+
+  /// No description provided for @requestQueueAreaManager.
+  ///
+  /// In en, this message translates to:
+  /// **'Area manager'**
+  String get requestQueueAreaManager;
+
+  /// No description provided for @requestQueueSuperAdmin.
+  ///
+  /// In en, this message translates to:
+  /// **'Super admin'**
+  String get requestQueueSuperAdmin;
+
+  /// No description provided for @requestEventStatusChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'Status changed: {status}'**
+  String requestEventStatusChanged(String status);
+
+  /// No description provided for @requestEventClosed.
+  ///
+  /// In en, this message translates to:
+  /// **'Closed'**
+  String get requestEventClosed;
+
+  /// No description provided for @requestResolution.
+  ///
+  /// In en, this message translates to:
+  /// **'Resolution'**
+  String get requestResolution;
+
+  /// No description provided for @requestReopen.
+  ///
+  /// In en, this message translates to:
+  /// **'Reopen'**
+  String get requestReopen;
+
+  /// No description provided for @requestReopenTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reopen this request?'**
+  String get requestReopenTitle;
+
+  /// No description provided for @requestReopenBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Say why you reopen it. This needs the internet.'**
+  String get requestReopenBody;
+
+  /// No description provided for @requestReopenNoteHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Reason'**
+  String get requestReopenNoteHint;
+
+  /// No description provided for @requestReopenDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Reopened'**
+  String get requestReopenDone;
+
+  /// No description provided for @requestReopenOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'No internet. Try again when online.'**
+  String get requestReopenOffline;
+
+  /// No description provided for @requestReopenFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not reopen: {code}'**
+  String requestReopenFailed(String code);
+
+  /// No description provided for @requestErrNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Write the reason'**
+  String get requestErrNote;
+
+  /// No description provided for @requestErrNoteLong.
+  ///
+  /// In en, this message translates to:
+  /// **'The reason is too long (at most 1000 letters)'**
+  String get requestErrNoteLong;
 }
 
 class _AppLocalizationsDelegate

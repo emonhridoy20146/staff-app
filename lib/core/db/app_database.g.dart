@@ -24548,6 +24548,1672 @@ class ProspectsCompanion extends UpdateCompanion<ProspectRow> {
   }
 }
 
+class $StaffRequestsTable extends StaffRequests
+    with TableInfo<$StaffRequestsTable, StaffRequestRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $StaffRequestsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _clientIdMeta = const VerificationMeta(
+    'clientId',
+  );
+  @override
+  late final GeneratedColumn<String> clientId = GeneratedColumn<String>(
+    'client_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _serverIdMeta = const VerificationMeta(
+    'serverId',
+  );
+  @override
+  late final GeneratedColumn<String> serverId = GeneratedColumn<String>(
+    'server_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _typeMeta = const VerificationMeta('type');
+  @override
+  late final GeneratedColumn<String> type = GeneratedColumn<String>(
+    'type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _priorityMeta = const VerificationMeta(
+    'priority',
+  );
+  @override
+  late final GeneratedColumn<String> priority = GeneratedColumn<String>(
+    'priority',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('normal'),
+  );
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
+  @override
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+    'title',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _detailsMeta = const VerificationMeta(
+    'details',
+  );
+  @override
+  late final GeneratedColumn<String> details = GeneratedColumn<String>(
+    'details',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _customerIdMeta = const VerificationMeta(
+    'customerId',
+  );
+  @override
+  late final GeneratedColumn<String> customerId = GeneratedColumn<String>(
+    'customer_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _customerNameMeta = const VerificationMeta(
+    'customerName',
+  );
+  @override
+  late final GeneratedColumn<String> customerName = GeneratedColumn<String>(
+    'customer_name',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('open'),
+  );
+  static const VerificationMeta _createdByIdMeta = const VerificationMeta(
+    'createdById',
+  );
+  @override
+  late final GeneratedColumn<String> createdById = GeneratedColumn<String>(
+    'created_by_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdByNameMeta = const VerificationMeta(
+    'createdByName',
+  );
+  @override
+  late final GeneratedColumn<String> createdByName = GeneratedColumn<String>(
+    'created_by_name',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _assigneeIdMeta = const VerificationMeta(
+    'assigneeId',
+  );
+  @override
+  late final GeneratedColumn<String> assigneeId = GeneratedColumn<String>(
+    'assignee_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _assigneeNameMeta = const VerificationMeta(
+    'assigneeName',
+  );
+  @override
+  late final GeneratedColumn<String> assigneeName = GeneratedColumn<String>(
+    'assignee_name',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _currentQueueMeta = const VerificationMeta(
+    'currentQueue',
+  );
+  @override
+  late final GeneratedColumn<String> currentQueue = GeneratedColumn<String>(
+    'current_queue',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _levelMeta = const VerificationMeta('level');
+  @override
+  late final GeneratedColumn<String> level = GeneratedColumn<String>(
+    'level',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _photoIdsJsonMeta = const VerificationMeta(
+    'photoIdsJson',
+  );
+  @override
+  late final GeneratedColumn<String> photoIdsJson = GeneratedColumn<String>(
+    'photo_ids_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('[]'),
+  );
+  static const VerificationMeta _eventsJsonMeta = const VerificationMeta(
+    'eventsJson',
+  );
+  @override
+  late final GeneratedColumn<String> eventsJson = GeneratedColumn<String>(
+    'events_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('[]'),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _seenAtMeta = const VerificationMeta('seenAt');
+  @override
+  late final GeneratedColumn<DateTime> seenAt = GeneratedColumn<DateTime>(
+    'seen_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _syncStateMeta = const VerificationMeta(
+    'syncState',
+  );
+  @override
+  late final GeneratedColumn<String> syncState = GeneratedColumn<String>(
+    'sync_state',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('queued'),
+  );
+  static const VerificationMeta _errorCodeMeta = const VerificationMeta(
+    'errorCode',
+  );
+  @override
+  late final GeneratedColumn<String> errorCode = GeneratedColumn<String>(
+    'error_code',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    clientId,
+    serverId,
+    type,
+    priority,
+    title,
+    details,
+    customerId,
+    customerName,
+    status,
+    createdById,
+    createdByName,
+    assigneeId,
+    assigneeName,
+    currentQueue,
+    level,
+    photoIdsJson,
+    eventsJson,
+    createdAt,
+    updatedAt,
+    seenAt,
+    syncState,
+    errorCode,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'staff_requests';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<StaffRequestRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('client_id')) {
+      context.handle(
+        _clientIdMeta,
+        clientId.isAcceptableOrUnknown(data['client_id']!, _clientIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_clientIdMeta);
+    }
+    if (data.containsKey('server_id')) {
+      context.handle(
+        _serverIdMeta,
+        serverId.isAcceptableOrUnknown(data['server_id']!, _serverIdMeta),
+      );
+    }
+    if (data.containsKey('type')) {
+      context.handle(
+        _typeMeta,
+        type.isAcceptableOrUnknown(data['type']!, _typeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_typeMeta);
+    }
+    if (data.containsKey('priority')) {
+      context.handle(
+        _priorityMeta,
+        priority.isAcceptableOrUnknown(data['priority']!, _priorityMeta),
+      );
+    }
+    if (data.containsKey('title')) {
+      context.handle(
+        _titleMeta,
+        title.isAcceptableOrUnknown(data['title']!, _titleMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_titleMeta);
+    }
+    if (data.containsKey('details')) {
+      context.handle(
+        _detailsMeta,
+        details.isAcceptableOrUnknown(data['details']!, _detailsMeta),
+      );
+    }
+    if (data.containsKey('customer_id')) {
+      context.handle(
+        _customerIdMeta,
+        customerId.isAcceptableOrUnknown(data['customer_id']!, _customerIdMeta),
+      );
+    }
+    if (data.containsKey('customer_name')) {
+      context.handle(
+        _customerNameMeta,
+        customerName.isAcceptableOrUnknown(
+          data['customer_name']!,
+          _customerNameMeta,
+        ),
+      );
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    }
+    if (data.containsKey('created_by_id')) {
+      context.handle(
+        _createdByIdMeta,
+        createdById.isAcceptableOrUnknown(
+          data['created_by_id']!,
+          _createdByIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('created_by_name')) {
+      context.handle(
+        _createdByNameMeta,
+        createdByName.isAcceptableOrUnknown(
+          data['created_by_name']!,
+          _createdByNameMeta,
+        ),
+      );
+    }
+    if (data.containsKey('assignee_id')) {
+      context.handle(
+        _assigneeIdMeta,
+        assigneeId.isAcceptableOrUnknown(data['assignee_id']!, _assigneeIdMeta),
+      );
+    }
+    if (data.containsKey('assignee_name')) {
+      context.handle(
+        _assigneeNameMeta,
+        assigneeName.isAcceptableOrUnknown(
+          data['assignee_name']!,
+          _assigneeNameMeta,
+        ),
+      );
+    }
+    if (data.containsKey('current_queue')) {
+      context.handle(
+        _currentQueueMeta,
+        currentQueue.isAcceptableOrUnknown(
+          data['current_queue']!,
+          _currentQueueMeta,
+        ),
+      );
+    }
+    if (data.containsKey('level')) {
+      context.handle(
+        _levelMeta,
+        level.isAcceptableOrUnknown(data['level']!, _levelMeta),
+      );
+    }
+    if (data.containsKey('photo_ids_json')) {
+      context.handle(
+        _photoIdsJsonMeta,
+        photoIdsJson.isAcceptableOrUnknown(
+          data['photo_ids_json']!,
+          _photoIdsJsonMeta,
+        ),
+      );
+    }
+    if (data.containsKey('events_json')) {
+      context.handle(
+        _eventsJsonMeta,
+        eventsJson.isAcceptableOrUnknown(data['events_json']!, _eventsJsonMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    if (data.containsKey('seen_at')) {
+      context.handle(
+        _seenAtMeta,
+        seenAt.isAcceptableOrUnknown(data['seen_at']!, _seenAtMeta),
+      );
+    }
+    if (data.containsKey('sync_state')) {
+      context.handle(
+        _syncStateMeta,
+        syncState.isAcceptableOrUnknown(data['sync_state']!, _syncStateMeta),
+      );
+    }
+    if (data.containsKey('error_code')) {
+      context.handle(
+        _errorCodeMeta,
+        errorCode.isAcceptableOrUnknown(data['error_code']!, _errorCodeMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {clientId};
+  @override
+  StaffRequestRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return StaffRequestRow(
+      clientId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}client_id'],
+      )!,
+      serverId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}server_id'],
+      ),
+      type: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}type'],
+      )!,
+      priority: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}priority'],
+      )!,
+      title: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}title'],
+      )!,
+      details: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}details'],
+      )!,
+      customerId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}customer_id'],
+      ),
+      customerName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}customer_name'],
+      ),
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status'],
+      )!,
+      createdById: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}created_by_id'],
+      ),
+      createdByName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}created_by_name'],
+      ),
+      assigneeId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}assignee_id'],
+      ),
+      assigneeName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}assignee_name'],
+      ),
+      currentQueue: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}current_queue'],
+      ),
+      level: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}level'],
+      ),
+      photoIdsJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}photo_ids_json'],
+      )!,
+      eventsJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}events_json'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      ),
+      seenAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}seen_at'],
+      ),
+      syncState: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sync_state'],
+      )!,
+      errorCode: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}error_code'],
+      ),
+    );
+  }
+
+  @override
+  $StaffRequestsTable createAlias(String alias) {
+    return $StaffRequestsTable(attachedDatabase, alias);
+  }
+}
+
+class StaffRequestRow extends DataClass implements Insertable<StaffRequestRow> {
+  final String clientId;
+  final String? serverId;
+
+  /// `request`, `report`, `inform`, `complaint` (unknown kept as sent).
+  final String type;
+
+  /// `normal` (area manager) or `important` (super admin).
+  final String priority;
+  final String title;
+
+  /// The request's `body` (1.48.0).
+  final String details;
+  final String? customerId;
+  final String? customerName;
+
+  /// The server's status (`open` until the server says otherwise; unknown kept as sent).
+  final String status;
+  final String? createdById;
+  final String? createdByName;
+
+  /// Who holds it now (the server's assignee); null = the office of its priority.
+  final String? assigneeId;
+  final String? assigneeName;
+
+  /// Where it waits now (1.48.0 `currentQueue`: `area_manager`, `super_admin`, `assignee`) and the queue responsible
+  /// for it (`level`).
+  final String? currentQueue;
+  final String? level;
+
+  /// Server media ids of its photos (photos still on this phone are in `media_queue`, owner `request`).
+  final String photoIdsJson;
+
+  /// The server's `timeline` as sent (created, comment, forwarded, assigned, status_changed, resolved, reopened, closed).
+  final String eventsJson;
+  final DateTime createdAt;
+  final DateTime? updatedAt;
+
+  /// When I last opened it (local only): a newer change by someone else is shown as an alert.
+  final DateTime? seenAt;
+
+  /// `queued` (mine, not on the server yet), `synced`, `failed` (refused; kept and shown).
+  final String syncState;
+  final String? errorCode;
+  const StaffRequestRow({
+    required this.clientId,
+    this.serverId,
+    required this.type,
+    required this.priority,
+    required this.title,
+    required this.details,
+    this.customerId,
+    this.customerName,
+    required this.status,
+    this.createdById,
+    this.createdByName,
+    this.assigneeId,
+    this.assigneeName,
+    this.currentQueue,
+    this.level,
+    required this.photoIdsJson,
+    required this.eventsJson,
+    required this.createdAt,
+    this.updatedAt,
+    this.seenAt,
+    required this.syncState,
+    this.errorCode,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['client_id'] = Variable<String>(clientId);
+    if (!nullToAbsent || serverId != null) {
+      map['server_id'] = Variable<String>(serverId);
+    }
+    map['type'] = Variable<String>(type);
+    map['priority'] = Variable<String>(priority);
+    map['title'] = Variable<String>(title);
+    map['details'] = Variable<String>(details);
+    if (!nullToAbsent || customerId != null) {
+      map['customer_id'] = Variable<String>(customerId);
+    }
+    if (!nullToAbsent || customerName != null) {
+      map['customer_name'] = Variable<String>(customerName);
+    }
+    map['status'] = Variable<String>(status);
+    if (!nullToAbsent || createdById != null) {
+      map['created_by_id'] = Variable<String>(createdById);
+    }
+    if (!nullToAbsent || createdByName != null) {
+      map['created_by_name'] = Variable<String>(createdByName);
+    }
+    if (!nullToAbsent || assigneeId != null) {
+      map['assignee_id'] = Variable<String>(assigneeId);
+    }
+    if (!nullToAbsent || assigneeName != null) {
+      map['assignee_name'] = Variable<String>(assigneeName);
+    }
+    if (!nullToAbsent || currentQueue != null) {
+      map['current_queue'] = Variable<String>(currentQueue);
+    }
+    if (!nullToAbsent || level != null) {
+      map['level'] = Variable<String>(level);
+    }
+    map['photo_ids_json'] = Variable<String>(photoIdsJson);
+    map['events_json'] = Variable<String>(eventsJson);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    if (!nullToAbsent || updatedAt != null) {
+      map['updated_at'] = Variable<DateTime>(updatedAt);
+    }
+    if (!nullToAbsent || seenAt != null) {
+      map['seen_at'] = Variable<DateTime>(seenAt);
+    }
+    map['sync_state'] = Variable<String>(syncState);
+    if (!nullToAbsent || errorCode != null) {
+      map['error_code'] = Variable<String>(errorCode);
+    }
+    return map;
+  }
+
+  StaffRequestsCompanion toCompanion(bool nullToAbsent) {
+    return StaffRequestsCompanion(
+      clientId: Value(clientId),
+      serverId: serverId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(serverId),
+      type: Value(type),
+      priority: Value(priority),
+      title: Value(title),
+      details: Value(details),
+      customerId: customerId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(customerId),
+      customerName: customerName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(customerName),
+      status: Value(status),
+      createdById: createdById == null && nullToAbsent
+          ? const Value.absent()
+          : Value(createdById),
+      createdByName: createdByName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(createdByName),
+      assigneeId: assigneeId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(assigneeId),
+      assigneeName: assigneeName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(assigneeName),
+      currentQueue: currentQueue == null && nullToAbsent
+          ? const Value.absent()
+          : Value(currentQueue),
+      level: level == null && nullToAbsent
+          ? const Value.absent()
+          : Value(level),
+      photoIdsJson: Value(photoIdsJson),
+      eventsJson: Value(eventsJson),
+      createdAt: Value(createdAt),
+      updatedAt: updatedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(updatedAt),
+      seenAt: seenAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(seenAt),
+      syncState: Value(syncState),
+      errorCode: errorCode == null && nullToAbsent
+          ? const Value.absent()
+          : Value(errorCode),
+    );
+  }
+
+  factory StaffRequestRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return StaffRequestRow(
+      clientId: serializer.fromJson<String>(json['clientId']),
+      serverId: serializer.fromJson<String?>(json['serverId']),
+      type: serializer.fromJson<String>(json['type']),
+      priority: serializer.fromJson<String>(json['priority']),
+      title: serializer.fromJson<String>(json['title']),
+      details: serializer.fromJson<String>(json['details']),
+      customerId: serializer.fromJson<String?>(json['customerId']),
+      customerName: serializer.fromJson<String?>(json['customerName']),
+      status: serializer.fromJson<String>(json['status']),
+      createdById: serializer.fromJson<String?>(json['createdById']),
+      createdByName: serializer.fromJson<String?>(json['createdByName']),
+      assigneeId: serializer.fromJson<String?>(json['assigneeId']),
+      assigneeName: serializer.fromJson<String?>(json['assigneeName']),
+      currentQueue: serializer.fromJson<String?>(json['currentQueue']),
+      level: serializer.fromJson<String?>(json['level']),
+      photoIdsJson: serializer.fromJson<String>(json['photoIdsJson']),
+      eventsJson: serializer.fromJson<String>(json['eventsJson']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime?>(json['updatedAt']),
+      seenAt: serializer.fromJson<DateTime?>(json['seenAt']),
+      syncState: serializer.fromJson<String>(json['syncState']),
+      errorCode: serializer.fromJson<String?>(json['errorCode']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'clientId': serializer.toJson<String>(clientId),
+      'serverId': serializer.toJson<String?>(serverId),
+      'type': serializer.toJson<String>(type),
+      'priority': serializer.toJson<String>(priority),
+      'title': serializer.toJson<String>(title),
+      'details': serializer.toJson<String>(details),
+      'customerId': serializer.toJson<String?>(customerId),
+      'customerName': serializer.toJson<String?>(customerName),
+      'status': serializer.toJson<String>(status),
+      'createdById': serializer.toJson<String?>(createdById),
+      'createdByName': serializer.toJson<String?>(createdByName),
+      'assigneeId': serializer.toJson<String?>(assigneeId),
+      'assigneeName': serializer.toJson<String?>(assigneeName),
+      'currentQueue': serializer.toJson<String?>(currentQueue),
+      'level': serializer.toJson<String?>(level),
+      'photoIdsJson': serializer.toJson<String>(photoIdsJson),
+      'eventsJson': serializer.toJson<String>(eventsJson),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime?>(updatedAt),
+      'seenAt': serializer.toJson<DateTime?>(seenAt),
+      'syncState': serializer.toJson<String>(syncState),
+      'errorCode': serializer.toJson<String?>(errorCode),
+    };
+  }
+
+  StaffRequestRow copyWith({
+    String? clientId,
+    Value<String?> serverId = const Value.absent(),
+    String? type,
+    String? priority,
+    String? title,
+    String? details,
+    Value<String?> customerId = const Value.absent(),
+    Value<String?> customerName = const Value.absent(),
+    String? status,
+    Value<String?> createdById = const Value.absent(),
+    Value<String?> createdByName = const Value.absent(),
+    Value<String?> assigneeId = const Value.absent(),
+    Value<String?> assigneeName = const Value.absent(),
+    Value<String?> currentQueue = const Value.absent(),
+    Value<String?> level = const Value.absent(),
+    String? photoIdsJson,
+    String? eventsJson,
+    DateTime? createdAt,
+    Value<DateTime?> updatedAt = const Value.absent(),
+    Value<DateTime?> seenAt = const Value.absent(),
+    String? syncState,
+    Value<String?> errorCode = const Value.absent(),
+  }) => StaffRequestRow(
+    clientId: clientId ?? this.clientId,
+    serverId: serverId.present ? serverId.value : this.serverId,
+    type: type ?? this.type,
+    priority: priority ?? this.priority,
+    title: title ?? this.title,
+    details: details ?? this.details,
+    customerId: customerId.present ? customerId.value : this.customerId,
+    customerName: customerName.present ? customerName.value : this.customerName,
+    status: status ?? this.status,
+    createdById: createdById.present ? createdById.value : this.createdById,
+    createdByName: createdByName.present
+        ? createdByName.value
+        : this.createdByName,
+    assigneeId: assigneeId.present ? assigneeId.value : this.assigneeId,
+    assigneeName: assigneeName.present ? assigneeName.value : this.assigneeName,
+    currentQueue: currentQueue.present ? currentQueue.value : this.currentQueue,
+    level: level.present ? level.value : this.level,
+    photoIdsJson: photoIdsJson ?? this.photoIdsJson,
+    eventsJson: eventsJson ?? this.eventsJson,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
+    seenAt: seenAt.present ? seenAt.value : this.seenAt,
+    syncState: syncState ?? this.syncState,
+    errorCode: errorCode.present ? errorCode.value : this.errorCode,
+  );
+  StaffRequestRow copyWithCompanion(StaffRequestsCompanion data) {
+    return StaffRequestRow(
+      clientId: data.clientId.present ? data.clientId.value : this.clientId,
+      serverId: data.serverId.present ? data.serverId.value : this.serverId,
+      type: data.type.present ? data.type.value : this.type,
+      priority: data.priority.present ? data.priority.value : this.priority,
+      title: data.title.present ? data.title.value : this.title,
+      details: data.details.present ? data.details.value : this.details,
+      customerId: data.customerId.present
+          ? data.customerId.value
+          : this.customerId,
+      customerName: data.customerName.present
+          ? data.customerName.value
+          : this.customerName,
+      status: data.status.present ? data.status.value : this.status,
+      createdById: data.createdById.present
+          ? data.createdById.value
+          : this.createdById,
+      createdByName: data.createdByName.present
+          ? data.createdByName.value
+          : this.createdByName,
+      assigneeId: data.assigneeId.present
+          ? data.assigneeId.value
+          : this.assigneeId,
+      assigneeName: data.assigneeName.present
+          ? data.assigneeName.value
+          : this.assigneeName,
+      currentQueue: data.currentQueue.present
+          ? data.currentQueue.value
+          : this.currentQueue,
+      level: data.level.present ? data.level.value : this.level,
+      photoIdsJson: data.photoIdsJson.present
+          ? data.photoIdsJson.value
+          : this.photoIdsJson,
+      eventsJson: data.eventsJson.present
+          ? data.eventsJson.value
+          : this.eventsJson,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      seenAt: data.seenAt.present ? data.seenAt.value : this.seenAt,
+      syncState: data.syncState.present ? data.syncState.value : this.syncState,
+      errorCode: data.errorCode.present ? data.errorCode.value : this.errorCode,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('StaffRequestRow(')
+          ..write('clientId: $clientId, ')
+          ..write('serverId: $serverId, ')
+          ..write('type: $type, ')
+          ..write('priority: $priority, ')
+          ..write('title: $title, ')
+          ..write('details: $details, ')
+          ..write('customerId: $customerId, ')
+          ..write('customerName: $customerName, ')
+          ..write('status: $status, ')
+          ..write('createdById: $createdById, ')
+          ..write('createdByName: $createdByName, ')
+          ..write('assigneeId: $assigneeId, ')
+          ..write('assigneeName: $assigneeName, ')
+          ..write('currentQueue: $currentQueue, ')
+          ..write('level: $level, ')
+          ..write('photoIdsJson: $photoIdsJson, ')
+          ..write('eventsJson: $eventsJson, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('seenAt: $seenAt, ')
+          ..write('syncState: $syncState, ')
+          ..write('errorCode: $errorCode')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hashAll([
+    clientId,
+    serverId,
+    type,
+    priority,
+    title,
+    details,
+    customerId,
+    customerName,
+    status,
+    createdById,
+    createdByName,
+    assigneeId,
+    assigneeName,
+    currentQueue,
+    level,
+    photoIdsJson,
+    eventsJson,
+    createdAt,
+    updatedAt,
+    seenAt,
+    syncState,
+    errorCode,
+  ]);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is StaffRequestRow &&
+          other.clientId == this.clientId &&
+          other.serverId == this.serverId &&
+          other.type == this.type &&
+          other.priority == this.priority &&
+          other.title == this.title &&
+          other.details == this.details &&
+          other.customerId == this.customerId &&
+          other.customerName == this.customerName &&
+          other.status == this.status &&
+          other.createdById == this.createdById &&
+          other.createdByName == this.createdByName &&
+          other.assigneeId == this.assigneeId &&
+          other.assigneeName == this.assigneeName &&
+          other.currentQueue == this.currentQueue &&
+          other.level == this.level &&
+          other.photoIdsJson == this.photoIdsJson &&
+          other.eventsJson == this.eventsJson &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt &&
+          other.seenAt == this.seenAt &&
+          other.syncState == this.syncState &&
+          other.errorCode == this.errorCode);
+}
+
+class StaffRequestsCompanion extends UpdateCompanion<StaffRequestRow> {
+  final Value<String> clientId;
+  final Value<String?> serverId;
+  final Value<String> type;
+  final Value<String> priority;
+  final Value<String> title;
+  final Value<String> details;
+  final Value<String?> customerId;
+  final Value<String?> customerName;
+  final Value<String> status;
+  final Value<String?> createdById;
+  final Value<String?> createdByName;
+  final Value<String?> assigneeId;
+  final Value<String?> assigneeName;
+  final Value<String?> currentQueue;
+  final Value<String?> level;
+  final Value<String> photoIdsJson;
+  final Value<String> eventsJson;
+  final Value<DateTime> createdAt;
+  final Value<DateTime?> updatedAt;
+  final Value<DateTime?> seenAt;
+  final Value<String> syncState;
+  final Value<String?> errorCode;
+  final Value<int> rowid;
+  const StaffRequestsCompanion({
+    this.clientId = const Value.absent(),
+    this.serverId = const Value.absent(),
+    this.type = const Value.absent(),
+    this.priority = const Value.absent(),
+    this.title = const Value.absent(),
+    this.details = const Value.absent(),
+    this.customerId = const Value.absent(),
+    this.customerName = const Value.absent(),
+    this.status = const Value.absent(),
+    this.createdById = const Value.absent(),
+    this.createdByName = const Value.absent(),
+    this.assigneeId = const Value.absent(),
+    this.assigneeName = const Value.absent(),
+    this.currentQueue = const Value.absent(),
+    this.level = const Value.absent(),
+    this.photoIdsJson = const Value.absent(),
+    this.eventsJson = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.seenAt = const Value.absent(),
+    this.syncState = const Value.absent(),
+    this.errorCode = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  StaffRequestsCompanion.insert({
+    required String clientId,
+    this.serverId = const Value.absent(),
+    required String type,
+    this.priority = const Value.absent(),
+    required String title,
+    this.details = const Value.absent(),
+    this.customerId = const Value.absent(),
+    this.customerName = const Value.absent(),
+    this.status = const Value.absent(),
+    this.createdById = const Value.absent(),
+    this.createdByName = const Value.absent(),
+    this.assigneeId = const Value.absent(),
+    this.assigneeName = const Value.absent(),
+    this.currentQueue = const Value.absent(),
+    this.level = const Value.absent(),
+    this.photoIdsJson = const Value.absent(),
+    this.eventsJson = const Value.absent(),
+    required DateTime createdAt,
+    this.updatedAt = const Value.absent(),
+    this.seenAt = const Value.absent(),
+    this.syncState = const Value.absent(),
+    this.errorCode = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : clientId = Value(clientId),
+       type = Value(type),
+       title = Value(title),
+       createdAt = Value(createdAt);
+  static Insertable<StaffRequestRow> custom({
+    Expression<String>? clientId,
+    Expression<String>? serverId,
+    Expression<String>? type,
+    Expression<String>? priority,
+    Expression<String>? title,
+    Expression<String>? details,
+    Expression<String>? customerId,
+    Expression<String>? customerName,
+    Expression<String>? status,
+    Expression<String>? createdById,
+    Expression<String>? createdByName,
+    Expression<String>? assigneeId,
+    Expression<String>? assigneeName,
+    Expression<String>? currentQueue,
+    Expression<String>? level,
+    Expression<String>? photoIdsJson,
+    Expression<String>? eventsJson,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<DateTime>? seenAt,
+    Expression<String>? syncState,
+    Expression<String>? errorCode,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (clientId != null) 'client_id': clientId,
+      if (serverId != null) 'server_id': serverId,
+      if (type != null) 'type': type,
+      if (priority != null) 'priority': priority,
+      if (title != null) 'title': title,
+      if (details != null) 'details': details,
+      if (customerId != null) 'customer_id': customerId,
+      if (customerName != null) 'customer_name': customerName,
+      if (status != null) 'status': status,
+      if (createdById != null) 'created_by_id': createdById,
+      if (createdByName != null) 'created_by_name': createdByName,
+      if (assigneeId != null) 'assignee_id': assigneeId,
+      if (assigneeName != null) 'assignee_name': assigneeName,
+      if (currentQueue != null) 'current_queue': currentQueue,
+      if (level != null) 'level': level,
+      if (photoIdsJson != null) 'photo_ids_json': photoIdsJson,
+      if (eventsJson != null) 'events_json': eventsJson,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (seenAt != null) 'seen_at': seenAt,
+      if (syncState != null) 'sync_state': syncState,
+      if (errorCode != null) 'error_code': errorCode,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  StaffRequestsCompanion copyWith({
+    Value<String>? clientId,
+    Value<String?>? serverId,
+    Value<String>? type,
+    Value<String>? priority,
+    Value<String>? title,
+    Value<String>? details,
+    Value<String?>? customerId,
+    Value<String?>? customerName,
+    Value<String>? status,
+    Value<String?>? createdById,
+    Value<String?>? createdByName,
+    Value<String?>? assigneeId,
+    Value<String?>? assigneeName,
+    Value<String?>? currentQueue,
+    Value<String?>? level,
+    Value<String>? photoIdsJson,
+    Value<String>? eventsJson,
+    Value<DateTime>? createdAt,
+    Value<DateTime?>? updatedAt,
+    Value<DateTime?>? seenAt,
+    Value<String>? syncState,
+    Value<String?>? errorCode,
+    Value<int>? rowid,
+  }) {
+    return StaffRequestsCompanion(
+      clientId: clientId ?? this.clientId,
+      serverId: serverId ?? this.serverId,
+      type: type ?? this.type,
+      priority: priority ?? this.priority,
+      title: title ?? this.title,
+      details: details ?? this.details,
+      customerId: customerId ?? this.customerId,
+      customerName: customerName ?? this.customerName,
+      status: status ?? this.status,
+      createdById: createdById ?? this.createdById,
+      createdByName: createdByName ?? this.createdByName,
+      assigneeId: assigneeId ?? this.assigneeId,
+      assigneeName: assigneeName ?? this.assigneeName,
+      currentQueue: currentQueue ?? this.currentQueue,
+      level: level ?? this.level,
+      photoIdsJson: photoIdsJson ?? this.photoIdsJson,
+      eventsJson: eventsJson ?? this.eventsJson,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      seenAt: seenAt ?? this.seenAt,
+      syncState: syncState ?? this.syncState,
+      errorCode: errorCode ?? this.errorCode,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (clientId.present) {
+      map['client_id'] = Variable<String>(clientId.value);
+    }
+    if (serverId.present) {
+      map['server_id'] = Variable<String>(serverId.value);
+    }
+    if (type.present) {
+      map['type'] = Variable<String>(type.value);
+    }
+    if (priority.present) {
+      map['priority'] = Variable<String>(priority.value);
+    }
+    if (title.present) {
+      map['title'] = Variable<String>(title.value);
+    }
+    if (details.present) {
+      map['details'] = Variable<String>(details.value);
+    }
+    if (customerId.present) {
+      map['customer_id'] = Variable<String>(customerId.value);
+    }
+    if (customerName.present) {
+      map['customer_name'] = Variable<String>(customerName.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (createdById.present) {
+      map['created_by_id'] = Variable<String>(createdById.value);
+    }
+    if (createdByName.present) {
+      map['created_by_name'] = Variable<String>(createdByName.value);
+    }
+    if (assigneeId.present) {
+      map['assignee_id'] = Variable<String>(assigneeId.value);
+    }
+    if (assigneeName.present) {
+      map['assignee_name'] = Variable<String>(assigneeName.value);
+    }
+    if (currentQueue.present) {
+      map['current_queue'] = Variable<String>(currentQueue.value);
+    }
+    if (level.present) {
+      map['level'] = Variable<String>(level.value);
+    }
+    if (photoIdsJson.present) {
+      map['photo_ids_json'] = Variable<String>(photoIdsJson.value);
+    }
+    if (eventsJson.present) {
+      map['events_json'] = Variable<String>(eventsJson.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (seenAt.present) {
+      map['seen_at'] = Variable<DateTime>(seenAt.value);
+    }
+    if (syncState.present) {
+      map['sync_state'] = Variable<String>(syncState.value);
+    }
+    if (errorCode.present) {
+      map['error_code'] = Variable<String>(errorCode.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('StaffRequestsCompanion(')
+          ..write('clientId: $clientId, ')
+          ..write('serverId: $serverId, ')
+          ..write('type: $type, ')
+          ..write('priority: $priority, ')
+          ..write('title: $title, ')
+          ..write('details: $details, ')
+          ..write('customerId: $customerId, ')
+          ..write('customerName: $customerName, ')
+          ..write('status: $status, ')
+          ..write('createdById: $createdById, ')
+          ..write('createdByName: $createdByName, ')
+          ..write('assigneeId: $assigneeId, ')
+          ..write('assigneeName: $assigneeName, ')
+          ..write('currentQueue: $currentQueue, ')
+          ..write('level: $level, ')
+          ..write('photoIdsJson: $photoIdsJson, ')
+          ..write('eventsJson: $eventsJson, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('seenAt: $seenAt, ')
+          ..write('syncState: $syncState, ')
+          ..write('errorCode: $errorCode, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $RequestCommentsTable extends RequestComments
+    with TableInfo<$RequestCommentsTable, RequestCommentRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $RequestCommentsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _clientIdMeta = const VerificationMeta(
+    'clientId',
+  );
+  @override
+  late final GeneratedColumn<String> clientId = GeneratedColumn<String>(
+    'client_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _requestClientIdMeta = const VerificationMeta(
+    'requestClientId',
+  );
+  @override
+  late final GeneratedColumn<String> requestClientId = GeneratedColumn<String>(
+    'request_client_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _bodyMeta = const VerificationMeta('body');
+  @override
+  late final GeneratedColumn<String> body = GeneratedColumn<String>(
+    'body',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _syncStateMeta = const VerificationMeta(
+    'syncState',
+  );
+  @override
+  late final GeneratedColumn<String> syncState = GeneratedColumn<String>(
+    'sync_state',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('queued'),
+  );
+  static const VerificationMeta _errorCodeMeta = const VerificationMeta(
+    'errorCode',
+  );
+  @override
+  late final GeneratedColumn<String> errorCode = GeneratedColumn<String>(
+    'error_code',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    clientId,
+    requestClientId,
+    body,
+    createdAt,
+    syncState,
+    errorCode,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'request_comments';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<RequestCommentRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('client_id')) {
+      context.handle(
+        _clientIdMeta,
+        clientId.isAcceptableOrUnknown(data['client_id']!, _clientIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_clientIdMeta);
+    }
+    if (data.containsKey('request_client_id')) {
+      context.handle(
+        _requestClientIdMeta,
+        requestClientId.isAcceptableOrUnknown(
+          data['request_client_id']!,
+          _requestClientIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_requestClientIdMeta);
+    }
+    if (data.containsKey('body')) {
+      context.handle(
+        _bodyMeta,
+        body.isAcceptableOrUnknown(data['body']!, _bodyMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_bodyMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('sync_state')) {
+      context.handle(
+        _syncStateMeta,
+        syncState.isAcceptableOrUnknown(data['sync_state']!, _syncStateMeta),
+      );
+    }
+    if (data.containsKey('error_code')) {
+      context.handle(
+        _errorCodeMeta,
+        errorCode.isAcceptableOrUnknown(data['error_code']!, _errorCodeMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {clientId};
+  @override
+  RequestCommentRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return RequestCommentRow(
+      clientId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}client_id'],
+      )!,
+      requestClientId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}request_client_id'],
+      )!,
+      body: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}body'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      syncState: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sync_state'],
+      )!,
+      errorCode: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}error_code'],
+      ),
+    );
+  }
+
+  @override
+  $RequestCommentsTable createAlias(String alias) {
+    return $RequestCommentsTable(attachedDatabase, alias);
+  }
+}
+
+class RequestCommentRow extends DataClass
+    implements Insertable<RequestCommentRow> {
+  final String clientId;
+
+  /// The request's local key (`staff_requests.client_id`).
+  final String requestClientId;
+  final String body;
+  final DateTime createdAt;
+
+  /// `queued`, `synced`, `failed`.
+  final String syncState;
+  final String? errorCode;
+  const RequestCommentRow({
+    required this.clientId,
+    required this.requestClientId,
+    required this.body,
+    required this.createdAt,
+    required this.syncState,
+    this.errorCode,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['client_id'] = Variable<String>(clientId);
+    map['request_client_id'] = Variable<String>(requestClientId);
+    map['body'] = Variable<String>(body);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['sync_state'] = Variable<String>(syncState);
+    if (!nullToAbsent || errorCode != null) {
+      map['error_code'] = Variable<String>(errorCode);
+    }
+    return map;
+  }
+
+  RequestCommentsCompanion toCompanion(bool nullToAbsent) {
+    return RequestCommentsCompanion(
+      clientId: Value(clientId),
+      requestClientId: Value(requestClientId),
+      body: Value(body),
+      createdAt: Value(createdAt),
+      syncState: Value(syncState),
+      errorCode: errorCode == null && nullToAbsent
+          ? const Value.absent()
+          : Value(errorCode),
+    );
+  }
+
+  factory RequestCommentRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return RequestCommentRow(
+      clientId: serializer.fromJson<String>(json['clientId']),
+      requestClientId: serializer.fromJson<String>(json['requestClientId']),
+      body: serializer.fromJson<String>(json['body']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      syncState: serializer.fromJson<String>(json['syncState']),
+      errorCode: serializer.fromJson<String?>(json['errorCode']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'clientId': serializer.toJson<String>(clientId),
+      'requestClientId': serializer.toJson<String>(requestClientId),
+      'body': serializer.toJson<String>(body),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'syncState': serializer.toJson<String>(syncState),
+      'errorCode': serializer.toJson<String?>(errorCode),
+    };
+  }
+
+  RequestCommentRow copyWith({
+    String? clientId,
+    String? requestClientId,
+    String? body,
+    DateTime? createdAt,
+    String? syncState,
+    Value<String?> errorCode = const Value.absent(),
+  }) => RequestCommentRow(
+    clientId: clientId ?? this.clientId,
+    requestClientId: requestClientId ?? this.requestClientId,
+    body: body ?? this.body,
+    createdAt: createdAt ?? this.createdAt,
+    syncState: syncState ?? this.syncState,
+    errorCode: errorCode.present ? errorCode.value : this.errorCode,
+  );
+  RequestCommentRow copyWithCompanion(RequestCommentsCompanion data) {
+    return RequestCommentRow(
+      clientId: data.clientId.present ? data.clientId.value : this.clientId,
+      requestClientId: data.requestClientId.present
+          ? data.requestClientId.value
+          : this.requestClientId,
+      body: data.body.present ? data.body.value : this.body,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      syncState: data.syncState.present ? data.syncState.value : this.syncState,
+      errorCode: data.errorCode.present ? data.errorCode.value : this.errorCode,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RequestCommentRow(')
+          ..write('clientId: $clientId, ')
+          ..write('requestClientId: $requestClientId, ')
+          ..write('body: $body, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('syncState: $syncState, ')
+          ..write('errorCode: $errorCode')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    clientId,
+    requestClientId,
+    body,
+    createdAt,
+    syncState,
+    errorCode,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is RequestCommentRow &&
+          other.clientId == this.clientId &&
+          other.requestClientId == this.requestClientId &&
+          other.body == this.body &&
+          other.createdAt == this.createdAt &&
+          other.syncState == this.syncState &&
+          other.errorCode == this.errorCode);
+}
+
+class RequestCommentsCompanion extends UpdateCompanion<RequestCommentRow> {
+  final Value<String> clientId;
+  final Value<String> requestClientId;
+  final Value<String> body;
+  final Value<DateTime> createdAt;
+  final Value<String> syncState;
+  final Value<String?> errorCode;
+  final Value<int> rowid;
+  const RequestCommentsCompanion({
+    this.clientId = const Value.absent(),
+    this.requestClientId = const Value.absent(),
+    this.body = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.syncState = const Value.absent(),
+    this.errorCode = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  RequestCommentsCompanion.insert({
+    required String clientId,
+    required String requestClientId,
+    required String body,
+    required DateTime createdAt,
+    this.syncState = const Value.absent(),
+    this.errorCode = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : clientId = Value(clientId),
+       requestClientId = Value(requestClientId),
+       body = Value(body),
+       createdAt = Value(createdAt);
+  static Insertable<RequestCommentRow> custom({
+    Expression<String>? clientId,
+    Expression<String>? requestClientId,
+    Expression<String>? body,
+    Expression<DateTime>? createdAt,
+    Expression<String>? syncState,
+    Expression<String>? errorCode,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (clientId != null) 'client_id': clientId,
+      if (requestClientId != null) 'request_client_id': requestClientId,
+      if (body != null) 'body': body,
+      if (createdAt != null) 'created_at': createdAt,
+      if (syncState != null) 'sync_state': syncState,
+      if (errorCode != null) 'error_code': errorCode,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  RequestCommentsCompanion copyWith({
+    Value<String>? clientId,
+    Value<String>? requestClientId,
+    Value<String>? body,
+    Value<DateTime>? createdAt,
+    Value<String>? syncState,
+    Value<String?>? errorCode,
+    Value<int>? rowid,
+  }) {
+    return RequestCommentsCompanion(
+      clientId: clientId ?? this.clientId,
+      requestClientId: requestClientId ?? this.requestClientId,
+      body: body ?? this.body,
+      createdAt: createdAt ?? this.createdAt,
+      syncState: syncState ?? this.syncState,
+      errorCode: errorCode ?? this.errorCode,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (clientId.present) {
+      map['client_id'] = Variable<String>(clientId.value);
+    }
+    if (requestClientId.present) {
+      map['request_client_id'] = Variable<String>(requestClientId.value);
+    }
+    if (body.present) {
+      map['body'] = Variable<String>(body.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (syncState.present) {
+      map['sync_state'] = Variable<String>(syncState.value);
+    }
+    if (errorCode.present) {
+      map['error_code'] = Variable<String>(errorCode.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RequestCommentsCompanion(')
+          ..write('clientId: $clientId, ')
+          ..write('requestClientId: $requestClientId, ')
+          ..write('body: $body, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('syncState: $syncState, ')
+          ..write('errorCode: $errorCode, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -24588,6 +26254,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       $ColleagueActivitiesTable(this);
   late final $MapPlacesTable mapPlaces = $MapPlacesTable(this);
   late final $ProspectsTable prospects = $ProspectsTable(this);
+  late final $StaffRequestsTable staffRequests = $StaffRequestsTable(this);
+  late final $RequestCommentsTable requestComments = $RequestCommentsTable(
+    this,
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -24624,6 +26294,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     colleagueActivities,
     mapPlaces,
     prospects,
+    staffRequests,
+    requestComments,
   ];
 }
 
@@ -36256,6 +37928,792 @@ typedef $$ProspectsTableProcessedTableManager =
       ProspectRow,
       PrefetchHooks Function()
     >;
+typedef $$StaffRequestsTableCreateCompanionBuilder =
+    StaffRequestsCompanion Function({
+      required String clientId,
+      Value<String?> serverId,
+      required String type,
+      Value<String> priority,
+      required String title,
+      Value<String> details,
+      Value<String?> customerId,
+      Value<String?> customerName,
+      Value<String> status,
+      Value<String?> createdById,
+      Value<String?> createdByName,
+      Value<String?> assigneeId,
+      Value<String?> assigneeName,
+      Value<String?> currentQueue,
+      Value<String?> level,
+      Value<String> photoIdsJson,
+      Value<String> eventsJson,
+      required DateTime createdAt,
+      Value<DateTime?> updatedAt,
+      Value<DateTime?> seenAt,
+      Value<String> syncState,
+      Value<String?> errorCode,
+      Value<int> rowid,
+    });
+typedef $$StaffRequestsTableUpdateCompanionBuilder =
+    StaffRequestsCompanion Function({
+      Value<String> clientId,
+      Value<String?> serverId,
+      Value<String> type,
+      Value<String> priority,
+      Value<String> title,
+      Value<String> details,
+      Value<String?> customerId,
+      Value<String?> customerName,
+      Value<String> status,
+      Value<String?> createdById,
+      Value<String?> createdByName,
+      Value<String?> assigneeId,
+      Value<String?> assigneeName,
+      Value<String?> currentQueue,
+      Value<String?> level,
+      Value<String> photoIdsJson,
+      Value<String> eventsJson,
+      Value<DateTime> createdAt,
+      Value<DateTime?> updatedAt,
+      Value<DateTime?> seenAt,
+      Value<String> syncState,
+      Value<String?> errorCode,
+      Value<int> rowid,
+    });
+
+class $$StaffRequestsTableFilterComposer
+    extends Composer<_$AppDatabase, $StaffRequestsTable> {
+  $$StaffRequestsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get clientId => $composableBuilder(
+    column: $table.clientId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get serverId => $composableBuilder(
+    column: $table.serverId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get type => $composableBuilder(
+    column: $table.type,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get priority => $composableBuilder(
+    column: $table.priority,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get details => $composableBuilder(
+    column: $table.details,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get customerId => $composableBuilder(
+    column: $table.customerId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get customerName => $composableBuilder(
+    column: $table.customerName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get createdById => $composableBuilder(
+    column: $table.createdById,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get createdByName => $composableBuilder(
+    column: $table.createdByName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get assigneeId => $composableBuilder(
+    column: $table.assigneeId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get assigneeName => $composableBuilder(
+    column: $table.assigneeName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get currentQueue => $composableBuilder(
+    column: $table.currentQueue,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get level => $composableBuilder(
+    column: $table.level,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get photoIdsJson => $composableBuilder(
+    column: $table.photoIdsJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get eventsJson => $composableBuilder(
+    column: $table.eventsJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get seenAt => $composableBuilder(
+    column: $table.seenAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get syncState => $composableBuilder(
+    column: $table.syncState,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get errorCode => $composableBuilder(
+    column: $table.errorCode,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$StaffRequestsTableOrderingComposer
+    extends Composer<_$AppDatabase, $StaffRequestsTable> {
+  $$StaffRequestsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get clientId => $composableBuilder(
+    column: $table.clientId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get serverId => $composableBuilder(
+    column: $table.serverId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get type => $composableBuilder(
+    column: $table.type,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get priority => $composableBuilder(
+    column: $table.priority,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get details => $composableBuilder(
+    column: $table.details,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get customerId => $composableBuilder(
+    column: $table.customerId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get customerName => $composableBuilder(
+    column: $table.customerName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get createdById => $composableBuilder(
+    column: $table.createdById,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get createdByName => $composableBuilder(
+    column: $table.createdByName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get assigneeId => $composableBuilder(
+    column: $table.assigneeId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get assigneeName => $composableBuilder(
+    column: $table.assigneeName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get currentQueue => $composableBuilder(
+    column: $table.currentQueue,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get level => $composableBuilder(
+    column: $table.level,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get photoIdsJson => $composableBuilder(
+    column: $table.photoIdsJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get eventsJson => $composableBuilder(
+    column: $table.eventsJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get seenAt => $composableBuilder(
+    column: $table.seenAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncState => $composableBuilder(
+    column: $table.syncState,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get errorCode => $composableBuilder(
+    column: $table.errorCode,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$StaffRequestsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $StaffRequestsTable> {
+  $$StaffRequestsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get clientId =>
+      $composableBuilder(column: $table.clientId, builder: (column) => column);
+
+  GeneratedColumn<String> get serverId =>
+      $composableBuilder(column: $table.serverId, builder: (column) => column);
+
+  GeneratedColumn<String> get type =>
+      $composableBuilder(column: $table.type, builder: (column) => column);
+
+  GeneratedColumn<String> get priority =>
+      $composableBuilder(column: $table.priority, builder: (column) => column);
+
+  GeneratedColumn<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => column);
+
+  GeneratedColumn<String> get details =>
+      $composableBuilder(column: $table.details, builder: (column) => column);
+
+  GeneratedColumn<String> get customerId => $composableBuilder(
+    column: $table.customerId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get customerName => $composableBuilder(
+    column: $table.customerName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<String> get createdById => $composableBuilder(
+    column: $table.createdById,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get createdByName => $composableBuilder(
+    column: $table.createdByName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get assigneeId => $composableBuilder(
+    column: $table.assigneeId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get assigneeName => $composableBuilder(
+    column: $table.assigneeName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get currentQueue => $composableBuilder(
+    column: $table.currentQueue,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get level =>
+      $composableBuilder(column: $table.level, builder: (column) => column);
+
+  GeneratedColumn<String> get photoIdsJson => $composableBuilder(
+    column: $table.photoIdsJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get eventsJson => $composableBuilder(
+    column: $table.eventsJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get seenAt =>
+      $composableBuilder(column: $table.seenAt, builder: (column) => column);
+
+  GeneratedColumn<String> get syncState =>
+      $composableBuilder(column: $table.syncState, builder: (column) => column);
+
+  GeneratedColumn<String> get errorCode =>
+      $composableBuilder(column: $table.errorCode, builder: (column) => column);
+}
+
+class $$StaffRequestsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $StaffRequestsTable,
+          StaffRequestRow,
+          $$StaffRequestsTableFilterComposer,
+          $$StaffRequestsTableOrderingComposer,
+          $$StaffRequestsTableAnnotationComposer,
+          $$StaffRequestsTableCreateCompanionBuilder,
+          $$StaffRequestsTableUpdateCompanionBuilder,
+          (
+            StaffRequestRow,
+            BaseReferences<_$AppDatabase, $StaffRequestsTable, StaffRequestRow>,
+          ),
+          StaffRequestRow,
+          PrefetchHooks Function()
+        > {
+  $$StaffRequestsTableTableManager(_$AppDatabase db, $StaffRequestsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$StaffRequestsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$StaffRequestsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$StaffRequestsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> clientId = const Value.absent(),
+                Value<String?> serverId = const Value.absent(),
+                Value<String> type = const Value.absent(),
+                Value<String> priority = const Value.absent(),
+                Value<String> title = const Value.absent(),
+                Value<String> details = const Value.absent(),
+                Value<String?> customerId = const Value.absent(),
+                Value<String?> customerName = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<String?> createdById = const Value.absent(),
+                Value<String?> createdByName = const Value.absent(),
+                Value<String?> assigneeId = const Value.absent(),
+                Value<String?> assigneeName = const Value.absent(),
+                Value<String?> currentQueue = const Value.absent(),
+                Value<String?> level = const Value.absent(),
+                Value<String> photoIdsJson = const Value.absent(),
+                Value<String> eventsJson = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime?> updatedAt = const Value.absent(),
+                Value<DateTime?> seenAt = const Value.absent(),
+                Value<String> syncState = const Value.absent(),
+                Value<String?> errorCode = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => StaffRequestsCompanion(
+                clientId: clientId,
+                serverId: serverId,
+                type: type,
+                priority: priority,
+                title: title,
+                details: details,
+                customerId: customerId,
+                customerName: customerName,
+                status: status,
+                createdById: createdById,
+                createdByName: createdByName,
+                assigneeId: assigneeId,
+                assigneeName: assigneeName,
+                currentQueue: currentQueue,
+                level: level,
+                photoIdsJson: photoIdsJson,
+                eventsJson: eventsJson,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                seenAt: seenAt,
+                syncState: syncState,
+                errorCode: errorCode,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String clientId,
+                Value<String?> serverId = const Value.absent(),
+                required String type,
+                Value<String> priority = const Value.absent(),
+                required String title,
+                Value<String> details = const Value.absent(),
+                Value<String?> customerId = const Value.absent(),
+                Value<String?> customerName = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<String?> createdById = const Value.absent(),
+                Value<String?> createdByName = const Value.absent(),
+                Value<String?> assigneeId = const Value.absent(),
+                Value<String?> assigneeName = const Value.absent(),
+                Value<String?> currentQueue = const Value.absent(),
+                Value<String?> level = const Value.absent(),
+                Value<String> photoIdsJson = const Value.absent(),
+                Value<String> eventsJson = const Value.absent(),
+                required DateTime createdAt,
+                Value<DateTime?> updatedAt = const Value.absent(),
+                Value<DateTime?> seenAt = const Value.absent(),
+                Value<String> syncState = const Value.absent(),
+                Value<String?> errorCode = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => StaffRequestsCompanion.insert(
+                clientId: clientId,
+                serverId: serverId,
+                type: type,
+                priority: priority,
+                title: title,
+                details: details,
+                customerId: customerId,
+                customerName: customerName,
+                status: status,
+                createdById: createdById,
+                createdByName: createdByName,
+                assigneeId: assigneeId,
+                assigneeName: assigneeName,
+                currentQueue: currentQueue,
+                level: level,
+                photoIdsJson: photoIdsJson,
+                eventsJson: eventsJson,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                seenAt: seenAt,
+                syncState: syncState,
+                errorCode: errorCode,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$StaffRequestsTable, StaffRequestRow>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $StaffRequestsTable,
+                    StaffRequestRow
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$StaffRequestsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $StaffRequestsTable,
+      StaffRequestRow,
+      $$StaffRequestsTableFilterComposer,
+      $$StaffRequestsTableOrderingComposer,
+      $$StaffRequestsTableAnnotationComposer,
+      $$StaffRequestsTableCreateCompanionBuilder,
+      $$StaffRequestsTableUpdateCompanionBuilder,
+      (
+        StaffRequestRow,
+        BaseReferences<_$AppDatabase, $StaffRequestsTable, StaffRequestRow>,
+      ),
+      StaffRequestRow,
+      PrefetchHooks Function()
+    >;
+typedef $$RequestCommentsTableCreateCompanionBuilder =
+    RequestCommentsCompanion Function({
+      required String clientId,
+      required String requestClientId,
+      required String body,
+      required DateTime createdAt,
+      Value<String> syncState,
+      Value<String?> errorCode,
+      Value<int> rowid,
+    });
+typedef $$RequestCommentsTableUpdateCompanionBuilder =
+    RequestCommentsCompanion Function({
+      Value<String> clientId,
+      Value<String> requestClientId,
+      Value<String> body,
+      Value<DateTime> createdAt,
+      Value<String> syncState,
+      Value<String?> errorCode,
+      Value<int> rowid,
+    });
+
+class $$RequestCommentsTableFilterComposer
+    extends Composer<_$AppDatabase, $RequestCommentsTable> {
+  $$RequestCommentsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get clientId => $composableBuilder(
+    column: $table.clientId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get requestClientId => $composableBuilder(
+    column: $table.requestClientId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get body => $composableBuilder(
+    column: $table.body,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get syncState => $composableBuilder(
+    column: $table.syncState,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get errorCode => $composableBuilder(
+    column: $table.errorCode,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$RequestCommentsTableOrderingComposer
+    extends Composer<_$AppDatabase, $RequestCommentsTable> {
+  $$RequestCommentsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get clientId => $composableBuilder(
+    column: $table.clientId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get requestClientId => $composableBuilder(
+    column: $table.requestClientId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get body => $composableBuilder(
+    column: $table.body,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncState => $composableBuilder(
+    column: $table.syncState,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get errorCode => $composableBuilder(
+    column: $table.errorCode,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$RequestCommentsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $RequestCommentsTable> {
+  $$RequestCommentsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get clientId =>
+      $composableBuilder(column: $table.clientId, builder: (column) => column);
+
+  GeneratedColumn<String> get requestClientId => $composableBuilder(
+    column: $table.requestClientId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get body =>
+      $composableBuilder(column: $table.body, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<String> get syncState =>
+      $composableBuilder(column: $table.syncState, builder: (column) => column);
+
+  GeneratedColumn<String> get errorCode =>
+      $composableBuilder(column: $table.errorCode, builder: (column) => column);
+}
+
+class $$RequestCommentsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $RequestCommentsTable,
+          RequestCommentRow,
+          $$RequestCommentsTableFilterComposer,
+          $$RequestCommentsTableOrderingComposer,
+          $$RequestCommentsTableAnnotationComposer,
+          $$RequestCommentsTableCreateCompanionBuilder,
+          $$RequestCommentsTableUpdateCompanionBuilder,
+          (
+            RequestCommentRow,
+            BaseReferences<
+              _$AppDatabase,
+              $RequestCommentsTable,
+              RequestCommentRow
+            >,
+          ),
+          RequestCommentRow,
+          PrefetchHooks Function()
+        > {
+  $$RequestCommentsTableTableManager(
+    _$AppDatabase db,
+    $RequestCommentsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$RequestCommentsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$RequestCommentsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$RequestCommentsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> clientId = const Value.absent(),
+                Value<String> requestClientId = const Value.absent(),
+                Value<String> body = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<String> syncState = const Value.absent(),
+                Value<String?> errorCode = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => RequestCommentsCompanion(
+                clientId: clientId,
+                requestClientId: requestClientId,
+                body: body,
+                createdAt: createdAt,
+                syncState: syncState,
+                errorCode: errorCode,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String clientId,
+                required String requestClientId,
+                required String body,
+                required DateTime createdAt,
+                Value<String> syncState = const Value.absent(),
+                Value<String?> errorCode = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => RequestCommentsCompanion.insert(
+                clientId: clientId,
+                requestClientId: requestClientId,
+                body: body,
+                createdAt: createdAt,
+                syncState: syncState,
+                errorCode: errorCode,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$RequestCommentsTable, RequestCommentRow>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $RequestCommentsTable,
+                    RequestCommentRow
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$RequestCommentsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $RequestCommentsTable,
+      RequestCommentRow,
+      $$RequestCommentsTableFilterComposer,
+      $$RequestCommentsTableOrderingComposer,
+      $$RequestCommentsTableAnnotationComposer,
+      $$RequestCommentsTableCreateCompanionBuilder,
+      $$RequestCommentsTableUpdateCompanionBuilder,
+      (
+        RequestCommentRow,
+        BaseReferences<_$AppDatabase, $RequestCommentsTable, RequestCommentRow>,
+      ),
+      RequestCommentRow,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -36322,4 +38780,8 @@ class $AppDatabaseManager {
       $$MapPlacesTableTableManager(_db, _db.mapPlaces);
   $$ProspectsTableTableManager get prospects =>
       $$ProspectsTableTableManager(_db, _db.prospects);
+  $$StaffRequestsTableTableManager get staffRequests =>
+      $$StaffRequestsTableTableManager(_db, _db.staffRequests);
+  $$RequestCommentsTableTableManager get requestComments =>
+      $$RequestCommentsTableTableManager(_db, _db.requestComments);
 }

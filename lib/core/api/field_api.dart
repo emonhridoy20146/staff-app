@@ -150,6 +150,10 @@ class FieldApi {
   /// The collections behind my cash on hand (1.27.0, FR-CASH-007): online.
   Future<Json> myCashInHand() => _call(() => _dio.get<dynamic>('/cash/me/collections'), (d) => d as Json);
 
+  /// 1.48.0 (FR-M-075): reopen my resolved or closed request with a note. Online only; answers the `Request`.
+  Future<Json> reopenRequest(String id, {required String note}) =>
+      _call(() => _dio.post<dynamic>('/requests/$id/reopen', data: {'note': note}), (d) => d as Json);
+
   /// 1.32.0 (FR-COL-016): withdraw (delete) my own cash collection until it is deposited. Online only.
   Future<Json> withdrawCollection(String id, {String? reason}) =>
       _call(() => _dio.post<dynamic>('/collections/$id/withdraw', data: {'reason': ?reason}), (d) => d as Json);

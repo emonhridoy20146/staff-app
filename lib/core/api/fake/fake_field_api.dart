@@ -132,14 +132,14 @@ class FakeFieldApi implements HttpClientAdapter {
     'branch.view', 'customer.view', 'customer.location.propose', 'customer.phone.manage', 'tag.view', 'tag.set', //
     'collection.record', 'collection.view', 'cash.view', 'cash.deposit.record', 'assignment.view',
     'visit.record', 'visit.view', 'note.create', 'note.view', 'promise.create', 'promise.view',
-    'attendance.record', 'leave.request', 'cowork.use', 'task.work', 'place.view', 'place.create', 'prospect.create',
+    'attendance.record', 'leave.request', 'cowork.use', 'task.work', 'place.view', 'place.create', 'prospect.create', 'request.create',
   ];
 
   static const flags = {
     'module.customers': true, 'module.tags': true, 'module.collections': true, 'module.cash': true, //
     'module.visits': true, 'module.notes': true, 'module.promises': true, 'module.attendance': true,
     'module.handovers': true, 'module.location': true, 'module.notifications': true, 'module.sync': true,
-    'module.cowork': true, 'module.targets': true, 'module.reports': true, 'module.tasks': true, 'module.places': true, 'module.prospects': true, 'module.microfinance': false,
+    'module.cowork': true, 'module.targets': true, 'module.reports': true, 'module.tasks': true, 'module.places': true, 'module.prospects': true, 'module.requests': true, 'module.microfinance': false,
   };
 
   Json get _settings => {
@@ -275,6 +275,149 @@ class FakeFieldApi implements HttpClientAdapter {
   }
 
   /// The server's rules for the three place mutations (FR-PLC-002..004).
+  // ── staff requests (contract 1.48.0, FR-M-075, field-api ADR-066) ──────────
+
+  /// Requests on the server by id: mine (`rq-<clientId>`) and those the office gave me.
+  final requests = <String, Json>{};
+
+  /// Comments by clientId (replays answer once).
+  final _requestComments = <String>{};
+
+  /// Tests: the server refuses every new request with this problem code (e.g. `FORBIDDEN`).
+  String? refuseRequests;
+  int _requestEventSeq = 0;
+
+  Json _queueTarget(String queue) => {'queue': queue, 'user': null};
+  Json _personTarget(Json p) => {'queue': 'assignee', 'user': {'id': p['id'], 'name': p['name']}};
+  Json _targetOf(Json r) => r['assignee'] == null ? _queueTarget(r['currentQueue'] as String) : _personTarget(r['assignee'] as Json);
+
+  void _requestStep(String id, String kind, {required Json actor, String? note, Json? to, String? status, Json? patch}) {
+    final r = requests[id]!;
+    final from = _targetOf(r);
+    final before = r['status'];
+    r.addAll(patch ?? const {});
+    if (status != null) r['status'] = status;
+    final at = clock.nowUtc().toIso8601String();
+    r['timeline'] = [
+      ...(r['timeline'] as List),
+      {
+        'id': 'rte-${++_requestEventSeq}', 'kind': kind, 'at': at, 'actor': actor, 'note': note,
+        'from': kind == 'forwarded' || kind == 'assigned' ? from : null, 'to': to,
+        'status': status == null || status == before ? null : {'from': before, 'to': status},
+      },
+    ];
+    r['updatedAt'] = at;
+    r['version'] = (r['version'] as int) + 1;
+    serverChange('request', id, Map<String, dynamic>.of(r));
+  }
+
+  /// Tests / demo: the office forwards a request to a person ([to]) or, without one, to the super admin queue.
+  void forwardRequest(String id, {Json? to, Json? by, String note = 'দেখুন'}) => _requestStep(id, 'forwarded',
+      actor: by ?? _office,
+      note: note,
+      to: to == null ? _queueTarget('super_admin') : _personTarget(to),
+      status: 'forwarded',
+      patch: to == null ? {'currentQueue': 'super_admin', 'level': 'super_admin', 'assignee': null} : {'currentQueue': 'assignee', 'assignee': to});
+
+  /// Tests / demo: the office assigns a request to someone.
+  void assignRequest(String id, {required Json to, Json? by, String? note}) =>
+      _requestStep(id, 'assigned', actor: by ?? _office, note: note, to: _personTarget(to), status: 'in_progress', patch: {'currentQueue': 'assignee', 'assignee': to});
+
+  /// Tests / demo: the office comments.
+  void commentOnRequest(String id, String text, {Json? by}) => _requestStep(id, 'comment', actor: by ?? _office, note: text);
+
+  /// Tests / demo: the office resolves it with a note.
+  void resolveRequest(String id, {String note = 'সমাধান হয়েছে', Json? by}) {
+    final who = by ?? _office;
+    _requestStep(id, 'resolved', actor: who, note: note, status: 'resolved', patch: {'resolvedAt': clock.nowUtc().toIso8601String(), 'resolvedBy': who, 'resolutionNote': note});
+  }
+
+  /// Tests / demo: the office closes it.
+  void closeRequest(String id, {String? note, Json? by}) =>
+      _requestStep(id, 'closed', actor: by ?? _office, note: note, status: 'closed', patch: {'closedAt': clock.nowUtc().toIso8601String()});
+
+  /// Tests / demo: a colleague's request the office gave to me.
+  void addRequestForMe(String id, {required String title, String body = '', String type = 'report', String priority = 'normal', Json? from}) {
+    final at = clock.nowUtc().toIso8601String();
+    final maker = from ?? {'id': 'u-fs-020', 'name': 'সজীব আহমেদ'};
+    final queue = priority == 'important' ? 'super_admin' : 'area_manager';
+    requests[id] = {
+      'id': id, 'clientId': 'cl-$id', 'type': type, 'priority': priority, 'title': title, 'body': body, 'customerId': null,
+      'photoMediaIds': <String>[], 'branchId': 'br-01', 'createdBy': maker, 'createdAt': at, 'createdDate': clock.businessDate(),
+      'status': 'open', 'currentQueue': queue, 'level': queue, 'assignee': null, 'dueAt': null, 'resolvedAt': null, 'resolvedBy': null,
+      'resolutionNote': null, 'closedAt': null, 'updatedAt': at, 'version': 1,
+      'timeline': [
+        {'id': 'rte-${++_requestEventSeq}', 'kind': 'created', 'at': at, 'actor': maker, 'note': null, 'from': null, 'to': _queueTarget(queue), 'status': {'from': null, 'to': 'open'}},
+      ],
+    };
+    assignRequest(id, to: _me);
+  }
+
+  /// `request` (1.48.0 `RequestCreate`): idempotent by clientId; unknown fields refused like the strict schema.
+  Json _requestMutation(String mutationId, Json payload) {
+    Json invalid(String what) => {'mutationId': mutationId, 'result': 'rejected', 'error': _problem(400, 'VALIDATION_FAILED', what)};
+    if (refuseRequests != null) return {'mutationId': mutationId, 'result': 'rejected', 'error': _problem(403, refuseRequests!, 'refused')};
+    const allowed = {'clientId', 'type', 'priority', 'title', 'body', 'customerId', 'photoMediaIds', 'dueAt', 'branchId'};
+    if (payload.keys.any((k) => !allowed.contains(k))) return invalid('unknown field');
+    if (!['request', 'report', 'inform', 'complaint'].contains(payload['type'])) return invalid('type');
+    if (!['normal', 'important'].contains(payload['priority'])) return invalid('priority');
+    final title = (payload['title'] as String?)?.trim() ?? '';
+    final body = (payload['body'] as String?)?.trim() ?? '';
+    if (title.isEmpty || title.length > 160 || body.isEmpty || body.length > 4000) return invalid('title or body');
+    final photos = (payload['photoMediaIds'] as List?) ?? const [];
+    if (photos.length > 5 || photos.any((m) => !uploadedMedia.contains(m))) return invalid('photoMediaIds');
+    final id = 'rq-${payload['clientId']}';
+    if (requests.containsKey(id)) return {'mutationId': mutationId, 'result': 'applied', 'entityId': id}; // replay
+    final at = clock.nowUtc().toIso8601String();
+    final queue = payload['priority'] == 'important' ? 'super_admin' : 'area_manager';
+    requests[id] = {
+      'id': id, 'clientId': payload['clientId'], 'type': payload['type'], 'priority': payload['priority'], 'title': title, 'body': body,
+      'customerId': payload['customerId'], 'photoMediaIds': photos, 'branchId': 'br-01', 'createdBy': _me, 'createdAt': at,
+      'createdDate': clock.businessDate(), 'status': 'open', 'currentQueue': queue, 'level': queue, 'assignee': null, 'dueAt': null,
+      'resolvedAt': null, 'resolvedBy': null, 'resolutionNote': null, 'closedAt': null, 'updatedAt': at, 'version': 1,
+      'timeline': [
+        {'id': 'rte-${++_requestEventSeq}', 'kind': 'created', 'at': at, 'actor': _me, 'note': null, 'from': null, 'to': _queueTarget(queue), 'status': {'from': null, 'to': 'open'}},
+      ],
+    };
+    serverChange('request', id, Map<String, dynamic>.of(requests[id]!));
+    return {'mutationId': mutationId, 'result': 'applied', 'entityId': id};
+  }
+
+  String? _requestIdOf(Json payload) {
+    final rid = payload['requestId'] as String?;
+    if (rid != null) return rid;
+    final cid = payload['requestClientId'] as String?;
+    return requests.values.where((r) => r['clientId'] == cid).firstOrNull?['id'] as String?;
+  }
+
+  /// `request_comment` (1.48.0): `RequestComment` plus `requestId` or `requestClientId`; idempotent by the comment clientId.
+  Json _requestCommentMutation(String mutationId, Json payload) {
+    final id = _requestIdOf(payload);
+    final r = id == null ? null : requests[id];
+    if (r == null) return {'mutationId': mutationId, 'result': 'rejected', 'error': _problem(404, 'NOT_FOUND', 'No such request')};
+    if (r['status'] == 'closed') return {'mutationId': mutationId, 'result': 'rejected', 'error': {..._problem(409, 'INVALID_STATE', 'closed'), 'details': {'reason': 'REQUEST_CLOSED'}}};
+    final text = (payload['text'] as String?)?.trim() ?? '';
+    if (text.isEmpty || text.length > 2000) return {'mutationId': mutationId, 'result': 'rejected', 'error': _problem(400, 'VALIDATION_FAILED', 'text')};
+    if (_requestComments.add(payload['clientId'] as String)) {
+      _requestStep(id!, 'comment', actor: _me, note: text);
+      // The server keeps the comment's clientId so the phone can match its own copy.
+      ((r['timeline'] as List).last as Json)['clientId'] = payload['clientId'];
+      serverChange('request', id, Map<String, dynamic>.of(r));
+    }
+    return {'mutationId': mutationId, 'result': 'applied', 'entityId': id};
+  }
+
+  /// POST /requests/{id}/reopen (1.48.0): the creator, a resolved or closed request, a note.
+  (int, Json) _reopenRequest(String id, Json body) {
+    final r = requests[id];
+    if (r == null) return (404, _problem(404, 'NOT_FOUND', 'No such request'));
+    if (!['resolved', 'closed'].contains(r['status'])) return (409, {..._problem(409, 'INVALID_STATE', 'open'), 'details': {'reason': 'REQUEST_OPEN'}});
+    final note = (body['note'] as String?)?.trim() ?? '';
+    if (note.isEmpty) return (400, _problem(400, 'VALIDATION_FAILED', 'note'));
+    _requestStep(id, 'reopened', actor: _me, note: note, to: _targetOf(r), status: 'reopened', patch: {'resolvedAt': null, 'resolvedBy': null, 'resolutionNote': null, 'closedAt': null});
+    return (200, Map<String, dynamic>.of(r));
+  }
+
   /// Possible customers (provisional contract 1.45.0): `prospect` create / update. Server id `pr-<clientId>`.
   final prospects = <String, Json>{};
 
@@ -884,6 +1027,11 @@ class FakeFieldApi implements HttpClientAdapter {
           serverChange('customer', c['id'] as String, {...c, 'phones': [for (final d in next) d['number']], 'phoneDetails': next});
           return _json(200, {});
         }
+        final rr = RegExp(r'^/requests/([^/]+)/reopen$').firstMatch(path);
+        if (rr != null && o.method == 'POST') {
+          final r = _reopenRequest(rr.group(1)!, (body as Json?) ?? const {});
+          return _json(r.$1, r.$2);
+        }
         final cw = RegExp(r'^/collections/([^/]+)(/withdraw)?$').firstMatch(path);
         if (cw != null && ((o.method == 'POST' && cw.group(2) != null) || (o.method == 'PATCH' && cw.group(2) == null))) {
           final r = _changeCollection(cw.group(1)!, withdraw: cw.group(2) != null, body: (body as Json?) ?? const {});
@@ -1259,6 +1407,10 @@ class FakeFieldApi implements HttpClientAdapter {
         r = _placeMutation(id, entity, payload);
       } else if (entity == 'prospect') {
         r = _prospectMutation(id, (m['op'] as String?) ?? 'create', payload);
+      } else if (entity == 'request') {
+        r = _requestMutation(id, payload);
+      } else if (entity == 'request_comment') {
+        r = _requestCommentMutation(id, payload);
       } else {
         r = {'mutationId': id, 'result': 'applied', 'entityId': '$entity-$id', 'status': entity == 'collection' ? 'received' : 'ok'};
         if (entity == 'collection' && payload['method'] == 'cash') _cashOnHand += payload['amountPoisha'] as int;

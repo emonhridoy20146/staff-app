@@ -45,13 +45,15 @@ part 'app_database.g.dart';
     ColleagueActivities,
     MapPlaces,
     Prospects,
+    StaffRequests,
+    RequestComments,
   ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 17;
+  int get schemaVersion => 18;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -80,6 +82,7 @@ class AppDatabase extends _$AppDatabase {
           await customStatement(
             'CREATE INDEX IF NOT EXISTS idx_colleague_customer ON colleague_activities (customer_id, kind, at DESC)',
           );
+          await customStatement('CREATE INDEX IF NOT EXISTS idx_staff_requests_created ON staff_requests (created_at DESC)');
         },
         onUpgrade: (m, from, to) async {
           // v2 (0.2.0): contact attempts + location queue time index.
@@ -195,6 +198,13 @@ class AppDatabase extends _$AppDatabase {
             await _ensureColumn(m, promises, promises.attempt);
             // contract 1.45.0 (FR-M-073): possible customers. A new table only.
             if (!await _hasTable('prospects')) await m.createTable(prospects);
+          }
+          // v18 (FR-M-075, contract 1.48.0): staff requests and my comments on them. New tables only; nothing
+          // unsynced is touched.
+          if (from < 18) {
+            if (!await _hasTable('staff_requests')) await m.createTable(staffRequests);
+            if (!await _hasTable('request_comments')) await m.createTable(requestComments);
+            await customStatement('CREATE INDEX IF NOT EXISTS idx_staff_requests_created ON staff_requests (created_at DESC)');
           }
         },
         beforeOpen: (details) async {

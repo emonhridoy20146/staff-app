@@ -803,3 +803,66 @@ class Prospects extends Table {
   @override
   Set<Column> get primaryKey => {clientId};
 }
+
+// ── staff requests (schema 18, FR-M-075, contract 1.48.0) ───────────────────
+/// Something a staff member reports, tells or asks the office (a request, report, information or complaint):
+/// `normal` goes to the area manager, `important` to the super admin. Mine are made on the phone first (`request`
+/// mutation, [clientId] = my UUIDv7); those the office forwarded or assigned to me arrive on the pull (entity
+/// `request`, [clientId] = the maker's clientId or the server id). The office's steps (forward, assign, comment,
+/// resolve, reopen) come as the server's timeline in [eventsJson]. Never deleted while mine is unsent.
+@DataClassName('StaffRequestRow')
+class StaffRequests extends Table {
+  TextColumn get clientId => text()();
+  TextColumn get serverId => text().nullable()();
+  /// `request`, `report`, `inform`, `complaint` (unknown kept as sent).
+  TextColumn get type => text()();
+  /// `normal` (area manager) or `important` (super admin).
+  TextColumn get priority => text().withDefault(const Constant('normal'))();
+  TextColumn get title => text()();
+  /// The request's `body` (1.48.0).
+  TextColumn get details => text().withDefault(const Constant(''))();
+  TextColumn get customerId => text().nullable()();
+  TextColumn get customerName => text().nullable()();
+  /// The server's status (`open` until the server says otherwise; unknown kept as sent).
+  TextColumn get status => text().withDefault(const Constant('open'))();
+  TextColumn get createdById => text().nullable()();
+  TextColumn get createdByName => text().nullable()();
+  /// Who holds it now (the server's assignee); null = the office of its priority.
+  TextColumn get assigneeId => text().nullable()();
+  TextColumn get assigneeName => text().nullable()();
+  /// Where it waits now (1.48.0 `currentQueue`: `area_manager`, `super_admin`, `assignee`) and the queue responsible
+  /// for it (`level`).
+  TextColumn get currentQueue => text().nullable()();
+  TextColumn get level => text().nullable()();
+  /// Server media ids of its photos (photos still on this phone are in `media_queue`, owner `request`).
+  TextColumn get photoIdsJson => text().withDefault(const Constant('[]'))();
+  /// The server's `timeline` as sent (created, comment, forwarded, assigned, status_changed, resolved, reopened, closed).
+  TextColumn get eventsJson => text().withDefault(const Constant('[]'))();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get updatedAt => dateTime().nullable()();
+  /// When I last opened it (local only): a newer change by someone else is shown as an alert.
+  DateTimeColumn get seenAt => dateTime().nullable()();
+  /// `queued` (mine, not on the server yet), `synced`, `failed` (refused; kept and shown).
+  TextColumn get syncState => text().withDefault(const Constant('queued'))();
+  TextColumn get errorCode => text().nullable()();
+
+  @override
+  Set<Column> get primaryKey => {clientId};
+}
+
+/// A comment I wrote on a request (`request_comment` mutation, offline-first). Shown in the timeline until the
+/// server's timeline holds a comment with the same clientId. Never deleted while unsent.
+@DataClassName('RequestCommentRow')
+class RequestComments extends Table {
+  TextColumn get clientId => text()();
+  /// The request's local key (`staff_requests.client_id`).
+  TextColumn get requestClientId => text()();
+  TextColumn get body => text()();
+  DateTimeColumn get createdAt => dateTime()();
+  /// `queued`, `synced`, `failed`.
+  TextColumn get syncState => text().withDefault(const Constant('queued'))();
+  TextColumn get errorCode => text().nullable()();
+
+  @override
+  Set<Column> get primaryKey => {clientId};
+}
