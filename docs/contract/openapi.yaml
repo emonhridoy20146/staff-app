@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Howlader Field Operations API
-  version: 1.46.0
+  version: 1.47.0
   description: |
     Contract owned by field-api. Consumers (admin-web, staff-app) generate types from this file.
     Conventions (auth, pagination, idempotency, errors) are described in docs/05-api-contract.md.
@@ -53,6 +53,13 @@ paths:
       tags: [auth]
       security: []
       operationId: login
+      description: |
+        Throttling (FR-AUTH-005, ADR-064): 5 failed logins in 15 min lock the account for 15 min. Failed logins from
+        one IP also lock that IP after `auth.ipLockFailures` (default 50) in 15 min, but a user who logs in from a
+        device (`X-Device-Id`) or browser (refresh cookie) that already had a session of theirs is not stopped by the
+        IP lock. 423 bodies carry `details` = `AccountLockedDetails` and a `Retry-After` header (1.47.0).
+        A field staff on a new device gets 403 `DEVICE_NOT_APPROVED` with `details` = `DeviceNotApprovedDetails`
+        (1.47.0; FR-AUTH-007); show "waiting for manager approval" and the request id.
       requestBody:
         required: true
         content:
@@ -61,8 +68,32 @@ paths:
       responses:
         '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/LoginResponse' } } } }
         '401': { $ref: '#/components/responses/Problem' }
-        '403': { $ref: '#/components/responses/Problem' }
-        '423': { $ref: '#/components/responses/Problem' }
+        '403':
+          description: DEVICE_NOT_APPROVED (FR-AUTH-007) or another 403 Problem
+          content:
+            application/problem+json:
+              schema:
+                allOf:
+                  - { $ref: '#/components/schemas/Problem' }
+                  - type: object
+                    properties:
+                      details:
+                        oneOf:
+                          - { $ref: '#/components/schemas/DeviceNotApprovedDetails' }
+                          - { type: object, additionalProperties: true, not: { required: [pendingDeviceId] } }
+        '423':
+          description: ACCOUNT_LOCKED
+          headers:
+            Retry-After: { description: Seconds until the lock ends (1.47.0), schema: { type: integer } }
+          content:
+            application/problem+json:
+              schema:
+                allOf:
+                  - { $ref: '#/components/schemas/Problem' }
+                  - type: object
+                    required: [details]
+                    properties:
+                      details: { $ref: '#/components/schemas/AccountLockedDetails' }
         '426': { $ref: '#/components/responses/Problem' }
   /auth/refresh:
     post:
@@ -296,9 +327,15 @@ paths:
     post:
       tags: [users]
       operationId: approveDevice
+      description: |
+        Binds a pending device. If the user would then have more than `devices.maxPerUser` (default 1) active devices,
+        the least recently seen active ones are unbound and their sessions end. Approving a device that is already
+        active answers 200 and changes nothing (1.47.0); an unbound device is 409 INVALID_STATE.
       parameters: [ { $ref: '#/components/parameters/Id' } ]
       responses:
-        '200': { description: OK }
+        '200': { description: OK, content: { application/json: { schema: { type: object, properties: { id: { type: string }, status: { type: string, enum: [active] } } } } } }
+        '404': { $ref: '#/components/responses/Problem' }
+        '409': { $ref: '#/components/responses/Problem' }
   /devices/push-token:
     post:
       tags: [notifications]
@@ -2338,6 +2375,26 @@ components:
         detail: { type: string }
         requestId: { type: string }
         details: { type: object, additionalProperties: true }
+    AccountLockedDetails:
+      type: object
+      description: '`details` of 423 ACCOUNT_LOCKED on POST /auth/login. `until` since 1.0; the rest added in 1.47.0.'
+      required: [until]
+      properties:
+        until: { type: string, format: date-time, description: When the lock ends (UTC) }
+        retryAfterSec: { type: integer, minimum: 1, description: 'Added in 1.47.0. Seconds until `until`; same as the Retry-After header' }
+        scope:
+          type: string
+          enum: [account, ip]
+          description: 'Added in 1.47.0. `account`: 5 wrong passwords for this phone/username; `ip`: too many failures from this network and this device or browser has never had a session of the user (ADR-064)'
+    DeviceNotApprovedDetails:
+      type: object
+      description: '`details` of 403 DEVICE_NOT_APPROVED on POST /auth/login (added in 1.47.0, FR-AUTH-007). The request is a pending device; retrying the login does not create another.'
+      required: [pendingDeviceId, deviceId, status]
+      properties:
+        pendingDeviceId: { type: string, description: 'The pending Device `id`: what an admin approves (POST /devices/{id}/approve) and the request id the app shows' }
+        deviceId: { type: string, description: The X-Device-Id that was sent }
+        status: { type: string, enum: [pending_approval] }
+        maxActiveDevices: { type: integer, description: 'Setting devices.maxPerUser' }
     I18nText:
       type: object
       properties: { bn: { type: string }, en: { type: string } }
@@ -2451,7 +2508,7 @@ components:
       properties: { id: { type: string }, client: { type: string }, deviceId: { type: string }, userAgent: { type: string }, ip: { type: string }, createdAt: { type: string }, lastUsedAt: { type: string }, current: { type: boolean } }
     Device:
       type: object
-      properties: { id: { type: string }, deviceId: { type: string }, userId: { type: string }, model: { type: string }, androidVersion: { type: string }, appVersion: { type: string }, boundAt: { type: string }, lastSeenAt: { type: string }, rooted: { type: boolean }, emulator: { type: boolean }, status: { type: string, enum: [active, pending_approval, unbound] } }
+      properties: { id: { type: string }, deviceId: { type: string }, userId: { type: string }, model: { type: string }, androidVersion: { type: string }, appVersion: { type: string }, boundAt: { type: string }, lastSeenAt: { type: string }, rooted: { type: boolean }, emulator: { type: boolean }, status: { type: string, enum: [active, pending_approval, unbound] }, likelyReinstall: { type: boolean, description: 'Added in 1.47.0. Only on pending_approval rows: same model and Android version as the user''s only active device, which was not seen for devices.reinstallHintIdleDays days (0 = off, then always false). A hint for the admin; the device still needs approval' } }
     PermissionDef:
       type: object
       properties:
