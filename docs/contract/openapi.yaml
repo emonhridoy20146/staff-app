@@ -1,11 +1,15 @@
 openapi: 3.1.0
 info:
   title: Howlader Field Operations API
-  version: 1.47.0
+  version: 1.48.0
   description: |
     Contract owned by field-api. Consumers (admin-web, staff-app) generate types from this file.
     Conventions (auth, pagination, idempotency, errors) are described in docs/05-api-contract.md.
     Money is integer poisha. Times are UTC ISO-8601; business dates are YYYY-MM-DD in Asia/Dhaka.
+    1.48.0 (additive): role `area_manager` (all branches; no user, role, password, flag or settings management; ADR-065);
+    requests / tickets (`/requests`, sync entity `request`, sync mutations `request` and `request_comment`, flag
+    `module.requests`, permissions request.create / request.view / request.manage / request.important.manage; ADR-066);
+    `requestStats` on GET /dashboard/overview; GET /audit `from` / `to` also take an inclusive Asia/Dhaka business date.
     1.46.0 (additive): GET /customers takes `limit` up to 1000 and an optional 0-based `offset` (wins over `cursor`)
     for a numbered pager; `nextCursor` unchanged; `total` (includeTotal=true) is exact, no longer capped at 10,000.
     1.45.0 (additive): dashboard statistics with `from`/`to` and list links (GET /dashboard/overview), `from`/`to` on
@@ -45,6 +49,7 @@ tags:
   - name: tasks
   - name: places
   - name: prospects
+  - name: requests
   - name: audit
 
 paths:
@@ -265,10 +270,15 @@ paths:
     post:
       tags: [users]
       operationId: createUser
+      description: |
+        user.manage. Only a super admin may create a super admin, area manager or branch manager (403 FORBIDDEN otherwise).
+        Since 1.48.0 `role` may be `area_manager` (ADR-065): scope is every branch; `branchIds` is still required (home branch).
+        An area manager never holds user.manage, so creating, editing, changing roles and resetting passwords is 403 for them.
       requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/UserCreate' } } } }
       responses:
         '201': { description: Created, content: { application/json: { schema: { type: object, properties: { user: { $ref: '#/components/schemas/User' }, temporaryPassword: { type: string } } } } } }
         '400': { $ref: '#/components/responses/Problem' }
+        '403': { $ref: '#/components/responses/Problem' }
   /users/{id}:
     parameters: [ { $ref: '#/components/parameters/Id' } ]
     get:
@@ -281,17 +291,21 @@ paths:
       tags: [users]
       operationId: updateUser
       parameters: [ { $ref: '#/components/parameters/IfMatch' } ]
+      description: 'user.manage (403 FORBIDDEN without it, e.g. for an area manager). Role changes to or from super_admin, area_manager or branch_manager need a super admin.'
       requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/UserUpdate' } } } }
       responses:
         '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/User' } } } }
+        '403': { $ref: '#/components/responses/Problem' }
         '412': { $ref: '#/components/responses/Problem' }
   /users/{id}/reset-password:
     post:
       tags: [users]
       operationId: resetPassword
+      description: 'user.manage (403 FORBIDDEN without it, e.g. for an area manager).'
       parameters: [ { $ref: '#/components/parameters/Id' } ]
       responses:
         '200': { description: OK, content: { application/json: { schema: { type: object, properties: { temporaryPassword: { type: string } } } } } }
+        '403': { $ref: '#/components/responses/Problem' }
   /users/{id}/deactivate:
     post:
       tags: [users]
@@ -1837,6 +1851,172 @@ paths:
         '404': { $ref: '#/components/responses/Problem' }
         '409': { $ref: '#/components/responses/Problem' }
 
+  /requests:
+    get:
+      tags: [requests]
+      operationId: listRequests
+      description: |
+        Added in 1.48.0 (FR-REQ-001..006, module `requests`, flag `module.requests`, ADR-066). Requests / tickets newest first.
+        Scope: request.view sees the caller's branches (super admin and area manager: every branch), plus the ones the caller
+        created or is assigned; a caller with only request.create (field staff) sees the ones they created and the ones
+        assigned to them now. `from` / `to` = Asia/Dhaka business date of creation (inclusive). `status` takes one value or
+        several separated by commas. `queue` = where the item waits now (`assignee` = assigned to a person). `assigneeId=me`
+        means the caller. `q` matches title and body. `counts` = rows per status for the same filters without `status`.
+      parameters:
+        - { $ref: '#/components/parameters/BranchId' }
+        - { $ref: '#/components/parameters/FromDate' }
+        - { $ref: '#/components/parameters/ToDate' }
+        - { name: status, in: query, style: form, explode: false, schema: { type: array, items: { $ref: '#/components/schemas/RequestStatus' } } }
+        - { name: priority, in: query, schema: { $ref: '#/components/schemas/RequestPriority' } }
+        - { name: type, in: query, schema: { $ref: '#/components/schemas/RequestType' } }
+        - { name: queue, in: query, schema: { $ref: '#/components/schemas/RequestQueue' } }
+        - { name: assigneeId, in: query, schema: { type: string }, description: 'A user id, or `me`' }
+        - { name: createdBy, in: query, schema: { type: string } }
+        - { name: customerId, in: query, schema: { type: string } }
+        - { name: q, in: query, schema: { type: string, minLength: 1, maxLength: 100 } }
+        - { $ref: '#/components/parameters/Limit' }
+        - { $ref: '#/components/parameters/Cursor' }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/RequestPage' } } } }
+        '400': { $ref: '#/components/responses/Problem' }
+        '401': { $ref: '#/components/responses/Problem' }
+        '403': { $ref: '#/components/responses/Problem' }
+    post:
+      tags: [requests]
+      operationId: createRequest
+      description: |
+        Added in 1.48.0. request.create. Same as the sync mutation `request` (the app sends it offline-first). Idempotent by
+        clientId: the same clientId again answers 200 with the stored request (another user's clientId → 409
+        IDEMPOTENCY_MISMATCH). `priority: important` waits in the super admin queue, `normal` in the area manager queue.
+        The branch is the creator's home branch, or `branchId` (in scope) for office users with request.view.
+        `customerId` must be a customer in the caller's scope; `photoMediaIds` must be photos the caller uploaded
+        (upload them first, POST /media/upload-url + confirm). Otherwise 400 VALIDATION_FAILED. Audited (`request.created`).
+        Notifies the queue: important → holders of request.important.manage (super admins); normal → area managers
+        (holders of request.manage without request.important.manage), or the super admins when there is none.
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/RequestCreate' } } } }
+      responses:
+        '201': { description: Created, content: { application/json: { schema: { $ref: '#/components/schemas/Request' } } } }
+        '200': { description: Idempotent replay, content: { application/json: { schema: { $ref: '#/components/schemas/Request' } } } }
+        '400': { $ref: '#/components/responses/Problem' }
+        '401': { $ref: '#/components/responses/Problem' }
+        '403': { $ref: '#/components/responses/Problem' }
+        '409': { $ref: '#/components/responses/Problem' }
+  /requests/{id}:
+    get:
+      tags: [requests]
+      operationId: getRequest
+      description: 'Added in 1.48.0. With the full timeline. Out of scope (see GET /requests) is 404.'
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Request' } } } }
+        '401': { $ref: '#/components/responses/Problem' }
+        '403': { $ref: '#/components/responses/Problem' }
+        '404': { $ref: '#/components/responses/Problem' }
+  /requests/{id}/comment:
+    post:
+      tags: [requests]
+      operationId: commentRequest
+      description: |
+        Added in 1.48.0. Anyone who can see the request (request.view or request.create). Appends a `comment` timeline entry.
+        Idempotent by the comment's clientId (same as the sync mutation `request_comment`). A closed request is 409
+        INVALID_STATE (reason REQUEST_CLOSED). Notifies the creator and the assignee (not the author). Audited (`request.commented`).
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/RequestComment' } } } }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Request' } } } }
+        '400': { $ref: '#/components/responses/Problem' }
+        '401': { $ref: '#/components/responses/Problem' }
+        '403': { $ref: '#/components/responses/Problem' }
+        '404': { $ref: '#/components/responses/Problem' }
+        '409': { $ref: '#/components/responses/Problem' }
+  /requests/{id}/forward:
+    post:
+      tags: [requests]
+      operationId: forwardRequest
+      description: |
+        Added in 1.48.0. request.manage. Sends the request to a queue (`area_manager` or `super_admin`) or to a person
+        (`userId`: an active user who holds request.create or request.manage) with a note; status `forwarded`. Exactly one of
+        `queue` / `userId`. A request in the super admin queue can be moved only by a holder of request.important.manage
+        (403 FORBIDDEN otherwise). Resolved or closed → 409 INVALID_STATE. Unknown target → 422 BUSINESS_RULE
+        REQUEST_INVALID_TARGET. Timeline `forwarded { from, to, note }`; notifies the target. Audited (`request.forwarded`).
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/RequestForward' } } } }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Request' } } } }
+        '400': { $ref: '#/components/responses/Problem' }
+        '401': { $ref: '#/components/responses/Problem' }
+        '403': { $ref: '#/components/responses/Problem' }
+        '404': { $ref: '#/components/responses/Problem' }
+        '409': { $ref: '#/components/responses/Problem' }
+        '422': { $ref: '#/components/responses/Problem' }
+  /requests/{id}/assign:
+    post:
+      tags: [requests]
+      operationId: assignRequest
+      description: |
+        Added in 1.48.0. request.manage. Gives the request to a person (same targets and rules as /forward); status
+        `in_progress`. Timeline `assigned`; notifies the assignee. Audited (`request.assigned`).
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/RequestAssign' } } } }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Request' } } } }
+        '400': { $ref: '#/components/responses/Problem' }
+        '401': { $ref: '#/components/responses/Problem' }
+        '403': { $ref: '#/components/responses/Problem' }
+        '404': { $ref: '#/components/responses/Problem' }
+        '409': { $ref: '#/components/responses/Problem' }
+        '422': { $ref: '#/components/responses/Problem' }
+  /requests/{id}/resolve:
+    post:
+      tags: [requests]
+      operationId: resolveRequest
+      description: |
+        Added in 1.48.0. request.manage (super admin queue: request.important.manage), or the current assignee. `note` is
+        required. Status `resolved`; timeline `resolved { note }`; notifies the creator. Resolved or closed → 409
+        INVALID_STATE. Audited (`request.resolved`).
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/RequestNote' } } } }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Request' } } } }
+        '400': { $ref: '#/components/responses/Problem' }
+        '401': { $ref: '#/components/responses/Problem' }
+        '403': { $ref: '#/components/responses/Problem' }
+        '404': { $ref: '#/components/responses/Problem' }
+        '409': { $ref: '#/components/responses/Problem' }
+  /requests/{id}/reopen:
+    post:
+      tags: [requests]
+      operationId: reopenRequest
+      description: |
+        Added in 1.48.0. The creator, or request.manage (super admin queue: request.important.manage). Only a resolved or
+        closed request (else 409 INVALID_STATE REQUEST_OPEN); it goes back to the queue / assignee it had; status `reopened`.
+        `note` is required. Notifies the queue or assignee. Audited (`request.reopened`).
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/RequestNote' } } } }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Request' } } } }
+        '400': { $ref: '#/components/responses/Problem' }
+        '401': { $ref: '#/components/responses/Problem' }
+        '403': { $ref: '#/components/responses/Problem' }
+        '404': { $ref: '#/components/responses/Problem' }
+        '409': { $ref: '#/components/responses/Problem' }
+  /requests/{id}/close:
+    post:
+      tags: [requests]
+      operationId: closeRequest
+      description: |
+        Added in 1.48.0. request.manage (super admin queue: request.important.manage), or the creator (withdraws their own).
+        Status `closed` (final until reopened); `note` optional. Already closed → 409 INVALID_STATE. Audited (`request.closed`).
+      parameters: [ { $ref: '#/components/parameters/Id' } ]
+      requestBody: { content: { application/json: { schema: { type: object, properties: { note: { type: string, maxLength: 1000 } } } } } }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Request' } } } }
+        '400': { $ref: '#/components/responses/Problem' }
+        '401': { $ref: '#/components/responses/Problem' }
+        '403': { $ref: '#/components/responses/Problem' }
+        '404': { $ref: '#/components/responses/Problem' }
+        '409': { $ref: '#/components/responses/Problem' }
+
   /attendance/events:
     post:
       tags: [attendance]
@@ -2211,6 +2391,8 @@ paths:
         that list exactly the rows behind the number, so the client can open the list with one click. Sections of
         switched-off modules come back as zeros or empty arrays. Field staff see only their own figures (scope).
         Nothing here is an official ERP balance (cached ERP values carry erpFetchedAt in `erp`).
+        1.48.0: `requestStats` (module.requests): requests not resolved or closed, by the queue they wait in now, and the
+        important ones; not limited by the range. Each links to GET /requests in the caller's request scope.
       parameters: [ { $ref: '#/components/parameters/BranchId' }, { name: date, in: query, schema: { type: string, format: date } }, { name: from, in: query, schema: { type: string, format: date }, description: 'Added in 1.45.0' }, { name: to, in: query, schema: { type: string, format: date }, description: 'Added in 1.45.0' } ]
       responses:
         '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/DashboardOverview' } } } }
@@ -2338,9 +2520,26 @@ paths:
     get:
       tags: [audit]
       operationId: listAudit
-      parameters: [ { $ref: '#/components/parameters/BranchId' }, { name: actorId, in: query, schema: { type: string } }, { name: action, in: query, schema: { type: string } }, { name: entity, in: query, schema: { type: string } }, { name: entityId, in: query, schema: { type: string } }, { name: from, in: query, schema: { type: string, format: date-time } }, { name: to, in: query, schema: { type: string, format: date-time } }, { $ref: '#/components/parameters/Limit' }, { $ref: '#/components/parameters/Cursor' } ]
+      description: |
+        audit.view, branch scope (super admin and area manager: every branch). Newest first. Every filter combines with AND.
+        1.48.0 (FR-AUD-003): `from` / `to` also take an inclusive Asia/Dhaka business date (YYYY-MM-DD): `from` = 00:00 Dhaka
+        of that date, `to` = the end of that Dhaka day. A date-time is still read as an exact instant (unchanged).
+        A value that is neither, or `from` after `to`, is 400 VALIDATION_FAILED.
+      parameters:
+        - { $ref: '#/components/parameters/BranchId' }
+        - { name: actorId, in: query, schema: { type: string } }
+        - { name: action, in: query, schema: { type: string } }
+        - { name: entity, in: query, schema: { type: string } }
+        - { name: entityId, in: query, schema: { type: string } }
+        - { name: from, in: query, schema: { anyOf: [ { type: string, format: date-time }, { type: string, format: date } ] }, description: 'Inclusive. A date-time, or (1.48.0) an Asia/Dhaka business date = from 00:00 Dhaka' }
+        - { name: to, in: query, schema: { anyOf: [ { type: string, format: date-time }, { type: string, format: date } ] }, description: 'Inclusive. A date-time, or (1.48.0) an Asia/Dhaka business date = to the end of that Dhaka day' }
+        - { $ref: '#/components/parameters/Limit' }
+        - { $ref: '#/components/parameters/Cursor' }
       responses:
         '200': { description: OK, content: { application/json: { schema: { type: object, properties: { items: { type: array, items: { $ref: '#/components/schemas/AuditEntry' } }, nextCursor: { type: [string, 'null'] } } } } } }
+        '400': { $ref: '#/components/responses/Problem' }
+        '401': { $ref: '#/components/responses/Problem' }
+        '403': { $ref: '#/components/responses/Problem' }
 
 components:
   securitySchemes:
@@ -2408,7 +2607,7 @@ components:
       properties:
         decision: { type: string, enum: [approve, reject] }
         reason: { type: string }
-    Role: { type: string, enum: [super_admin, branch_manager, field_staff, viewer] }
+    Role: { type: string, enum: [super_admin, area_manager, branch_manager, field_staff, viewer], description: 'area_manager added in 1.48.0 (ADR-065): every branch, no user / role / password / flag / settings management. Clients must show an unknown role as its raw key, never fail.' }
     GeoFix:
       type: object
       required: [lat, lng, accuracyM]
@@ -3544,7 +3743,7 @@ components:
       required: [mutationId, entity, op, payload]
       properties:
         mutationId: { type: string, format: uuid }
-        entity: { type: string, enum: [visit, collection, note, promise, promise_cancel, deposit, attendance_event, tag, location_proposal, visit_checkout, handover_decision, cash_closing, contact_attempt, broadcast_ack, task_resolve_request, attendance_selfie, customer_phone, collection_withdraw, collection_edit, place, place_edit, place_move_request, prospect], description: 'prospect (1.45.0) payload ProspectCreate (same as POST /prospects; needs prospect.create and module.prospects; idempotent by clientId). promise (1.45.0) may carry followUpOf. place, place_edit, place_move_request (1.38.0): see the payload description. collection_withdraw (1.32.0) payload { collectionId | clientId, reason? }: same as POST /collections/{id}/withdraw; needs collection.withdraw; send it after the collection (dependsOn). collection_edit (1.32.0) payload { collectionId | clientId, amountPoisha?, note?, payerName? }: same as PATCH /collections/{id}; needs collection.edit; a repeat with the same values is a replay. customer_phone (1.23.0) payload { customerId, phones: [{ number, label? }] }: same body as POST /customers/{id}/phones; needs permission customer.phone.manage; a repeat adds nothing. attendance_selfie (1.21.0) payload { eventClientId, selfieMediaId }: adds the photo to an attendance event that was sent before its photo uploaded; send it after that event (dependsOn).' }
+        entity: { type: string, enum: [visit, collection, note, promise, promise_cancel, deposit, attendance_event, tag, location_proposal, visit_checkout, handover_decision, cash_closing, contact_attempt, broadcast_ack, task_resolve_request, attendance_selfie, customer_phone, collection_withdraw, collection_edit, place, place_edit, place_move_request, prospect, request, request_comment], description: 'request (1.48.0) payload RequestCreate (same as POST /requests; needs request.create and module.requests; idempotent by clientId). request_comment (1.48.0) payload RequestComment plus `requestId` (server id) or `requestClientId` (the clientId of a request sent before; send it after that request, dependsOn); needs module.requests; idempotent by the comment clientId. prospect (1.45.0) payload ProspectCreate (same as POST /prospects; needs prospect.create and module.prospects; idempotent by clientId). promise (1.45.0) may carry followUpOf. place, place_edit, place_move_request (1.38.0): see the payload description. collection_withdraw (1.32.0) payload { collectionId | clientId, reason? }: same as POST /collections/{id}/withdraw; needs collection.withdraw; send it after the collection (dependsOn). collection_edit (1.32.0) payload { collectionId | clientId, amountPoisha?, note?, payerName? }: same as PATCH /collections/{id}; needs collection.edit; a repeat with the same values is a replay. customer_phone (1.23.0) payload { customerId, phones: [{ number, label? }] }: same body as POST /customers/{id}/phones; needs permission customer.phone.manage; a repeat adds nothing. attendance_selfie (1.21.0) payload { eventClientId, selfieMediaId }: adds the photo to an attendance event that was sent before its photo uploaded; send it after that event (dependsOn).' }
         op: { type: string, enum: [create, update] }
         payload:
           type: object
@@ -3600,7 +3799,7 @@ components:
       type: object
       properties:
         seq: { type: integer }
-        entity: { type: string, enum: [customer, collection, visit, note, promise, tag, handover, assignment, area, deposit, attendance_day, notification, broadcast, setting, contact_attempt, location_proposal, cowork_session, task, place, prospect] }
+        entity: { type: string, enum: [customer, collection, visit, note, promise, tag, handover, assignment, area, deposit, attendance_day, notification, broadcast, setting, contact_attempt, location_proposal, cowork_session, task, place, prospect, request] }
         op: { type: string, enum: [upsert, delete] }
         id: { type: string }
         data:
@@ -3614,6 +3813,7 @@ components:
             contact_attempt → ContactAttempt · location_proposal → OwnLocationProposal (1.7.0; sent only to the staff member who proposed, on create and on the manager's decision) ·
             cowork_session → CoworkSession (1.9.0; sent to every invited or member user on each change)
             task → Task (1.20.0; sent to the assignee on every change; the bootstrap snapshot holds open tasks and those closed in the last 30 days)
+            request → Request (1.48.0; sent to the creator and to everyone it is or was assigned to, on every change; a request no longer assigned to the user arrives as op=delete; the bootstrap snapshot holds the user's requests and the ones assigned to them that are not closed, plus those closed in the last 30 days)
             prospect → Prospect (1.45.0; sent to the staff member who created it, on create and on every office change; the bootstrap snapshot holds their prospects of the last 90 days and every one not converted or dropped)
             place → Place (1.38.0; since 1.42.0 (ADR-054) sent to every device of every branch on every change; a deleted place arrives as op=delete reason=deleted; the bootstrap snapshot holds the active places of all branches. Devices whose cursor predates 1.42.0 get CURSOR_EXPIRED once and take a fresh snapshot)
         reason: { type: string }
@@ -3775,6 +3975,14 @@ components:
             created: { $ref: '#/components/schemas/DashboardCount' }
             converted: { $ref: '#/components/schemas/DashboardCount' }
             openNow: { $ref: '#/components/schemas/DashboardCount' }
+        requestStats:
+          type: object
+          description: 'Added in 1.48.0. Requests (module.requests) not resolved or closed, in the caller''s request scope; not limited by the range'
+          properties:
+            areaManagerQueue: { $ref: '#/components/schemas/DashboardCount' }
+            superAdminQueue: { $ref: '#/components/schemas/DashboardCount' }
+            assigned: { allOf: [ { $ref: '#/components/schemas/DashboardCount' }, { description: 'Waiting with a person (queue = assignee)' } ] }
+            importantOpen: { $ref: '#/components/schemas/DashboardCount' }
     ProspectStatus: { type: string, enum: [new, contacted, converted, dropped], description: 'Added in 1.45.0' }
     ProspectCreate:
       type: object
@@ -3836,6 +4044,114 @@ components:
         history: { type: array, items: { $ref: '#/components/schemas/ProspectHistoryEntry' } }
         updatedAt: { type: string, format: date-time }
         version: { type: integer }
+    RequestType: { type: string, enum: [request, report, inform, complaint], description: 'Added in 1.48.0. Clients must show an unknown value as its raw key' }
+    RequestPriority: { type: string, enum: [normal, important], description: 'Added in 1.48.0. important waits in the super admin queue, normal in the area manager queue' }
+    RequestStatus: { type: string, enum: [open, in_progress, forwarded, resolved, closed, reopened], description: 'Added in 1.48.0' }
+    RequestQueue: { type: string, enum: [area_manager, super_admin, assignee], description: 'Added in 1.48.0. Where the request waits now; assignee = with the person in `assignee`' }
+    RequestPerson:
+      type: object
+      required: [id, name]
+      properties: { id: { type: string }, name: { type: string } }
+    RequestTarget:
+      type: object
+      description: 'Added in 1.48.0. A queue, or a person (queue = assignee and user set)'
+      required: [queue, user]
+      properties:
+        queue: { $ref: '#/components/schemas/RequestQueue' }
+        user: { oneOf: [ { $ref: '#/components/schemas/RequestPerson' }, { type: 'null' } ] }
+    RequestCreate:
+      type: object
+      description: 'Added in 1.48.0 (FR-REQ-001). Body of POST /requests and payload of the sync mutation `request`'
+      required: [clientId, type, priority, title, body]
+      properties:
+        clientId: { type: string, format: uuid }
+        type: { $ref: '#/components/schemas/RequestType' }
+        priority: { $ref: '#/components/schemas/RequestPriority' }
+        title: { type: string, minLength: 1, maxLength: 160 }
+        body: { type: string, minLength: 1, maxLength: 4000 }
+        customerId: { type: string, description: 'A customer in the caller''s scope' }
+        photoMediaIds: { type: array, maxItems: 5, items: { type: string }, description: 'Photos the caller uploaded (media flow)' }
+        dueAt: { type: string, format: date-time }
+        branchId: { type: string, description: 'Office users with request.view only, in scope; everyone else gets their home branch' }
+    RequestComment:
+      type: object
+      description: 'Added in 1.48.0'
+      required: [clientId, text]
+      properties:
+        clientId: { type: string, format: uuid }
+        text: { type: string, minLength: 1, maxLength: 2000 }
+    RequestNote:
+      type: object
+      required: [note]
+      properties: { note: { type: string, minLength: 1, maxLength: 1000 } }
+    RequestForward:
+      type: object
+      description: 'Added in 1.48.0. Exactly one of queue / userId'
+      required: [note]
+      properties:
+        queue: { type: string, enum: [area_manager, super_admin] }
+        userId: { type: string }
+        note: { type: string, minLength: 1, maxLength: 1000 }
+    RequestAssign:
+      type: object
+      required: [userId]
+      properties:
+        userId: { type: string }
+        note: { type: string, maxLength: 1000 }
+    RequestTimelineEntry:
+      type: object
+      description: 'Added in 1.48.0. Append-only; an entry is never changed or removed'
+      required: [id, kind, at, actor]
+      properties:
+        id: { type: string }
+        kind: { type: string, enum: [created, comment, forwarded, assigned, status_changed, resolved, reopened, closed], description: 'Clients must show an unknown kind as its raw key' }
+        at: { type: string, format: date-time }
+        actor: { $ref: '#/components/schemas/RequestPerson' }
+        note: { type: [string, 'null'], description: 'comment text, forward/assign/resolve/reopen/close note' }
+        from: { oneOf: [ { $ref: '#/components/schemas/RequestTarget' }, { type: 'null' } ], description: 'forwarded / assigned: where it was' }
+        to: { oneOf: [ { $ref: '#/components/schemas/RequestTarget' }, { type: 'null' } ], description: 'created / forwarded / assigned: where it went' }
+        status: { oneOf: [ { type: object, required: [from, to], properties: { from: { type: [string, 'null'] }, to: { $ref: '#/components/schemas/RequestStatus' } } }, { type: 'null' } ], description: 'The status change this entry made, if any' }
+    Request:
+      type: object
+      description: 'Added in 1.48.0 (FR-REQ-001..006). A request / report / inform / complaint from staff, traced end to end'
+      required: [id, clientId, type, priority, title, body, branchId, createdBy, createdAt, createdDate, status, currentQueue, level, assignee, timeline, version]
+      properties:
+        id: { type: string }
+        clientId: { type: string }
+        type: { $ref: '#/components/schemas/RequestType' }
+        priority: { $ref: '#/components/schemas/RequestPriority' }
+        title: { type: string }
+        body: { type: string }
+        customerId: { type: [string, 'null'] }
+        photoMediaIds: { type: array, items: { type: string } }
+        branchId: { type: string }
+        createdBy: { $ref: '#/components/schemas/RequestPerson' }
+        createdAt: { type: string, format: date-time }
+        createdDate: { type: string, format: date, description: 'Asia/Dhaka business date of createdAt' }
+        status: { $ref: '#/components/schemas/RequestStatus' }
+        currentQueue: { $ref: '#/components/schemas/RequestQueue' }
+        level: { type: string, enum: [area_manager, super_admin], description: 'The queue responsible for it, also while it is with a person: set by priority, changed by forwarding to a queue. At super_admin only request.important.manage holders move, resolve or close it' }
+        assignee: { oneOf: [ { $ref: '#/components/schemas/RequestPerson' }, { type: 'null' } ] }
+        dueAt: { type: [string, 'null'], format: date-time }
+        resolvedAt: { type: [string, 'null'], format: date-time }
+        resolvedBy: { oneOf: [ { $ref: '#/components/schemas/RequestPerson' }, { type: 'null' } ] }
+        resolutionNote: { type: [string, 'null'] }
+        closedAt: { type: [string, 'null'], format: date-time }
+        timeline: { type: array, items: { $ref: '#/components/schemas/RequestTimelineEntry' } }
+        updatedAt: { type: string, format: date-time }
+        version: { type: integer }
+    RequestPage:
+      type: object
+      required: [items, nextCursor, total, counts]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/Request' } }
+        nextCursor: { type: [string, 'null'] }
+        total: { type: integer, description: 'Rows matching the filters (all pages)' }
+        counts:
+          type: object
+          description: 'Rows per status for the same filters without `status`'
+          required: [open, in_progress, forwarded, resolved, closed, reopened]
+          properties: { open: { type: integer }, in_progress: { type: integer }, forwarded: { type: integer }, resolved: { type: integer }, closed: { type: integer }, reopened: { type: integer } }
     DashboardLink:
       type: object
       description: 'Added in 1.45.0. The list behind a dashboard number: GET /api/v1{path}?{query}. Query values are strings; arrays are comma separated'
