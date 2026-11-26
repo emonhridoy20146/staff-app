@@ -1,11 +1,15 @@
 openapi: 3.1.0
 info:
   title: Howlader Field Operations API
-  version: 1.49.0
+  version: 1.50.0
   description: |
     Contract owned by field-api. Consumers (admin-web, staff-app) generate types from this file.
     Conventions (auth, pagination, idempotency, errors) are described in docs/05-api-contract.md.
     Money is integer poisha. Times are UTC ISO-8601; business dates are YYYY-MM-DD in Asia/Dhaka.
+    1.50.0 (additive): invoices returned in the ERP are no longer shown anywhere (FR-CUS-023, ADR-068): they are left
+    out of customer list and detail `plans`, invoice counts and badges, invoice-number search, KPIs and the sync
+    `customer` item. The customer stays. New `CustomerDetail.returnedPlanIds` (also on the sync `customer` item) lists
+    the erpPlanIds of returned invoices so a device that already holds one deletes it. Plan `status` values unchanged.
     1.49.0 (additive): tracking token for the staff app's native location service (FR-LOC-013, ADR-067).
     POST /location/tracking-token issues `{ token, expiresAt }` (about 24 h, setting `location.trackingTokenTtlHours`);
     POST /location/points also accepts `Authorization: Tracking <token>` (security scheme `trackingToken`). The token
@@ -583,7 +587,7 @@ paths:
         - { name: assignedTo, in: query, schema: { type: string, description: "'me' or a userId" } }
         - $ref: '#/components/parameters/BranchId'
         - { name: areaId, in: query, schema: { type: string } }
-        - { name: q, in: query, schema: { type: string } }
+        - { name: q, in: query, schema: { type: string }, description: 'Name (bn/en), customer code, ERP id, mobile number (last digits, 4 or more) or invoice number (separators ignored, e.g. S24052 finds S-24052). Bangla digits are accepted (2026-11-26).' }
         - { name: near, in: query, schema: { type: string, example: '22.7101,90.3705' } }
         - { name: radiusM, in: query, schema: { type: integer, default: 5000 } }
         - { name: sort, in: query, schema: { type: string, enum: [distance, -daysOverdue, name, -totalOutstanding, nextDueDate] } }
@@ -2987,7 +2991,7 @@ components:
         downPaymentPoisha: { type: integer }
         paidPoisha: { type: integer }
         outstandingPoisha: { type: integer }
-        status: { type: string, enum: [active, completed, closed, defaulted, cancelled], description: '`closed` = returned in the ERP; closed and cancelled plans are not collectable and not counted in totals' }
+        status: { type: string, enum: [active, completed, closed, defaulted, cancelled], description: '`closed` = not collectable in the field (e.g. a cash sale with money left, a draft, or an invoice the ERP marks not collectable); closed and cancelled plans are not collectable and not counted in totals. Since 1.50.0 (FR-CUS-023) invoices returned in the ERP are not listed at all (see CustomerDetail.returnedPlanIds); the meaning of each value is unchanged' }
         badSuggested: { type: boolean }
         schedule:
           type: array
@@ -3093,7 +3097,8 @@ components:
                 overdueCount: { type: integer }
                 maxDaysLate: { type: integer }
                 computedAt: { type: [string, 'null'] }
-            plans: { type: array, items: { $ref: '#/components/schemas/Plan' } }
+            plans: { type: array, items: { $ref: '#/components/schemas/Plan' }, description: 'Every invoice of the customer FOS shows, complete (replace the stored list, do not merge). Since 1.50.0 (FR-CUS-023) invoices returned in the ERP are never in this list' }
+            returnedPlanIds: { type: array, items: { type: string }, description: 'Added in 1.50.0 (FR-CUS-023, ADR-068). erpPlanIds of the customer''s invoices that were returned in the ERP. They are not in `plans` and never shown; a client that already stored one of them (before 1.50.0) deletes it, with its schedule. Empty when none. Older servers omit it' }
             payments: { type: array, items: { $ref: '#/components/schemas/Payment' } }
             pendingCollections: { type: array, items: { $ref: '#/components/schemas/Collection' } }
             badSuggestion: { type: [object, 'null'], properties: { erpPlanId: { type: string }, finalDueDate: { type: string }, outstandingPoisha: { type: integer }, text: { $ref: '#/components/schemas/I18nText' } } }
@@ -3853,7 +3858,7 @@ components:
           additionalProperties: true
           description: |
             Present for op=upsert. Shape per entity (1.2.0 documents the mapping; values unchanged):
-            customer → CustomerDetail · collection → Collection · visit → Visit · note → Note · promise → Promise ·
+            customer → CustomerDetail (1.50.0: `plans` is the full list without returned invoices; `returnedPlanIds` = ids to delete) · collection → Collection · visit → Visit · note → Note · promise → Promise ·
             tag → Tag (with customerId) · handover → Handover · assignment → Assignment · area → Area · deposit → Deposit ·
             attendance_day → AttendanceDay · notification → Notification · broadcast → Broadcast · setting → { key, value } ·
             contact_attempt → ContactAttempt · location_proposal → OwnLocationProposal (1.7.0; sent only to the staff member who proposed, on create and on the manager's decision) ·
