@@ -950,6 +950,54 @@ abstract class AppLocalizations {
   /// **'No promises or dues left for today.'**
   String get todayAllDoneBody;
 
+  /// No description provided for @homeKpiPromised.
+  ///
+  /// In en, this message translates to:
+  /// **'Promised'**
+  String get homeKpiPromised;
+
+  /// No description provided for @homeKpiDue.
+  ///
+  /// In en, this message translates to:
+  /// **'Due today'**
+  String get homeKpiDue;
+
+  /// No description provided for @homeKpiOverdue.
+  ///
+  /// In en, this message translates to:
+  /// **'Overdue'**
+  String get homeKpiOverdue;
+
+  /// No description provided for @homeKpiLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{label}: {count} customers'**
+  String homeKpiLabel(String label, String count);
+
+  /// No description provided for @homeWorkListTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s work list'**
+  String get homeWorkListTitle;
+
+  /// No description provided for @homeWorkListBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Promised, due today, then nearest overdue'**
+  String get homeWorkListBody;
+
+  /// No description provided for @homeLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading…'**
+  String get homeLoading;
+
+  /// No description provided for @homeTargetPct.
+  ///
+  /// In en, this message translates to:
+  /// **'{pct}% done'**
+  String homeTargetPct(String pct);
+
   /// No description provided for @todayCashWarning.
   ///
   /// In en, this message translates to:

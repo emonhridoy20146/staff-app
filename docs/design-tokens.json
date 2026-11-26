@@ -1,5 +1,5 @@
 {
-  "version": "1.1.0",
+  "version": "1.2.0",
   "source": "admin-web/docs/03-design-guide.md §2 (canonical); must equal staff-app copy",
   "color": {
     "brand": {
@@ -244,6 +244,11 @@
     "xl": 16,
     "xxl": 28,
     "full": 9999
+  },
+  "shadow": {
+    "sm": "0 1px 2px rgb(16 24 40 / 0.06), 0 1px 3px rgb(16 24 40 / 0.08)",
+    "md": "0 4px 12px -2px rgb(16 24 40 / 0.08), 0 2px 4px -2px rgb(16 24 40 / 0.04)",
+    "darkNote": "dark mode uses no shadow: depth comes from surface steps and the 1 px border"
   },
   "motion": {
     "fastMs": 120,

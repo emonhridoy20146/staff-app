@@ -28,24 +28,40 @@ const todayOverdueLimit = 8;
 String greetingFor(AppLocalizations l, int dhakaHour, String name) =>
     dhakaHour < 12 ? l.greetingMorning(name) : (dhakaHour < 17 ? l.greetingAfternoon(name) : l.greetingEvening(name));
 
-/// Today (FR-M-004, FR-M-005): duty, progress, problems, then the work list
-/// in priority order — promised today, due today, overdue nearest first.
-class TodayScreen extends ConsumerWidget {
+/// Today (FR-M-004, FR-M-005). Home redesign 2026-11-26 (owner request): a header (greeting, date, sync) and a
+/// summary card with today's collection and the three work counts (KPIs) lead; then duty, quick actions and the
+/// features' cards; then the work list in priority order — promised today, due today, overdue nearest first —
+/// each section with a toned header and its count. Skeleton rows while loading, a calm card when all is done.
+class TodayScreen extends ConsumerStatefulWidget {
   const TodayScreen({super.key, this.onSeeOverdue});
 
   /// Opens the Customers tab filtered to overdue.
   final VoidCallback? onSeeOverdue;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<TodayScreen> createState() => _TodayScreenState();
+}
+
+class _TodayScreenState extends ConsumerState<TodayScreen> {
+  final _sectionKeys = {for (final s in _Section.values) s: GlobalKey(debugLabel: 'today-${s.name}')};
+
+  /// A KPI tap brings its section into view (or opens the overdue list when the section is not shown).
+  void _jumpTo(_Section s) {
+    final ctx = _sectionKeys[s]!.currentContext;
+    if (ctx == null) {
+      if (s == _Section.overdue) widget.onSeeOverdue?.call();
+      return;
+    }
+    final reduce = MediaQuery.disableAnimationsOf(context);
+    Scrollable.ensureVisible(ctx, duration: reduce ? Duration.zero : Motion.slow, curve: Motion.standard, alignment: 0.02);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
-    final t = Theme.of(context).textTheme;
     final cs = Theme.of(context).colorScheme;
     final f = ref.watch(fmtProvider);
-    final lang = Localizations.localeOf(context).languageCode;
     final access = ref.watch(accessProvider);
-    final user = ref.watch(sessionProvider).user;
-    final now = ref.watch(clockProvider).nowDhaka();
     ref.watch(minuteTickerProvider);
     final prio = ref.watch(todayPrioritiesProvider);
     final cards = [
@@ -55,70 +71,72 @@ class TodayScreen extends ConsumerWidget {
             if (c.permission == null || access.can(c.permission!)) c,
     ]..sort((a, b) => a.order.compareTo(b.order));
     final canCollect = access.flag('module.collections') && access.can(Perm.collectionRecord);
-    final name = user?.name.of(lang).split(' ').first ?? '';
 
     return Scaffold(
       backgroundColor: cs.surfaceContainerLowest,
       // Owner request 2026-11-23: no floating Collect button; each row has its own Collect.
       body: RefreshIndicator(
         onRefresh: () => ref.read(syncEngineProvider).syncNow(),
-        child: CustomScrollView(slivers: [
-          SliverAppBar(
-            pinned: true,
-            backgroundColor: cs.surfaceContainer,
-            titleSpacing: Space.screen,
-            toolbarHeight: 64,
-            title: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(greetingFor(l, now.hour, name), style: t.titleLarge, maxLines: 1, overflow: TextOverflow.ellipsis),
-              Text(f.date(ref.watch(todayProvider), withYear: true), style: t.bodySmall!.copyWith(color: cs.onSurfaceVariant)),
-            ]),
-            actions: [SyncChip(onTap: () => context.push('/sync')), const SizedBox(width: Space.s12)],
-          ),
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(Space.screen, Space.s16, Space.screen, 0),
-            sliver: SliverList.list(children: [
-              if (ref.watch(attendanceShownProvider)) ...[const DutyCard(), const SizedBox(height: Space.cardGap)],
-              _QuickActions(access: access),
-              const SizedBox(height: Space.cardGap),
-              const _ProgressCard(),
-              for (final c in cards) _Gap(child: c.builder(context)),
-              const _CashWarning(),
-            ]),
-          ),
-          ...prio.when(
-            loading: () => [const SliverToBoxAdapter(child: Padding(padding: EdgeInsets.all(Space.s32), child: Center(child: CircularProgressIndicator())))],
-            error: (_, _) => [SliverToBoxAdapter(child: EmptyState(icon: Icons.error_outline_rounded, title: l.errorGeneric, body: ''))],
-            data: (p) => p.isEmpty
-                ? [SliverToBoxAdapter(child: EmptyState(icon: Icons.task_alt_rounded, title: l.todayAllDone, body: l.todayAllDoneBody))]
-                : [
-                    ..._section(context, l.todayPromisedSection, p.promised, AppStatus.promised, canCollect),
-                    ..._section(context, l.todayDueSection, p.due, AppStatus.dueToday, canCollect),
-                    ..._section(context, l.todayOverdueSection, p.overdue.take(todayOverdueLimit).toList(), AppStatus.overdue, canCollect, total: p.overdue.length),
-                    if (p.overdue.length > todayOverdueLimit)
-                      SliverToBoxAdapter(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: Space.screen),
-                          child: TextButton(onPressed: onSeeOverdue, child: Text(l.todayMore(f.num(p.overdue.length - todayOverdueLimit)))),
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            const SliverToBoxAdapter(child: _HomeHeader()),
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(Space.screen, 0, Space.screen, 0),
+              sliver: SliverList.list(children: [
+                _ProgressCard(priorities: prio.value, onKpi: _jumpTo),
+                if (ref.watch(attendanceShownProvider)) const _Gap(child: DutyCard()),
+                _Gap(child: _QuickActions(access: access)),
+                for (final c in cards) _Gap(child: c.builder(context)),
+                const _CashWarning(),
+              ]),
+            ),
+            const SliverToBoxAdapter(child: _WorkListTitle()),
+            ...prio.when(
+              loading: () => [const SliverToBoxAdapter(child: _WorkSkeleton())],
+              error: (_, _) => [
+                SliverToBoxAdapter(child: _CalmCard(child: EmptyState(icon: Icons.error_outline_rounded, title: l.errorGeneric, body: ''))),
+              ],
+              data: (p) => p.isEmpty
+                  ? [SliverToBoxAdapter(child: _CalmCard(child: EmptyState(icon: Icons.task_alt_rounded, title: l.todayAllDone, body: l.todayAllDoneBody)))]
+                  : [
+                      ..._section(context, _Section.promised, l.todayPromisedSection, Icons.handshake_rounded, p.promised, AppStatus.promised, canCollect),
+                      ..._section(context, _Section.due, l.todayDueSection, Icons.event_available_rounded, p.due, AppStatus.dueToday, canCollect),
+                      ..._section(context, _Section.overdue, l.todayOverdueSection, Icons.near_me_rounded, p.overdue.take(todayOverdueLimit).toList(), AppStatus.overdue, canCollect,
+                          total: p.overdue.length),
+                      if (p.overdue.length > todayOverdueLimit)
+                        SliverToBoxAdapter(
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(Space.screen, Space.s8, Space.screen, 0),
+                            child: OutlinedButton.icon(
+                              onPressed: widget.onSeeOverdue,
+                              icon: const Icon(Icons.arrow_forward_rounded),
+                              label: Text(l.todayMore(f.num(p.overdue.length - todayOverdueLimit))),
+                            ),
+                          ),
                         ),
-                      ),
-                  ],
-          ),
-          const SliverToBoxAdapter(child: SizedBox(height: Space.s32)),
-        ]),
+                    ],
+            ),
+            const SliverToBoxAdapter(child: SizedBox(height: Space.s48)),
+          ],
+        ),
       ),
     );
   }
 
-  List<Widget> _section(BuildContext context, String title, List<Customer> list, AppStatus tone, bool canCollect, {int? total}) {
+  List<Widget> _section(BuildContext context, _Section key, String title, IconData icon, List<Customer> list, AppStatus tone, bool canCollect, {int? total}) {
     if (list.isEmpty) return const [];
     return [
-      SliverToBoxAdapter(child: _CountedHeader(title: title, count: total ?? list.length, color: context.statusColors.of(tone).fg)),
+      SliverToBoxAdapter(
+        child: KeyedSubtree(
+          key: _sectionKeys[key],
+          child: _ToneHeader(title: title, icon: icon, count: total ?? list.length, style: context.statusColors.of(tone)),
+        ),
+      ),
       SliverPadding(
         padding: const EdgeInsets.symmetric(horizontal: Space.screen),
         sliver: SliverToBoxAdapter(
-          child: Card(
-            margin: EdgeInsets.zero,
-            clipBehavior: Clip.antiAlias,
+          child: _SurfaceCard(
             child: Column(children: [
               for (var i = 0; i < list.length; i++) ...[
                 if (i > 0) const Divider(height: 1, indent: Space.s16, endIndent: Space.s16),
@@ -133,6 +151,179 @@ class TodayScreen extends ConsumerWidget {
         ),
       ),
     ];
+  }
+}
+
+enum _Section { promised, due, overdue }
+
+/// Greeting, date and sync state; the greeting may wrap at large text sizes instead of being cut.
+class _HomeHeader extends ConsumerWidget {
+  const _HomeHeader();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context);
+    final t = Theme.of(context).textTheme;
+    final cs = Theme.of(context).colorScheme;
+    final f = ref.watch(fmtProvider);
+    final lang = Localizations.localeOf(context).languageCode;
+    final user = ref.watch(sessionProvider).user;
+    final now = ref.watch(clockProvider).nowDhaka();
+    final name = user?.name.of(lang).split(' ').first ?? '';
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(Space.screen, Space.s20, Space.s12, Space.s16),
+      child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Expanded(
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Semantics(
+              header: true,
+              child: Text(greetingFor(l, now.hour, name), style: t.headlineSmall!.copyWith(fontWeight: FontWeight.w700), maxLines: 2, overflow: TextOverflow.ellipsis),
+            ),
+            const SizedBox(height: Space.s2),
+            Row(children: [
+              Icon(Icons.calendar_today_rounded, size: 16, color: cs.onSurfaceVariant),
+              const SizedBox(width: Space.s4),
+              Flexible(
+                child: Text(f.date(ref.watch(todayProvider), withYear: true), style: t.bodyMedium!.copyWith(color: cs.onSurfaceVariant), maxLines: 1, overflow: TextOverflow.ellipsis),
+              ),
+            ]),
+          ]),
+        ),
+        const SizedBox(width: Space.s8),
+        SyncChip(onTap: () => context.push('/sync')),
+      ]),
+    );
+  }
+}
+
+/// "Today's work list" over the sections.
+class _WorkListTitle extends StatelessWidget {
+  const _WorkListTitle();
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final t = Theme.of(context).textTheme;
+    final cs = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(Space.screen, Space.s32, Space.screen, 0),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Semantics(header: true, child: Text(l.homeWorkListTitle, style: t.titleLarge)),
+        const SizedBox(height: Space.s2),
+        Text(l.homeWorkListBody, style: t.bodyMedium!.copyWith(color: cs.onSurfaceVariant)),
+      ]),
+    );
+  }
+}
+
+/// Section header: a toned icon square, the title and a toned count pill.
+class _ToneHeader extends ConsumerWidget {
+  const _ToneHeader({required this.title, required this.icon, required this.count, required this.style});
+  final String title;
+  final IconData icon;
+  final int count;
+  final StatusStyle style;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = Theme.of(context).textTheme;
+    final n = ref.watch(fmtProvider).num(count);
+    return Semantics(
+      header: true,
+      label: '$title, $n',
+      excludeSemantics: true,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(Space.screen, Space.s20, Space.screen, Space.s12),
+        child: Row(children: [
+          Container(
+            width: Space.s32,
+            height: Space.s32,
+            decoration: BoxDecoration(color: style.bg, borderRadius: Radii.brMd),
+            child: Icon(icon, size: 18, color: style.fg),
+          ),
+          const SizedBox(width: Space.s12),
+          Flexible(child: Text(title, style: t.titleMedium, maxLines: 2, overflow: TextOverflow.ellipsis)),
+          const SizedBox(width: Space.s8),
+          DecoratedBox(
+            decoration: BoxDecoration(color: style.bg, borderRadius: const BorderRadius.all(Radius.circular(Radii.full))),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: Space.s8 + 2, vertical: Space.s2),
+              child: Text(n, style: AppTheme.tabular(t.labelMedium!).copyWith(color: style.fg, fontWeight: FontWeight.w700)),
+            ),
+          ),
+        ]),
+      ),
+    );
+  }
+}
+
+/// The one card style of Home: surface, 16 dp corners, hairline border, a soft shadow in light mode.
+class _SurfaceCard extends StatelessWidget {
+  const _SurfaceCard({required this.child});
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: cs.surface,
+        borderRadius: Radii.brXl,
+        border: Border.all(color: cs.outlineVariant),
+        boxShadow: Shadows.of(Theme.of(context).brightness, Shadows.sm),
+      ),
+      child: ClipRRect(borderRadius: Radii.brXl, child: Material(type: MaterialType.transparency, child: child)),
+    );
+  }
+}
+
+/// An empty or error state inside the card style, so the page keeps its rhythm.
+class _CalmCard extends StatelessWidget {
+  const _CalmCard({required this.child});
+  final Widget child;
+  @override
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.fromLTRB(Space.screen, Space.s16, Space.screen, 0),
+        child: _SurfaceCard(child: SizedBox(width: double.infinity, child: child)),
+      );
+}
+
+/// Loading: three skeleton rows in the shape of the work rows (no spinner, no layout jump).
+class _WorkSkeleton extends StatelessWidget {
+  const _WorkSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    Widget bar(double w, double h) => Container(width: w, height: h, decoration: BoxDecoration(color: cs.surfaceContainerHigh, borderRadius: Radii.brSm));
+    Widget row() => Padding(
+          padding: const EdgeInsets.all(Space.s16),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Row(children: [Expanded(child: Align(alignment: AlignmentDirectional.centerStart, child: bar(160, 18))), bar(72, 18)]),
+            const SizedBox(height: Space.s8),
+            bar(120, 12),
+            const SizedBox(height: Space.s12),
+            Row(children: [
+              for (var i = 0; i < 4; i++) ...[bar(Space.s32, Space.s32), const SizedBox(width: Space.s8)],
+              const Spacer(),
+              bar(96, Sizes.minTarget - Space.s8),
+            ]),
+          ]),
+        );
+    return Semantics(
+      label: AppLocalizations.of(context).homeLoading,
+      liveRegion: true,
+      excludeSemantics: true,
+      child: Padding(
+        key: const Key('today-skeleton'),
+        padding: const EdgeInsets.fromLTRB(Space.screen, Space.s20, Space.screen, 0),
+        child: _SurfaceCard(
+          child: Column(children: [
+            for (var i = 0; i < 3; i++) ...[if (i > 0) const Divider(height: 1, indent: Space.s16, endIndent: Space.s16), row()],
+          ]),
+        ),
+      ),
+    );
   }
 }
 
@@ -162,15 +353,6 @@ class _RenderGap extends RenderShiftedBox {
   }
 }
 
-class _CountedHeader extends ConsumerWidget {
-  const _CountedHeader({required this.title, required this.count, required this.color});
-  final String title;
-  final int count;
-  final Color color;
-  @override
-  Widget build(BuildContext context, WidgetRef ref) => SectionHeader(title, count: ref.watch(fmtProvider).num(count), color: color);
-}
-
 class _QuickCollect extends StatelessWidget {
   const _QuickCollect({required this.customerId});
   final String customerId;
@@ -188,7 +370,7 @@ class _QuickCollect extends StatelessWidget {
   }
 }
 
-/// Three quick-access tiles: Attendance hub, Today's Work log, Performance.
+/// Three quick-access tiles: Attendance hub, Today's Work log, Performance. One height, one style.
 class _QuickActions extends ConsumerWidget {
   const _QuickActions({required this.access});
   final AccessSnapshot access;
@@ -202,17 +384,27 @@ class _QuickActions extends ConsumerWidget {
     final showAttendance = ref.watch(attendanceShownProvider); // FR-M-070: never for a super admin
     final showReports = access.flag('module.reports');
     if (!showAttendance && !showReports) return const SizedBox.shrink();
-    return Row(children: [
-      if (showAttendance) ...[
-        Expanded(child: _QuickTile(icon: Icons.work_history_rounded, label: l.attendanceBtn, mark: attended ? _TileMark.done : _TileMark.pending, markLabel: attended ? l.attTileDone : l.attTilePending, onTap: () => context.push('/attendance'))),
-        const SizedBox(width: Space.s8),
-      ],
-      Expanded(child: _QuickTile(icon: Icons.list_alt_rounded, label: l.todayWorkBtn, onTap: () => context.push('/today-work'))),
-      if (showReports) ...[
-        const SizedBox(width: Space.s8),
-        Expanded(child: _QuickTile(icon: Icons.insights_rounded, label: l.performanceBtn, onTap: () => context.push('/performance'))),
-      ],
-    ]);
+    return IntrinsicHeight(
+      child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        if (showAttendance) ...[
+          Expanded(
+            child: _QuickTile(
+              icon: Icons.work_history_rounded,
+              label: l.attendanceBtn,
+              mark: attended ? _TileMark.done : _TileMark.pending,
+              markLabel: attended ? l.attTileDone : l.attTilePending,
+              onTap: () => context.push('/attendance'),
+            ),
+          ),
+          const SizedBox(width: Space.s8),
+        ],
+        Expanded(child: _QuickTile(icon: Icons.list_alt_rounded, label: l.todayWorkBtn, onTap: () => context.push('/today-work'))),
+        if (showReports) ...[
+          const SizedBox(width: Space.s8),
+          Expanded(child: _QuickTile(icon: Icons.insights_rounded, label: l.performanceBtn, onTap: () => context.push('/performance'))),
+        ],
+      ]),
+    );
   }
 }
 
@@ -236,32 +428,35 @@ class _QuickTile extends StatelessWidget {
     final markStyle = mark == _TileMark.done ? sem.success : sem.warning;
     return Semantics(
       label: markLabel,
-      child: Material(
-        color: cs.secondaryContainer,
-        borderRadius: Radii.brMd,
+      button: true,
+      child: _SurfaceCard(
         child: InkWell(
           onTap: onTap,
-          borderRadius: Radii.brMd,
           child: Stack(children: [
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: Space.s12, horizontal: Space.s8),
+              padding: const EdgeInsets.fromLTRB(Space.s4, Space.s12, Space.s4, Space.s12),
               child: SizedBox(
                 width: double.infinity,
                 child: Column(mainAxisSize: MainAxisSize.min, children: [
-                  Icon(icon, size: 24, color: cs.onSecondaryContainer),
-                  const SizedBox(height: Space.s4),
-                  Text(label, style: t.labelSmall!.copyWith(color: cs.onSecondaryContainer), textAlign: TextAlign.center, maxLines: 2),
+                  Container(
+                    width: Space.s40,
+                    height: Space.s40,
+                    decoration: BoxDecoration(color: cs.primaryContainer, shape: BoxShape.circle),
+                    child: Icon(icon, size: 22, color: cs.onPrimaryContainer),
+                  ),
+                  const SizedBox(height: Space.s8),
+                  Text(label, style: t.labelMedium!.copyWith(color: cs.onSurface), textAlign: TextAlign.center, maxLines: 2, overflow: TextOverflow.ellipsis),
                   if (mark != null && markLabel != null) ...[
-                    const SizedBox(height: 2),
-                    Text(markLabel!, style: t.labelSmall!.copyWith(color: markStyle.fg, fontWeight: FontWeight.w700), textAlign: TextAlign.center, maxLines: 1, overflow: TextOverflow.ellipsis),
+                    const SizedBox(height: Space.s2),
+                    Text(markLabel!, style: t.labelSmall!.copyWith(color: markStyle.fg, fontWeight: FontWeight.w700), textAlign: TextAlign.center, maxLines: 2, overflow: TextOverflow.ellipsis),
                   ],
                 ]),
               ),
             ),
             if (mark != null)
               PositionedDirectional(
-                top: Space.s4,
-                end: Space.s4,
+                top: Space.s8,
+                end: Space.s8,
                 child: Container(
                   width: 18,
                   height: 18,
@@ -276,10 +471,14 @@ class _QuickTile extends StatelessWidget {
   }
 }
 
-/// Today's collection. Owner request 2026-11-23: compact by default (amount, target and its bar); a tap opens
-/// the visit target, cash / mobile / visits and the cash meter. The "Details ▾" pill says it can be opened.
+/// The summary card (the Home's "hero"). Owner request 2026-11-23: compact by default (amount, target and its
+/// bar); a tap opens the visit target, cash / mobile / visits and the cash meter. The "Details ▾" pill says it can
+/// be opened. 2026-11-26: the three work counts (promised / due / overdue) sit under the bar as KPI tiles in their
+/// status colours; a tap scrolls to that section.
 class _ProgressCard extends ConsumerStatefulWidget {
-  const _ProgressCard();
+  const _ProgressCard({required this.priorities, required this.onKpi});
+  final TodayPriorities? priorities;
+  final ValueChanged<_Section> onKpi;
   @override
   ConsumerState<_ProgressCard> createState() => _ProgressCardState();
 }
@@ -308,88 +507,185 @@ class _ProgressCardState extends ConsumerState<_ProgressCard> {
     final offDay = mine != null && !mine.workingDay;
     final showCash = access.flag('module.cash') && access.can(Perm.cashView);
     final done = context.semanticColors.success.fg;
+    final p = widget.priorities;
+    final st = context.statusColors;
 
     final details = <Widget>[
-        if (visitTarget > 0) ...[
-          const SizedBox(height: Space.s12),
-          Row(children: [
-            Icon(Icons.where_to_vote_outlined, size: 18, color: cs.onSurfaceVariant),
-            const SizedBox(width: Space.s4),
-            Expanded(child: Text(l.todayVisitTarget, style: t.bodyMedium!.copyWith(color: cs.onSurfaceVariant))),
-            Text(
-              l.todayVisitTargetOf(f.dec(credit), f.dec(visitTarget)),
-              style: AppTheme.tabular(t.titleSmall!).copyWith(color: visitRatio >= 1 ? done : null),
+      const SizedBox(height: Space.s16),
+      Container(
+        padding: const EdgeInsets.all(Space.s12),
+        decoration: BoxDecoration(color: cs.surfaceContainerLow, borderRadius: Radii.brLg, border: Border.all(color: cs.outlineVariant)),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          if (visitTarget > 0) ...[
+            Row(children: [
+              Icon(Icons.where_to_vote_outlined, size: 18, color: cs.onSurfaceVariant),
+              const SizedBox(width: Space.s4),
+              Expanded(child: Text(l.todayVisitTarget, style: t.bodyMedium!.copyWith(color: cs.onSurfaceVariant))),
+              Text(
+                l.todayVisitTargetOf(f.dec(credit), f.dec(visitTarget)),
+                style: AppTheme.tabular(t.titleSmall!).copyWith(color: visitRatio >= 1 ? done : null),
+              ),
+            ]),
+            const SizedBox(height: Space.s4),
+            ClipRRect(
+              borderRadius: const BorderRadius.all(Radius.circular(Radii.full)),
+              child: LinearProgressIndicator(value: visitRatio, minHeight: 6, color: visitRatio >= 1 ? done : cs.primary),
+            ),
+            const SizedBox(height: Space.s16),
+          ],
+          Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Expanded(child: _Metric(icon: Icons.payments_outlined, label: l.cashTodayCash, value: f.money(totals.cash))),
+            const SizedBox(width: Space.s8),
+            Expanded(child: _Metric(icon: Icons.phone_android_rounded, label: l.cashTodayMobile, value: f.money(totals.mobile))),
+            const SizedBox(width: Space.s8),
+            Expanded(
+              child: _Metric(
+                icon: Icons.where_to_vote_outlined,
+                label: l.todayVisits,
+                value: f.num(visits),
+                hint: split.coWork > 0 ? l.todayVisitsJoint(f.num(split.coWork)) : null,
+              ),
             ),
           ]),
-          const SizedBox(height: Space.s4),
-          ClipRRect(
-            borderRadius: const BorderRadius.all(Radius.circular(Radii.full)),
-            child: LinearProgressIndicator(value: visitRatio, minHeight: 6, color: visitRatio >= 1 ? done : cs.primary),
-          ),
-        ],
-        const SizedBox(height: Space.s16),
-        Row(children: [
-          Expanded(child: _Metric(icon: Icons.payments_outlined, label: l.cashTodayCash, value: f.money(totals.cash))),
-          Expanded(child: _Metric(icon: Icons.phone_android_rounded, label: l.cashTodayMobile, value: f.money(totals.mobile))),
-          Expanded(
-            child: _Metric(
-              icon: Icons.where_to_vote_outlined,
-              label: l.todayVisits,
-              value: f.num(visits),
-              hint: split.coWork > 0 ? l.todayVisitsJoint(f.num(split.coWork)) : null,
-            ),
-          ),
+          if (showCash) ...[
+            const Divider(height: Space.s32),
+            const CashMeter(compact: true),
+          ],
         ]),
-        if (showCash) ...[
-          const Divider(height: Space.s32),
-          const CashMeter(compact: true),
-        ],
+      ),
     ];
 
+    return DecoratedBox(
+      key: const Key('today-progress-card'),
+      decoration: BoxDecoration(
+        color: cs.surface,
+        borderRadius: Radii.brXl,
+        border: Border.all(color: cs.outlineVariant),
+        boxShadow: Shadows.of(Theme.of(context).brightness, Shadows.md),
+      ),
+      child: ClipRRect(
+        borderRadius: Radii.brXl,
+        child: Material(
+          type: MaterialType.transparency,
+          child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+            // A brand stripe on top: the one place Home uses the primary colour as a surface accent.
+            Container(height: Space.s4, color: cs.primary),
+            Semantics(
+              button: true,
+              expanded: _open,
+              label: l.todayCollectedDetails,
+              child: InkWell(
+                onTap: () => setState(() => _open = !_open),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(Space.s16, Space.s12, Space.s12, Space.s16),
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Row(children: [
+                      Container(
+                        width: Space.s32,
+                        height: Space.s32,
+                        decoration: BoxDecoration(color: cs.primaryContainer, borderRadius: Radii.brMd),
+                        child: Icon(Icons.account_balance_wallet_rounded, size: 18, color: cs.onPrimaryContainer),
+                      ),
+                      const SizedBox(width: Space.s8),
+                      Expanded(child: Text(l.todayCollected, style: t.titleSmall!.copyWith(color: cs.onSurfaceVariant), maxLines: 2, overflow: TextOverflow.ellipsis)),
+                      const SizedBox(width: Space.s8),
+                      ExpandHint(open: _open),
+                    ]),
+                    const SizedBox(height: Space.s8),
+                    MoneyText(totals.total, style: t.headlineMedium!.copyWith(fontWeight: FontWeight.w700)),
+                    const SizedBox(height: Space.s2),
+                    Wrap(spacing: Space.s8, runSpacing: Space.s4, crossAxisAlignment: WrapCrossAlignment.center, children: [
+                      Text(
+                        target > 0 ? l.todayOfTarget(f.money(target)) : (offDay ? l.todayOffDay : l.todayNoTarget),
+                        style: t.bodyMedium!.copyWith(color: cs.onSurfaceVariant),
+                      ),
+                      if (ratio >= 1)
+                        _TargetMet(label: l.todayTargetMet)
+                      else if (mine?.source == 'personal' && target > 0)
+                        Text(l.todayTargetPersonal, style: t.labelMedium!.copyWith(color: cs.primary)),
+                    ]),
+                    if (target > 0) ...[
+                      const SizedBox(height: Space.s12),
+                      Row(children: [
+                        Expanded(
+                          child: ClipRRect(
+                            borderRadius: const BorderRadius.all(Radius.circular(Radii.full)),
+                            child: LinearProgressIndicator(value: ratio, minHeight: 10, color: ratio >= 1 ? done : cs.primary),
+                          ),
+                        ),
+                        const SizedBox(width: Space.s12),
+                        Text(l.homeTargetPct(f.num((ratio * 100).floor())), style: AppTheme.tabular(t.labelMedium!).copyWith(color: ratio >= 1 ? done : cs.onSurfaceVariant)),
+                      ]),
+                    ],
+                    AnimatedSize(
+                      duration: Motion.base,
+                      curve: Motion.standard,
+                      alignment: Alignment.topCenter,
+                      child: _open ? Column(crossAxisAlignment: CrossAxisAlignment.start, children: details) : const SizedBox(width: double.infinity),
+                    ),
+                  ]),
+                ),
+              ),
+            ),
+            if (p != null) ...[
+              Divider(height: 1, color: cs.outlineVariant),
+              Padding(
+                padding: const EdgeInsets.all(Space.s12),
+                child: IntrinsicHeight(
+                  child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                    Expanded(child: _Kpi(label: l.homeKpiPromised, count: p.promised.length, style: st.of(AppStatus.promised), onTap: () => widget.onKpi(_Section.promised))),
+                    const SizedBox(width: Space.s8),
+                    Expanded(child: _Kpi(label: l.homeKpiDue, count: p.due.length, style: st.of(AppStatus.dueToday), onTap: () => widget.onKpi(_Section.due))),
+                    const SizedBox(width: Space.s8),
+                    Expanded(child: _Kpi(label: l.homeKpiOverdue, count: p.overdue.length, style: st.of(AppStatus.overdue), onTap: () => widget.onKpi(_Section.overdue))),
+                  ]),
+                ),
+              ),
+            ],
+          ]),
+        ),
+      ),
+    );
+  }
+}
+
+/// One work count in its status colour (a zero is shown quietly, in the neutral tone).
+class _Kpi extends ConsumerWidget {
+  const _Kpi({required this.label, required this.count, required this.style, required this.onTap});
+  final String label;
+  final int count;
+  final StatusStyle style;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = Theme.of(context).textTheme;
+    final cs = Theme.of(context).colorScheme;
+    final l = AppLocalizations.of(context);
+    final n = ref.watch(fmtProvider).num(count);
+    final zero = count == 0;
+    final fg = zero ? cs.onSurfaceVariant : style.fg;
     return Semantics(
       button: true,
-      expanded: _open,
-      label: l.todayCollectedDetails,
-      child: AppCard(
-        key: const Key('today-progress-card'),
-        onTap: () => setState(() => _open = !_open),
-        padding: const EdgeInsets.fromLTRB(Space.s16, Space.s12, Space.s12, Space.s12),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Row(children: [
-          Expanded(child: Text(l.todayCollected, style: t.bodyMedium!.copyWith(color: cs.onSurfaceVariant))),
-          // Flexible: with the Details pill beside them they must shrink at large text sizes, not overflow.
-          if (ratio >= 1)
-            Flexible(child: _TargetMet(label: l.todayTargetMet))
-          else if (mine?.source == 'personal' && target > 0)
-            Flexible(child: Text(l.todayTargetPersonal, style: t.labelMedium!.copyWith(color: cs.primary), maxLines: 1, overflow: TextOverflow.ellipsis)),
-          const SizedBox(width: Space.s8),
-          ExpandHint(open: _open),
-        ]),
-        Row(crossAxisAlignment: CrossAxisAlignment.baseline, textBaseline: TextBaseline.alphabetic, children: [
-          MoneyText(totals.total, style: t.headlineSmall!.copyWith(fontWeight: FontWeight.w700)),
-          const SizedBox(width: Space.s8),
-          Expanded(
-            child: Text(
-              target > 0 ? l.todayOfTarget(f.money(target)) : (offDay ? l.todayOffDay : l.todayNoTarget),
-              style: t.bodyMedium!.copyWith(color: cs.onSurfaceVariant),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+      label: l.homeKpiLabel(label, n),
+      excludeSemantics: true,
+      child: Material(
+        color: zero ? cs.surfaceContainer : style.bg,
+        borderRadius: Radii.brLg,
+        child: InkWell(
+          borderRadius: Radii.brLg,
+          onTap: count == 0 ? null : onTap,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: Sizes.minTarget),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: Space.s8, vertical: Space.s8),
+              child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+                Text(n, style: AppTheme.tabular(t.titleLarge!).copyWith(color: fg, fontWeight: FontWeight.w700), maxLines: 1),
+                Text(label, style: t.labelSmall!.copyWith(color: fg), textAlign: TextAlign.center, maxLines: 2, overflow: TextOverflow.ellipsis),
+              ]),
             ),
           ),
-        ]),
-        if (target > 0) ...[
-          const SizedBox(height: Space.s8),
-          ClipRRect(
-            borderRadius: const BorderRadius.all(Radius.circular(Radii.full)),
-            child: LinearProgressIndicator(value: ratio, minHeight: 10, color: ratio >= 1 ? done : cs.primary),
-          ),
-        ],
-        AnimatedSize(
-          duration: const Duration(milliseconds: 180),
-          alignment: Alignment.topCenter,
-          child: _open ? Column(crossAxisAlignment: CrossAxisAlignment.start, children: details) : const SizedBox(width: double.infinity),
         ),
-      ]),
       ),
     );
   }

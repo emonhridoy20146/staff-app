@@ -494,6 +494,34 @@ class AppLocalizationsBn extends AppLocalizations {
   String get todayAllDoneBody => 'আজকের কোনো প্রতিশ্রুতি বা দেয় বাকি নেই।';
 
   @override
+  String get homeKpiPromised => 'প্রতিশ্রুতি';
+
+  @override
+  String get homeKpiDue => 'আজ দেয়';
+
+  @override
+  String get homeKpiOverdue => 'বকেয়া';
+
+  @override
+  String homeKpiLabel(String label, String count) {
+    return '$label: $count জন';
+  }
+
+  @override
+  String get homeWorkListTitle => 'আজকের কাজের তালিকা';
+
+  @override
+  String get homeWorkListBody => 'প্রতিশ্রুতি, আজ দেয়, তারপর কাছের বকেয়া';
+
+  @override
+  String get homeLoading => 'লোড হচ্ছে…';
+
+  @override
+  String homeTargetPct(String pct) {
+    return '$pct% পূরণ';
+  }
+
+  @override
   String todayCashWarning(String pct) {
     return 'হাতে নগদ সীমার $pct%। শীঘ্রই জমা দিন।';
   }

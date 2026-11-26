@@ -271,6 +271,16 @@
   "todayOverdueSection": "Overdue · nearest first",
   "todayAllDone": "All caught up",
   "todayAllDoneBody": "No promises or dues left for today.",
+  "homeKpiPromised": "Promised",
+  "homeKpiDue": "Due today",
+  "homeKpiOverdue": "Overdue",
+  "homeKpiLabel": "{label}: {count} customers",
+  "@homeKpiLabel": {"placeholders": {"label": {"type": "String"}, "count": {"type": "String"}}},
+  "homeWorkListTitle": "Today's work list",
+  "homeWorkListBody": "Promised, due today, then nearest overdue",
+  "homeLoading": "Loading…",
+  "homeTargetPct": "{pct}% done",
+  "@homeTargetPct": {"placeholders": {"pct": {"type": "String"}}},
   "todayCashWarning": "Cash on hand is {pct}% of your limit. Please deposit soon.",
   "@todayCashWarning": {
     "placeholders": {

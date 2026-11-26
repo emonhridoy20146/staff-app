@@ -495,6 +495,34 @@ class AppLocalizationsEn extends AppLocalizations {
   String get todayAllDoneBody => 'No promises or dues left for today.';
 
   @override
+  String get homeKpiPromised => 'Promised';
+
+  @override
+  String get homeKpiDue => 'Due today';
+
+  @override
+  String get homeKpiOverdue => 'Overdue';
+
+  @override
+  String homeKpiLabel(String label, String count) {
+    return '$label: $count customers';
+  }
+
+  @override
+  String get homeWorkListTitle => 'Today\'s work list';
+
+  @override
+  String get homeWorkListBody => 'Promised, due today, then nearest overdue';
+
+  @override
+  String get homeLoading => 'Loading…';
+
+  @override
+  String homeTargetPct(String pct) {
+    return '$pct% done';
+  }
+
+  @override
   String todayCashWarning(String pct) {
     return 'Cash on hand is $pct% of your limit. Please deposit soon.';
   }
