@@ -1,11 +1,17 @@
 openapi: 3.1.0
 info:
   title: Howlader Field Operations API
-  version: 1.50.0
+  version: 1.52.0
   description: |
     Contract owned by field-api. Consumers (admin-web, staff-app) generate types from this file.
     Conventions (auth, pagination, idempotency, errors) are described in docs/05-api-contract.md.
     Money is integer poisha. Times are UTC ISO-8601; business dates are YYYY-MM-DD in Asia/Dhaka.
+    1.52.0 (additive): `MapPin.tag` and the `tag` of customer items in GET /search results, both a `TagSummary`
+    `{ state, severity, reasonCode }`, so every list can draw the bad-tag red border with a colour per reason
+    (FR-TAG-009, owner request 2026-11-26). `MapPin.tagged` is unchanged. Scope is applied as before.
+    1.51.0 (descriptions only): in the staff app every role is device-bound except `devices.multiDeviceRoles`
+    (default super_admin), so managers and viewers can get 403 DEVICE_NOT_APPROVED on login; web is never bound.
+    Logout ends only this session's and this device's tracking tokens (FR-AUTH-007, ADR-069).
     1.50.0 (additive): invoices returned in the ERP are no longer shown anywhere (FR-CUS-023, ADR-068): they are left
     out of customer list and detail `plans`, invoice counts and badges, invoice-number search, KPIs and the sync
     `customer` item. The customer stays. New `CustomerDetail.returnedPlanIds` (also on the sync `customer` item) lists
@@ -73,6 +79,9 @@ paths:
         IP lock. 423 bodies carry `details` = `AccountLockedDetails` and a `Retry-After` header (1.47.0).
         A field staff on a new device gets 403 `DEVICE_NOT_APPROVED` with `details` = `DeviceNotApprovedDetails`
         (1.47.0; FR-AUTH-007); show "waiting for manager approval" and the request id.
+        Since 1.51.0 (ADR-069) every role is device-bound on `client: app` except the roles in setting
+        `devices.multiDeviceRoles` (default `["super_admin"]`), so area managers, branch managers and viewers can get
+        this 403 too. `client: web` logins are never device-bound. `devices.bindRoles` is deprecated and no longer read.
       requestBody:
         required: true
         content:
@@ -128,6 +137,10 @@ paths:
     post:
       tags: [auth]
       operationId: logout
+      description: |
+        Ends the caller's session. Since 1.51.0 (ADR-069) it also revokes the tracking tokens of this session and of
+        this user on this device only; the user's sessions and tracking tokens on other phones (a super admin on
+        several phones) keep working.
       responses:
         '204': { description: Logged out }
   /auth/password/change:
@@ -2200,8 +2213,8 @@ paths:
         post points (`attendance.record`). Returns an opaque token for `Authorization: Tracking <token>` on
         POST /location/points, and nowhere else. The token is bound to the caller's user, device and session and lives
         `location.trackingTokenTtlHours` (default 24) hours. Every call rotates: the previous token of this user and
-        device stops working at once. Logout, password change / reset, deactivation, device unbind and ending the
-        session revoke it. Needs a normal access token (a tracking token is refused here). No body.
+        device stops working at once; tokens of the user's other devices are not touched. Logout (of this session or
+        device, 1.51.0), password change / reset, deactivation, device unbind and ending the session revoke it. Needs a normal access token (a tracking token is refused here). No body.
       responses:
         '200':
           description: Token issued; the previous one of this device is revoked
@@ -2447,7 +2460,7 @@ paths:
       operationId: globalSearch
       parameters: [ { name: q, in: query, required: true, schema: { type: string, minLength: 2 } }, { name: types, in: query, schema: { type: string, example: 'customer,user,receipt' } } ]
       responses:
-        '200': { description: OK, content: { application/json: { schema: { type: array, items: { type: object, properties: { type: { type: string }, id: { type: string }, title: { type: string }, subtitle: { type: string } } } } } } }
+        '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/SearchResult' } } } } }
   /reports/staff-performance:
     get:
       tags: [reports]
@@ -2837,6 +2850,18 @@ components:
     Tag:
       type: object
       properties: { state: { type: string, enum: [none, pending, tagged] }, severity: { type: string, enum: [watch, bad, legal] }, reasonCode: { type: string }, reason: { type: string }, setBy: { type: string }, setAt: { type: string, format: date-time } }
+    TagSummary:
+      type: object
+      description: |
+        Added in 1.52.0 (FR-TAG-009). The part of `Tag` a list needs to draw the bad-tag border: `severity` and
+        `reasonCode` are present only when `state` is `tagged`. Red when tagged with severity `bad` or `legal`
+        (not `watch`); the colour per reason comes from `reasonCode`. Reason text and author are not included
+        (open the customer for those).
+      required: [state]
+      properties:
+        state: { type: string, enum: [none, pending, tagged] }
+        severity: { type: string, enum: [watch, bad, legal] }
+        reasonCode: { type: string }
     TagEvent:
       type: object
       properties:
@@ -3116,8 +3141,18 @@ components:
         name: { type: string }
         outstandingPoisha: { type: integer }
         tagged: { type: boolean }
+        tag: { $ref: '#/components/schemas/TagSummary' }
         payState: { $ref: '#/components/schemas/PayState' }
         missedCount: { type: integer, description: 'Added in 1.14.0' }
+    SearchResult:
+      type: object
+      description: One GET /search hit (schema named in 1.52.0; the fields before `tag` are unchanged).
+      properties:
+        type: { type: string, description: 'customer, user or receipt' }
+        id: { type: string }
+        title: { type: string }
+        subtitle: { type: string }
+        tag: { $ref: '#/components/schemas/TagSummary', description: 'Added in 1.52.0. Customer items only (`type: customer`); absent on user and receipt items and from older servers' }
     TimelineItem:
       type: object
       properties:
