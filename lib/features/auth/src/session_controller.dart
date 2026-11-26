@@ -4,6 +4,8 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/location/tracking/native_tracking_service.dart';
+import '../../../core/location/tracking/tracking_token.dart';
 import '../../../core/api/api_models.dart';
 import '../../../core/api/field_api.dart';
 import '../../../core/auth/pin.dart';
@@ -288,6 +290,11 @@ class SessionController extends Notifier<SessionState> {
     } catch (_) {}
     final store = ref.read(secureStoreProvider);
     await ref.read(tokenStoreProvider).clear();
+    // FR-M-076: no tracking token survives a sign-out, on either side; the native service stops (no tracking
+    // signed out). Points it buffered stay in its file until the next sign-in imports them.
+    await ref.read(trackingTokenStoreProvider).clear();
+    await NativeTrackingService.stop();
+    await NativeTrackingService.clearCredentials();
     for (final k in [_kUser, _kPinHash, _kPinSalt, _kPinFails, _kLockedUser]) {
       await store.delete(k);
     }

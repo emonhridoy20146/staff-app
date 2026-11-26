@@ -67,19 +67,46 @@ class LocationTrackingService : Service() {
             return false
         }
 
-        fun storeCredentials(context: Context, apiBaseUrl: String, accessToken: String, deviceId: String) {
-            context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit()
+        /** Latest running instance, so a new token can refresh the notification at once. */
+        @Volatile
+        private var instance: LocationTrackingService? = null
+
+        /**
+         * FR-M-076 (contract 1.49.0): the service uploads with a long-lived, points-only tracking token bound to
+         * the device — never the 15-minute access token, which nothing can refresh while the app is closed.
+         */
+        fun storeCredentials(
+            context: Context,
+            apiBaseUrl: String,
+            trackingToken: String,
+            expiresAtMs: Long,
+            deviceId: String,
+            reauthText: String?,
+        ) {
+            val editor = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit()
                 .putString("api_base_url", apiBaseUrl)
-                .putString("access_token", accessToken)
+                .putString("tracking_token", trackingToken)
+                .putLong("tracking_token_expires_at", expiresAtMs)
                 .putString("device_id", deviceId)
+                .putBoolean("auth_failed", false)
+                .remove("access_token") // written by builds before FR-M-076
+            if (!reauthText.isNullOrBlank()) editor.putString("reauth_text", reauthText)
+            editor.apply()
+            instance?.refreshNotification()
+        }
+
+        /** Duty end / logout: forget the token. Buffered points stay in [POINTS_FILE]. */
+        fun clearCredentials(context: Context) {
+            context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit()
+                .remove("tracking_token")
+                .remove("tracking_token_expires_at")
+                .remove("access_token")
+                .putBoolean("auth_failed", false)
                 .apply()
         }
 
-        fun updateToken(context: Context, accessToken: String) {
-            context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit()
-                .putString("access_token", accessToken)
-                .apply()
-        }
+        fun isAuthFailed(context: Context): Boolean =
+            context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).getBoolean("auth_failed", false)
     }
 
     private var locationManager: LocationManager? = null
@@ -142,6 +169,7 @@ class LocationTrackingService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        instance = this
         createNotificationChannels()
         registerReceiver(gpsReceiver, IntentFilter(LocationManager.PROVIDERS_CHANGED_ACTION))
     }
@@ -152,7 +180,7 @@ class LocationTrackingService : Service() {
 
         val gpsOn = isGpsEnabled()
         gpsWasOn = gpsOn
-        val notification = if (gpsOn) buildOkNotification() else buildWarningNotification()
+        val notification = currentNotification()
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION)
@@ -170,6 +198,7 @@ class LocationTrackingService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
+        if (instance === this) instance = null
         handler.removeCallbacks(uploadRunnable)
         handler.removeCallbacks(gpsCheckRunnable)
         try { unregisterReceiver(gpsReceiver) } catch (_: Exception) {}
@@ -192,13 +221,29 @@ class LocationTrackingService : Service() {
         if (gpsOn == gpsWasOn) return
         gpsWasOn = gpsOn
 
-        val nm = getSystemService(NotificationManager::class.java)
-        val notification = if (gpsOn) buildOkNotification() else buildWarningNotification()
-        nm.notify(NOTIFICATION_ID, notification)
+        refreshNotification()
 
         if (gpsOn) {
             startLocationUpdates()
         }
+    }
+
+    /** GPS off wins (high-priority warning); otherwise the duty notification, with the "open the app" line
+     *  while the server refuses the tracking token. */
+    private fun currentNotification(): Notification =
+        if (!isGpsEnabled()) buildWarningNotification() else buildOkNotification()
+
+    fun refreshNotification() {
+        try {
+            getSystemService(NotificationManager::class.java).notify(NOTIFICATION_ID, currentNotification())
+        } catch (_: Exception) {}
+    }
+
+    private fun setAuthFailed(failed: Boolean) {
+        val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        if (prefs.getBoolean("auth_failed", false) == failed) return
+        prefs.edit().putBoolean("auth_failed", failed).apply()
+        handler.post { refreshNotification() }
     }
 
     private fun createNotificationChannels() {
@@ -236,13 +281,18 @@ class LocationTrackingService : Service() {
             this, 0, launchIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
+        val authFailed = isAuthFailed(this)
+        val reauth = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).getString("reauth_text", null)
+            ?: "লাইভ লোকেশন পাঠানো যাচ্ছে না। অ্যাপটি একবার খুলুন। / Live location can't be sent. Please open the app once."
+        val text = if (authFailed) reauth else notifText
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("✅ $notifTitle")
-            .setContentText(notifText)
+            .setContentTitle(if (authFailed) "⚠️ $notifTitle" else "✅ $notifTitle")
+            .setContentText(text)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(if (authFailed) "$notifText\n$reauth" else notifText))
             .setSmallIcon(android.R.drawable.ic_menu_mylocation)
             .setOngoing(true)
             .setContentIntent(pendingIntent)
-            .setColor(Color.parseColor("#4CAF50"))
+            .setColor(Color.parseColor(if (authFailed) "#B45309" else "#4CAF50"))
             .setColorized(true)
             .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
             .build()
@@ -327,8 +377,15 @@ class LocationTrackingService : Service() {
     private fun uploadBufferedPoints() {
         val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         val apiBaseUrl = prefs.getString("api_base_url", null) ?: return
-        val accessToken = prefs.getString("access_token", null) ?: return
         val deviceId = prefs.getString("device_id", null) ?: return
+        // FR-M-076: points go up only with the tracking token. None, or past its expiry: keep every point
+        // buffered and ask (in the notification) for the app to be opened, which renews the token.
+        val trackingToken = prefs.getString("tracking_token", null)
+        val expiresAt = prefs.getLong("tracking_token_expires_at", 0L)
+        if (trackingToken == null || (expiresAt > 0L && System.currentTimeMillis() >= expiresAt)) {
+            setAuthFailed(true)
+            return
+        }
 
         val file = File(filesDir, POINTS_FILE)
         if (!file.exists()) return
@@ -368,7 +425,7 @@ class LocationTrackingService : Service() {
         try {
             val request = Request.Builder()
                 .url("$apiBaseUrl/location/points")
-                .addHeader("Authorization", "Bearer $accessToken")
+                .addHeader("Authorization", "Bearer $trackingToken")
                 .addHeader("Content-Type", "application/json")
                 .post(body.toString().toRequestBody("application/json".toMediaType()))
                 .build()
@@ -376,10 +433,14 @@ class LocationTrackingService : Service() {
             val response = httpClient.newCall(request).execute()
             if (response.isSuccessful) {
                 response.close()
+                setAuthFailed(false)
                 return
             }
 
+            val code = response.code
             response.close()
+            // Refused token: points stay buffered (below) and the notification asks to open the app.
+            if (code == 401 || code == 403) setAuthFailed(true)
             synchronized(this) {
                 val existing = file.readLines().filter { it.isNotBlank() }
                 val restored = lines + existing

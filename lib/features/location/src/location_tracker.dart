@@ -15,6 +15,7 @@ import '../../../core/location/tracking/native_tracking_service.dart';
 import '../../../core/location/tracking/paid_tracking_provider.dart';
 import '../../../core/location/tracking/sampling.dart';
 import '../../../core/location/tracking/tracking_provider.dart';
+import '../../../core/location/tracking/tracking_token.dart';
 import '../../../core/permissions/permission_service.dart';
 import '../../../core/providers.dart';
 import '../../../core/settings/duty_settings.dart';
@@ -151,22 +152,58 @@ class LocationTracker {
     _uploadTimer = Timer.periodic(uploadEvery, (_) => unawaited(_everyFewMinutes()));
     _heartbeatTimer = Timer.periodic(heartbeatEvery, (_) => unawaited(_tick()));
     _ref.read(trackingStatusProvider.notifier).state = TrackingStatus(running: true, providerId: provider.id, fellBack: fellBack);
-    // Pass API credentials to native service for real-time upload.
-    final env = _ref.read(envProvider);
-    final tokens = _ref.read(tokenStoreProvider);
-    final device = _ref.read(deviceIdentityProvider);
-    if (tokens.accessToken != null) {
-      unawaited(NativeTrackingService.storeCredentials(
-        apiBaseUrl: env.apiBaseUrl,
-        accessToken: tokens.accessToken!,
-        deviceId: device.deviceId,
-      ));
-    }
+    // FR-M-076: the native service uploads with a long-lived, points-only tracking token (contract 1.49.0),
+    // so live location keeps going while the app is closed. Obtained at duty start, renewed on app open.
+    unawaited(ensureTrackingToken());
     // Import any points buffered by the native service while Flutter was dead.
     unawaited(_importBufferedPoints());
     unawaited(sendHeartbeat());
     // First position right away, so the office sees the staff member within seconds of the work-in.
     unawaited(_everyFewMinutes());
+  }
+
+  bool _renewing = false;
+
+  /// Makes sure the native service holds a tracking token with at least [trackingTokenRenewWithin] left
+  /// (FR-M-076): fetched when there is none (duty start), renewed when it expires soon or the native service
+  /// reports that the server refused it ([force]). Only on duty; offline keeps the old token and tries later.
+  Future<void> ensureTrackingToken({bool force = false}) async {
+    if (!_wantRunning || _renewing) return;
+    _renewing = true;
+    try {
+      final store = _ref.read(trackingTokenStoreProvider);
+      var t = await store.read();
+      if (force || trackingTokenNeedsRenewal(t, _clock.nowUtc())) {
+        try {
+          final r = await _ref.read(fieldApiProvider).trackingToken(deviceId: _ref.read(deviceIdentityProvider).deviceId);
+          // Duty may have ended while the request was out: never leave a fresh token behind off duty.
+          if (!_wantRunning) return;
+          t = TrackingToken(token: r.token, expiresAt: r.expiresAt);
+          await store.write(t);
+        } catch (_) {
+          // Offline or refused: the current token (if any) stays; the next app open or resume tries again.
+        }
+      }
+      if (t == null || !_wantRunning) return;
+      final l = lookupAppLocalizations(Locale(_ref.read(languageCodeProvider)));
+      await NativeTrackingService.storeCredentials(
+        apiBaseUrl: _ref.read(envProvider).apiBaseUrl,
+        trackingToken: t.token,
+        expiresAt: t.expiresAt,
+        deviceId: _ref.read(deviceIdentityProvider).deviceId,
+        reauthText: l.trackNotifReauth,
+      );
+    } finally {
+      _renewing = false;
+    }
+  }
+
+  /// App opened or came back (FR-M-076): renew a token that runs out within 12 h, or at once when the native
+  /// service says the server refused it.
+  Future<void> onAppResumed() async {
+    if (!_wantRunning) return;
+    final refused = await NativeTrackingService.probeAuthFailed() ?? false;
+    await ensureTrackingToken(force: refused);
   }
 
   /// Takes a one-off fix when the stream has been quiet, then uploads.
@@ -198,8 +235,10 @@ class LocationTracker {
     _prev = null;
     _anchor = null;
     if (p != null && p.isRunning) await p.stop();
-    // Stop the native service too.
+    // Stop the native service too, and forget the tracking token (FR-M-076: never kept off duty).
     unawaited(NativeTrackingService.stop());
+    unawaited(NativeTrackingService.clearCredentials());
+    unawaited(_ref.read(trackingTokenStoreProvider).clear());
     final s = _ref.read(trackingStatusProvider);
     if (s.running) {
       _ref.read(trackingStatusProvider.notifier).state = TrackingStatus(providerId: s.providerId, fellBack: s.fellBack, lastPointAt: s.lastPointAt);
@@ -424,7 +463,13 @@ final locationBackgroundProvider = Provider<void>((ref) {
     return s == DayStatus.onDuty || s == DayStatus.onBreak;
   }
 
-  void go() => unawaited(tracker.reconcile(onDuty: onDuty()));
+  // While today's attendance is still loading (app start) nothing is decided: before, the first evaluation saw
+  // "not on duty", stopped the native service and dropped its token, only to start both again a moment later.
+  void go() {
+    if (!ref.read(todayAttendanceProvider).hasValue) return;
+    unawaited(tracker.reconcile(onDuty: onDuty()));
+  }
+
   ref.listen(todayAttendanceProvider, (_, _) => go());
   // Points held back while attendance was unsent go out as soon as it is in.
   ref.listen(_unsentAttendanceProvider, (prev, next) {

@@ -15,15 +15,7 @@ class OemBatteryGuideScreen extends StatelessWidget {
     final t = Theme.of(context).textTheme;
     final cs = Theme.of(context).colorScheme;
 
-    final brands = [
-      _Brand(icon: '📱', name: l.oemGuideXiaomiName, steps: [l.oemGuideXiaomiStep1, l.oemGuideXiaomiStep2, l.oemGuideXiaomiStep3]),
-      _Brand(icon: '📱', name: l.oemGuideSamsungName, steps: [l.oemGuideSamsungStep1, l.oemGuideSamsungStep2, l.oemGuideSamsungStep3]),
-      _Brand(icon: '📱', name: l.oemGuideOppoName, steps: [l.oemGuideOppoStep1, l.oemGuideOppoStep2, l.oemGuideOppoStep3]),
-      _Brand(icon: '📱', name: l.oemGuideVivoName, steps: [l.oemGuideVivoStep1, l.oemGuideVivoStep2, l.oemGuideVivoStep3]),
-      _Brand(icon: '📱', name: l.oemGuideHuaweiName, steps: [l.oemGuideHuaweiStep1, l.oemGuideHuaweiStep2, l.oemGuideHuaweiStep3]),
-      _Brand(icon: '📱', name: l.oemGuideOneplusName, steps: [l.oemGuideOneplusStep1, l.oemGuideOneplusStep2]),
-      _Brand(icon: '📱', name: l.oemGuideOtherName, steps: [l.oemGuideOtherStep1, l.oemGuideOtherStep2]),
-    ];
+    final brands = oemBrands(l);
 
     return Scaffold(
       appBar: AppBar(title: Text(l.oemGuideTitle)),
@@ -46,7 +38,7 @@ class OemBatteryGuideScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: Space.s16),
-          ...brands.map((b) => _BrandTile(brand: b)),
+          ...brands.map((b) => OemBrandTile(brand: b)),
           const SizedBox(height: Space.s24),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(),
@@ -58,23 +50,50 @@ class OemBatteryGuideScreen extends StatelessWidget {
   }
 }
 
-class _Brand {
-  const _Brand({required this.icon, required this.name, required this.steps});
-  final String icon;
+enum OemBrandId { xiaomi, samsung, oppo, vivo, huawei, oneplus, other }
+
+class OemBrand {
+  const OemBrand({required this.id, required this.name, required this.steps});
+  final OemBrandId id;
   final String name;
   final List<String> steps;
 }
 
-class _BrandTile extends StatefulWidget {
-  const _BrandTile({required this.brand});
-  final _Brand brand;
+/// Every brand's steps (Realme shares ColorOS with Oppo; Redmi / POCO are Xiaomi).
+List<OemBrand> oemBrands(AppLocalizations l) => [
+      OemBrand(id: OemBrandId.xiaomi, name: l.oemGuideXiaomiName, steps: [l.oemGuideXiaomiStep1, l.oemGuideXiaomiStep2, l.oemGuideXiaomiStep3]),
+      OemBrand(id: OemBrandId.samsung, name: l.oemGuideSamsungName, steps: [l.oemGuideSamsungStep1, l.oemGuideSamsungStep2, l.oemGuideSamsungStep3]),
+      OemBrand(id: OemBrandId.oppo, name: l.oemGuideOppoName, steps: [l.oemGuideOppoStep1, l.oemGuideOppoStep2, l.oemGuideOppoStep3]),
+      OemBrand(id: OemBrandId.vivo, name: l.oemGuideVivoName, steps: [l.oemGuideVivoStep1, l.oemGuideVivoStep2, l.oemGuideVivoStep3]),
+      OemBrand(id: OemBrandId.huawei, name: l.oemGuideHuaweiName, steps: [l.oemGuideHuaweiStep1, l.oemGuideHuaweiStep2, l.oemGuideHuaweiStep3]),
+      OemBrand(id: OemBrandId.oneplus, name: l.oemGuideOneplusName, steps: [l.oemGuideOneplusStep1, l.oemGuideOneplusStep2]),
+      OemBrand(id: OemBrandId.other, name: l.oemGuideOtherName, steps: [l.oemGuideOtherStep1, l.oemGuideOtherStep2]),
+    ];
 
-  @override
-  State<_BrandTile> createState() => _BrandTileState();
+/// Pure rule (unit-tested): which guide fits `Build.MANUFACTURER` (FR-M-077).
+OemBrandId oemBrandFor(String? manufacturer) {
+  final m = (manufacturer ?? '').toLowerCase();
+  bool any(List<String> names) => names.any(m.contains);
+  if (any(['xiaomi', 'redmi', 'poco'])) return OemBrandId.xiaomi;
+  if (any(['samsung'])) return OemBrandId.samsung;
+  if (any(['oppo', 'realme'])) return OemBrandId.oppo;
+  if (any(['vivo', 'iqoo'])) return OemBrandId.vivo;
+  if (any(['huawei', 'honor'])) return OemBrandId.huawei;
+  if (any(['oneplus', 'nothing'])) return OemBrandId.oneplus;
+  return OemBrandId.other;
 }
 
-class _BrandTileState extends State<_BrandTile> {
-  bool _expanded = false;
+class OemBrandTile extends StatefulWidget {
+  const OemBrandTile({super.key, required this.brand, this.initiallyOpen = false});
+  final OemBrand brand;
+  final bool initiallyOpen;
+
+  @override
+  State<OemBrandTile> createState() => _OemBrandTileState();
+}
+
+class _OemBrandTileState extends State<OemBrandTile> {
+  late bool _expanded = widget.initiallyOpen;
 
   @override
   Widget build(BuildContext context) {

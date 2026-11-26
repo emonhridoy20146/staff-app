@@ -1691,6 +1691,86 @@ class AppLocalizationsBn extends AppLocalizations {
   String get oemGuideDone => 'বুঝেছি';
 
   @override
+  String get trackNotifReauth =>
+      'লাইভ লোকেশন পাঠানো যাচ্ছে না। অ্যাপটি একবার খুলুন।';
+
+  @override
+  String get trackHealthOff =>
+      'ডিউটিতে আছেন, কিন্তু লাইভ লোকেশন চলছে না। ঠিক করতে চাপুন।';
+
+  @override
+  String get trackHealthAuth =>
+      'লাইভ লোকেশন থেমে ছিল, আবার চালু করা হচ্ছে। ইন্টারনেট চালু রাখুন।';
+
+  @override
+  String get trackHealthBattery =>
+      'ব্যাটারি সেভার লাইভ লোকেশন বন্ধ করে দিতে পারে। অনুমতি দিতে চাপুন।';
+
+  @override
+  String get trackSetupTitle => 'ব্যাকগ্রাউন্ডে লোকেশন';
+
+  @override
+  String get trackSetupEntry => 'ব্যাকগ্রাউন্ড সেটআপ';
+
+  @override
+  String get trackSetupWhy =>
+      'ডিউটির সময় অ্যাপ বন্ধ থাকলেও অফিস আপনার লাইভ লোকেশন দেখে। অনেক ফোন ব্যাটারি বাঁচাতে অ্যাপ বন্ধ করে দেয়, তাই নিচের অনুমতিগুলো দিন। ডিউটির বাইরে কখনো লোকেশন নেওয়া হয় না।';
+
+  @override
+  String get trackSetupBatteryTitle => '১. ব্যাটারি অপ্টিমাইজেশন বন্ধ করুন';
+
+  @override
+  String get trackSetupBatteryBody =>
+      'অ্যাপটিকে ব্যাকগ্রাউন্ডে চলতে দিন, যাতে ফোন এটি বন্ধ না করে। পরের পর্দায় “অনুমতি দিন” বা “Allow” চাপুন।';
+
+  @override
+  String get trackSetupAllow => 'অনুমতি দিন';
+
+  @override
+  String get trackSetupAllowed => 'অনুমতি আছে';
+
+  @override
+  String get trackSetupNotAllowed => 'অনুমতি নেই';
+
+  @override
+  String get trackSetupUnknown => 'জানা যায়নি';
+
+  @override
+  String get trackSetupAutostartTitle =>
+      '২. অটোস্টার্ট ও ব্যাকগ্রাউন্ড চালু করুন';
+
+  @override
+  String trackSetupAutostartBody(String brand) {
+    return 'আপনার ফোন: $brand। নিচের ধাপগুলো করুন; “সেটিংস খুলুন” সরাসরি সেই পর্দায় নিয়ে যাবে (যেখানে সম্ভব)।';
+  }
+
+  @override
+  String get trackSetupOpenSettings => 'সেটিংস খুলুন';
+
+  @override
+  String get trackSetupOpenFailed =>
+      'সেটিংস খোলা গেল না। ধাপগুলো দেখে হাতে করে করুন।';
+
+  @override
+  String get trackSetupAllBrands => 'অন্য ফোনের নিয়ম দেখুন';
+
+  @override
+  String get trackSetupStatusTitle => '৩. এখনকার অবস্থা';
+
+  @override
+  String get trackSetupRunning => 'লাইভ লোকেশন চলছে';
+
+  @override
+  String get trackSetupNotRunning => 'ডিউটিতে আছেন, কিন্তু লাইভ লোকেশন চলছে না';
+
+  @override
+  String get trackSetupOffDuty => 'ডিউটির বাইরে — লোকেশন নেওয়া হচ্ছে না';
+
+  @override
+  String get trackSetupAuthFailed =>
+      'সার্ভার লোকেশন নিচ্ছে না; অ্যাপ খোলা থাকলে নিজে থেকে ঠিক হয়';
+
+  @override
   String get oemGuideXiaomiName => 'Xiaomi / Redmi / POCO (MIUI)';
 
   @override
