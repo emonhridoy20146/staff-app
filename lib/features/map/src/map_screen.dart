@@ -68,7 +68,7 @@ class _CustomerMapScreenState extends ConsumerState<CustomerMapScreen> {
     final fix = ref.watch(currentFixProvider).value;
     final tiles = ref.watch(tileConfigProvider);
     final tilesOn = ref.watch(mapTilesEnabledProvider);
-    final selected = pinned.where((c) => c.id == _selected).firstOrNull;
+    final selected = pinned.where((c) => c.id == _selected && !c.onlyReturned).firstOrNull;
     // Layers of other features (map places, FR-PLC-001), each behind its flag and permission.
     final layers = ref.watch(mapLayersProvider);
     final longPress = layers.where((x) => x.onLongPress != null).firstOrNull;
@@ -139,7 +139,14 @@ class _CustomerMapScreenState extends ConsumerState<CustomerMapScreen> {
                       width: 48,
                       height: 48,
                       alignment: Alignment.topCenter,
-                      child: _Pin(status: c.primaryStatus(today), selected: c.id == _selected, onTap: () => setState(() => _selected = c.id)),
+                      // FR-M-085: a customer whose every invoice was returned has a pin in the returned colour that does
+                      // not open; one with some returned invoices carries the returned mark on its pin.
+                      child: _Pin(
+                        status: c.onlyReturned ? AppStatus.returned : c.primaryStatus(today),
+                        selected: c.id == _selected,
+                        returned: c.hasReturned,
+                        onTap: c.onlyReturned ? null : () => setState(() => _selected = c.id),
+                      ),
                     ),
                   if (fix != null) Marker(point: LatLng(fix.lat, fix.lng), width: 28, height: 28, child: const _MeDot()),
                 ],
@@ -353,21 +360,31 @@ class _NoPinChip extends ConsumerWidget {
 }
 
 class _Pin extends StatelessWidget {
-  const _Pin({required this.status, required this.selected, required this.onTap});
+  const _Pin({required this.status, required this.selected, required this.onTap, this.returned = false});
   final AppStatus status;
   final bool selected;
-  final VoidCallback onTap;
+
+  /// Null: the pin does not open (FR-M-085, every invoice returned).
+  final VoidCallback? onTap;
+
+  /// The customer has an invoice returned in the ERP: the pin carries the returned mark (FR-M-085).
+  final bool returned;
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
     final st = context.statusColors.of(status);
+    final rt = context.statusColors.of(AppStatus.returned);
     final size = selected ? 44.0 : 34.0;
     return Semantics(
-      button: true,
-      label: statusLabel(AppLocalizations.of(context), status),
+      button: onTap != null,
+      label: [
+        if (status != AppStatus.returned) statusLabel(l, status),
+        if (onTap == null) l.returnedCustomerOnlyA11y else if (returned) l.returnedCustomerMark,
+      ].join(', '),
       child: GestureDetector(
         onTap: onTap,
-        child: Center(
-          child: AnimatedContainer(
+        child: Stack(alignment: Alignment.center, children: [
+          AnimatedContainer(
             duration: Motion.fast,
             width: size,
             height: size,
@@ -379,7 +396,19 @@ class _Pin extends StatelessWidget {
             ),
             child: Icon(statusIcon(status), size: size * 0.5, color: Colors.white),
           ),
-        ),
+          if (returned && status != AppStatus.returned)
+            PositionedDirectional(
+              top: 0,
+              end: 0,
+              child: Container(
+                key: const Key('pin-returned-mark'),
+                width: 20,
+                height: 20,
+                decoration: BoxDecoration(color: rt.bg, shape: BoxShape.circle, border: Border.all(color: rt.fg, width: 1.5)),
+                child: Icon(statusIcon(AppStatus.returned), size: 12, color: rt.fg),
+              ),
+            ),
+        ]),
       ),
     );
   }
@@ -432,10 +461,12 @@ class _Preview extends ConsumerWidget {
                     label: Text(l.actionNavigate),
                   ),
                 ),
-                const SizedBox(width: Space.s12),
-                Expanded(
-                  child: FilledButton.icon(onPressed: () => context.push('/collect/${customer.id}'), icon: const Icon(Icons.payments_rounded), label: Text(l.actionCollect)),
-                ),
+                if (!customer.onlyReturned) const SizedBox(width: Space.s12),
+                // FR-M-085: nothing to collect from a customer whose every invoice was returned.
+                if (!customer.onlyReturned)
+                  Expanded(
+                    child: FilledButton.icon(onPressed: () => context.push('/collect/${customer.id}'), icon: const Icon(Icons.payments_rounded), label: Text(l.actionCollect)),
+                  ),
               ],
             ),
           ),

@@ -9,6 +9,7 @@ import '../../../core/providers.dart';
 import '../../attendance/attendance.dart';
 import '../../auth/auth.dart';
 import 'data/customer_repository.dart';
+import 'domain/returned_plan.dart';
 import 'domain/customer.dart';
 import 'domain/month_people.dart';
 import 'domain/work_marks.dart';
@@ -81,6 +82,11 @@ final customerProvider = StreamProvider.family<Customer?, String>((ref, id) {
 
 final customerPlansProvider = StreamProvider.family<List<PlanWithSchedule>, String>(
   (ref, id) => ref.watch(customerRepositoryProvider).watchPlans(id),
+);
+
+/// The customer's invoices returned in the ERP (FR-M-085): shown in their own section, never counted.
+final customerReturnedPlansProvider = StreamProvider.family<List<ReturnedPlan>, String>(
+  (ref, id) => ref.watch(customerRepositoryProvider).watchReturnedPlans(id),
 );
 
 /// Plans (invoices) of a customer that already have an ERP payment today (OD-27).

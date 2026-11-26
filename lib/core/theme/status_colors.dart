@@ -11,6 +11,9 @@ enum AppStatus {
   tagged,
   pending,
   mock,
+
+  /// v1.4 (FR-M-085): an invoice returned in the ERP, and the "returned product customer" marker. Shown, never counted.
+  returned,
 }
 
 @immutable
@@ -43,6 +46,7 @@ class StatusColors extends ThemeExtension<StatusColors> {
     AppStatus.tagged: StatusStyle(fg: Color(0xFFFFFFFF), bg: Color(0xFF7F1D1D)),
     AppStatus.pending: StatusStyle(fg: Color(0xFF475569), bg: Color(0xFFEEF1F5)),
     AppStatus.mock: StatusStyle(fg: Color(0xFF9D174D), bg: Color(0xFFFCE7F3)),
+    AppStatus.returned: StatusStyle(fg: Color(0xFF0F766E), bg: Color(0xFFE3F5F2)),
   });
 
   static const dark = StatusColors({
@@ -56,6 +60,7 @@ class StatusColors extends ThemeExtension<StatusColors> {
     AppStatus.tagged: StatusStyle(fg: Color(0xFFFFFFFF), bg: Color(0xFFB91C1C)),
     AppStatus.pending: StatusStyle(fg: Color(0xFFA9B1BF), bg: Color(0xFF1A2030)),
     AppStatus.mock: StatusStyle(fg: Color(0xFFF472B6), bg: Color(0xFF2E1020)),
+    AppStatus.returned: StatusStyle(fg: Color(0xFF2DD4BF), bg: Color(0xFF0B2624)),
   });
 
   /// High-contrast mode: status fg darkened one step (light theme only).

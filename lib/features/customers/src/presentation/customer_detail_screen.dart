@@ -30,11 +30,13 @@ import '../domain/bad_tag.dart';
 import '../domain/customer.dart';
 import '../domain/month_people.dart';
 import '../domain/phones.dart';
+import '../domain/returned_plan.dart';
 import '../domain/schedule.dart';
 import '../domain/work_marks.dart';
 import '../phone_numbers.dart';
 import 'bad_tag_frame.dart';
 import 'invoice_kind_label.dart';
+import 'returned_mark.dart';
 
 Future<void> launchCall(String phone) => launchUrl(Uri(scheme: 'tel', path: phone));
 
@@ -162,6 +164,8 @@ class _DetailState extends ConsumerState<_Detail> {
               const SizedBox(height: Space.cardGap),
               _Plans(customerId: customer.id),
               const SizedBox(height: Space.cardGap),
+              // FR-M-085: invoices returned in the ERP, apart from the counted ones; never collectable.
+              _ReturnedPlans(customerId: customer.id),
               _Timeline(customerId: customer.id),
               const SizedBox(height: 120),
             ]),
@@ -330,6 +334,8 @@ class _Header extends ConsumerWidget {
             children: [
               for (final b in badges)
                 StatusBadge(b, label: b == AppStatus.overdue ? l.statusOverdueDays(f.daySpan(customer.row.daysOverdue)) : null),
+              // FR-M-085: an invoice of this customer was returned in the ERP.
+              if (customer.hasReturned) const ReturnedCustomerMark(dense: false),
               if (customer.erpRisk != null) _ErpRiskChip(risk: customer.erpRisk!),
             ],
           ),
@@ -922,6 +928,112 @@ class _Plans extends ConsumerWidget {
   }
 }
 
+/// "ফেরত চালান / Returned invoices" (FR-M-085, contract 1.53.0): the customer's invoices returned in the ERP, each
+/// with the Returned chip and its payments. Nothing here is counted or collectable, so there is no collect action
+/// and no money in red. Hidden when the customer has none.
+class _ReturnedPlans extends ConsumerWidget {
+  const _ReturnedPlans({required this.customerId});
+  final String customerId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context);
+    final t = Theme.of(context).textTheme;
+    final cs = Theme.of(context).colorScheme;
+    final f = ref.watch(fmtProvider);
+    final plans = ref.watch(customerReturnedPlansProvider(customerId)).value ?? const <ReturnedPlan>[];
+    if (plans.isEmpty) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(bottom: Space.cardGap),
+      child: Card(
+        key: const Key('returned-plans'),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(Space.s16, Space.s16, Space.s16, Space.s4),
+              child: Row(children: [
+                Icon(statusIcon(AppStatus.returned), size: 20, color: context.statusColors.of(AppStatus.returned).fg),
+                const SizedBox(width: Space.s8),
+                Expanded(child: Text(l.returnedInvoicesTitle, style: t.titleSmall)),
+              ]),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(Space.s16, 0, Space.s16, Space.s4),
+              child: Text(l.returnedInvoicesNote, style: t.bodyMedium!.copyWith(color: cs.onSurfaceVariant)),
+            ),
+            for (final p in plans)
+              Theme(
+                data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                child: ExpansionTile(
+                  key: Key('returned-plan-${p.erpPlanId}'),
+                  initiallyExpanded: plans.length == 1,
+                  tilePadding: const EdgeInsets.symmetric(horizontal: Space.s16),
+                  childrenPadding: const EdgeInsets.fromLTRB(Space.s16, 0, Space.s16, Space.s12),
+                  expandedCrossAxisAlignment: CrossAxisAlignment.stretch,
+                  title: Text(p.row.product.isEmpty ? (p.invoiceNo ?? '') : p.row.product, style: t.titleMedium!.copyWith(color: cs.onSurfaceVariant)),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: Space.s4),
+                      Wrap(
+                        spacing: Space.s8,
+                        runSpacing: Space.s4,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: [
+                          const StatusBadge(AppStatus.returned, dense: true),
+                          Text(
+                            [
+                              ?p.invoiceNo,
+                              if (isCashKind(p.kind)) l.planCashSale else if (p.kind == 'credit') l.planCreditSale,
+                              if (p.row.saleDate != null) f.date(p.row.saleDate!, withYear: true),
+                            ].join(' · '),
+                            style: t.bodySmall!.copyWith(color: cs.onSurfaceVariant),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: Space.s8),
+                      Text(
+                        '${l.planTotal} ${f.money(p.row.totalPayablePoisha)} · ${l.planPaidSoFar} ${f.money(p.row.paidPoisha)}',
+                        style: t.bodySmall!.copyWith(color: cs.onSurfaceVariant),
+                      ),
+                    ],
+                  ),
+                  children: [
+                    if (p.items.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: Space.s8),
+                        child: Text(p.items.map((i) => i.label).join(', '), style: t.bodyMedium),
+                      ),
+                    Text(l.returnedPaymentsTitle(f.num(p.payments.length)), style: t.labelLarge),
+                    const SizedBox(height: Space.s4),
+                    if (p.payments.isEmpty)
+                      Text(l.returnedInvoiceNoPayments, style: t.bodyMedium!.copyWith(color: cs.onSurfaceVariant)),
+                    for (final x in p.payments)
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(minHeight: Sizes.minTarget),
+                        child: Row(children: [
+                          Expanded(
+                            child: Text(
+                              [f.date(x.date, withYear: true), ?x.receiptNo, ?x.methodLabel, if (x.reversed) l.timelineRemoved].join(' · '),
+                              style: t.bodyMedium,
+                            ),
+                          ),
+                          const SizedBox(width: Space.s8),
+                          // Shown, never counted: the plain colour, never the paid green.
+                          Text(f.money(x.amountPoisha), style: AppTheme.tabular(t.bodyMedium!).copyWith(color: cs.onSurfaceVariant)),
+                        ]),
+                      ),
+                  ],
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 /// Three-column invoice money summary: Total | Paid | Outstanding.
 class _InvoiceSummary extends ConsumerWidget {
   const _InvoiceSummary({required this.plan});
@@ -1121,7 +1233,10 @@ class _TimelineState extends ConsumerState<_Timeline> {
           at: DateTime.parse('${p.date}T06:00:00Z'),
           icon: Icons.receipt_long_rounded,
           title: l.timelineErpPayment(f.money(p.amountPoisha), p.source == 'office' ? l.timelineOffice : l.timelineField),
+          // FR-M-085: a payment to a returned invoice is shown marked, never counted.
+          statusChip: p.returned ? const StatusBadge(AppStatus.returned, key: Key('timeline-returned'), dense: true) : null,
           subtitle: [
+            if (p.returned) l.returnedPaymentMark,
             f.date(p.date, withYear: true),
             if (p.receiptNo != null) p.receiptNo!,
             if (p.methodLabel != null) p.methodLabel!,

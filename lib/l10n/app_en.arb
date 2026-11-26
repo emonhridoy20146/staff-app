@@ -2570,5 +2570,20 @@
   "settingsServerLive": "Live",
   "settingsServerDemo": "Demo",
   "settingsMeHint": "Language, theme, location, privacy",
-  "settingsCalendarHint": "Holidays and duty hours"
+  "settingsCalendarHint": "Holidays and duty hours",
+  "statusReturned": "Returned",
+  "returnedCustomerMark": "Returned product customer",
+  "returnedCustomerOnlyA11y": "Returned product customer, every invoice returned, cannot be opened",
+  "returnedInvoicesTitle": "Returned invoices",
+  "returnedInvoicesNote": "Returned in the ERP. Counted in no total and nothing can be collected on them.",
+  "returnedInvoiceNoPayments": "No payments on this invoice",
+  "returnedPaymentsTitle": "Payments ({count})",
+  "returnedPaymentMark": "Payment to a returned invoice · not counted",
+  "@returnedPaymentsTitle": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  }
 }

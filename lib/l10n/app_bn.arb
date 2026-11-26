@@ -1336,5 +1336,13 @@
   "settingsServerLive": "লাইভ",
   "settingsServerDemo": "ডেমো",
   "settingsMeHint": "ভাষা, থিম, লোকেশন, গোপনীয়তা",
-  "settingsCalendarHint": "ছুটি ও ডিউটির সময়"
+  "settingsCalendarHint": "ছুটি ও ডিউটির সময়",
+  "statusReturned": "ফেরত",
+  "returnedCustomerMark": "ফেরত পণ্যের customer",
+  "returnedCustomerOnlyA11y": "ফেরত পণ্যের customer, সব চালান ফেরত, খোলা যাবে না",
+  "returnedInvoicesTitle": "ফেরত চালান",
+  "returnedInvoicesNote": "ইআরপি-তে ফেরত। কোনো হিসাবে ধরা হয় না, আদায়ও নেওয়া যায় না।",
+  "returnedInvoiceNoPayments": "এই চালানে কোনো জমা নেই",
+  "returnedPaymentsTitle": "জমা ({count}টি)",
+  "returnedPaymentMark": "ফেরত চালানের জমা · হিসাবে ধরা হয় না"
 }

@@ -4518,4 +4518,32 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get settingsCalendarHint => 'ছুটি ও ডিউটির সময়';
+
+  @override
+  String get statusReturned => 'ফেরত';
+
+  @override
+  String get returnedCustomerMark => 'ফেরত পণ্যের customer';
+
+  @override
+  String get returnedCustomerOnlyA11y =>
+      'ফেরত পণ্যের customer, সব চালান ফেরত, খোলা যাবে না';
+
+  @override
+  String get returnedInvoicesTitle => 'ফেরত চালান';
+
+  @override
+  String get returnedInvoicesNote =>
+      'ইআরপি-তে ফেরত। কোনো হিসাবে ধরা হয় না, আদায়ও নেওয়া যায় না।';
+
+  @override
+  String get returnedInvoiceNoPayments => 'এই চালানে কোনো জমা নেই';
+
+  @override
+  String returnedPaymentsTitle(String count) {
+    return 'জমা ($countটি)';
+  }
+
+  @override
+  String get returnedPaymentMark => 'ফেরত চালানের জমা · হিসাবে ধরা হয় না';
 }

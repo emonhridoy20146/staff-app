@@ -707,15 +707,54 @@ class FakeFieldApi implements HttpClientAdapter {
 
   final _returnedPlans = <String>{};
 
-  /// Tests / demo (1.50.0, FR-CUS-023): the ERP returns an invoice. The customer stays and comes again on the
-  /// change feed without that plan, its id in `returnedPlanIds`.
-  void returnInvoice(String customerId, String erpPlanId) {
+  /// Tests / demo: the ERP adds an invoice to a customer (a copy of its first one under [erpPlanId] and
+  /// [invoiceNo]), sent on the change feed like any customer change.
+  void addInvoice(String customerId, String erpPlanId, String invoiceNo) {
+    final c = _customer(customerId);
+    final plans = ((c?['plans'] as List?) ?? const []).cast<Json>();
+    if (c == null || plans.isEmpty) return;
+    serverChange('customer', customerId, {...c, 'plans': [...plans, {...plans.first, 'erpPlanId': erpPlanId, 'invoiceNo': invoiceNo}]});
+  }
+
+  /// Tests / demo (1.50.0 FR-CUS-023, 1.53.0 FR-CUS-024): the ERP returns an invoice. The customer stays and comes
+  /// again on the change feed without that plan in `plans`; it is in `returnedPlans` (`returned: true`,
+  /// `collectable: false`, status `closed`, no schedule, its [payments] each `returned: true`) and its id in
+  /// `returnedPlanIds`. The customer's payments to it are marked `returned`; the counts follow.
+  void returnInvoice(String customerId, String erpPlanId, {List<Json> payments = const []}) {
     final c = _customer(customerId);
     if (c == null) return;
     _returnedPlans.add(erpPlanId);
-    final plans = [for (final p in ((c['plans'] as List?) ?? const []).cast<Json>()) if (p['erpPlanId'] != erpPlanId) p];
+    final all = ((c['plans'] as List?) ?? const []).cast<Json>();
+    final plans = [for (final p in all) if (p['erpPlanId'] != erpPlanId) p];
+    final gone = all.where((p) => p['erpPlanId'] == erpPlanId).firstOrNull;
+    final returnedPlans = [
+      ...((c['returnedPlans'] as List?) ?? const []).cast<Json>().where((p) => p['erpPlanId'] != erpPlanId),
+      if (gone != null)
+        {
+          ...gone,
+          'status': 'closed',
+          'returned': true,
+          'collectable': false,
+          'schedule': const <Json>[],
+          'payments': [for (final x in payments) {...x, 'erpPlanId': erpPlanId, 'returned': true}],
+        },
+    ];
     final returned = {...((c['returnedPlanIds'] as List?) ?? const []).cast<String>(), erpPlanId};
-    serverChange('customer', customerId, {...c, 'plans': plans, 'returnedPlanIds': returned.toList()});
+    final open = plans.where((p) => p['status'] != 'cancelled').length;
+    serverChange('customer', customerId, {
+      ...c,
+      'plans': plans,
+      'returnedPlanIds': returned.toList(),
+      'returnedPlans': returnedPlans,
+      'returnedInvoiceCount': returnedPlans.length,
+      'onlyReturned': returnedPlans.isNotEmpty && open == 0,
+      'payments': [
+        for (final x in ((c['payments'] as List?) ?? const []).cast<Json>())
+          if (x['erpPlanId'] == erpPlanId) {...x, 'returned': true} else x,
+        for (final x in payments) {...x, 'erpPlanId': erpPlanId, 'returned': true},
+      ],
+      if (open == 0) ...{'totalOutstandingPoisha': 0, 'overduePoisha': 0, 'daysOverdue': 0, 'badges': const <String>[]},
+    });
   }
 
   /// An applied pin reaches the phone as a customer change (1.11.0).

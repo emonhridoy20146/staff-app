@@ -11,6 +11,8 @@ void main() {
         code: 'c1',
         nameBn: 'ক',
         phonesJson: '[]',
+        returnedInvoiceCount: 0,
+        onlyReturned: false,
         address: address,
         detailedAddress: detailed,
         areaName: area,

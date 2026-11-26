@@ -13,6 +13,7 @@ import '../../../../core/theme/tag_colors.dart';
 import '../domain/customer.dart';
 import 'bad_tag_frame.dart';
 import 'invoice_kind_label.dart';
+import 'returned_mark.dart';
 import 'work_marks_row.dart';
 
 /// 88 dp customer row (design guide §5.2): status-tinted initial, name,
@@ -45,8 +46,9 @@ class CustomerTile extends ConsumerWidget {
     // Staff in several branches (1.19.0): each row says which branch it is in.
     final branch = ref.watch(multiBranchProvider) ? customer.branchName(lang) : null;
 
-    return InkWell(
-      onTap: onTap,
+    // FR-M-085: a customer whose every invoice was returned is listed with the marker but does not open.
+    return returnedRowSemantics(context, customer, InkWell(
+      onTap: customer.onlyReturned ? null : onTap,
       child: ConstrainedBox(
         constraints: const BoxConstraints(minHeight: Sizes.row3),
         child: BadTagRowBody(
@@ -83,7 +85,7 @@ class CustomerTile extends ConsumerWidget {
                     // FR-M-038: what was done with the customer this month, in every filter.
                     const SizedBox(height: Space.s4 + 2),
                     WorkMarksRow(customer: customer),
-                    if (badges.isNotEmpty || !customer.kinds.isEmpty) ...[
+                    if (badges.isNotEmpty || !customer.kinds.isEmpty || customer.hasReturned) ...[
                       const SizedBox(height: Space.s4 + 2),
                       Wrap(
                         spacing: Space.s4 + 2,
@@ -92,6 +94,8 @@ class CustomerTile extends ConsumerWidget {
                         children: [
                           // FR-M-066: "কিস্তি" / "বাকি", or the count of each when there are several invoices.
                           if (!customer.kinds.isEmpty) InvoiceKindLabel(kinds: customer.kinds),
+                          // FR-M-085: has an invoice returned in the ERP (never counted).
+                          if (customer.hasReturned) const ReturnedCustomerMark(),
                           for (final b in badges)
                             StatusBadge(
                               b,
@@ -113,12 +117,12 @@ class CustomerTile extends ConsumerWidget {
                   if (amountCaption != null) Text(amountCaption!, style: t.bodySmall!.copyWith(color: cs.onSurfaceVariant)),
                 ],
               ),
-              if (trailing != null) ...[const SizedBox(width: Space.s8), trailing!],
+              if (trailing != null && !customer.onlyReturned) ...[const SizedBox(width: Space.s8), trailing!],
             ],
           ),
         ),
       ),
-    );
+    ));
   }
 
   static String _initial(String name) {

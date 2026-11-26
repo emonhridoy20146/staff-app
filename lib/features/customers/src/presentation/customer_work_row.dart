@@ -11,6 +11,7 @@ import '../customer_providers.dart';
 import '../domain/customer.dart';
 import 'bad_tag_frame.dart';
 import 'invoice_kind_label.dart';
+import 'returned_mark.dart';
 import 'work_marks_row.dart';
 
 /// The Home work-list row (FR-M-067, owner request 2026-11-23, design guide §5.1), four lines:
@@ -47,8 +48,12 @@ class CustomerWorkRow extends ConsumerWidget {
     final days = customer.row.daysOverdue;
     final promisedBy = customer.row.openPromiseDate == null ? null : ref.watch(promiseMakersProvider.select((m) => m.value?[customer.id]));
 
-    return InkWell(
-      onTap: onTap,
+    // FR-M-085: a customer whose every invoice was returned stays in the list with the marker, but the row does not
+    // open and offers no action (no Collect).
+    final open = customer.onlyReturned ? null : onTap;
+    final act = customer.onlyReturned ? null : action;
+    return returnedRowSemantics(context, customer, InkWell(
+      onTap: open,
       // FR-M-081: a bad-tag customer's row sits in the frame of its tag kind, chip on the frame.
       child: BadTagRowBody(
         customer: customer,
@@ -85,11 +90,16 @@ class CustomerWorkRow extends ConsumerWidget {
               const SizedBox(height: Space.s2),
               Text(where.join(' · '), key: const Key('work-row-where'), style: t.bodySmall!.copyWith(color: cs.onSurfaceVariant), maxLines: 2, overflow: TextOverflow.ellipsis),
             ],
+            // FR-M-085: the customer has an invoice returned in the ERP (shown, never counted).
+            if (customer.hasReturned) ...[
+              const SizedBox(height: Space.s8),
+              const Align(alignment: AlignmentDirectional.centerStart, child: ReturnedCustomerMark()),
+            ],
             const SizedBox(height: Space.s8),
             Row(
               children: [
                 Expanded(child: WorkMarksRow(customer: customer, large: true)),
-                if (action != null) ...[const SizedBox(width: Space.s8), action!],
+                if (act != null) ...[const SizedBox(width: Space.s8), act],
               ],
             ),
             if (days > 0) ...[
@@ -111,7 +121,7 @@ class CustomerWorkRow extends ConsumerWidget {
           ],
         ),
       ),
-    );
+    ));
   }
 }
 

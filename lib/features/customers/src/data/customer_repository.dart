@@ -9,6 +9,7 @@ import '../../../../core/text/search_text.dart';
 import '../domain/customer.dart';
 import '../domain/month_people.dart';
 import '../domain/phones.dart';
+import '../domain/returned_plan.dart';
 import '../domain/schedule.dart';
 import '../domain/work_marks.dart';
 
@@ -40,24 +41,34 @@ class CustomerPullHandler implements PullHandler {
     // 1.23.0 (FR-M-037): ERP numbers and added ones; a number typed on this phone and not yet sent stays in the list.
     final phoneList = keepPending(phonesFromServer(d), existing == null ? const [] : decodePhones(existing.phonesJson));
     final phones = [for (final p in phoneList) p.number];
-    // FR-CUS-023, FR-M-080 (1.50.0, ADR-M43): invoices returned in the ERP are never shown. `returnedPlanIds` lists the
-    // ones to delete; its presence marks a ≥1.50 server, whose `plans` is the complete list, so `plans: []`
-    // clears them. An older server omits the key: a payload with no plans (missing or empty) keeps ours.
-    final returned = ((d['returnedPlanIds'] as List?) ?? const []).whereType<String>().toSet();
+    // FR-CUS-024, FR-M-085 (1.53.0, ADR-M46): the returned invoices come back in `returnedPlans`, to store apart
+    // (table `returned_plans`) and never count. Present = replace the stored list; an older server omits it and
+    // the stored ones stay.
+    final returnedPlans = d['returnedPlans'] is List ? (d['returnedPlans'] as List).whereType<Json>().where((p) => p['erpPlanId'] is String).toList() : null;
+    final returnedNow = {for (final p in returnedPlans ?? const <Json>[]) p['erpPlanId'] as String};
+    // FR-CUS-023, FR-M-080 (1.50.0, ADR-M43): `returnedPlanIds` lists invoices that must not be counted plans. Since
+    // 1.53.0 this applies to the counted `plans` table only (a returned invoice is never there); it runs before
+    // the returned plans are stored and never touches them. Its presence marks a ≥1.50 server, whose `plans` is
+    // the complete list, so `plans: []` clears them. An older server omits the key: a payload with no plans
+    // (missing or empty) keeps ours.
+    final returned = {...((d['returnedPlanIds'] as List?) ?? const []).whereType<String>(), ...returnedNow};
     final payloadPlans = [
       for (final p in ((d['plans'] as List?) ?? const []).cast<Json>())
         if (!returned.contains(p['erpPlanId'])) p,
     ];
-    final replacePlans = d.containsKey('returnedPlanIds') ? d['plans'] is List : payloadPlans.isNotEmpty;
+    final replacePlans = d.containsKey('returnedPlanIds') || returnedPlans != null ? d['plans'] is List : payloadPlans.isNotEmpty;
     final storedPlans = await (db.select(db.plans)..where((t) => t.customerId.equals(id))).get();
+    final storedReturned = returnedPlans != null ? const <ReturnedPlanRow>[] : await (db.select(db.returnedPlans)..where((t) => t.customerId.equals(id))).get();
     // FR-M-076: every invoice number of the customer's plans (all kinds, open or closed); kept plans are read
-    // from the table. A returned invoice's number is never in it.
-    final invoiceNos = replacePlans
-        ? [for (final p in payloadPlans) if (p['invoiceNo'] is String) p['invoiceNo'] as String]
-        : [
-            for (final p in storedPlans)
-              if (p.invoiceNo != null && !returned.contains(p.erpPlanId)) p.invoiceNo!,
-          ];
+    // from the table. FR-M-085: a returned invoice's number finds the customer too (the hit carries the marker).
+    final invoiceNos = [
+      ...replacePlans
+          ? [for (final p in payloadPlans) if (p['invoiceNo'] is String) p['invoiceNo'] as String]
+          : [for (final p in storedPlans) if (p.invoiceNo != null && !returned.contains(p.erpPlanId)) p.invoiceNo!],
+      ...returnedPlans != null
+          ? [for (final p in returnedPlans) if (p['invoiceNo'] is String) p['invoiceNo'] as String]
+          : [for (final p in storedReturned) ?p.invoiceNo],
+    ];
     final search = customerSearchText(
       nameBn: name.bn,
       nameEn: name.en,
@@ -119,6 +130,10 @@ class CustomerPullHandler implements PullHandler {
             version: Value((d['version'] as num?)?.toInt() ?? 0),
             // 1.44.0 (FR-M-068): who did this month's work. An older server sends none: keep what we had.
             activityJson: Value(encodeActivity(d) ?? existing?.activityJson),
+            // 1.53.0 (FR-M-085): the server's count of returned invoices and whether every invoice was returned.
+            // Older servers omit them: 0 / false.
+            returnedInvoiceCount: Value((d['returnedInvoiceCount'] as num?)?.toInt() ?? returnedPlans?.length ?? 0),
+            onlyReturned: Value((d['onlyReturned'] as bool?) ?? false),
           ),
         );
 
@@ -184,6 +199,39 @@ class CustomerPullHandler implements PullHandler {
         }
       }
     }
+    // 1.53.0 (FR-M-085): the returned invoices, replaced as a whole, after the counted plans. Shown with their
+    // payments on the customer page only; nothing that counts reads this table.
+    if (returnedPlans != null) {
+      await (db.delete(db.returnedPlans)..where((t) => t.customerId.equals(id))).go();
+      for (final p in returnedPlans) {
+        await db.into(db.returnedPlans).insertOnConflictUpdate(ReturnedPlansCompanion.insert(
+              erpPlanId: p['erpPlanId'] as String,
+              customerId: id,
+              product: Value((p['product'] as String?) ?? ''),
+              kind: Value(planKindOf(p)),
+              invoiceNo: Value(p['invoiceNo'] as String?),
+              saleDate: Value(p['saleDate'] as String?),
+              totalPayablePoisha: Value((p['totalPayablePoisha'] as num?)?.toInt() ?? 0),
+              paidPoisha: Value((p['paidPoisha'] as num?)?.toInt() ?? 0),
+              outstandingPoisha: Value((p['outstandingPoisha'] as num?)?.toInt() ?? 0),
+              status: Value((p['status'] as String?) ?? 'closed'),
+              itemsJson: Value(p['items'] == null ? null : jsonEncode(p['items'])),
+              paymentsJson: Value(jsonEncode([
+                for (final x in ((p['payments'] as List?) ?? const []).whereType<Json>())
+                  if (x['date'] is String)
+                    {
+                      'id': x['erpPaymentId'],
+                      'date': x['date'],
+                      'amountPoisha': (x['amountPoisha'] as num?)?.toInt() ?? 0,
+                      'receiptNo': x['receiptNo'],
+                      'method': x['method'],
+                      'methodLabel': x['methodLabel'],
+                      'reversed': x['reversed'] == true,
+                    },
+              ])),
+            ));
+      }
+    }
     final payments = (d['payments'] as List?)?.cast<Json>();
     if (payments != null) {
       await (db.delete(db.erpPayments)..where((t) => t.customerId.equals(id))).go();
@@ -201,6 +249,7 @@ class CustomerPullHandler implements PullHandler {
               methodLabel: Value(p['methodLabel'] as String?),
               collectorName: Value(p['collectorName'] as String?),
               referrerName: Value(p['referrerName'] as String?),
+              returned: Value(p['returned'] == true),
               advance: Value((p['advance'] as bool?) ?? false),
               discountPoisha: Value((p['discountPoisha'] as num?)?.toInt() ?? 0),
             ));
@@ -226,6 +275,7 @@ class CustomerPullHandler implements PullHandler {
     final planIds = (await (db.select(db.plans)..where((t) => t.customerId.equals(id))).get()).map((p) => p.erpPlanId).toList();
     await (db.delete(db.scheduleLines)..where((t) => t.erpPlanId.isIn(planIds))).go();
     await (db.delete(db.plans)..where((t) => t.customerId.equals(id))).go();
+    await (db.delete(db.returnedPlans)..where((t) => t.customerId.equals(id))).go();
     await (db.delete(db.erpPayments)..where((t) => t.customerId.equals(id))).go();
     await (db.delete(db.customers)..where((t) => t.serverId.equals(id))).go();
   }
@@ -374,7 +424,7 @@ class CustomerRepository {
             ..limit(5))
           .get();
       final payments = await (_db.select(_db.erpPayments)
-            ..where((t) => t.customerId.equals(customerId) & t.date.like('$month%') & t.reversed.equals(false))
+            ..where((t) => t.customerId.equals(customerId) & t.date.like('$month%') & t.reversed.equals(false) & t.returned.equals(false))
             ..orderBy([(t) => OrderingTerm.desc(t.date)]))
           .get();
       final makers = _promiseMakersOf(await _promiseMakersQuery(customerId: customerId).get(), myName);
@@ -411,10 +461,18 @@ class CustomerRepository {
     });
   }
 
+  /// The customer's invoices returned in the ERP (FR-M-085, contract 1.53.0), newest sale first. Shown in their
+  /// own section of the customer page with their payments; never counted and never collectable.
+  Stream<List<ReturnedPlan>> watchReturnedPlans(String customerId) => (_db.select(_db.returnedPlans)
+        ..where((t) => t.customerId.equals(customerId))
+        ..orderBy([(t) => OrderingTerm.desc(t.saleDate), (t) => OrderingTerm.desc(t.invoiceNo)]))
+      .watch()
+      .map((rows) => [for (final r in rows) ReturnedPlan(r)]);
+
   /// Plans (invoices) that already have an ERP payment on [day] (not removed, not an
   /// advance). The ERP takes one payment per installment invoice per day (OD-27).
   Stream<Set<String>> watchPlansPaidOn(String customerId, String day) => (_db.select(_db.erpPayments)
-        ..where((t) => t.customerId.equals(customerId) & t.date.equals(day) & t.reversed.equals(false) & t.advance.equals(false) & t.planId.isNotNull()))
+        ..where((t) => t.customerId.equals(customerId) & t.date.equals(day) & t.reversed.equals(false) & t.returned.equals(false) & t.advance.equals(false) & t.planId.isNotNull()))
       .watch()
       .map((rows) => {for (final r in rows) r.planId!});
 
@@ -435,7 +493,8 @@ class CustomerRepository {
 
   /// ERP money per customer in the month of [today] (FR-M-038): only this month's rows are read.
   Stream<Map<String, int>> watchPaidThisMonth(String today) => (_db.select(_db.erpPayments)
-        ..where((t) => t.date.like('${today.substring(0, 7)}%') & t.reversed.equals(false)))
+        // FR-M-085: a payment to a returned invoice is shown, never counted (no "paid this month" mark or filter).
+        ..where((t) => t.date.like('${today.substring(0, 7)}%') & t.reversed.equals(false) & t.returned.equals(false)))
       .watch()
       .map((rows) => paidThisMonth(rows.map((r) => (customerId: r.customerId, date: r.date, amountPoisha: r.amountPoisha, reversed: r.reversed)), today));
 

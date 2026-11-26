@@ -15,6 +15,7 @@ IconData statusIcon(AppStatus s) => switch (s) {
       AppStatus.tagged => Icons.flag_rounded,
       AppStatus.pending => Icons.cloud_upload_rounded,
       AppStatus.mock => Icons.gpp_maybe_rounded,
+      AppStatus.returned => Icons.assignment_return_rounded,
     };
 
 String statusLabel(AppLocalizations l, AppStatus s) => switch (s) {
@@ -27,6 +28,7 @@ String statusLabel(AppLocalizations l, AppStatus s) => switch (s) {
       AppStatus.tagged => l.statusTagged,
       AppStatus.pending => l.statusPending,
       AppStatus.mock => l.statusMock,
+      AppStatus.returned => l.statusReturned,
     };
 
 /// 24 dp status pill: icon 16 + label (design guide §6). Colour never

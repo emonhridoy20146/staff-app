@@ -38,6 +38,8 @@ void main() {
         code: id,
         nameBn: id,
         phonesJson: '[]',
+        returnedInvoiceCount: 0,
+        onlyReturned: false,
         locationStatus: 'ok',
         totalOutstandingPoisha: 100000,
         overduePoisha: 0,

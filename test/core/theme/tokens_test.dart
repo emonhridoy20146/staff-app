@@ -35,7 +35,7 @@ void main() {
     expect(hex(dark.bg), j['bgDark'], reason: '$name bgDark');
   }
 
-  test('tokens are v1.3', () => expect(json['version'], '1.3.0'));
+  test('tokens are v1.4', () => expect(json['version'], '1.4.0'));
 
   test('brand, neutral, dark and payment method colours equal the JSON', () {
     const brand = {50: Brand.c50, 100: Brand.c100, 200: Brand.c200, 300: Brand.c300, 400: Brand.c400, 500: Brand.c500, 600: Brand.c600, 700: Brand.c700, 800: Brand.c800, 900: Brand.c900, 950: Brand.c950};
@@ -119,6 +119,19 @@ void main() {
       expect(light[i], lessThan(light[i - 1]), reason: 'light: ${ramp[i].token} is darker than ${ramp[i - 1].token}');
       expect(dark[i], lessThan(dark[i - 1]), reason: 'dark: ${ramp[i].token} is more saturated (less washed out) than ${ramp[i - 1].token}');
     }
+  });
+
+  test('v1.4 status.returned is readable: text and icon AA on its tint, light, high contrast and dark', () {
+    for (final (name, st) in [
+      ('light', StatusColors.light.of(AppStatus.returned)),
+      ('high contrast', StatusColors.light.highContrast().of(AppStatus.returned)),
+      ('dark', StatusColors.dark.of(AppStatus.returned)),
+    ]) {
+      expect(contrast(st.fg, st.bg), greaterThanOrEqualTo(4.5), reason: '$name returned fg on bg');
+    }
+    // Its own colour: never the same as another status, so the marker is not read as one of them.
+    final others = {for (final s in AppStatus.values) if (s != AppStatus.returned) hex(StatusColors.light.of(s).fg)};
+    expect(others, isNot(contains(hex(StatusColors.light.of(AppStatus.returned).fg))));
   });
 
   test('action tones: the icon is AA on its container, light and dark', () {

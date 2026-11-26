@@ -7951,6 +7951,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Holidays and duty hours'**
   String get settingsCalendarHint;
+
+  /// No description provided for @statusReturned.
+  ///
+  /// In en, this message translates to:
+  /// **'Returned'**
+  String get statusReturned;
+
+  /// No description provided for @returnedCustomerMark.
+  ///
+  /// In en, this message translates to:
+  /// **'Returned product customer'**
+  String get returnedCustomerMark;
+
+  /// No description provided for @returnedCustomerOnlyA11y.
+  ///
+  /// In en, this message translates to:
+  /// **'Returned product customer, every invoice returned, cannot be opened'**
+  String get returnedCustomerOnlyA11y;
+
+  /// No description provided for @returnedInvoicesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Returned invoices'**
+  String get returnedInvoicesTitle;
+
+  /// No description provided for @returnedInvoicesNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Returned in the ERP. Counted in no total and nothing can be collected on them.'**
+  String get returnedInvoicesNote;
+
+  /// No description provided for @returnedInvoiceNoPayments.
+  ///
+  /// In en, this message translates to:
+  /// **'No payments on this invoice'**
+  String get returnedInvoiceNoPayments;
+
+  /// No description provided for @returnedPaymentsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Payments ({count})'**
+  String returnedPaymentsTitle(String count);
+
+  /// No description provided for @returnedPaymentMark.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment to a returned invoice · not counted'**
+  String get returnedPaymentMark;
 }
 
 class _AppLocalizationsDelegate

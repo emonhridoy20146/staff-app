@@ -21,6 +21,7 @@ part 'app_database.g.dart';
     Plans,
     ScheduleLines,
     ErpPayments,
+    ReturnedPlans,
     LocationProposals,
     Collections,
     ReceiptBlocks,
@@ -56,7 +57,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 20;
+  int get schemaVersion => 21;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -86,6 +87,7 @@ class AppDatabase extends _$AppDatabase {
             'CREATE INDEX IF NOT EXISTS idx_colleague_customer ON colleague_activities (customer_id, kind, at DESC)',
           );
           await customStatement('CREATE INDEX IF NOT EXISTS idx_staff_requests_created ON staff_requests (created_at DESC)');
+          await customStatement('CREATE INDEX IF NOT EXISTS idx_returned_plans_customer ON returned_plans (customer_id)');
         },
         onUpgrade: (m, from, to) async {
           // v2 (0.2.0): contact attempts + location queue time index.
@@ -221,6 +223,16 @@ class AppDatabase extends _$AppDatabase {
             await _ensureColumn(m, customers, customers.tagReasonCode);
             await backfillTagReasonCodes();
           }
+          // v21 (contract 1.53.0, FR-CUS-024, FR-M-085, ADR-M46): invoices returned in the ERP are shown again,
+          // never counted. A new table for them and columns with defaults (0 / false / '[]') only. No forced
+          // resync: the server re-sends the affected customers on the next pull. Nothing unsynced is touched.
+          if (from < 21) {
+            if (!await _hasTable('returned_plans')) await m.createTable(returnedPlans);
+            await customStatement('CREATE INDEX IF NOT EXISTS idx_returned_plans_customer ON returned_plans (customer_id)');
+            await _ensureColumn(m, customers, customers.returnedInvoiceCount);
+            await _ensureColumn(m, customers, customers.onlyReturned);
+            await _ensureColumn(m, erpPayments, erpPayments.returned);
+          }
         },
         beforeOpen: (details) async {
           await customStatement('PRAGMA foreign_keys = ON');
@@ -236,7 +248,12 @@ class AppDatabase extends _$AppDatabase {
     final ids = only?.toSet();
     if (ids != null && ids.isEmpty) return;
     final invoices = <String, List<String>>{};
-    for (final r in await customSelect('SELECT customer_id, invoice_no FROM plans WHERE invoice_no IS NOT NULL').get()) {
+    // FR-M-085 (1.53.0): a returned invoice's number finds its customer too (the hit carries the marker). The
+    // schema 19 step runs this before schema 21 makes `returned_plans`.
+    final returned = await _hasTable('returned_plans')
+        ? ' UNION ALL SELECT customer_id, invoice_no FROM returned_plans WHERE invoice_no IS NOT NULL'
+        : '';
+    for (final r in await customSelect('SELECT customer_id, invoice_no FROM plans WHERE invoice_no IS NOT NULL$returned').get()) {
       invoices.putIfAbsent(r.read<String>('customer_id'), () => []).add(r.read<String>('invoice_no'));
     }
     final rows = await customSelect('SELECT server_id, name_bn, name_en, code, phones_json, address FROM customers').get();
