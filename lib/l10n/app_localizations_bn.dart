@@ -530,7 +530,7 @@ class AppLocalizationsBn extends AppLocalizations {
   String get customersTitle => 'গ্রাহক';
 
   @override
-  String get customersSearch => 'নাম, ফোন বা কোড দিয়ে খুঁজুন';
+  String get customersSearch => 'নাম, কোড, মোবাইল বা ইনভয়েস নম্বর';
 
   @override
   String get filterAll => 'সব';

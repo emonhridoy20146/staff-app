@@ -13,10 +13,10 @@ import '../../../core/db/app_database.dart';
 import '../../../core/providers.dart';
 import '../../../core/settings/ui_prefs.dart';
 import '../../../core/sync/sync_handlers.dart';
+import '../../../core/text/search_text.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/ui/common.dart';
 import '../../../l10n/app_localizations.dart';
-import 'domain/customer.dart' show normalizeSearch;
 import 'domain/phones.dart';
 
 /// Adds phone numbers to a customer, offline-first (FR-M-037, contract 1.23.0).
@@ -46,7 +46,7 @@ Future<int> addCustomerPhones(Ref ref, {required String customerId, required Lis
     await (db.update(db.customers)..where((t) => t.serverId.equals(customerId))).write(CustomersCompanion(
       phonesJson: Value(encodePhones([...list, for (final p in add) CustomerPhone(number: p.number, fromErp: false, label: p.label, pending: true)])),
       // so the customer is found by the new number before the next pull
-      searchText: Value('${row.searchText} ${normalizeSearch(add.map((p) => p.number).join(' '))}'),
+      searchText: Value(addToSearchText(row.searchText, add.map((p) => p.number).join(' '))),
     ));
     await ref.read(outboxWriterProvider).enqueue(mutationId: id, entity: 'customer_phone', payload: {
       'customerId': customerId,

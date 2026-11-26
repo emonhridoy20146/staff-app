@@ -23,8 +23,8 @@ class _CustomerPickerScreenState extends ConsumerState<CustomerPickerScreen> {
     final today = ref.watch(todayProvider);
     final p = prioritize(all, today, myUserId: ref.watch(myCustomerUserIdProvider));
     final ordered = [...p.promised, ...p.due, ...p.overdue, ...all.where((c) => !p.promised.contains(c) && !p.due.contains(c) && !p.overdue.contains(c))];
-    final q = _q.trim().toLowerCase();
-    final items = q.isEmpty ? ordered : ordered.where((c) => c.row.searchText.contains(q)).toList();
+    final q = SearchQuery(_q);
+    final items = q.isEmpty ? ordered : ordered.where((c) => q.matches(c.row.searchText)).toList();
     return Scaffold(
       appBar: AppBar(title: Text(l.collectTitle)),
       body: Column(children: [
