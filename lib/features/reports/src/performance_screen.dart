@@ -72,6 +72,7 @@ class _PerformanceScreenState extends ConsumerState<PerformanceScreen> {
       body: RefreshIndicator(
         onRefresh: _load,
         child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.fromLTRB(Space.screen, Space.s8, Space.screen, Space.s32),
           children: [
             _MonthSwitcher(

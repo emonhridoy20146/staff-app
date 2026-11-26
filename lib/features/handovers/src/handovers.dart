@@ -14,6 +14,7 @@ import '../../../core/theme/status_colors.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/ui/common.dart';
 import '../../../core/ui/money_text.dart';
+import '../../../core/ui/refreshable.dart';
 import '../../../core/ui/status_badge.dart';
 import '../../../l10n/app_localizations.dart';
 
@@ -101,14 +102,17 @@ class HandoversScreen extends ConsumerWidget {
     final list = ref.watch(handoversProvider).value ?? const <HandoverRow>[];
     return Scaffold(
       appBar: AppBar(title: Text(l.handoverTitle)),
-      body: list.isEmpty
-          ? EmptyState(icon: Icons.swap_horizontal_circle_outlined, title: l.handoverNone, body: '')
+      body: PullToRefresh(
+        child: list.isEmpty
+          ? PullableFill(alignment: Alignment.topCenter, child: EmptyState(icon: Icons.swap_horizontal_circle_outlined, title: l.handoverNone, body: ''))
           : ListView.separated(
+              physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.all(Space.screen),
               itemCount: list.length,
               separatorBuilder: (_, _) => const SizedBox(height: Space.cardGap),
               itemBuilder: (_, i) => HandoverCard(handover: list[i]),
             ),
+      ),
     );
   }
 }

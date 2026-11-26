@@ -423,6 +423,7 @@ class _CoworkScreenState extends ConsumerState<CoworkScreen> {
       body: RefreshIndicator(
         onRefresh: _load,
         child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.fromLTRB(Space.screen, Space.s16, Space.screen, 120),
           children: [
             for (final s in today.invites) ...[CoworkInviteCard(session: s), const SizedBox(height: Space.cardGap)],

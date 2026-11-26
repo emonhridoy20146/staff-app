@@ -77,6 +77,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
       RefreshIndicator(
         onRefresh: _load,
         child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.fromLTRB(Space.screen, Space.s8, Space.screen, Space.s32),
           children: [
             SegmentedButton<String>(

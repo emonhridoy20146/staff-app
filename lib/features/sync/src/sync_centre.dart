@@ -14,6 +14,7 @@ import '../../../core/theme/tokens.dart';
 import '../../../core/ui/chips.dart';
 import '../../../core/ui/common.dart';
 import '../../../core/ui/money_text.dart';
+import '../../../core/ui/refreshable.dart';
 import '../../../core/ui/status_badge.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../cash/cash.dart' show depositByClientIdProvider, depositFailureText, showDepositSheet;
@@ -84,7 +85,11 @@ class SyncCentreScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: cs.surfaceContainerLowest,
       appBar: AppBar(title: Text(l.syncCentreTitle)),
-      body: ListView(
+      // Pull down = "Sync now" (blocked like the button while an update is required).
+      body: PullToRefresh(
+        onRefresh: upgrade ? () async {} : null,
+        child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(Space.screen, Space.s8, Space.screen, Space.s32),
         children: [
           if (upgrade) ...[InfoBanner(icon: Icons.system_update_rounded, tone: BannerTone.danger, text: l.syncBlockedUpgrade), const SizedBox(height: Space.cardGap)],
@@ -139,6 +144,7 @@ class SyncCentreScreen extends ConsumerWidget {
               ),
           ],
         ],
+      ),
       ),
     );
   }

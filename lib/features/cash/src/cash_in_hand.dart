@@ -67,6 +67,7 @@ class _CashInHandScreenState extends ConsumerState<CashInHandScreen> {
       body: RefreshIndicator(
         onRefresh: _load,
         child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.fromLTRB(Space.screen, Space.s16, Space.screen, Space.s32),
           children: [
             if (depositWaiting) ...[

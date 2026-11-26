@@ -8,6 +8,7 @@ import '../../../core/permissions/permission_service.dart';
 import '../../../core/providers.dart';
 import '../../../core/settings/ui_prefs.dart';
 import '../../../core/theme/tokens.dart';
+import '../../../core/ui/refreshable.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../auth/auth.dart';
 
@@ -34,7 +35,9 @@ class MeScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: cs.surfaceContainerLowest,
-      body: CustomScrollView(slivers: [
+      // Pull down: a sync refreshes what the Me entries show (cash, attendance, tasks, notices…).
+      body: PullToRefresh(
+        child: CustomScrollView(physics: const AlwaysScrollableScrollPhysics(), slivers: [
         SliverAppBar(pinned: true, backgroundColor: cs.surfaceContainer, title: Text(l.meTitle)),
         SliverPadding(
           padding: const EdgeInsets.fromLTRB(Space.screen, Space.s16, Space.screen, Space.s32),
@@ -75,6 +78,7 @@ class MeScreen extends ConsumerWidget {
           ]),
         ),
       ]),
+      ),
     );
   }
 }

@@ -7,6 +7,7 @@ import '../../../core/settings/ui_prefs.dart';
 import '../../../core/theme/status_colors.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/ui/common.dart';
+import '../../../core/ui/refreshable.dart';
 import '../../../l10n/app_localizations.dart';
 import 'tasks_data.dart';
 
@@ -58,9 +59,11 @@ class TasksScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: cs.surfaceContainerLowest,
       appBar: AppBar(title: Text(l.tasksTitle), backgroundColor: cs.surfaceContainer),
-      body: tasks.isEmpty
-          ? Center(child: EmptyState(icon: Icons.task_alt_rounded, title: l.tasksEmpty, body: l.tasksEmptyBody))
+      body: PullToRefresh(
+        child: tasks.isEmpty
+          ? PullableFill(child: EmptyState(icon: Icons.task_alt_rounded, title: l.tasksEmpty, body: l.tasksEmptyBody))
           : ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.fromLTRB(Space.screen, Space.s16, Space.screen, Space.s32),
               children: [
                 for (final (label, list) in [(l.tasksSectionActive, active), (l.tasksSectionWaiting, waiting), (l.tasksSectionClosed, closed)])
@@ -76,6 +79,7 @@ class TasksScreen extends ConsumerWidget {
                   ],
               ],
             ),
+      ),
     );
   }
 }
@@ -209,7 +213,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
     final f = ref.watch(fmtProvider);
     final task = ref.watch(taskProvider(widget.id)).value;
     if (task == null) {
-      return Scaffold(appBar: AppBar(), body: Center(child: Text(l.tasksEmpty)));
+      return Scaffold(appBar: AppBar(), body: PullToRefresh(child: PullableFill(child: Text(l.tasksEmpty))));
     }
     final s = context.semanticColors;
     final today = ref.watch(clockProvider).businessDate();
@@ -219,7 +223,9 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
     return Scaffold(
       backgroundColor: cs.surfaceContainerLowest,
       appBar: AppBar(title: Text(l.taskTitle), backgroundColor: cs.surfaceContainer),
-      body: ListView(
+      body: PullToRefresh(
+        child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(Space.screen, Space.s16, Space.screen, Space.s32),
         children: [
           Align(alignment: AlignmentDirectional.centerStart, child: TaskStatusChip(task: task)),
@@ -317,6 +323,7 @@ class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
               ),
           ],
         ],
+      ),
       ),
       bottomNavigationBar: task.canRequestResolve
           ? SafeArea(

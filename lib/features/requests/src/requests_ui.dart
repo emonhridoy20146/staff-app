@@ -10,6 +10,7 @@ import '../../../core/settings/ui_prefs.dart';
 import '../../../core/theme/status_colors.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/ui/common.dart';
+import '../../../core/ui/refreshable.dart';
 import '../../../l10n/app_localizations.dart';
 import 'requests_data.dart';
 import 'requests_domain.dart';
@@ -156,7 +157,9 @@ class RequestsScreen extends ConsumerWidget {
         icon: const Icon(Icons.add_comment_rounded),
         label: Text(l.requestNew),
       ),
-      body: ListView(
+      body: PullToRefresh(
+        child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(Space.screen, Space.s8, Space.screen, 96),
         children: [
           if (assigned.isNotEmpty) ...[
@@ -183,6 +186,7 @@ class RequestsScreen extends ConsumerWidget {
           else
             for (final r in mine) ...[_RequestCard(request: r), const SizedBox(height: Space.cardGap)],
         ],
+      ),
       ),
     );
   }
@@ -495,14 +499,16 @@ class _RequestDetailState extends ConsumerState<RequestDetailScreen> {
     final f = ref.watch(fmtProvider);
     final r = ref.watch(requestProvider(widget.requestKey));
     if (r == null) {
-      return Scaffold(appBar: AppBar(title: Text(l.requestDetailTitle)), body: Center(child: EmptyState(icon: Icons.forum_outlined, title: l.requestsEmpty, body: '')));
+      return Scaffold(appBar: AppBar(title: Text(l.requestDetailTitle)), body: PullToRefresh(child: PullableFill(child: EmptyState(icon: Icons.forum_outlined, title: l.requestsEmpty, body: ''))));
     }
     final important = r.priority == RequestPriority.important;
     final held = r.waiting && r.localPhotos > 0;
     return Scaffold(
       backgroundColor: cs.surfaceContainerLowest,
       appBar: AppBar(title: Text(l.requestDetailTitle), backgroundColor: cs.surfaceContainer),
-      body: ListView(
+      body: PullToRefresh(
+        child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(Space.screen, Space.s16, Space.screen, Space.s32),
         children: [
           AppCard(
@@ -589,6 +595,7 @@ class _RequestDetailState extends ConsumerState<RequestDetailScreen> {
             ),
           ],
         ],
+      ),
       ),
     );
   }
