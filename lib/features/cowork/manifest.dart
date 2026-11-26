@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart' show Icons;
 
 import '../../core/feature/feature_manifest.dart';
 import '../../core/permissions/permission_service.dart';
+import '../../core/theme/tag_colors.dart' show ActionTone;
 import 'src/cowork_data.dart';
 import 'src/cowork_widgets.dart';
 
@@ -26,4 +27,7 @@ final coworkManifest = FeatureManifest(
   ],
   todayCards: [TodayCardDef(id: 'cowork', order: 4, permission: Perm.coworkUse, builder: (_) => const CoworkTodayCard())],
   meEntries: [MeEntryDef(id: 'cowork', order: 25, permission: Perm.coworkUse, builder: (_) => const CoworkMeEntry())],
+  quickActions: [
+    QuickActionDef(id: 'cowork', order: 120, icon: Icons.groups_rounded, tone: ActionTone.teal, label: (l) => l.coworkTitle, route: '/cowork', permission: Perm.coworkUse, badge: (ref) => ref.watch(coworkTodayProvider).invites.length),
+  ],
 );

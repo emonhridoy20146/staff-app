@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/feature/feature_manifest.dart';
+import '../../core/theme/tag_colors.dart' show ActionTone;
 import '../../core/theme/tokens.dart';
 import '../../core/ui/common.dart';
 import '../../l10n/app_localizations.dart';
@@ -24,6 +25,11 @@ final reportsManifest = FeatureManifest(
     MeEntryDef(id: 'performance', order: 12, builder: (_) => const _PerformanceMeEntry()),
     // FR-M-071: its own line in the Me list, only while the office shows the board to staff.
     MeEntryDef(id: 'leaderboard', order: 13, visible: (ref) => ref.watch(leaderboardVisibleProvider), builder: (_) => const LeaderboardMeEntry()),
+  ],
+  quickActions: [
+    QuickActionDef(id: 'performance', order: 80, icon: Icons.insights_rounded, tone: ActionTone.violet, label: (l) => l.performanceBtn, route: '/performance'),
+    // Fills the grid only when one of the first nine cannot be used; the board is also inside Performance.
+    QuickActionDef(id: 'leaderboard', order: 110, icon: Icons.emoji_events_rounded, tone: ActionTone.amber, label: (l) => l.leaderboardTitle, route: '/leaderboard', visible: (ref) => ref.watch(leaderboardVisibleProvider)),
   ],
 );
 

@@ -69,15 +69,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state, shell) => AppShell(shell: shell),
         branches: [
           StatefulShellBranch(routes: [
-            GoRoute(
-              path: '/today',
-              builder: (context, _) => Consumer(
-                builder: (context, ref, _) => TodayScreen(onSeeOverdue: () {
-                  ref.read(customerFilterProvider.notifier).state = CustomerFilter.overdue;
-                  context.go('/customers');
-                }),
-              ),
-            ),
+            GoRoute(path: '/today', builder: (_, _) => const TodayScreen()),
           ]),
           StatefulShellBranch(routes: [GoRoute(path: '/customers', builder: (_, _) => const CustomerListScreen())]),
           StatefulShellBranch(routes: [GoRoute(path: '/map', builder: (_, _) => const CustomerMapScreen())]),

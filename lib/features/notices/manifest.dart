@@ -2,6 +2,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart' show Icons;
 
 import '../../core/feature/feature_manifest.dart';
+import '../../core/theme/tag_colors.dart' show ActionTone;
 import 'src/notices_data.dart';
 import 'src/notices_screens.dart';
 
@@ -26,6 +27,9 @@ final noticesManifest = FeatureManifest(
       ],
     ),
   ],
-  todayCards: [TodayCardDef(id: 'notices', order: 0, builder: (_) => const NoticesTodayBanner())],
+  todayCards: [TodayCardDef(id: 'notices', order: 0, alert: true, builder: (_) => const NoticesTodayBanner())],
   meEntries: [MeEntryDef(id: 'notices', order: 6, builder: (_) => const NoticesMeEntry())],
+  quickActions: [
+    QuickActionDef(id: 'notices', order: 50, icon: Icons.campaign_rounded, tone: ActionTone.amber, label: (l) => l.noticesTitle, route: '/notices', badge: (ref) => ref.watch(unreadNoticesProvider).length),
+  ],
 );

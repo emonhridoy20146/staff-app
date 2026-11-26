@@ -127,7 +127,7 @@ Customer detail → Collect flow · Visit check-in (camera) · Promise sheet · 
 
 ## 5. Key screens (layout specs)
 
-### 5.1 Today (Home) — redesign 2026-11-26 (ADR-M41)
+### 5.1 Today (Home) — redesign 2026-11-26 (ADR-M41), v2 the same day (ADR-M45)
 ```
 ┌──────────────────────────────────────┐
 │ ▣ বরিশাল সদর        ● অনলাইন  📍  🔔 │  shell top bar (unchanged)
@@ -142,22 +142,32 @@ Customer detail → Collect flow · Visit check-in (camera) · Promise sheet · 
 │ ┃  visits, cash meter)                ┃ │
 │ ┠──────────────────────────────────┨ │
 │ ┃ [ ৫ প্রতিশ্রুতি ][ ৭ আজ দেয় ][ ১২ বকেয়া ]┃ │  KPI tiles in status colours (promised, dueToday,
-│ ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛ │  overdue); 0 = neutral; tap scrolls to the section
+│ ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛ │  overdue); 0 = neutral; tap picks that filter (v2)
 │ ● ডিউটিতে · ১০:০০ থেকে       বিস্তারিত ▾ │  duty card (attendance feature)
-│ [ উপস্থিতি ✓ ][ আজকের কাজ ][ পারফরম্যান্স ] │  quick tiles: one height, surface card, 40 dp tonal icon
-│ ⚠ banners / feature cards (todayCards)  │  extension point; tracking health first (order −1)
+│ ⚠ alerts (todayCards, alert: true)     │  v2: only when there is one, above the shortcuts: tracking,
+│                                      │  must-read notice, sync problem, tasks, receipts, handover
+│ ┌──────────────────────────────────┐ │  QUICK ACTIONS (v2): one card, 3 × 3 equal cells; 40 dp
+│ │ (◔)উপস্থিতি ✓  (▤)আজকের কাজ  (▣)হাতে নগদ │ │  circle in an `action.*` tone, label on up to 2 lines,
+│ │ (▧)আমার কাজ   (📣)নোটিশ ②   (💬)অনুরোধ  │ │  count badge, attendance done / to-do mark
+│ │ (👤)সম্ভাব্য গ্রাহক (📈)পারফরম্যান্স (☂)ছুটি │ │
+│ └──────────────────────────────────┘ │
+│ feature cards (todayCards, the rest)   │  co-work, visit suggestion, broken promises
 │ আজকের কাজের তালিকা                      │  titleLarge + one-line explanation
+│ [সব ২৪][আজ প্রতিশ্রুতি ৫][আজ দেয় ৭][বকেয়া ১২]¦[খারাপ ট্যাগ ৩]… │  FILTER CHIPS (v2): pinned under the top bar, scroll sideways
 │ [🤝] আজ প্রতিশ্রুতি (৫)                   │  section header: 32 dp toned icon square, titleMedium,
 │ ┌ work rows (CustomerWorkRow) ───────┐ │  toned count pill; rows in one surface card (shadow.sm)
 │ [📅] আজ দেয় (৭) …                       │
-│ [➤] বকেয়া · কাছের আগে (১২) … [আরও ৪ জন →]│  outlined "N more" button opens Customers → overdue
+│ [➤] বকেয়া · কাছের আগে (১২) … [আরও ৪ জন →]│  outlined "N more" button picks the Overdue filter (v2)
 └──────────────────────────────────────┘  no FAB (2026-11-23): each row has its own Collect
 ```
 - **Rhythm:** 16 dp screen margin, 12 dp between cards (`Space.cardGap`, collapsing when a feature card renders nothing), 32 dp before the work list, 20 dp above each section header.
 - **One card style:** surface, `Radii.xl`, 1 px `outlineVariant`, `Shadows.sm` (summary card `Shadows.md`); banners use `Radii.xl` too. Status colours appear only where they carry meaning (KPIs, section icons and counts, marks); the brand colour as a surface only in the summary stripe and icon chips.
 - **Loading:** three skeleton work rows (static `surfaceContainerHigh` bars shaped like name / amount / marks / Collect; no spinner, no shimmer animation; TalkBack reads "লোড হচ্ছে…"). **Empty / all done** and **error** sit in the same card style.
 - **Small phones (360 dp) and 1.3 text:** greeting, collected label, KPI labels and tile labels wrap to two lines instead of being cut; the target line wraps under the amount. Pull to refresh runs `syncNow` (AlwaysScrollable, also when the list is empty).
-- Screenshots: `test/screenshots/goldens/home/` (bn/en, light/dark, 360 dp, 1.3, full page, start of day); before: `docs/screenshots/home-before/`.
+- **Order (v2, ADR-M45):** header → summary card → duty card → alerts → quick actions → feature cards → work list, the same all day. A Today card says whether it is an alert (`TodayCardDef.alert`: tracking health, must-read notice, sync problems, tasks, receipts low, handover); alerts and the cash-limit warning come before the shortcuts, so nine tiles never push "tracking is not running" under the fold. On a 360 × 780 dp phone the first screen still answers: on duty? how much today? what is next (the three counts)?
+- **Quick actions (v2, FR-M-083):** one surface card holding a grid of equal cells, three to a row. Features give their shortcuts through the manifest (`quickActions`), so a module that is off or not permitted leaves no cell and Home imports no feature screen. The grid shows the first 9 by order, 6 when fewer than 9 are there, 3 when fewer than 6: always full rows; what does not fit stays in Me. The nine: উপস্থিতি · আজকের কাজ · হাতে নগদ / আমার কাজ · নোটিশ · আমার অনুরোধ / সম্ভাব্য গ্রাহক · পারফরম্যান্স · ছুটি; the bench that fills a gap: লিডারবোর্ড, সহকর্মীর সাথে কাজ, হস্তান্তর, সিঙ্ক সেন্টার. **Cell:** ≥ 88 dp high (`Sizes.row3`), ripple with `Radii.lg`; a 40 dp circle in the tone's bg with a 22 dp icon in its fg (`action.*`, §2: brand, teal, green, violet, amber; green is money, amber is time and notices; no row or column repeats a tone), 8 dp, the label in labelMedium on up to two lines; a count `Badge` on the circle for what waits behind it (open tasks, unread notices, news on my requests); attendance keeps its done (success, check) / still to give (warning, "!") mark on the circle with the words under the label (FR-M-042). Every row is as tall as the tallest, so all cells are one size at any text size. TalkBack: the card is "শর্টকাট", a cell is one button, "নোটিশ: ২টি অপেক্ষায়", "উপস্থিতি, হাজিরা বাকি".
+- **Filter chips (v2, FR-M-082):** single choice, each chip an icon (18 dp, the list's status colour), its words and its count (tabular, w700): **সব** · **আজ প্রতিশ্রুতি** · **আজ দেয়** · **বকেয়া** ¦ **খারাপ ট্যাগ** · **ভাঙা প্রতিশ্রুতি** (the last only when promises are on and permitted). Chips are 48 dp targets, 8 dp apart, in one row that scrolls sideways; a hairline divider sets the two lenses apart from the four groups of the list. The row is a pinned header (56 dp, page background) that stays under the top bar while the list scrolls, with a hairline once rows pass beneath it. The picked chip is always in sight: the row brings it to its middle in 120 ms (at once with reduced motion) when a count in the summary card, "N more" or the choice kept for the session picks one past the edge. **সব** shows the three sections (Overdue cut at 8, "আরও N জন" picks the Overdue filter in place); any other chip shows only that list, whole, nearest first, under one section header, as lazy rows. A chip's number is always its section's number and the summary card's; **সব** is their sum. An empty filter is one calm card ("এই তালিকায় কেউ নেই") with "সব দেখুন". The choice is kept until sign-out or the app is closed; it is not stored. Two bad-tag frames in a row have no hairline between them.
+- Screenshots: `test/screenshots/goldens/home/` (bn/en, light/dark, 360 dp, 1.3, full page, start of day) and `goldens/tags/home-bad-tags-*` (a picked filter); before: `docs/screenshots/home-before/` (v1) and `docs/screenshots/home-settings-v2-before/` (v2).
 
 **Home row (`CustomerWorkRow`, 2026-11-23, FR-M-067):** replaces `CustomerTile` on Today. No avatar, so lines 2 and 4 get the full width. Line 1 name (titleMedium, one line, …) and the outstanding (titleMedium tabular) at the far right. Line 2 bodySmall onSurfaceVariant: branch name and the open invoices' numbers (newest sale first, max 2 lines). Line 3 the four work marks at 32 dp with 20 dp icons (were 22/14) and, at the right end, `FilledButton.tonalIcon` "আদায়" with a payments icon, 48 dp high; it opens the collect screen for that customer. Line 4 "২ মাস ১৫ দিন বকেয়া" (bodyMedium w600, overdue fg) only when overdue. An open promise adds "প্রতিশ্রুতি নিয়েছেন: <name>" with a handshake icon in the promised colour; the name is the promise's `createdByName`, the user for a promise made on this phone, or a colleague's; unknown → no line. The extended "আদায়" FAB is gone.
 
@@ -205,6 +215,15 @@ Attendance card (today timeline: in, breaks, out; buttons বিরতি শু
 ### 5.7b Background location set-up (2026-11-26, FR-M-078)
 Route `/location/background-setup`, from the Today tracking line and the Me tracking card ("ব্যাকগ্রাউন্ড সেটআপ"). An info banner says why (live location on duty even when the app is closed; phones stop apps to save battery; never off duty). Three `AppCard` steps: **1. battery optimisation** with a status pill (অনুমতি আছে success · অনুমতি নেই warning · জানা যায়নি neutral) and a filled "অনুমতি দিন" that opens Android's own dialog; **2. autostart and background** for the detected brand (`Build.MANUFACTURER`: Xiaomi/Redmi/POCO, Samsung, Oppo/Realme, Vivo/iQOO, Huawei/Honor, OnePlus, other) with its numbered steps, an outlined "সেটিংস খুলুন" deep link to the brand's screen (snackbar when none opens) and "অন্য ফোনের নিয়ম দেখুন" to the full guide; **3. right now**: running (success) / on duty but not running (danger) / reconnecting (warning) / off duty (neutral). Pull to read the phone again. The native notification shows a second line "লাইভ লোকেশন পাঠানো যাচ্ছে না। অ্যাপটি একবার খুলুন।" (amber) while the server refuses the tracking token.
 
+### 5.7c Settings (v2, 2026-11-26, FR-M-084)
+Six titled groups, each one card of uniform rows: **অ্যাকাউন্ট** (profile: name, staff code and role · sign out) · **কাজ** (sync centre, value: all synced / N waiting / N problems · holidays and shift, value: duty hours) · **লোকেশন ও ব্যাটারি** (location tracking, value চালু / বন্ধ, opens the background set-up of §5.7b · battery and background guide for the phone brand) · **ভাষা ও প্রদর্শন** (language · digits · theme · high contrast as a switch) · **গোপনীয়তা** (what the app records) · **সাহায্য ও অ্যাপ সম্পর্কে** (version · device id · server: demo / live).
+- **Row** (≥ 64 dp, 16 dp side padding): a 40 dp tonal square (`Radii.lg`, an `action.*` tone, 22 dp icon) · title (titleSmall) over a **one-line hint** (bodyMedium, onSurfaceVariant; written to fit one line at 412 dp, it wraps rather than being cut on a narrow phone or at 1.3 text) · the **current value** at the right (labelLarge tabular, onSurfaceVariant, at most 128 dp and two lines; the device id in mono) · a chevron when the row opens something, or a `Switch` (the whole row toggles it). Group title: titleSmall onSurfaceVariant, a semantics header; hairlines between rows start after the icon; 20 dp between groups.
+- **A choice** (language, digits, theme) opens a bottom sheet of 56 dp radio rows; a tap applies it at once and closes the sheet. No save button anywhere.
+- **Sign out** is the only row in the danger colour (errorContainer square, error title); it keeps its guard: refused while anything is unsent.
+- Features add rows through the manifest (`settingsRows`: section, order, icon, tone, title, hint, value, route), so a module that is off leaves no row. No search field: 14 rows in six titled groups fit in two screens; add one when Settings passes about 25 rows.
+- No pull to refresh (local settings only, ADR-M42). The Me tab keeps every card; its Settings entry carries the hint "ভাষা, থিম, লোকেশন, গোপনীয়তা".
+- Screenshots: `test/screenshots/goldens/settings/` (bn light, en dark, 360 dp at 1.3); before: `docs/screenshots/home-settings-v2-before/settings-bn.png`.
+
 ### 5.8 Work-in / work-out
 Full-screen card: date, shift, GPS status, optional selfie (front camera), big button **কাজ শুরু**. Work-out shows end-of-day summary (collections by method, deposits, on hand, visits, promises created, unsynced items warning) → **কাজ শেষ**. Tracking state explained in one line.
 
@@ -224,6 +243,10 @@ Full-screen card: date, shift, GPS status, optional selfie (front camera), big b
 | `OnlineDot` | see §5.1b |
 | Home summary card / KPI tile | see §5.1 (2026-11-26); KPI tile: `Radii.lg`, status bg / fg, number titleLarge w700 tabular, label labelSmall (2 lines), ≥ 48 dp, TalkBack "<label>: <n> জন" |
 | Home section header | 32 dp toned icon square (`Radii.md`), titleMedium title, toned count pill (`Radii.full`); one semantics header "<title>, <n>" |
+| Home filter chips | `FilterChip` row, pinned; icon 18 + words + count (tabular w700), 48 dp targets, divider before the lenses, the picked chip kept in sight, see §5.1 (v2) |
+| Quick-action grid / cell | one card, full rows of three equal cells (9 / 6 / 3); cell: 40 dp `action.*` circle, 22 dp icon, labelMedium label (2 lines), count badge, optional state mark and words; ≥ 88 dp, see §5.1 (v2) |
+| Settings row / group | 64 dp row: 40 dp tonal square, title, one-line hint, current value, chevron or switch; groups are titled cards, see §5.7c |
+| Choice sheet | bottom sheet of 56 dp radio rows for a single choice; a tap applies and closes (Settings: language, digits, theme) |
 | Tracking health line | `InfoBanner` first on Today while on duty and tracking is unhealthy: danger "not running", warning "reconnecting" / "battery saver"; tap → background set-up (FR-M-078) |
 | `RefreshIndicator` | every screen that shows synced or server data; scrollable uses `AlwaysScrollableScrollPhysics` (pull works on short and empty pages); triggers `syncNow` or the screen's online fetch (ADR-M42) |
 | `AmountKeypad` | 3×4 grid, keys 72 dp, haptic on press, backspace long-press clears |

@@ -707,17 +707,8 @@
   "settingsThemeSystem": "System",
   "settingsThemeLight": "Light",
   "settingsThemeDark": "Dark",
-  "settingsHighContrast": "High contrast (for sunlight)",
   "settingsPrivacy": "Privacy notice",
   "settingsAbout": "About",
-  "settingsVersion": "Version {version}",
-  "@settingsVersion": {
-    "placeholders": {
-      "version": {
-        "type": "String"
-      }
-    }
-  },
   "logoutTitle": "Sign out?",
   "logoutBlocked": "{count} items are not uploaded yet. Connect to the internet and sync first. Nothing will be deleted.",
   "@logoutBlocked": {
@@ -919,14 +910,6 @@
   "syncBlockedUpgrade": "Update the app to continue syncing",
   "settingsLanguageBn": "বাংলা",
   "settingsLanguageEn": "English",
-  "settingsDevice": "Device {id}",
-  "@settingsDevice": {
-    "placeholders": {
-      "id": {
-        "type": "String"
-      }
-    }
-  },
   "meStaffCode": "Staff code {code}",
   "@meStaffCode": {
     "placeholders": {
@@ -2547,5 +2530,45 @@
   "tagRowPreview": "How the customer's row will look",
   "tagWatchPreview": "Watch only: the list shows \"Tagged\", without a coloured frame.",
   "detailRunawayVisit": "The last visit says runaway · {when}",
-  "@detailRunawayVisit": {"placeholders": {"when": {"type": "String"}}}
+  "@detailRunawayVisit": {"placeholders": {"when": {"type": "String"}}},
+  "homeFilterBroken": "Broken promise",
+  "homeFilterEmpty": "Nobody in this list",
+  "homeFilterEmptyBody": "Pick another list above.",
+  "homeFilterShowAll": "Show all",
+  "homeFiltersA11y": "Work list filters",
+  "quickCash": "Cash in hand",
+  "quickActionsA11y": "Shortcuts",
+  "quickBadgeA11y": "{label}: {count} waiting",
+  "@quickBadgeA11y": {"placeholders": {"label": {"type": "String"}, "count": {"type": "String"}}},
+  "settingsSectionAccount": "Account",
+  "settingsSectionWork": "Work",
+  "settingsSectionLocation": "Location & battery",
+  "settingsSectionDisplay": "Display & language",
+  "settingsSectionPrivacy": "Privacy",
+  "settingsSectionAbout": "Help & about",
+  "roleFieldStaff": "Field staff",
+  "roleBranchManager": "Branch manager",
+  "roleAreaManager": "Area manager",
+  "roleSuperAdmin": "Super admin",
+  "roleViewer": "Viewer",
+  "settingsLogoutHint": "Everything must be synced first",
+  "settingsSyncHint": "Sending status",
+  "settingsTrackingHint": "Only while on duty",
+  "settingsTrackingOn": "On",
+  "settingsTrackingOff": "Off",
+  "settingsTrackingProblem": "Needs attention",
+  "settingsBatteryGuideHint": "Steps for your phone brand",
+  "settingsLanguageHint": "The language of the app",
+  "settingsDigitsHint": "Digit style",
+  "settingsThemeHint": "Light or dark screen",
+  "settingsHighContrastTitle": "High contrast",
+  "settingsHighContrastHint": "Easier to read in sunlight",
+  "settingsDeviceTitle": "Device ID",
+  "settingsDeviceHint": "For the office, if asked",
+  "settingsServerTitle": "Server",
+  "settingsServerHint": "Where the app sends its work",
+  "settingsServerLive": "Live",
+  "settingsServerDemo": "Demo",
+  "settingsMeHint": "Language, theme, location, privacy",
+  "settingsCalendarHint": "Holidays and duty hours"
 }

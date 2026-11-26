@@ -1,8 +1,8 @@
 # Home and Settings v2 — design plan (2026-11-26)
 
-**Status 2026-11-26:** §4 (bad-tag customers) and the v1.3 tokens are built; §5 filters, §6 quick actions, §7 Settings and the Home re-ordering of §2 are planned and not built yet.
+**Status 2026-11-26:** built, all of it: §4 bad-tag customers and the v1.3 tokens (FR-M-081), §5 filters (FR-M-082), §6 quick actions (FR-M-083), §7 Settings (FR-M-084) and the Home order of §2. Where building changed the plan, the text below was corrected to what is in the app.
 
-Owner request 2026-11-26. Scope: Home (Today), the customer rows everywhere, the tag sheet and Settings. This is the plan the code follows; the lasting rules are copied into `03-design-guide.md` (§2 tokens v1.3, §5.1, §5.7, §6). Decision record: ADR-M44.
+Owner request 2026-11-26. Scope: Home (Today), the customer rows everywhere, the tag sheet and Settings. This is the plan the code follows; the lasting rules are copied into `03-design-guide.md` (§2 tokens v1.3, §5.1, §5.7, §6). Decision records: ADR-M44 (tags, tokens), ADR-M45 (Home v2, Settings).
 
 The user: a field collector on a 5.5-inch, 2–3 GB phone, one thumb, in sunlight, often with the customer watching. Bangla first. The test for every element: **does it help decide what to do next, or do it faster?** If not, it is not on Home.
 
@@ -42,7 +42,7 @@ The order never changes (muscle memory); the emphasis does.
 
 ## 3. Layout, type, colour
 
-- **Spacing rhythm** (4-pt tokens only): 16 dp screen margin · 12 dp between cards · 24 dp before a new group (alerts → grid) · 32 dp before the work list · 20 dp above a section header · 8 dp between a frame and its neighbours.
+- **Spacing rhythm** (4-pt tokens only): 16 dp screen margin · 12 dp between cards, alerts and the grid alike (one beat; the alerts' colour is what sets them apart) · 32 dp before the work list · 20 dp above a section header · 8 dp between a frame and its neighbours.
 - **One card style** (unchanged): surface, 16 dp corners, 1 px `outlineVariant`, `shadow.sm` in light mode only. The grid is **one** card with nine cells, not nine cards: fewer borders, calmer.
 - **Type scale** (guide §3.2, nothing new): greeting `headlineSmall` · amount `headlineMedium` · list title `titleLarge` · names and money `titleMedium` · secondary lines `bodyMedium` (16 sp) · chips, tile labels `labelMedium` (14 sp) · counts tabular.
 - **Bangla typography:** Noto Sans Bengali through the Inter fallback; line height 1.35–1.45 so matras and reph are never clipped; labels wrap to two lines instead of ending in "…" (names are the only single-line text); no capitals, no letter-spacing, weight ≤ 700; numbers follow the digits setting and stay tabular so columns do not jump.
@@ -81,6 +81,7 @@ A row of single-choice chips, each with its count, at the top of the work list; 
 - A filter shows **only** that list, all of it (Overdue is no longer cut at 8), nearest first, as lazy rows. All keeps the three sections with Overdue cut at 8 and an "N more" button that now opens the Overdue filter in place.
 - A tap on a count in the summary card picks that filter and brings the list up.
 - The choice is kept for the session (until sign-out or the app is closed).
+- The picked chip is always in sight: when a count, "N more" or the kept choice picks a chip past the edge, the chip row brings it to the middle (120 ms; at once with reduced motion). Only the chip row moves.
 - **Scope:** a field staff member sees their own and unassigned customers, as before; a branch manager, area manager, viewer or super admin sees the branch(es) the server gave them. Both follow the branch picked in the top bar.
 - Offline: everything is read from the phone's database; counts are computed once per data change, not per frame.
 - Empty filter: one calm card, "এই তালিকায় কেউ নেই", with "সব দেখুন".
@@ -99,23 +100,23 @@ Bench, used only to keep the grid full when a module is off: Leaderboard (amber)
 
 - **Five tones for nine icons** (brand, teal, green, violet, amber), each tone a tinted 40 dp circle with a darker icon; a tone is tied to a meaning (green is money, amber is time and notices), and no row or column repeats one.
 - **Reflow:** features give their actions through the manifest (`quickActions`); flag off or no permission = not there. The grid shows the first 9 by order; with fewer than 9 it shows 6, with fewer than 6 it shows 3, with fewer than 3 one row of what is left. Always full rows of equal cells; what does not fit stays in Me.
-- Cell: icon circle, label (two lines allowed), optional state line; ≥ 96 × 88 dp; badge on the circle; TalkBack "নোটিশ, ২টি নতুন".
+- Cell: icon circle, label (two lines allowed), optional state line; a third of the card wide (≥ 104 dp on a 360 dp phone) and ≥ 88 dp high, every row as tall as the tallest; badge on the circle; TalkBack "নোটিশ: ২টি অপেক্ষায়".
 
 ## 7. Settings
 
-Six sections of uniform rows: **icon in a tonal square · title · one-line hint · current value · chevron** (64 dp minimum). A choice opens a bottom sheet of radio rows and applies at once.
+Six sections of uniform rows: **icon in a tonal square · title · one-line hint · current value · chevron** (64 dp minimum). A choice opens a bottom sheet of radio rows and applies at once. Hints are written short enough for one line at 412 dp; on a narrower phone or at large text they wrap, never cut.
 
 | Section | Rows (value) |
 |---|---|
 | অ্যাকাউন্ট Account | Profile (name · staff code · role) · Sign out |
-| কাজ Work | Sync centre (all synced / N waiting / N problems) · Office hours (09:00–21:00, from the office) · Holidays and shift |
-| লোকেশন ও ব্যাটারি Location & battery | Location tracking (on duty: on / off duty: off) · Background set-up (battery permission) · Phone-brand guide |
+| কাজ Work | Sync centre (all synced / N waiting / N problems) · Holidays and shift (the duty hours from the office, 09:00–21:00) |
+| লোকেশন ও ব্যাটারি Location & battery | Location tracking (on / off; opens the background set-up with the battery permission) · Battery and background guide for the phone brand |
 | ভাষা ও প্রদর্শন Display & language | Language (বাংলা) · Digits (১২৩) · Theme (light) · High contrast (switch) |
 | গোপনীয়তা Privacy | What this app records |
 | সাহায্য ও অ্যাপ সম্পর্কে Help & about | Version · Device · Server (demo / live) |
 
 - Features add their rows through the manifest (`settingsRows`), so a module that is off leaves no row.
-- **No search:** 16 rows in 6 titled groups fit in two screens; a search field would be the largest thing on the page and save nothing. Add it when Settings passes ~25 rows.
+- **No search:** 14 rows in 6 titled groups fit in two screens; a search field would be the largest thing on the page and save nothing. Add it when Settings passes ~25 rows.
 - Sign-out keeps its guard (blocked while anything is unsent).
 - The Me tab keeps every card; its Settings entry gets a hint line.
 

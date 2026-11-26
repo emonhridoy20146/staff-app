@@ -1,7 +1,9 @@
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart' show Icons;
 
 import '../../core/feature/feature_manifest.dart';
 import '../../core/permissions/permission_service.dart';
+import '../../core/theme/tag_colors.dart' show ActionTone;
 import 'src/prospects_data.dart';
 import 'src/prospects_ui.dart';
 
@@ -20,4 +22,7 @@ final prospectsManifest = FeatureManifest(
   pullHandlers: [ProspectPullHandler()],
   pushHandlers: [ProspectPushHandler()],
   meEntries: [MeEntryDef(id: 'prospects', order: 14, permission: Perm.prospectCreate, builder: (_) => const ProspectsMeEntry())],
+  quickActions: [
+    QuickActionDef(id: 'prospects', order: 70, icon: Icons.person_add_alt_1_rounded, tone: ActionTone.teal, label: (l) => l.prospectsTitle, route: '/prospects', permission: Perm.prospectCreate),
+  ],
 );

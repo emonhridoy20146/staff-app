@@ -74,9 +74,18 @@ void main() {
     return h;
   }
 
+  /// Home v2 (FR-M-083): the shortcuts sit under the duty card and the alerts, in a lazy list; bring them up.
+  Future<void> showGrid(WidgetTester t) async {
+    await t.scrollUntilVisible(find.byKey(const Key('quick-grid')), 200, scrollable: find.byType(Scrollable).first);
+    await settle(t);
+  }
+
   testWidgets('super admin: no duty card or attendance tile on Home, no attendance card in Me, no work-in button', (t) async {
     final h = await start(t, required: false);
     expect(find.byType(DutyCard), findsNothing);
+    await showGrid(t);
+    expect(find.byKey(const ValueKey('quick-today-work')), findsOneWidget); // the grid is there
+    expect(find.byKey(const ValueKey('quick-attendance')), findsNothing);
     expect(find.text('উপস্থিতি'), findsNothing); // the Home attendance tile
     h.read(routerProvider).go('/me');
     await settle(t);
@@ -90,6 +99,8 @@ void main() {
   testWidgets('field staff: the duty card is there as before', (t) async {
     await start(t);
     expect(find.byType(DutyCard), findsOneWidget);
+    await showGrid(t);
+    expect(find.byKey(const ValueKey('quick-attendance')), findsOneWidget);
     expect(find.text('উপস্থিতি'), findsWidgets);
   });
 }

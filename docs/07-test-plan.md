@@ -78,6 +78,14 @@ Devices (minimum set): **Xiaomi Redmi (MIUI/HyperOS, 2–3 GB)**, **Samsung Gala
 - [ ] TalkBack reads Bangla labels and amounts in words
 - [ ] All targets ≥ 48 dp (Layout inspector spot-check)
 - [ ] One-handed use: Collect, Visit, Promise reachable by thumb on 6.5" device
+**Bad tags, Home v2 and Settings (2026-11-26, FR-M-081 to FR-M-084)**
+- [ ] Outdoors in sunlight, light and dark mode: the seven tag frames and chips can be told apart, and পলাতক reads as the strongest
+- [ ] A tag set on this phone shows its colour at once, also in flight mode; after the next sync it is still the same colour
+- [ ] Home on a 360 dp phone: the filter chips scroll sideways with the thumb, stay under the top bar while the list scrolls, and the picked chip is always in sight; each count equals its section and the summary card
+- [ ] Overdue filter with 300+ customers scrolls without a stutter on a 2 GB phone; flight mode changes nothing
+- [ ] Branch manager login: Home lists the whole branch; the branch switcher narrows it; field staff see only their own and unassigned
+- [ ] Quick-action grid: nine equal cells, each opens its screen and Back returns to Home; badges follow unread notices and open tasks; TalkBack reads "নোটিশ: ২টি অপেক্ষায়"
+- [ ] Settings: every row opens what it says; language, digits, theme and high contrast apply at once; sign-out is refused while anything is unsent
 **Security**
 - [ ] App lock after 5 min background; PIN lockout after 5 tries
 - [ ] Screenshots blocked on money screens when setting on

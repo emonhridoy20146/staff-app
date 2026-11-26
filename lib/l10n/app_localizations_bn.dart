@@ -1234,18 +1234,10 @@ class AppLocalizationsBn extends AppLocalizations {
   String get settingsThemeDark => 'অন্ধকার';
 
   @override
-  String get settingsHighContrast => 'হাই কনট্রাস্ট (রোদে পড়ার জন্য)';
-
-  @override
   String get settingsPrivacy => 'গোপনীয়তা নীতি';
 
   @override
   String get settingsAbout => 'অ্যাপ সম্পর্কে';
-
-  @override
-  String settingsVersion(String version) {
-    return 'সংস্করণ $version';
-  }
 
   @override
   String get logoutTitle => 'লগআউট করবেন?';
@@ -1555,11 +1547,6 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get settingsLanguageEn => 'English';
-
-  @override
-  String settingsDevice(String id) {
-    return 'ডিভাইস $id';
-  }
 
   @override
   String meStaffCode(String code) {
@@ -4412,4 +4399,123 @@ class AppLocalizationsBn extends AppLocalizations {
   String detailRunawayVisit(String when) {
     return 'শেষ ভিজিটে পলাতক লেখা হয়েছে · $when';
   }
+
+  @override
+  String get homeFilterBroken => 'ভাঙা প্রতিশ্রুতি';
+
+  @override
+  String get homeFilterEmpty => 'এই তালিকায় কেউ নেই';
+
+  @override
+  String get homeFilterEmptyBody => 'অন্য তালিকা দেখতে উপরের একটি বেছে নিন।';
+
+  @override
+  String get homeFilterShowAll => 'সব দেখুন';
+
+  @override
+  String get homeFiltersA11y => 'কাজের তালিকার ফিল্টার';
+
+  @override
+  String get quickCash => 'হাতে নগদ';
+
+  @override
+  String get quickActionsA11y => 'শর্টকাট';
+
+  @override
+  String quickBadgeA11y(String label, String count) {
+    return '$label: $countটি অপেক্ষায়';
+  }
+
+  @override
+  String get settingsSectionAccount => 'অ্যাকাউন্ট';
+
+  @override
+  String get settingsSectionWork => 'কাজ';
+
+  @override
+  String get settingsSectionLocation => 'লোকেশন ও ব্যাটারি';
+
+  @override
+  String get settingsSectionDisplay => 'ভাষা ও প্রদর্শন';
+
+  @override
+  String get settingsSectionPrivacy => 'গোপনীয়তা';
+
+  @override
+  String get settingsSectionAbout => 'সাহায্য ও অ্যাপ সম্পর্কে';
+
+  @override
+  String get roleFieldStaff => 'ফিল্ড স্টাফ';
+
+  @override
+  String get roleBranchManager => 'শাখা ম্যানেজার';
+
+  @override
+  String get roleAreaManager => 'এরিয়া ম্যানেজার';
+
+  @override
+  String get roleSuperAdmin => 'সুপার অ্যাডমিন';
+
+  @override
+  String get roleViewer => 'ভিউয়ার';
+
+  @override
+  String get settingsLogoutHint => 'আগে সব কাজ সিঙ্ক হতে হবে';
+
+  @override
+  String get settingsSyncHint => 'পাঠানোর অবস্থা';
+
+  @override
+  String get settingsTrackingHint => 'শুধু ডিউটির সময়';
+
+  @override
+  String get settingsTrackingOn => 'চালু';
+
+  @override
+  String get settingsTrackingOff => 'বন্ধ';
+
+  @override
+  String get settingsTrackingProblem => 'সমস্যা আছে';
+
+  @override
+  String get settingsBatteryGuideHint => 'আপনার ফোনের জন্য ধাপগুলো';
+
+  @override
+  String get settingsLanguageHint => 'অ্যাপের লেখার ভাষা';
+
+  @override
+  String get settingsDigitsHint => 'অঙ্কের ধরন';
+
+  @override
+  String get settingsThemeHint => 'আলো বা অন্ধকার পর্দা';
+
+  @override
+  String get settingsHighContrastTitle => 'হাই কনট্রাস্ট';
+
+  @override
+  String get settingsHighContrastHint => 'রোদে পড়তে সুবিধা';
+
+  @override
+  String get settingsDeviceTitle => 'ডিভাইস আইডি';
+
+  @override
+  String get settingsDeviceHint => 'অফিস চাইলে জানান';
+
+  @override
+  String get settingsServerTitle => 'সার্ভার';
+
+  @override
+  String get settingsServerHint => 'অ্যাপ যে সার্ভারে কাজ পাঠায়';
+
+  @override
+  String get settingsServerLive => 'লাইভ';
+
+  @override
+  String get settingsServerDemo => 'ডেমো';
+
+  @override
+  String get settingsMeHint => 'ভাষা, থিম, লোকেশন, গোপনীয়তা';
+
+  @override
+  String get settingsCalendarHint => 'ছুটি ও ডিউটির সময়';
 }

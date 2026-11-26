@@ -40,7 +40,7 @@ Widget collectionStatusChip(BuildContext context, String status, String syncStat
 /// (FR-COL-001…007, 011, 013; FR-M-006, 007).
 final collectionsManifest = FeatureManifest(
   name: 'collections',
-  todayCards: [TodayCardDef(id: 'receipts-low', order: 3, permission: Perm.collectionRecord, builder: (_) => const _ReceiptsLowBanner())],
+  todayCards: [TodayCardDef(id: 'receipts-low', order: 3, permission: Perm.collectionRecord, alert: true, builder: (_) => const _ReceiptsLowBanner())],
   flag: 'module.collections',
   permissions: const [Perm.collectionRecord, Perm.collectionView],
   routes: [

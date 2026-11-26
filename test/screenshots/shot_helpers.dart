@@ -105,5 +105,7 @@ Future<void> takeShot(WidgetTester t, Harness h, String name, {String? go, Futur
   // Closing drift inside the fake-async zone can hang; the in-memory DB is
   // dropped with the test isolate.
   h.container.dispose();
-  await t.pump(const Duration(milliseconds: 50));
+  // Real turns as well as fake ones: a stream combined from two (combineLatest2) lets go of its second source only
+  // after the first has let go, and drift sets a timer each time; one fake pump left those pending.
+  await settleShot(t, rounds: 3);
 }

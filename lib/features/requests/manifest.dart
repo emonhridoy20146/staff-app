@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart' show Icons;
 
 import '../../core/feature/feature_manifest.dart';
 import '../../core/permissions/permission_service.dart';
+import '../../core/theme/tag_colors.dart' show ActionTone;
 import '../../l10n/app_localizations.dart';
 import 'src/requests_data.dart';
 import 'src/requests_ui.dart';
@@ -58,4 +59,7 @@ final requestsManifest = FeatureManifest(
     ),
   ],
   meEntries: [MeEntryDef(id: 'requests', order: 7, permission: Perm.requestCreate, builder: (_) => const RequestsMeEntry())],
+  quickActions: [
+    QuickActionDef(id: 'requests', order: 60, icon: Icons.forum_rounded, tone: ActionTone.brand, label: (l) => l.requestsTitle, route: '/requests', permission: Perm.requestCreate, badge: (ref) => ref.watch(requestsWithNewsProvider).length),
+  ],
 );
