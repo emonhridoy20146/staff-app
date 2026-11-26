@@ -503,7 +503,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get customersTitle => 'Customers';
 
   @override
-  String get customersSearch => 'Search name, phone or code';
+  String get customersSearch => 'Name, code, mobile or invoice no.';
 
   @override
   String get filterAll => 'All';

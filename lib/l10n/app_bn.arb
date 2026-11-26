@@ -172,7 +172,7 @@
   "todayAllDoneBody": "আজকের কোনো প্রতিশ্রুতি বা দেয় বাকি নেই।",
   "todayCashWarning": "হাতে নগদ সীমার {pct}%। শীঘ্রই জমা দিন।",
   "customersTitle": "গ্রাহক",
-  "customersSearch": "নাম, ফোন বা কোড দিয়ে খুঁজুন",
+  "customersSearch": "নাম, কোড, মোবাইল বা ইনভয়েস নম্বর",
   "filterAll": "সব",
   "filterDueToday": "আজ দেয়",
   "filterOverdue": "বকেয়া",

@@ -6,7 +6,7 @@ export 'manifest.dart';
 export 'src/customer_providers.dart'
     show customerRepositoryProvider, customerFilterProvider, customerKindFilterProvider, promiseMakersProvider, myCustomerUserIdProvider, multiBranchProvider, allCustomersProvider, branchCustomersProvider, customerProvider, customerPlansProvider, plansPaidTodayProvider, todayPrioritiesProvider, todayProvider, currentFixProvider, selectedBranchIdProvider, branchListProvider;
 export 'src/data/customer_repository.dart' show CustomerRepository, PlanWithSchedule;
-export 'src/domain/customer.dart' show Customer, TodayPriorities, CustomerFilter, InvoiceKind, InvoiceKinds, prioritize, matchesFilter, matchesKind, inBranch;
+export 'src/domain/customer.dart' show Customer, TodayPriorities, CustomerFilter, InvoiceKind, InvoiceKinds, prioritize, matchesFilter, matchesKind, inBranch, SearchQuery;
 export 'src/presentation/customer_detail_screen.dart' show CustomerDetailScreen, launchNavigate, launchCall;
 export 'src/presentation/customer_list_screen.dart' show CustomerListScreen, filterLabel;
 export 'src/presentation/customer_tile.dart' show CustomerTile;

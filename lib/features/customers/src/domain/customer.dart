@@ -2,8 +2,11 @@ import 'dart:convert';
 
 import '../../../../core/db/app_database.dart';
 import '../../../../core/location/location_engine.dart';
+import '../../../../core/text/search_text.dart';
 import '../../../../core/theme/status_colors.dart';
 import 'phones.dart';
+
+export '../../../../core/text/search_text.dart' show normalizeSearch, SearchQuery;
 
 /// Read model of a customer for lists, map and Today.
 class Customer {
@@ -233,20 +236,6 @@ class InvoiceKinds {
 /// group one chip at a time; across groups the filters combine with AND.
 bool matchesKind(Customer c, InvoiceKind? kind) => kind == null || c.kinds.has(kind);
 
-/// Normalises text for search: lower-case, Bangla digits → Latin, no
-/// punctuation. Applied to name bn/en, code, phones, address.
-String normalizeSearch(String s) {
-  final b = StringBuffer();
-  for (final r in s.toLowerCase().runes) {
-    final d = r - 0x09E6;
-    if (d >= 0 && d <= 9) {
-      b.writeCharCode(0x30 + d);
-    } else if (r == 0x20 || r >= 0x30) {
-      b.writeCharCode(r);
-    }
-  }
-  return b.toString().replaceAll(RegExp(r'[\-\.,/]'), '').replaceAll(RegExp(r'\s+'), ' ').trim();
-}
 
 /// [paidThisMonth] is ERP money per customer for the month of [today]
 /// (`paidThisMonth` in work_marks.dart); without it only field money counts.
@@ -276,12 +265,12 @@ List<Customer> applyQuery(
   String? myUserId,
   Map<String, int> paidThisMonth = const {},
 }) {
-  final q = normalizeSearch(search);
+  final q = SearchQuery(search);
   final out = all
       .where((c) =>
           matchesFilter(c, filter, today: today, myUserId: myUserId, paidThisMonth: paidThisMonth) &&
           matchesKind(c, kind) &&
-          (q.isEmpty || c.row.searchText.contains(q)))
+          q.matches(c.row.searchText))
       .toList();
   int byName(Customer a, Customer b) => a.row.nameBn.compareTo(b.row.nameBn);
   switch (sort) {

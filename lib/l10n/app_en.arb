@@ -280,7 +280,7 @@
     }
   },
   "customersTitle": "Customers",
-  "customersSearch": "Search name, phone or code",
+  "customersSearch": "Name, code, mobile or invoice no.",
   "filterAll": "All",
   "filterDueToday": "Due today",
   "filterOverdue": "Overdue",
