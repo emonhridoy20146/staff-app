@@ -61,6 +61,10 @@ class Customers extends Table {
   // refused_to_pay, fraud_suspected, repeated_broken_promise, plan_ended_unpaid, other; unknown kept as sent),
   // so each bad-tag reason has its own colour. Null = not known yet (shown in the generic bad colour).
   TextColumn get tagReasonCode => text().nullable()();
+  // v21 (contract 1.53.0, FR-CUS-024, FR-M-085): invoices of the customer returned in the ERP, as the server counts
+  // them (never in any total), and whether every invoice was returned (the row shows the marker and does not open).
+  IntColumn get returnedInvoiceCount => integer().withDefault(const Constant(0))();
+  BoolColumn get onlyReturned => boolean().withDefault(const Constant(false))();
 
   @override
   Set<Column> get primaryKey => {serverId};
@@ -137,9 +141,34 @@ class ErpPayments extends Table {
   IntColumn get discountPoisha => integer().withDefault(const Constant(0))();
   // v16 (contract 1.44.0): the ERP referrer of an office payment.
   TextColumn get referrerName => text().nullable()();
+  // v21 (contract 1.53.0, FR-M-085): the payment went to an invoice returned in the ERP. Shown, never counted.
+  BoolColumn get returned => boolean().withDefault(const Constant(false))();
 
   @override
   Set<Column> get primaryKey => {erpPaymentId};
+}
+
+/// v21 (contract 1.53.0, FR-CUS-024, FR-M-085, ADR-M46): the customer's invoices returned in the ERP
+/// (`CustomerDetail.returnedPlans`). A table of their own, apart from `plans`, so no total, count, filter or
+/// picker that reads `plans` can ever count one. Shown on the customer page only, with their payments.
+@DataClassName('ReturnedPlanRow')
+class ReturnedPlans extends Table {
+  TextColumn get erpPlanId => text()();
+  TextColumn get customerId => text()();
+  TextColumn get product => text().withDefault(const Constant(''))();
+  TextColumn get kind => text().withDefault(const Constant('installment'))();
+  TextColumn get invoiceNo => text().nullable()();
+  TextColumn get saleDate => text().nullable()();
+  IntColumn get totalPayablePoisha => integer().withDefault(const Constant(0))();
+  IntColumn get paidPoisha => integer().withDefault(const Constant(0))();
+  IntColumn get outstandingPoisha => integer().withDefault(const Constant(0))();
+  TextColumn get status => text().withDefault(const Constant('closed'))();
+  TextColumn get itemsJson => text().nullable()();
+  /// The ERP payments posted against it (`Plan.payments`, each `returned: true`), as sent.
+  TextColumn get paymentsJson => text().withDefault(const Constant('[]'))();
+
+  @override
+  Set<Column> get primaryKey => {erpPlanId};
 }
 
 @DataClassName('LocationProposalRow')

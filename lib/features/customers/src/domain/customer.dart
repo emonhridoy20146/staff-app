@@ -56,6 +56,15 @@ class Customer {
   List<String> get phones => [for (final p in phoneList) p.number];
   bool get tagged => row.tagState == 'tagged';
 
+  /// Invoices of the customer returned in the ERP (FR-M-085, contract 1.53.0): the server's count, never part of
+  /// any total. Above 0 every list shows the "returned product customer" marker.
+  int get returnedInvoiceCount => row.returnedInvoiceCount;
+  bool get hasReturned => row.returnedInvoiceCount > 0;
+
+  /// Every invoice of the customer was returned (FR-M-085): the row, pin or search hit shows the marker and does
+  /// not open the customer. Still listed, never hidden.
+  bool get onlyReturned => row.onlyReturned;
+
   /// The bad mark of this customer, or null (FR-M-081): a set tag with severity bad or legal, by its reason,
   /// or a latest visit that says runaway. The rows draw their frame and chip from it.
   late final BadTag? badTag = badTagOf(
@@ -331,7 +340,9 @@ class TodayPriorities {
 }
 
 TodayPriorities prioritize(List<Customer> everyone, String today, {String? myUserId}) {
-  final all = everyone.where((c) => !c.isOthers(myUserId)).toList();
+  // FR-M-085: a customer whose every invoice was returned has nothing to collect, so no Home group or count, even
+  // if an old row still says due (the server's numbers already leave returned invoices out).
+  final all = everyone.where((c) => !c.isOthers(myUserId) && !c.onlyReturned).toList();
   int dist(Customer c) => c.distanceM ?? 1 << 30;
   final promised = all.where((c) => c.promisedOn(today)).toList()..sort((a, b) => dist(a).compareTo(dist(b)));
   final seen = promised.map((c) => c.id).toSet();

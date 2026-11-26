@@ -1,11 +1,20 @@
 openapi: 3.1.0
 info:
   title: Howlader Field Operations API
-  version: 1.52.0
+  version: 1.53.0
   description: |
     Contract owned by field-api. Consumers (admin-web, staff-app) generate types from this file.
     Conventions (auth, pagination, idempotency, errors) are described in docs/05-api-contract.md.
     Money is integer poisha. Times are UTC ISO-8601; business dates are YYYY-MM-DD in Asia/Dhaka.
+    1.53.0 (additive; FR-CUS-024, ADR-071 amends ADR-068, owner request 2026-11-26): returned invoices are shown again
+    but never counted. New `CustomerDetail.returnedPlans` (also on the sync `customer` item): the returned invoices as
+    `Plan` with `returned: true`, `collectable: false` and their `payments`. `plans` still never holds one and every
+    customer number (totals, counts, pay state, `activity` paid / paidBy, paid-this-month filter, promise evaluation,
+    KPIs) leaves them out. `Payment.returned` marks an ERP payment to a returned invoice (shown, never counted).
+    New `returnedInvoiceCount` / `onlyReturned` on CustomerListItem, MapPin, customer items of GET /search and the sync
+    `customer` item; clients show a "returned product customer" marker and do not open `onlyReturned` rows
+    (GET /customers/{id} keeps working). Invoice-number search (`q`) also finds returned invoice numbers.
+    `returnedPlanIds` is kept unchanged.
     1.52.0 (additive): `MapPin.tag` and the `tag` of customer items in GET /search results, both a `TagSummary`
     `{ state, severity, reasonCode }`, so every list can draw the bad-tag red border with a colour per reason
     (FR-TAG-009, owner request 2026-11-26). `MapPin.tagged` is unchanged. Scope is applied as before.
@@ -600,7 +609,7 @@ paths:
         - { name: assignedTo, in: query, schema: { type: string, description: "'me' or a userId" } }
         - $ref: '#/components/parameters/BranchId'
         - { name: areaId, in: query, schema: { type: string } }
-        - { name: q, in: query, schema: { type: string }, description: 'Name (bn/en), customer code, ERP id, mobile number (last digits, 4 or more) or invoice number (separators ignored, e.g. S24052 finds S-24052). Bangla digits are accepted (2026-11-26).' }
+        - { name: q, in: query, schema: { type: string }, description: 'Name (bn/en), customer code, ERP id, mobile number (last digits, 4 or more) or invoice number (separators ignored, e.g. S24052 finds S-24052). Bangla digits are accepted (2026-11-26). Since 1.53.0 (FR-CUS-024) a returned invoice number finds its customer too; the row carries `returnedInvoiceCount` / `onlyReturned`.' }
         - { name: near, in: query, schema: { type: string, example: '22.7101,90.3705' } }
         - { name: radiusM, in: query, schema: { type: integer, default: 5000 } }
         - { name: sort, in: query, schema: { type: string, enum: [distance, -daysOverdue, name, -totalOutstanding, nextDueDate] } }
@@ -2606,7 +2615,7 @@ components:
     ToDate: { name: to, in: query, schema: { type: string, format: date }, description: 'Inclusive Asia/Dhaka business date (YYYY-MM-DD). Added to GET /inbox and GET /activity in 1.45.0' }
     PayStateFilter: { name: payState, in: query, style: form, explode: false, schema: { type: array, items: { $ref: '#/components/schemas/PayState' } }, description: 'Added in 1.14.0 (FR-CUS-012). Pin colours, combined with OR; other parameters narrow with AND' }
     InvoiceKind: { name: invoiceKind, in: query, schema: { type: string, enum: [installment, credit] }, description: 'Added in 1.14.0 (FR-CUS-013). Only customers with an open (balance due, not returned or cancelled) invoice of this kind. Cash invoices (1.44.0) are never open, so there is no `cash` value' }
-    PaidThisMonth: { name: paidThisMonth, in: query, schema: { type: string, enum: [yes, no] }, description: 'Added in 1.29.0 (FR-CUS-019). `yes` = paid something in the current Asia/Dhaka month: an ERP payment dated this month (removed ones left out) or a field collection of this month still waiting for the ERP; `no` = neither. The same two sources as the row''s `activity.paidPoisha` / `activity.pendingPoisha`, so the filter agrees with the row''s money mark. Narrows with AND like the other parameters' }
+    PaidThisMonth: { name: paidThisMonth, in: query, schema: { type: string, enum: [yes, no] }, description: 'Added in 1.29.0 (FR-CUS-019). `yes` = paid something in the current Asia/Dhaka month: an ERP payment dated this month (removed ones left out; since 1.53.0 also payments to a returned invoice, FR-CUS-024) or a field collection of this month still waiting for the ERP; `no` = neither. The same two sources as the row''s `activity.paidPoisha` / `activity.pendingPoisha`, so the filter agrees with the row''s money mark. Narrows with AND like the other parameters' }
     Limit: { name: limit, in: query, schema: { type: integer, default: 25, minimum: 1, maximum: 100 } }
     Cursor: { name: cursor, in: query, schema: { type: string } }
     IdempotencyKey: { name: Idempotency-Key, in: header, required: true, schema: { type: string, format: uuid } }
@@ -2930,6 +2939,8 @@ components:
           type: object
           description: Added in 1.24.0. Invoices of the customer (cancelled ones not counted) and how many still have a balance
           properties: { total: { type: integer }, open: { type: integer } }
+        returnedInvoiceCount: { type: integer, minimum: 0, description: 'Added in 1.53.0 (FR-CUS-024). Invoices of the customer returned in the ERP (not in `invoiceCount`, never counted in any number). 0 when none. Older servers omit it: treat as 0' }
+        onlyReturned: { type: boolean, description: 'Added in 1.53.0 (FR-CUS-024). true when the customer has invoices and every one was returned (`returnedInvoiceCount` > 0 and `invoiceCount.total` = 0). Clients show the "returned product customer" marker and do not open the row; the customer is still listed and GET /customers/{id} still works. Older servers omit it: treat as false' }
         activity: { $ref: '#/components/schemas/CustomerActivity' }
         erpFetchedAt: { type: string, format: date-time }
     CustomerActivity:
@@ -2944,7 +2955,7 @@ components:
         visitCount: { type: integer, description: 'Visits recorded this month' }
         visitedToday: { type: boolean }
         lastVisitAt: { type: [string, 'null'], format: date-time, description: 'Last visit of this month' }
-        paidPoisha: { type: integer, description: 'ERP payments dated this month (office and field, removed ones left out), from the recent ERP payments' }
+        paidPoisha: { type: integer, description: 'ERP payments dated this month (office and field, removed ones left out), from the recent ERP payments. Since 1.53.0 payments to a returned invoice (`Payment.returned`) are left out too, also from `paidBy` and `lastPaidDate`' }
         lastPaidDate: { type: [string, 'null'], format: date, description: 'Date of the newest ERP payment this month' }
         pendingPoisha: { type: integer, description: 'Field collections recorded this month that are not in the ERP yet' }
         promisesMade: { type: integer, description: 'Promises created this month (cancelled ones not counted)' }
@@ -3006,6 +3017,8 @@ components:
       description: |
         One collectable ERP receivable. Since 1.13.0 this is documented as one ERP invoice
         (installment or credit sale); `erpPlanId` is the invoice id (ADR-033).
+        Since 1.53.0 the same shape is used for `CustomerDetail.returnedPlans` (invoices returned in the ERP), with
+        `returned: true`, `collectable: false` and `payments`; those are shown, never counted.
       properties:
         erpPlanId: { type: string }
         product: { type: string }
@@ -3016,7 +3029,7 @@ components:
         downPaymentPoisha: { type: integer }
         paidPoisha: { type: integer }
         outstandingPoisha: { type: integer }
-        status: { type: string, enum: [active, completed, closed, defaulted, cancelled], description: '`closed` = not collectable in the field (e.g. a cash sale with money left, a draft, or an invoice the ERP marks not collectable); closed and cancelled plans are not collectable and not counted in totals. Since 1.50.0 (FR-CUS-023) invoices returned in the ERP are not listed at all (see CustomerDetail.returnedPlanIds); the meaning of each value is unchanged' }
+        status: { type: string, enum: [active, completed, closed, defaulted, cancelled], description: '`closed` = not collectable in the field (e.g. a cash sale with money left, a draft, or an invoice the ERP marks not collectable); closed and cancelled plans are not collectable and not counted in totals. Since 1.50.0 (FR-CUS-023) invoices returned in the ERP are not in `CustomerDetail.plans`; since 1.53.0 they are in `CustomerDetail.returnedPlans` with status `closed` and `returned: true`. The meaning of each value is unchanged' }
         badSuggested: { type: boolean }
         schedule:
           type: array
@@ -3086,6 +3099,12 @@ components:
         paymentStatus: { type: string, description: 'Added in 1.14.0. ERP payment status (unpaid, partial, paid)' }
         creditDueDate: { type: string, format: date, description: 'Added in 1.14.0. Credit sales: the due date' }
         penalty: { type: object, description: 'Added in 1.14.0. Installment invoices: ERP late-fee setting', properties: { enabled: { type: boolean }, rate: { type: string } } }
+        returned: { type: boolean, description: 'Added in 1.53.0 (FR-CUS-024). true on `CustomerDetail.returnedPlans` items: the invoice was returned in the ERP. Absent on `plans` items' }
+        collectable: { type: boolean, description: 'Added in 1.53.0 (FR-CUS-024). false on `CustomerDetail.returnedPlans` items: nothing can be collected on it and it is in no total. Absent on `plans` items (use `status` as before)' }
+        payments:
+          type: array
+          description: 'Added in 1.53.0 (FR-CUS-024). Returned invoices only: the ERP payments posted against this invoice, each with `returned: true` (the cached recent payments, then payments known only from schedule allocations, summed per payment). Shown, never counted. `schedule` of a returned invoice is empty, as for every closed invoice'
+          items: { $ref: '#/components/schemas/Payment' }
     Payment:
       type: object
       properties:
@@ -3102,6 +3121,7 @@ components:
         referrerName: { type: [string, 'null'], description: 'Added in 1.44.0. Name of the ERP referrer employee of the payment; null when the payment has no ERP employee (posted by name, ADR-049, or an office payment without a referrer)' }
         advance: { type: boolean, description: 'Added in 1.13.0. Down-payment advance' }
         discountPoisha: { type: integer, description: 'Added in 1.13.0. Settlement discount given with the payment' }
+        returned: { type: boolean, description: 'Added in 1.53.0 (FR-CUS-024). true when the payment went to an invoice returned in the ERP (`erpPlanId` is a returned invoice). Shown (in `payments`, on the returned invoice and in the timeline), but never counted: not in `activity.paidPoisha` / `paidBy`, the paid-this-month filter or promise evaluation. Absent otherwise; a payment without `erpPlanId` is never marked' }
     CustomerDetail:
       allOf:
         - $ref: '#/components/schemas/CustomerListItem'
@@ -3122,8 +3142,9 @@ components:
                 overdueCount: { type: integer }
                 maxDaysLate: { type: integer }
                 computedAt: { type: [string, 'null'] }
-            plans: { type: array, items: { $ref: '#/components/schemas/Plan' }, description: 'Every invoice of the customer FOS shows, complete (replace the stored list, do not merge). Since 1.50.0 (FR-CUS-023) invoices returned in the ERP are never in this list' }
-            returnedPlanIds: { type: array, items: { type: string }, description: 'Added in 1.50.0 (FR-CUS-023, ADR-068). erpPlanIds of the customer''s invoices that were returned in the ERP. They are not in `plans` and never shown; a client that already stored one of them (before 1.50.0) deletes it, with its schedule. Empty when none. Older servers omit it' }
+            plans: { type: array, items: { $ref: '#/components/schemas/Plan' }, description: 'Every counted invoice of the customer, complete (replace the stored list, do not merge). Since 1.50.0 (FR-CUS-023) invoices returned in the ERP are never in this list (see `returnedPlans`, 1.53.0)' }
+            returnedPlanIds: { type: array, items: { type: string }, description: 'Added in 1.50.0 (FR-CUS-023, ADR-068). erpPlanIds of the customer''s invoices that were returned in the ERP (since 1.53.0 the same ids as `returnedPlans`). They are never in `plans`; a 1.50–1.52 client deletes stored plans with these ids. A 1.53 client may ignore it. Empty when none. Older servers omit it' }
+            returnedPlans: { type: array, items: { $ref: '#/components/schemas/Plan' }, description: 'Added in 1.53.0 (FR-CUS-024, ADR-071). The customer''s invoices returned in the ERP, complete (replace the stored list): `Plan` with `returned: true`, `collectable: false`, status `closed`, empty `schedule` and their `payments`. Show them marked as returned; never count them (they are in no total, count, pay state, KPI or collectable list). Empty when none. Older servers omit it' }
             payments: { type: array, items: { $ref: '#/components/schemas/Payment' } }
             pendingCollections: { type: array, items: { $ref: '#/components/schemas/Collection' } }
             badSuggestion: { type: [object, 'null'], properties: { erpPlanId: { type: string }, finalDueDate: { type: string }, outstandingPoisha: { type: integer }, text: { $ref: '#/components/schemas/I18nText' } } }
@@ -3144,6 +3165,8 @@ components:
         tag: { $ref: '#/components/schemas/TagSummary' }
         payState: { $ref: '#/components/schemas/PayState' }
         missedCount: { type: integer, description: 'Added in 1.14.0' }
+        returnedInvoiceCount: { type: integer, minimum: 0, description: 'Added in 1.53.0 (FR-CUS-024). See CustomerListItem.returnedInvoiceCount' }
+        onlyReturned: { type: boolean, description: 'Added in 1.53.0 (FR-CUS-024). See CustomerListItem.onlyReturned (draw the returned marker; do not open the customer from the pin)' }
     SearchResult:
       type: object
       description: One GET /search hit (schema named in 1.52.0; the fields before `tag` are unchanged).
@@ -3153,6 +3176,8 @@ components:
         title: { type: string }
         subtitle: { type: string }
         tag: { $ref: '#/components/schemas/TagSummary', description: 'Added in 1.52.0. Customer items only (`type: customer`); absent on user and receipt items and from older servers' }
+        returnedInvoiceCount: { type: integer, minimum: 0, description: 'Added in 1.53.0 (FR-CUS-024). Customer items only. See CustomerListItem.returnedInvoiceCount' }
+        onlyReturned: { type: boolean, description: 'Added in 1.53.0 (FR-CUS-024). Customer items only. See CustomerListItem.onlyReturned (a hit found by a returned invoice number shows the marker and is not opened)' }
     TimelineItem:
       type: object
       properties:
@@ -3161,7 +3186,7 @@ components:
         actor: { type: object, properties: { id: { type: string }, name: { type: string } } }
         summary: { $ref: '#/components/schemas/I18nText' }
         refId: { type: string }
-        data: { type: object, additionalProperties: true }
+        data: { type: object, additionalProperties: true, description: 'Kind-specific. `erp_payment`: receiptNo, method, reversed, erpPlanId (1.53.0) and `returned: true` (1.53.0, FR-CUS-024) when the payment went to a returned invoice (the summary says so too)' }
     PaymentMethod: { type: string, enum: [cash, bkash, nagad, rocket, bank_transfer, other_mobile] }
     CollectionStatus: { type: string, enum: [received, posting, posted, conflict, posting_failed, resolved_posted, resolved_refund, resolved_voided, voided] }
     CollectionCreate:
@@ -3893,7 +3918,8 @@ components:
           additionalProperties: true
           description: |
             Present for op=upsert. Shape per entity (1.2.0 documents the mapping; values unchanged):
-            customer → CustomerDetail (1.50.0: `plans` is the full list without returned invoices; `returnedPlanIds` = ids to delete) · collection → Collection · visit → Visit · note → Note · promise → Promise ·
+            customer → CustomerDetail (1.50.0: `plans` is the full list without returned invoices; `returnedPlanIds` = ids to delete;
+            1.53.0: `returnedPlans` = the returned invoices to store flagged and never count, `returnedInvoiceCount`, `onlyReturned`) · collection → Collection · visit → Visit · note → Note · promise → Promise ·
             tag → Tag (with customerId) · handover → Handover · assignment → Assignment · area → Area · deposit → Deposit ·
             attendance_day → AttendanceDay · notification → Notification · broadcast → Broadcast · setting → { key, value } ·
             contact_attempt → ContactAttempt · location_proposal → OwnLocationProposal (1.7.0; sent only to the staff member who proposed, on create and on the manager's decision) ·

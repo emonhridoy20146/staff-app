@@ -4549,4 +4549,33 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsCalendarHint => 'Holidays and duty hours';
+
+  @override
+  String get statusReturned => 'Returned';
+
+  @override
+  String get returnedCustomerMark => 'Returned product customer';
+
+  @override
+  String get returnedCustomerOnlyA11y =>
+      'Returned product customer, every invoice returned, cannot be opened';
+
+  @override
+  String get returnedInvoicesTitle => 'Returned invoices';
+
+  @override
+  String get returnedInvoicesNote =>
+      'Returned in the ERP. Counted in no total and nothing can be collected on them.';
+
+  @override
+  String get returnedInvoiceNoPayments => 'No payments on this invoice';
+
+  @override
+  String returnedPaymentsTitle(String count) {
+    return 'Payments ($count)';
+  }
+
+  @override
+  String get returnedPaymentMark =>
+      'Payment to a returned invoice · not counted';
 }

@@ -6,9 +6,10 @@ import 'package:staff_app/features/customers/customers.dart';
 
 import 'helpers.dart';
 
-/// FR-CUS-023 (contract 1.50.0, FR-M-080, ADR-M43): an invoice returned in the ERP while a
-/// collection against it waits on the phone. The plan goes on the next pull, the
-/// customer and the collection stay, and the collection ends up in Problems.
+/// FR-CUS-023 (contract 1.50.0, FR-M-080, ADR-M43; 1.53.0 FR-CUS-024, FR-M-085, ADR-M46): an invoice returned in
+/// the ERP while a collection against it waits on the phone. The counted plan goes on the next pull and the
+/// invoice is kept as a returned one (shown, never counted); the customer and the collection stay, and the
+/// collection ends up in Problems.
 void main() {
   late Harness h;
   setUp(() => h = Harness());
@@ -38,8 +39,13 @@ void main() {
     expect(await (db.select(db.plans)..where((t) => t.erpPlanId.equals(plan.erpPlanId))).get(), isEmpty);
     expect(await (db.select(db.scheduleLines)..where((t) => t.erpPlanId.equals(plan.erpPlanId))).get(), isEmpty);
     expect(await h.read(customerRepositoryProvider).getOne(customerId), isNotNull);
-    final search = (await h.read(customerRepositoryProvider).getOne(customerId))!.row.searchText;
-    expect(search, isNot(contains(invoiceNo.toLowerCase().replaceAll('-', ''))));
+    // 1.53.0 (FR-CUS-024, FR-M-085): the returned invoice is kept apart, shown and never counted; its number still
+    // finds the customer, who carries the returned marker.
+    final after = (await h.read(customerRepositoryProvider).getOne(customerId))!;
+    expect(after.row.searchText, contains(invoiceNo.toLowerCase().replaceAll('-', '')));
+    expect(after.hasReturned, isTrue);
+    final kept = await (db.select(db.returnedPlans)..where((t) => t.erpPlanId.equals(plan.erpPlanId))).getSingle();
+    expect([kept.customerId, kept.invoiceNo], [customerId, invoiceNo]);
     // CLAUDE.md §2.3: the unsynced collection and its outbox item are untouched.
     final ob = await (db.select(db.outbox)..where((t) => t.mutationId.equals(r.clientId))).getSingle();
     expect(ob.state, 'pending');

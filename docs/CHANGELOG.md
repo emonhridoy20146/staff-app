@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+### Added (owner request 2026-11-26: returned invoices shown, never counted; FR-M-085, ADR-M46, contract 1.53.0, tokens v1.4, schema 21)
+- **Contract 1.53.0** pinned (field-api PR #52, FR-CUS-024, ADR-071 amends ADR-068).
+- **Stored apart:** every `customer` upsert (pull and bootstrap) replaces the counted plans with `plans` and the returned ones with `returnedPlans`, in a new table `returned_plans` with their payments. The 1.50 `returnedPlanIds` rule now applies to counted plans only and runs first, so it never deletes a returned plan just stored. An older server that omits `returnedPlans` keeps the stored ones.
+- **Never counted:** returned plans and payments with `returned: true` are in no total, due or overdue, invoice count, Home filter or count, badge, KPI, Collect picker or collect action, and give no "paid this month" mark (new `erp_payments.returned`). Totals come from the server's numbers, which already leave them out.
+- **Customer page:** a "ফেরত চালান / Returned invoices" section with the Returned chip and each invoice's payments, no collect action; the header and the timeline mark them.
+- **Lists:** the "ফেরত পণ্যের customer" marker (status colour + icon + label) on Home rows, the Customers list and its search results, the Collect picker, the Map list and pins when `returnedInvoiceCount` > 0. When `onlyReturned`, the row, pin or hit does not open and offers no Collect or arrow; it is never hidden.
+- **Search:** a returned invoice number finds its customer again; the hit carries the marker.
+- **Tokens v1.4:** `status.returned` (light `#0F766E`/`#E3F5F2`, dark `#2DD4BF`/`#0B2624`) in `StatusColors`, `docs/design-tokens.json` and design guide §2. **admin-web needs the same token.**
+- **Schema 21:** `returned_plans`, `customers.returned_invoice_count` (0), `customers.only_returned` (false), `erp_payments.returned` (false). No forced resync. Nothing unsynced is touched.
+- Fake API: `returnInvoice` sends the 1.53 shape; new `addInvoice` for tests.
+- Tests: `test/features/returned_visible_test.dart`, `test/flows/returned_visible_flow_test.dart`, `test/core/migration_test.dart` (20 → 21, older files now lack the v21 additions), `test/core/theme/tokens_test.dart` (v1.4, contrast). `test/flows/returned_invoice_flow_test.dart` now expects the returned number to be found (1.53 behaviour). Screenshots: `test/screenshots/goldens/returned/` (Customers list and customer page in bn/en light/dark, Map list at text 1.3).
+
 ### Added (owner request 2026-11-26: Home filters, quick actions, Home and Settings v2; FR-M-082, FR-M-083, FR-M-084, ADR-M45)
 - **Home filters (FR-M-082):** a row of single-choice chips with counts at the top of the work list, pinned under the top bar: সব · আজ প্রতিশ্রুতি · আজ দেয় · বকেয়া ¦ খারাপ ট্যাগ · ভাঙা প্রতিশ্রুতি (the last only when promises are on). A chip shows **only** its list, all of it (Overdue is no longer cut at 8), as lazy rows; সব keeps the three sections. A chip's number is its section's number and the summary card's. The choice is kept for the session (not stored). The picked chip is always brought into sight.
 - **Whose customers:** a field staff member sees their own and unassigned customers, as before; a branch manager, area manager, viewer or super admin sees everyone in the branch(es) the server gave them. Both follow the branch picked in the top bar. Read from the phone's database, offline; no API change.

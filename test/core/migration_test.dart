@@ -5,7 +5,7 @@ import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:staff_app/core/db/app_database.dart';
 
-/// Every released schema upgrades to the current one (v20) and
+/// Every released schema upgrades to the current one (v21) and
 /// existing rows survive.
 void main() {
   test('migrates a 0.1.0 database to the current schema without losing outbox rows', () async {
@@ -39,7 +39,7 @@ void main() {
     await v1.close();
 
     final v2 = AppDatabase(NativeDatabase(file));
-    expect(v2.schemaVersion, 20);
+    expect(v2.schemaVersion, 21);
     expect(await v2.select(v2.coworkSessions).get(), isEmpty);
     final props = await v2.select(v2.locationProposals).get();
     expect(props.single.decisionReason, isNull);
@@ -283,7 +283,7 @@ void main() {
     await v8.close();
 
     final v9 = AppDatabase(NativeDatabase(file));
-    expect(v9.schemaVersion, 20);
+    expect(v9.schemaVersion, 21);
     expect(await v9.select(v9.tasks).get(), isEmpty);
     // The new table works, with its defaults.
     await v9.into(v9.tasks).insert(TasksCompanion.insert(serverId: 't-1', title: 'কাজ', createdAt: DateTime.utc(2026, 11, 18)));
@@ -316,7 +316,7 @@ void main() {
     await v9.close();
 
     final v10 = AppDatabase(NativeDatabase(file));
-    expect(v10.schemaVersion, 20);
+    expect(v10.schemaVersion, 21);
     final day = (await v10.select(v10.attendanceDays).get()).single;
     expect(day.businessDate, '2026-11-20');
     expect(day.lateMin, 25);
@@ -351,7 +351,7 @@ void main() {
     await v10.close();
 
     final v11 = AppDatabase(NativeDatabase(file));
-    expect(v11.schemaVersion, 20);
+    expect(v11.schemaVersion, 21);
     final line = (await v11.select(v11.scheduleLines).get()).single;
     expect([line.seq, line.amountPoisha, line.paidPoisha], [1, 500000, 500000]);
     expect(line.paidOn, isNull);
@@ -376,7 +376,7 @@ void main() {
     await v11.close();
 
     final v12 = AppDatabase(NativeDatabase(file));
-    expect(v12.schemaVersion, 20);
+    expect(v12.schemaVersion, 21);
     expect(await v12.select(v12.colleagueActivities).get(), isEmpty);
     expect((await v12.select(v12.outbox).get()).single.mutationId, 'col-11');
     expect((await v12.select(v12.promises).get()).single.clientId, 'pr-1');
@@ -402,7 +402,7 @@ void main() {
     await v12.close();
 
     final v13 = AppDatabase(NativeDatabase(file));
-    expect(v13.schemaVersion, 20);
+    expect(v13.schemaVersion, 21);
     expect((await v13.select(v13.promises).get()).single.createdByName, isNull);
     expect(await v13.select(v13.collections).get(), isEmpty);
     expect(await v13.select(v13.colleagueActivities).get(), isEmpty);
@@ -426,7 +426,7 @@ void main() {
     await v13.close();
 
     final v14 = AppDatabase(NativeDatabase(file));
-    expect(v14.schemaVersion, 20);
+    expect(v14.schemaVersion, 21);
     final c = (await v14.select(v14.collections).get()).single;
     expect([c.clientId, c.amountPoisha, c.depositId, c.depositedAt], ['col-13', 150000, null, null]);
     final d = (await v14.select(v14.deposits).get()).single;
@@ -449,7 +449,7 @@ void main() {
     await v14.close();
 
     final v15 = AppDatabase(NativeDatabase(file));
-    expect(v15.schemaVersion, 20);
+    expect(v15.schemaVersion, 21);
     expect(await v15.select(v15.mapPlaces).get(), isEmpty);
     // the new table works: a place made offline is stored with its queued create
     await v15.into(v15.mapPlaces).insert(MapPlacesCompanion.insert(localId: 'c-1', clientId: const Value('c-1'), name: 'করিম স্টোর', icon: 'shop', lat: 22.7, lng: 90.37, createState: const Value('queued')));
@@ -473,7 +473,7 @@ void main() {
     await v15.close();
 
     final v16 = AppDatabase(NativeDatabase(file));
-    expect(v16.schemaVersion, 20);
+    expect(v16.schemaVersion, 21);
     final c = (await v16.select(v16.customers).get()).single;
     expect([c.serverId, c.activityJson], ['c-15', null]);
     final p = (await v16.select(v16.erpPayments).get()).single;
@@ -500,7 +500,7 @@ void main() {
     await v16.close();
 
     final v17 = AppDatabase(NativeDatabase(file));
-    expect(v17.schemaVersion, 20);
+    expect(v17.schemaVersion, 21);
     final m = (await v17.select(v17.mediaQueue).get()).single;
     expect([m.clientId, m.state, m.attempts, m.lastError, m.lastAttemptAt], ['md-16', 'failed', 7, null, null]);
     expect((await v17.select(v17.outbox).get()).single.mutationId, 'a-16');
@@ -529,7 +529,7 @@ void main() {
     await v17.close();
 
     final v18 = AppDatabase(NativeDatabase(file));
-    expect(v18.schemaVersion, 20);
+    expect(v18.schemaVersion, 21);
     expect((await v18.select(v18.prospects).get()).single.syncState, 'queued');
     expect((await v18.select(v18.outbox).get()).single.mutationId, 'pr-17');
     expect((await v18.select(v18.mediaQueue).get()).single.state, 'pending');
@@ -550,6 +550,7 @@ void main() {
     final file = File('${dir.path}/app.db');
     final v18 = AppDatabase(NativeDatabase(file));
     await v18.customStatement('SELECT 1');
+    await _dropV21(v18);
     // a row indexed by 0.x: no invoice numbers, no space-free line
     await v18.customStatement(
         'INSERT INTO customers (server_id, code, name_bn, name_en, phones_json, address, search_text, pending_field_poisha) '
@@ -568,7 +569,7 @@ void main() {
     await v18.close();
 
     final v19 = AppDatabase(NativeDatabase(file));
-    expect(v19.schemaVersion, 20);
+    expect(v19.schemaVersion, 21);
     final c = (await v19.select(v19.customers).get()).single;
     expect(c.searchText, 'রহিম মিয়া rahim mia c18 01712345678 01811000000 kazi para s24052 cr1001\n'
         'রহিমমিয়াrahimmiac180171234567801811000000kaziparas24052cr1001');
@@ -587,6 +588,7 @@ void main() {
     final file = File('${dir.path}/app.db');
     final v19 = AppDatabase(NativeDatabase(file));
     await v19.customStatement('SELECT 1');
+    await _dropV21(v19);
     await v19.customStatement('ALTER TABLE customers DROP COLUMN tag_reason_code');
     Future<void> customer(String id, String state, String? reasonJson) => v19.customStatement(
         "INSERT INTO customers (server_id, code, name_bn, tag_state, tag_severity, tag_reason, pending_field_poisha) VALUES (?, ?, 'রহিম মিয়া', ?, 'bad', ?, 700)", [id, id, state, reasonJson]);
@@ -613,7 +615,7 @@ void main() {
     await v19.close();
 
     final v20 = AppDatabase(NativeDatabase(file));
-    expect(v20.schemaVersion, 20);
+    expect(v20.schemaVersion, 21);
     final rows = {for (final c in await v20.select(v20.customers).get()) c.serverId: c};
     expect(rows['c-mine']!.tagReasonCode, 'absconded');
     expect(rows['c-approved']!.tagReasonCode, 'refused_to_pay');
@@ -631,10 +633,62 @@ void main() {
     await v20.close();
     await dir.delete(recursive: true);
   });
+
+  test('migrates a schema 20 database: returned invoices table and columns with 0 / false / [], nothing unsynced moves', () async {
+    final dir = await Directory.systemTemp.createTemp('mig20');
+    final file = File('${dir.path}/app.db');
+    final v20 = AppDatabase(NativeDatabase(file));
+    await v20.customStatement('SELECT 1');
+    await _dropV21(v20);
+    await v20.customStatement(
+        "INSERT INTO customers (server_id, code, name_bn, total_outstanding_poisha, pending_field_poisha, search_text) VALUES ('c-20', 'C-20', 'রহিম মিয়া', 120000, 5000, 'রহিম মিয়া c20 s24052')");
+    await v20.customStatement(
+        'INSERT INTO plans (erp_plan_id, customer_id, product, start_date, final_due_date, installment_count, total_payable_poisha, paid_poisha, outstanding_poisha, status, invoice_no) '
+        "VALUES ('p-20', 'c-20', 'TV', '2026-01-01', '2026-12-01', 12, 1000, 0, 1000, 'active', 'S-24052')");
+    await v20.customStatement("INSERT INTO erp_payments (erp_payment_id, customer_id, plan_id, date, amount_poisha, method, source) VALUES ('x-20', 'c-20', 'p-20', '2026-11-20', 500, 'cash', 'office')");
+    await v20.customStatement("INSERT INTO outbox (mutation_id, entity, op, payload_json, created_at, state) VALUES ('col-20', 'collection', 'create', '{}', 0, 'failed')");
+    await v20.customStatement(
+        'INSERT INTO collections (client_id, customer_id, customer_name, customer_code, erp_plan_id, amount_poisha, method, receipt_no, recorded_at, device_time, business_date, status, sync_state) '
+        "VALUES ('col-20', 'c-20', 'রহিম মিয়া', 'C-20', 'p-20', 5000, 'cash', 'R-20', 0, 0, '2026-11-26', 'pending', 'queued')");
+    await v20.customStatement('PRAGMA user_version = 20');
+    await v20.close();
+
+    final v21 = AppDatabase(NativeDatabase(file));
+    expect(v21.schemaVersion, 21);
+    final c = (await v21.select(v21.customers).get()).single;
+    expect([c.returnedInvoiceCount, c.onlyReturned], [0, false]);
+    expect([c.totalOutstandingPoisha, c.pendingFieldPoisha, c.searchText], [120000, 5000, 'রহিম মিয়া c20 s24052']);
+    expect((await v21.select(v21.erpPayments).get()).single.returned, isFalse);
+    expect(await v21.select(v21.returnedPlans).get(), isEmpty);
+    expect((await v21.select(v21.plans).get()).single.erpPlanId, 'p-20');
+    final idx = await v21.customSelect("SELECT name FROM sqlite_master WHERE type = 'index' AND name = 'idx_returned_plans_customer'").get();
+    expect(idx, hasLength(1));
+    // A returned plan stored after the upgrade gets the empty payments list by default.
+    await v21.into(v21.returnedPlans).insert(ReturnedPlansCompanion.insert(erpPlanId: 'r-21', customerId: 'c-20'));
+    final r = (await v21.select(v21.returnedPlans).get()).single;
+    expect([r.paymentsJson, r.status, r.paidPoisha], ['[]', 'closed', 0]);
+    final ob = (await v21.select(v21.outbox).get()).single;
+    expect([ob.mutationId, ob.state], ['col-20', 'failed']);
+    final col = (await v21.select(v21.collections).get()).single;
+    expect([col.clientId, col.status, col.syncState, col.erpPlanId], ['col-20', 'pending', 'queued', 'p-20']);
+    await v21.close();
+    await dir.delete(recursive: true);
+  });
+}
+
+/// What schema 21 (contract 1.53.0, FR-M-085) added: the returned invoices table, the customer's returned counts
+/// and the returned mark of a payment. Every older file lacks them.
+Future<void> _dropV21(AppDatabase db) async {
+  await db.customStatement('DROP INDEX IF EXISTS idx_returned_plans_customer');
+  await db.customStatement('DROP TABLE returned_plans');
+  await db.customStatement('ALTER TABLE customers DROP COLUMN returned_invoice_count');
+  await db.customStatement('ALTER TABLE customers DROP COLUMN only_returned');
+  await db.customStatement('ALTER TABLE erp_payments DROP COLUMN returned');
 }
 
 /// What schema 18 (FR-M-075, contract 1.48.0) added: staff requests and my comments on them.
 Future<void> _dropV18(AppDatabase db) async {
+  await _dropV21(db);
   await db.customStatement('DROP INDEX IF EXISTS idx_staff_requests_created');
   await db.customStatement('DROP TABLE staff_requests');
   await db.customStatement('DROP TABLE request_comments');

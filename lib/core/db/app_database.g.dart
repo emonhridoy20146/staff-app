@@ -500,6 +500,32 @@ class $CustomersTable extends Customers
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _returnedInvoiceCountMeta =
+      const VerificationMeta('returnedInvoiceCount');
+  @override
+  late final GeneratedColumn<int> returnedInvoiceCount = GeneratedColumn<int>(
+    'returned_invoice_count',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _onlyReturnedMeta = const VerificationMeta(
+    'onlyReturned',
+  );
+  @override
+  late final GeneratedColumn<bool> onlyReturned = GeneratedColumn<bool>(
+    'only_returned',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("only_returned" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     serverId,
@@ -546,6 +572,8 @@ class $CustomersTable extends Customers
     version,
     activityJson,
     tagReasonCode,
+    returnedInvoiceCount,
+    onlyReturned,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -901,6 +929,24 @@ class $CustomersTable extends Customers
         ),
       );
     }
+    if (data.containsKey('returned_invoice_count')) {
+      context.handle(
+        _returnedInvoiceCountMeta,
+        returnedInvoiceCount.isAcceptableOrUnknown(
+          data['returned_invoice_count']!,
+          _returnedInvoiceCountMeta,
+        ),
+      );
+    }
+    if (data.containsKey('only_returned')) {
+      context.handle(
+        _onlyReturnedMeta,
+        onlyReturned.isAcceptableOrUnknown(
+          data['only_returned']!,
+          _onlyReturnedMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -1086,6 +1132,14 @@ class $CustomersTable extends Customers
         DriftSqlType.string,
         data['${effectivePrefix}tag_reason_code'],
       ),
+      returnedInvoiceCount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}returned_invoice_count'],
+      )!,
+      onlyReturned: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}only_returned'],
+      )!,
     );
   }
 
@@ -1140,6 +1194,8 @@ class CustomerRow extends DataClass implements Insertable<CustomerRow> {
   final int version;
   final String? activityJson;
   final String? tagReasonCode;
+  final int returnedInvoiceCount;
+  final bool onlyReturned;
   const CustomerRow({
     required this.serverId,
     this.erpCustomerId,
@@ -1185,6 +1241,8 @@ class CustomerRow extends DataClass implements Insertable<CustomerRow> {
     required this.version,
     this.activityJson,
     this.tagReasonCode,
+    required this.returnedInvoiceCount,
+    required this.onlyReturned,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1291,6 +1349,8 @@ class CustomerRow extends DataClass implements Insertable<CustomerRow> {
     if (!nullToAbsent || tagReasonCode != null) {
       map['tag_reason_code'] = Variable<String>(tagReasonCode);
     }
+    map['returned_invoice_count'] = Variable<int>(returnedInvoiceCount);
+    map['only_returned'] = Variable<bool>(onlyReturned);
     return map;
   }
 
@@ -1394,6 +1454,8 @@ class CustomerRow extends DataClass implements Insertable<CustomerRow> {
       tagReasonCode: tagReasonCode == null && nullToAbsent
           ? const Value.absent()
           : Value(tagReasonCode),
+      returnedInvoiceCount: Value(returnedInvoiceCount),
+      onlyReturned: Value(onlyReturned),
     );
   }
 
@@ -1449,6 +1511,10 @@ class CustomerRow extends DataClass implements Insertable<CustomerRow> {
       version: serializer.fromJson<int>(json['version']),
       activityJson: serializer.fromJson<String?>(json['activityJson']),
       tagReasonCode: serializer.fromJson<String?>(json['tagReasonCode']),
+      returnedInvoiceCount: serializer.fromJson<int>(
+        json['returnedInvoiceCount'],
+      ),
+      onlyReturned: serializer.fromJson<bool>(json['onlyReturned']),
     );
   }
   @override
@@ -1499,6 +1565,8 @@ class CustomerRow extends DataClass implements Insertable<CustomerRow> {
       'version': serializer.toJson<int>(version),
       'activityJson': serializer.toJson<String?>(activityJson),
       'tagReasonCode': serializer.toJson<String?>(tagReasonCode),
+      'returnedInvoiceCount': serializer.toJson<int>(returnedInvoiceCount),
+      'onlyReturned': serializer.toJson<bool>(onlyReturned),
     };
   }
 
@@ -1547,6 +1615,8 @@ class CustomerRow extends DataClass implements Insertable<CustomerRow> {
     int? version,
     Value<String?> activityJson = const Value.absent(),
     Value<String?> tagReasonCode = const Value.absent(),
+    int? returnedInvoiceCount,
+    bool? onlyReturned,
   }) => CustomerRow(
     serverId: serverId ?? this.serverId,
     erpCustomerId: erpCustomerId.present
@@ -1611,6 +1681,8 @@ class CustomerRow extends DataClass implements Insertable<CustomerRow> {
     tagReasonCode: tagReasonCode.present
         ? tagReasonCode.value
         : this.tagReasonCode,
+    returnedInvoiceCount: returnedInvoiceCount ?? this.returnedInvoiceCount,
+    onlyReturned: onlyReturned ?? this.onlyReturned,
   );
   CustomerRow copyWithCompanion(CustomersCompanion data) {
     return CustomerRow(
@@ -1716,6 +1788,12 @@ class CustomerRow extends DataClass implements Insertable<CustomerRow> {
       tagReasonCode: data.tagReasonCode.present
           ? data.tagReasonCode.value
           : this.tagReasonCode,
+      returnedInvoiceCount: data.returnedInvoiceCount.present
+          ? data.returnedInvoiceCount.value
+          : this.returnedInvoiceCount,
+      onlyReturned: data.onlyReturned.present
+          ? data.onlyReturned.value
+          : this.onlyReturned,
     );
   }
 
@@ -1765,7 +1843,9 @@ class CustomerRow extends DataClass implements Insertable<CustomerRow> {
           ..write('searchText: $searchText, ')
           ..write('version: $version, ')
           ..write('activityJson: $activityJson, ')
-          ..write('tagReasonCode: $tagReasonCode')
+          ..write('tagReasonCode: $tagReasonCode, ')
+          ..write('returnedInvoiceCount: $returnedInvoiceCount, ')
+          ..write('onlyReturned: $onlyReturned')
           ..write(')'))
         .toString();
   }
@@ -1816,6 +1896,8 @@ class CustomerRow extends DataClass implements Insertable<CustomerRow> {
     version,
     activityJson,
     tagReasonCode,
+    returnedInvoiceCount,
+    onlyReturned,
   ]);
   @override
   bool operator ==(Object other) =>
@@ -1864,7 +1946,9 @@ class CustomerRow extends DataClass implements Insertable<CustomerRow> {
           other.searchText == this.searchText &&
           other.version == this.version &&
           other.activityJson == this.activityJson &&
-          other.tagReasonCode == this.tagReasonCode);
+          other.tagReasonCode == this.tagReasonCode &&
+          other.returnedInvoiceCount == this.returnedInvoiceCount &&
+          other.onlyReturned == this.onlyReturned);
 }
 
 class CustomersCompanion extends UpdateCompanion<CustomerRow> {
@@ -1912,6 +1996,8 @@ class CustomersCompanion extends UpdateCompanion<CustomerRow> {
   final Value<int> version;
   final Value<String?> activityJson;
   final Value<String?> tagReasonCode;
+  final Value<int> returnedInvoiceCount;
+  final Value<bool> onlyReturned;
   final Value<int> rowid;
   const CustomersCompanion({
     this.serverId = const Value.absent(),
@@ -1958,6 +2044,8 @@ class CustomersCompanion extends UpdateCompanion<CustomerRow> {
     this.version = const Value.absent(),
     this.activityJson = const Value.absent(),
     this.tagReasonCode = const Value.absent(),
+    this.returnedInvoiceCount = const Value.absent(),
+    this.onlyReturned = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   CustomersCompanion.insert({
@@ -2005,6 +2093,8 @@ class CustomersCompanion extends UpdateCompanion<CustomerRow> {
     this.version = const Value.absent(),
     this.activityJson = const Value.absent(),
     this.tagReasonCode = const Value.absent(),
+    this.returnedInvoiceCount = const Value.absent(),
+    this.onlyReturned = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : serverId = Value(serverId),
        code = Value(code),
@@ -2054,6 +2144,8 @@ class CustomersCompanion extends UpdateCompanion<CustomerRow> {
     Expression<int>? version,
     Expression<String>? activityJson,
     Expression<String>? tagReasonCode,
+    Expression<int>? returnedInvoiceCount,
+    Expression<bool>? onlyReturned,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -2103,6 +2195,9 @@ class CustomersCompanion extends UpdateCompanion<CustomerRow> {
       if (version != null) 'version': version,
       if (activityJson != null) 'activity_json': activityJson,
       if (tagReasonCode != null) 'tag_reason_code': tagReasonCode,
+      if (returnedInvoiceCount != null)
+        'returned_invoice_count': returnedInvoiceCount,
+      if (onlyReturned != null) 'only_returned': onlyReturned,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -2152,6 +2247,8 @@ class CustomersCompanion extends UpdateCompanion<CustomerRow> {
     Value<int>? version,
     Value<String?>? activityJson,
     Value<String?>? tagReasonCode,
+    Value<int>? returnedInvoiceCount,
+    Value<bool>? onlyReturned,
     Value<int>? rowid,
   }) {
     return CustomersCompanion(
@@ -2200,6 +2297,8 @@ class CustomersCompanion extends UpdateCompanion<CustomerRow> {
       version: version ?? this.version,
       activityJson: activityJson ?? this.activityJson,
       tagReasonCode: tagReasonCode ?? this.tagReasonCode,
+      returnedInvoiceCount: returnedInvoiceCount ?? this.returnedInvoiceCount,
+      onlyReturned: onlyReturned ?? this.onlyReturned,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -2341,6 +2440,12 @@ class CustomersCompanion extends UpdateCompanion<CustomerRow> {
     if (tagReasonCode.present) {
       map['tag_reason_code'] = Variable<String>(tagReasonCode.value);
     }
+    if (returnedInvoiceCount.present) {
+      map['returned_invoice_count'] = Variable<int>(returnedInvoiceCount.value);
+    }
+    if (onlyReturned.present) {
+      map['only_returned'] = Variable<bool>(onlyReturned.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -2394,6 +2499,8 @@ class CustomersCompanion extends UpdateCompanion<CustomerRow> {
           ..write('version: $version, ')
           ..write('activityJson: $activityJson, ')
           ..write('tagReasonCode: $tagReasonCode, ')
+          ..write('returnedInvoiceCount: $returnedInvoiceCount, ')
+          ..write('onlyReturned: $onlyReturned, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -4469,6 +4576,21 @@ class $ErpPaymentsTable extends ErpPayments
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _returnedMeta = const VerificationMeta(
+    'returned',
+  );
+  @override
+  late final GeneratedColumn<bool> returned = GeneratedColumn<bool>(
+    'returned',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("returned" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     erpPaymentId,
@@ -4485,6 +4607,7 @@ class $ErpPaymentsTable extends ErpPayments
     advance,
     discountPoisha,
     referrerName,
+    returned,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -4612,6 +4735,12 @@ class $ErpPaymentsTable extends ErpPayments
         ),
       );
     }
+    if (data.containsKey('returned')) {
+      context.handle(
+        _returnedMeta,
+        returned.isAcceptableOrUnknown(data['returned']!, _returnedMeta),
+      );
+    }
     return context;
   }
 
@@ -4677,6 +4806,10 @@ class $ErpPaymentsTable extends ErpPayments
         DriftSqlType.string,
         data['${effectivePrefix}referrer_name'],
       ),
+      returned: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}returned'],
+      )!,
     );
   }
 
@@ -4701,6 +4834,7 @@ class ErpPaymentRow extends DataClass implements Insertable<ErpPaymentRow> {
   final bool advance;
   final int discountPoisha;
   final String? referrerName;
+  final bool returned;
   const ErpPaymentRow({
     required this.erpPaymentId,
     required this.customerId,
@@ -4716,6 +4850,7 @@ class ErpPaymentRow extends DataClass implements Insertable<ErpPaymentRow> {
     required this.advance,
     required this.discountPoisha,
     this.referrerName,
+    required this.returned,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -4744,6 +4879,7 @@ class ErpPaymentRow extends DataClass implements Insertable<ErpPaymentRow> {
     if (!nullToAbsent || referrerName != null) {
       map['referrer_name'] = Variable<String>(referrerName);
     }
+    map['returned'] = Variable<bool>(returned);
     return map;
   }
 
@@ -4773,6 +4909,7 @@ class ErpPaymentRow extends DataClass implements Insertable<ErpPaymentRow> {
       referrerName: referrerName == null && nullToAbsent
           ? const Value.absent()
           : Value(referrerName),
+      returned: Value(returned),
     );
   }
 
@@ -4796,6 +4933,7 @@ class ErpPaymentRow extends DataClass implements Insertable<ErpPaymentRow> {
       advance: serializer.fromJson<bool>(json['advance']),
       discountPoisha: serializer.fromJson<int>(json['discountPoisha']),
       referrerName: serializer.fromJson<String?>(json['referrerName']),
+      returned: serializer.fromJson<bool>(json['returned']),
     );
   }
   @override
@@ -4816,6 +4954,7 @@ class ErpPaymentRow extends DataClass implements Insertable<ErpPaymentRow> {
       'advance': serializer.toJson<bool>(advance),
       'discountPoisha': serializer.toJson<int>(discountPoisha),
       'referrerName': serializer.toJson<String?>(referrerName),
+      'returned': serializer.toJson<bool>(returned),
     };
   }
 
@@ -4834,6 +4973,7 @@ class ErpPaymentRow extends DataClass implements Insertable<ErpPaymentRow> {
     bool? advance,
     int? discountPoisha,
     Value<String?> referrerName = const Value.absent(),
+    bool? returned,
   }) => ErpPaymentRow(
     erpPaymentId: erpPaymentId ?? this.erpPaymentId,
     customerId: customerId ?? this.customerId,
@@ -4851,6 +4991,7 @@ class ErpPaymentRow extends DataClass implements Insertable<ErpPaymentRow> {
     advance: advance ?? this.advance,
     discountPoisha: discountPoisha ?? this.discountPoisha,
     referrerName: referrerName.present ? referrerName.value : this.referrerName,
+    returned: returned ?? this.returned,
   );
   ErpPaymentRow copyWithCompanion(ErpPaymentsCompanion data) {
     return ErpPaymentRow(
@@ -4882,6 +5023,7 @@ class ErpPaymentRow extends DataClass implements Insertable<ErpPaymentRow> {
       referrerName: data.referrerName.present
           ? data.referrerName.value
           : this.referrerName,
+      returned: data.returned.present ? data.returned.value : this.returned,
     );
   }
 
@@ -4901,7 +5043,8 @@ class ErpPaymentRow extends DataClass implements Insertable<ErpPaymentRow> {
           ..write('collectorName: $collectorName, ')
           ..write('advance: $advance, ')
           ..write('discountPoisha: $discountPoisha, ')
-          ..write('referrerName: $referrerName')
+          ..write('referrerName: $referrerName, ')
+          ..write('returned: $returned')
           ..write(')'))
         .toString();
   }
@@ -4922,6 +5065,7 @@ class ErpPaymentRow extends DataClass implements Insertable<ErpPaymentRow> {
     advance,
     discountPoisha,
     referrerName,
+    returned,
   );
   @override
   bool operator ==(Object other) =>
@@ -4940,7 +5084,8 @@ class ErpPaymentRow extends DataClass implements Insertable<ErpPaymentRow> {
           other.collectorName == this.collectorName &&
           other.advance == this.advance &&
           other.discountPoisha == this.discountPoisha &&
-          other.referrerName == this.referrerName);
+          other.referrerName == this.referrerName &&
+          other.returned == this.returned);
 }
 
 class ErpPaymentsCompanion extends UpdateCompanion<ErpPaymentRow> {
@@ -4958,6 +5103,7 @@ class ErpPaymentsCompanion extends UpdateCompanion<ErpPaymentRow> {
   final Value<bool> advance;
   final Value<int> discountPoisha;
   final Value<String?> referrerName;
+  final Value<bool> returned;
   final Value<int> rowid;
   const ErpPaymentsCompanion({
     this.erpPaymentId = const Value.absent(),
@@ -4974,6 +5120,7 @@ class ErpPaymentsCompanion extends UpdateCompanion<ErpPaymentRow> {
     this.advance = const Value.absent(),
     this.discountPoisha = const Value.absent(),
     this.referrerName = const Value.absent(),
+    this.returned = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   ErpPaymentsCompanion.insert({
@@ -4991,6 +5138,7 @@ class ErpPaymentsCompanion extends UpdateCompanion<ErpPaymentRow> {
     this.advance = const Value.absent(),
     this.discountPoisha = const Value.absent(),
     this.referrerName = const Value.absent(),
+    this.returned = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : erpPaymentId = Value(erpPaymentId),
        customerId = Value(customerId),
@@ -5013,6 +5161,7 @@ class ErpPaymentsCompanion extends UpdateCompanion<ErpPaymentRow> {
     Expression<bool>? advance,
     Expression<int>? discountPoisha,
     Expression<String>? referrerName,
+    Expression<bool>? returned,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -5030,6 +5179,7 @@ class ErpPaymentsCompanion extends UpdateCompanion<ErpPaymentRow> {
       if (advance != null) 'advance': advance,
       if (discountPoisha != null) 'discount_poisha': discountPoisha,
       if (referrerName != null) 'referrer_name': referrerName,
+      if (returned != null) 'returned': returned,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -5049,6 +5199,7 @@ class ErpPaymentsCompanion extends UpdateCompanion<ErpPaymentRow> {
     Value<bool>? advance,
     Value<int>? discountPoisha,
     Value<String?>? referrerName,
+    Value<bool>? returned,
     Value<int>? rowid,
   }) {
     return ErpPaymentsCompanion(
@@ -5066,6 +5217,7 @@ class ErpPaymentsCompanion extends UpdateCompanion<ErpPaymentRow> {
       advance: advance ?? this.advance,
       discountPoisha: discountPoisha ?? this.discountPoisha,
       referrerName: referrerName ?? this.referrerName,
+      returned: returned ?? this.returned,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -5115,6 +5267,9 @@ class ErpPaymentsCompanion extends UpdateCompanion<ErpPaymentRow> {
     if (referrerName.present) {
       map['referrer_name'] = Variable<String>(referrerName.value);
     }
+    if (returned.present) {
+      map['returned'] = Variable<bool>(returned.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -5138,6 +5293,722 @@ class ErpPaymentsCompanion extends UpdateCompanion<ErpPaymentRow> {
           ..write('advance: $advance, ')
           ..write('discountPoisha: $discountPoisha, ')
           ..write('referrerName: $referrerName, ')
+          ..write('returned: $returned, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $ReturnedPlansTable extends ReturnedPlans
+    with TableInfo<$ReturnedPlansTable, ReturnedPlanRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ReturnedPlansTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _erpPlanIdMeta = const VerificationMeta(
+    'erpPlanId',
+  );
+  @override
+  late final GeneratedColumn<String> erpPlanId = GeneratedColumn<String>(
+    'erp_plan_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _customerIdMeta = const VerificationMeta(
+    'customerId',
+  );
+  @override
+  late final GeneratedColumn<String> customerId = GeneratedColumn<String>(
+    'customer_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _productMeta = const VerificationMeta(
+    'product',
+  );
+  @override
+  late final GeneratedColumn<String> product = GeneratedColumn<String>(
+    'product',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _kindMeta = const VerificationMeta('kind');
+  @override
+  late final GeneratedColumn<String> kind = GeneratedColumn<String>(
+    'kind',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('installment'),
+  );
+  static const VerificationMeta _invoiceNoMeta = const VerificationMeta(
+    'invoiceNo',
+  );
+  @override
+  late final GeneratedColumn<String> invoiceNo = GeneratedColumn<String>(
+    'invoice_no',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _saleDateMeta = const VerificationMeta(
+    'saleDate',
+  );
+  @override
+  late final GeneratedColumn<String> saleDate = GeneratedColumn<String>(
+    'sale_date',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _totalPayablePoishaMeta =
+      const VerificationMeta('totalPayablePoisha');
+  @override
+  late final GeneratedColumn<int> totalPayablePoisha = GeneratedColumn<int>(
+    'total_payable_poisha',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _paidPoishaMeta = const VerificationMeta(
+    'paidPoisha',
+  );
+  @override
+  late final GeneratedColumn<int> paidPoisha = GeneratedColumn<int>(
+    'paid_poisha',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _outstandingPoishaMeta = const VerificationMeta(
+    'outstandingPoisha',
+  );
+  @override
+  late final GeneratedColumn<int> outstandingPoisha = GeneratedColumn<int>(
+    'outstanding_poisha',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('closed'),
+  );
+  static const VerificationMeta _itemsJsonMeta = const VerificationMeta(
+    'itemsJson',
+  );
+  @override
+  late final GeneratedColumn<String> itemsJson = GeneratedColumn<String>(
+    'items_json',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _paymentsJsonMeta = const VerificationMeta(
+    'paymentsJson',
+  );
+  @override
+  late final GeneratedColumn<String> paymentsJson = GeneratedColumn<String>(
+    'payments_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('[]'),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    erpPlanId,
+    customerId,
+    product,
+    kind,
+    invoiceNo,
+    saleDate,
+    totalPayablePoisha,
+    paidPoisha,
+    outstandingPoisha,
+    status,
+    itemsJson,
+    paymentsJson,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'returned_plans';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ReturnedPlanRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('erp_plan_id')) {
+      context.handle(
+        _erpPlanIdMeta,
+        erpPlanId.isAcceptableOrUnknown(data['erp_plan_id']!, _erpPlanIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_erpPlanIdMeta);
+    }
+    if (data.containsKey('customer_id')) {
+      context.handle(
+        _customerIdMeta,
+        customerId.isAcceptableOrUnknown(data['customer_id']!, _customerIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_customerIdMeta);
+    }
+    if (data.containsKey('product')) {
+      context.handle(
+        _productMeta,
+        product.isAcceptableOrUnknown(data['product']!, _productMeta),
+      );
+    }
+    if (data.containsKey('kind')) {
+      context.handle(
+        _kindMeta,
+        kind.isAcceptableOrUnknown(data['kind']!, _kindMeta),
+      );
+    }
+    if (data.containsKey('invoice_no')) {
+      context.handle(
+        _invoiceNoMeta,
+        invoiceNo.isAcceptableOrUnknown(data['invoice_no']!, _invoiceNoMeta),
+      );
+    }
+    if (data.containsKey('sale_date')) {
+      context.handle(
+        _saleDateMeta,
+        saleDate.isAcceptableOrUnknown(data['sale_date']!, _saleDateMeta),
+      );
+    }
+    if (data.containsKey('total_payable_poisha')) {
+      context.handle(
+        _totalPayablePoishaMeta,
+        totalPayablePoisha.isAcceptableOrUnknown(
+          data['total_payable_poisha']!,
+          _totalPayablePoishaMeta,
+        ),
+      );
+    }
+    if (data.containsKey('paid_poisha')) {
+      context.handle(
+        _paidPoishaMeta,
+        paidPoisha.isAcceptableOrUnknown(data['paid_poisha']!, _paidPoishaMeta),
+      );
+    }
+    if (data.containsKey('outstanding_poisha')) {
+      context.handle(
+        _outstandingPoishaMeta,
+        outstandingPoisha.isAcceptableOrUnknown(
+          data['outstanding_poisha']!,
+          _outstandingPoishaMeta,
+        ),
+      );
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    }
+    if (data.containsKey('items_json')) {
+      context.handle(
+        _itemsJsonMeta,
+        itemsJson.isAcceptableOrUnknown(data['items_json']!, _itemsJsonMeta),
+      );
+    }
+    if (data.containsKey('payments_json')) {
+      context.handle(
+        _paymentsJsonMeta,
+        paymentsJson.isAcceptableOrUnknown(
+          data['payments_json']!,
+          _paymentsJsonMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {erpPlanId};
+  @override
+  ReturnedPlanRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ReturnedPlanRow(
+      erpPlanId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}erp_plan_id'],
+      )!,
+      customerId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}customer_id'],
+      )!,
+      product: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}product'],
+      )!,
+      kind: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}kind'],
+      )!,
+      invoiceNo: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}invoice_no'],
+      ),
+      saleDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sale_date'],
+      ),
+      totalPayablePoisha: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}total_payable_poisha'],
+      )!,
+      paidPoisha: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}paid_poisha'],
+      )!,
+      outstandingPoisha: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}outstanding_poisha'],
+      )!,
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status'],
+      )!,
+      itemsJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}items_json'],
+      ),
+      paymentsJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}payments_json'],
+      )!,
+    );
+  }
+
+  @override
+  $ReturnedPlansTable createAlias(String alias) {
+    return $ReturnedPlansTable(attachedDatabase, alias);
+  }
+}
+
+class ReturnedPlanRow extends DataClass implements Insertable<ReturnedPlanRow> {
+  final String erpPlanId;
+  final String customerId;
+  final String product;
+  final String kind;
+  final String? invoiceNo;
+  final String? saleDate;
+  final int totalPayablePoisha;
+  final int paidPoisha;
+  final int outstandingPoisha;
+  final String status;
+  final String? itemsJson;
+
+  /// The ERP payments posted against it (`Plan.payments`, each `returned: true`), as sent.
+  final String paymentsJson;
+  const ReturnedPlanRow({
+    required this.erpPlanId,
+    required this.customerId,
+    required this.product,
+    required this.kind,
+    this.invoiceNo,
+    this.saleDate,
+    required this.totalPayablePoisha,
+    required this.paidPoisha,
+    required this.outstandingPoisha,
+    required this.status,
+    this.itemsJson,
+    required this.paymentsJson,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['erp_plan_id'] = Variable<String>(erpPlanId);
+    map['customer_id'] = Variable<String>(customerId);
+    map['product'] = Variable<String>(product);
+    map['kind'] = Variable<String>(kind);
+    if (!nullToAbsent || invoiceNo != null) {
+      map['invoice_no'] = Variable<String>(invoiceNo);
+    }
+    if (!nullToAbsent || saleDate != null) {
+      map['sale_date'] = Variable<String>(saleDate);
+    }
+    map['total_payable_poisha'] = Variable<int>(totalPayablePoisha);
+    map['paid_poisha'] = Variable<int>(paidPoisha);
+    map['outstanding_poisha'] = Variable<int>(outstandingPoisha);
+    map['status'] = Variable<String>(status);
+    if (!nullToAbsent || itemsJson != null) {
+      map['items_json'] = Variable<String>(itemsJson);
+    }
+    map['payments_json'] = Variable<String>(paymentsJson);
+    return map;
+  }
+
+  ReturnedPlansCompanion toCompanion(bool nullToAbsent) {
+    return ReturnedPlansCompanion(
+      erpPlanId: Value(erpPlanId),
+      customerId: Value(customerId),
+      product: Value(product),
+      kind: Value(kind),
+      invoiceNo: invoiceNo == null && nullToAbsent
+          ? const Value.absent()
+          : Value(invoiceNo),
+      saleDate: saleDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(saleDate),
+      totalPayablePoisha: Value(totalPayablePoisha),
+      paidPoisha: Value(paidPoisha),
+      outstandingPoisha: Value(outstandingPoisha),
+      status: Value(status),
+      itemsJson: itemsJson == null && nullToAbsent
+          ? const Value.absent()
+          : Value(itemsJson),
+      paymentsJson: Value(paymentsJson),
+    );
+  }
+
+  factory ReturnedPlanRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ReturnedPlanRow(
+      erpPlanId: serializer.fromJson<String>(json['erpPlanId']),
+      customerId: serializer.fromJson<String>(json['customerId']),
+      product: serializer.fromJson<String>(json['product']),
+      kind: serializer.fromJson<String>(json['kind']),
+      invoiceNo: serializer.fromJson<String?>(json['invoiceNo']),
+      saleDate: serializer.fromJson<String?>(json['saleDate']),
+      totalPayablePoisha: serializer.fromJson<int>(json['totalPayablePoisha']),
+      paidPoisha: serializer.fromJson<int>(json['paidPoisha']),
+      outstandingPoisha: serializer.fromJson<int>(json['outstandingPoisha']),
+      status: serializer.fromJson<String>(json['status']),
+      itemsJson: serializer.fromJson<String?>(json['itemsJson']),
+      paymentsJson: serializer.fromJson<String>(json['paymentsJson']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'erpPlanId': serializer.toJson<String>(erpPlanId),
+      'customerId': serializer.toJson<String>(customerId),
+      'product': serializer.toJson<String>(product),
+      'kind': serializer.toJson<String>(kind),
+      'invoiceNo': serializer.toJson<String?>(invoiceNo),
+      'saleDate': serializer.toJson<String?>(saleDate),
+      'totalPayablePoisha': serializer.toJson<int>(totalPayablePoisha),
+      'paidPoisha': serializer.toJson<int>(paidPoisha),
+      'outstandingPoisha': serializer.toJson<int>(outstandingPoisha),
+      'status': serializer.toJson<String>(status),
+      'itemsJson': serializer.toJson<String?>(itemsJson),
+      'paymentsJson': serializer.toJson<String>(paymentsJson),
+    };
+  }
+
+  ReturnedPlanRow copyWith({
+    String? erpPlanId,
+    String? customerId,
+    String? product,
+    String? kind,
+    Value<String?> invoiceNo = const Value.absent(),
+    Value<String?> saleDate = const Value.absent(),
+    int? totalPayablePoisha,
+    int? paidPoisha,
+    int? outstandingPoisha,
+    String? status,
+    Value<String?> itemsJson = const Value.absent(),
+    String? paymentsJson,
+  }) => ReturnedPlanRow(
+    erpPlanId: erpPlanId ?? this.erpPlanId,
+    customerId: customerId ?? this.customerId,
+    product: product ?? this.product,
+    kind: kind ?? this.kind,
+    invoiceNo: invoiceNo.present ? invoiceNo.value : this.invoiceNo,
+    saleDate: saleDate.present ? saleDate.value : this.saleDate,
+    totalPayablePoisha: totalPayablePoisha ?? this.totalPayablePoisha,
+    paidPoisha: paidPoisha ?? this.paidPoisha,
+    outstandingPoisha: outstandingPoisha ?? this.outstandingPoisha,
+    status: status ?? this.status,
+    itemsJson: itemsJson.present ? itemsJson.value : this.itemsJson,
+    paymentsJson: paymentsJson ?? this.paymentsJson,
+  );
+  ReturnedPlanRow copyWithCompanion(ReturnedPlansCompanion data) {
+    return ReturnedPlanRow(
+      erpPlanId: data.erpPlanId.present ? data.erpPlanId.value : this.erpPlanId,
+      customerId: data.customerId.present
+          ? data.customerId.value
+          : this.customerId,
+      product: data.product.present ? data.product.value : this.product,
+      kind: data.kind.present ? data.kind.value : this.kind,
+      invoiceNo: data.invoiceNo.present ? data.invoiceNo.value : this.invoiceNo,
+      saleDate: data.saleDate.present ? data.saleDate.value : this.saleDate,
+      totalPayablePoisha: data.totalPayablePoisha.present
+          ? data.totalPayablePoisha.value
+          : this.totalPayablePoisha,
+      paidPoisha: data.paidPoisha.present
+          ? data.paidPoisha.value
+          : this.paidPoisha,
+      outstandingPoisha: data.outstandingPoisha.present
+          ? data.outstandingPoisha.value
+          : this.outstandingPoisha,
+      status: data.status.present ? data.status.value : this.status,
+      itemsJson: data.itemsJson.present ? data.itemsJson.value : this.itemsJson,
+      paymentsJson: data.paymentsJson.present
+          ? data.paymentsJson.value
+          : this.paymentsJson,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ReturnedPlanRow(')
+          ..write('erpPlanId: $erpPlanId, ')
+          ..write('customerId: $customerId, ')
+          ..write('product: $product, ')
+          ..write('kind: $kind, ')
+          ..write('invoiceNo: $invoiceNo, ')
+          ..write('saleDate: $saleDate, ')
+          ..write('totalPayablePoisha: $totalPayablePoisha, ')
+          ..write('paidPoisha: $paidPoisha, ')
+          ..write('outstandingPoisha: $outstandingPoisha, ')
+          ..write('status: $status, ')
+          ..write('itemsJson: $itemsJson, ')
+          ..write('paymentsJson: $paymentsJson')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    erpPlanId,
+    customerId,
+    product,
+    kind,
+    invoiceNo,
+    saleDate,
+    totalPayablePoisha,
+    paidPoisha,
+    outstandingPoisha,
+    status,
+    itemsJson,
+    paymentsJson,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ReturnedPlanRow &&
+          other.erpPlanId == this.erpPlanId &&
+          other.customerId == this.customerId &&
+          other.product == this.product &&
+          other.kind == this.kind &&
+          other.invoiceNo == this.invoiceNo &&
+          other.saleDate == this.saleDate &&
+          other.totalPayablePoisha == this.totalPayablePoisha &&
+          other.paidPoisha == this.paidPoisha &&
+          other.outstandingPoisha == this.outstandingPoisha &&
+          other.status == this.status &&
+          other.itemsJson == this.itemsJson &&
+          other.paymentsJson == this.paymentsJson);
+}
+
+class ReturnedPlansCompanion extends UpdateCompanion<ReturnedPlanRow> {
+  final Value<String> erpPlanId;
+  final Value<String> customerId;
+  final Value<String> product;
+  final Value<String> kind;
+  final Value<String?> invoiceNo;
+  final Value<String?> saleDate;
+  final Value<int> totalPayablePoisha;
+  final Value<int> paidPoisha;
+  final Value<int> outstandingPoisha;
+  final Value<String> status;
+  final Value<String?> itemsJson;
+  final Value<String> paymentsJson;
+  final Value<int> rowid;
+  const ReturnedPlansCompanion({
+    this.erpPlanId = const Value.absent(),
+    this.customerId = const Value.absent(),
+    this.product = const Value.absent(),
+    this.kind = const Value.absent(),
+    this.invoiceNo = const Value.absent(),
+    this.saleDate = const Value.absent(),
+    this.totalPayablePoisha = const Value.absent(),
+    this.paidPoisha = const Value.absent(),
+    this.outstandingPoisha = const Value.absent(),
+    this.status = const Value.absent(),
+    this.itemsJson = const Value.absent(),
+    this.paymentsJson = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ReturnedPlansCompanion.insert({
+    required String erpPlanId,
+    required String customerId,
+    this.product = const Value.absent(),
+    this.kind = const Value.absent(),
+    this.invoiceNo = const Value.absent(),
+    this.saleDate = const Value.absent(),
+    this.totalPayablePoisha = const Value.absent(),
+    this.paidPoisha = const Value.absent(),
+    this.outstandingPoisha = const Value.absent(),
+    this.status = const Value.absent(),
+    this.itemsJson = const Value.absent(),
+    this.paymentsJson = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : erpPlanId = Value(erpPlanId),
+       customerId = Value(customerId);
+  static Insertable<ReturnedPlanRow> custom({
+    Expression<String>? erpPlanId,
+    Expression<String>? customerId,
+    Expression<String>? product,
+    Expression<String>? kind,
+    Expression<String>? invoiceNo,
+    Expression<String>? saleDate,
+    Expression<int>? totalPayablePoisha,
+    Expression<int>? paidPoisha,
+    Expression<int>? outstandingPoisha,
+    Expression<String>? status,
+    Expression<String>? itemsJson,
+    Expression<String>? paymentsJson,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (erpPlanId != null) 'erp_plan_id': erpPlanId,
+      if (customerId != null) 'customer_id': customerId,
+      if (product != null) 'product': product,
+      if (kind != null) 'kind': kind,
+      if (invoiceNo != null) 'invoice_no': invoiceNo,
+      if (saleDate != null) 'sale_date': saleDate,
+      if (totalPayablePoisha != null)
+        'total_payable_poisha': totalPayablePoisha,
+      if (paidPoisha != null) 'paid_poisha': paidPoisha,
+      if (outstandingPoisha != null) 'outstanding_poisha': outstandingPoisha,
+      if (status != null) 'status': status,
+      if (itemsJson != null) 'items_json': itemsJson,
+      if (paymentsJson != null) 'payments_json': paymentsJson,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ReturnedPlansCompanion copyWith({
+    Value<String>? erpPlanId,
+    Value<String>? customerId,
+    Value<String>? product,
+    Value<String>? kind,
+    Value<String?>? invoiceNo,
+    Value<String?>? saleDate,
+    Value<int>? totalPayablePoisha,
+    Value<int>? paidPoisha,
+    Value<int>? outstandingPoisha,
+    Value<String>? status,
+    Value<String?>? itemsJson,
+    Value<String>? paymentsJson,
+    Value<int>? rowid,
+  }) {
+    return ReturnedPlansCompanion(
+      erpPlanId: erpPlanId ?? this.erpPlanId,
+      customerId: customerId ?? this.customerId,
+      product: product ?? this.product,
+      kind: kind ?? this.kind,
+      invoiceNo: invoiceNo ?? this.invoiceNo,
+      saleDate: saleDate ?? this.saleDate,
+      totalPayablePoisha: totalPayablePoisha ?? this.totalPayablePoisha,
+      paidPoisha: paidPoisha ?? this.paidPoisha,
+      outstandingPoisha: outstandingPoisha ?? this.outstandingPoisha,
+      status: status ?? this.status,
+      itemsJson: itemsJson ?? this.itemsJson,
+      paymentsJson: paymentsJson ?? this.paymentsJson,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (erpPlanId.present) {
+      map['erp_plan_id'] = Variable<String>(erpPlanId.value);
+    }
+    if (customerId.present) {
+      map['customer_id'] = Variable<String>(customerId.value);
+    }
+    if (product.present) {
+      map['product'] = Variable<String>(product.value);
+    }
+    if (kind.present) {
+      map['kind'] = Variable<String>(kind.value);
+    }
+    if (invoiceNo.present) {
+      map['invoice_no'] = Variable<String>(invoiceNo.value);
+    }
+    if (saleDate.present) {
+      map['sale_date'] = Variable<String>(saleDate.value);
+    }
+    if (totalPayablePoisha.present) {
+      map['total_payable_poisha'] = Variable<int>(totalPayablePoisha.value);
+    }
+    if (paidPoisha.present) {
+      map['paid_poisha'] = Variable<int>(paidPoisha.value);
+    }
+    if (outstandingPoisha.present) {
+      map['outstanding_poisha'] = Variable<int>(outstandingPoisha.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (itemsJson.present) {
+      map['items_json'] = Variable<String>(itemsJson.value);
+    }
+    if (paymentsJson.present) {
+      map['payments_json'] = Variable<String>(paymentsJson.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ReturnedPlansCompanion(')
+          ..write('erpPlanId: $erpPlanId, ')
+          ..write('customerId: $customerId, ')
+          ..write('product: $product, ')
+          ..write('kind: $kind, ')
+          ..write('invoiceNo: $invoiceNo, ')
+          ..write('saleDate: $saleDate, ')
+          ..write('totalPayablePoisha: $totalPayablePoisha, ')
+          ..write('paidPoisha: $paidPoisha, ')
+          ..write('outstandingPoisha: $outstandingPoisha, ')
+          ..write('status: $status, ')
+          ..write('itemsJson: $itemsJson, ')
+          ..write('paymentsJson: $paymentsJson, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -26277,6 +27148,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $PlansTable plans = $PlansTable(this);
   late final $ScheduleLinesTable scheduleLines = $ScheduleLinesTable(this);
   late final $ErpPaymentsTable erpPayments = $ErpPaymentsTable(this);
+  late final $ReturnedPlansTable returnedPlans = $ReturnedPlansTable(this);
   late final $LocationProposalsTable locationProposals =
       $LocationProposalsTable(this);
   late final $CollectionsTable collections = $CollectionsTable(this);
@@ -26323,6 +27195,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     plans,
     scheduleLines,
     erpPayments,
+    returnedPlans,
     locationProposals,
     collections,
     receiptBlocks,
@@ -26400,6 +27273,8 @@ typedef $$CustomersTableCreateCompanionBuilder = CustomersCompanion Function({
   Value<int> version,
   Value<String?> activityJson,
   Value<String?> tagReasonCode,
+  Value<int> returnedInvoiceCount,
+  Value<bool> onlyReturned,
   Value<int> rowid,
 });
 typedef $$CustomersTableUpdateCompanionBuilder = CustomersCompanion Function({
@@ -26447,6 +27322,8 @@ typedef $$CustomersTableUpdateCompanionBuilder = CustomersCompanion Function({
   Value<int> version,
   Value<String?> activityJson,
   Value<String?> tagReasonCode,
+  Value<int> returnedInvoiceCount,
+  Value<bool> onlyReturned,
   Value<int> rowid,
 });
 
@@ -26676,6 +27553,16 @@ class $$CustomersTableFilterComposer
 
   ColumnFilters<String> get tagReasonCode => $composableBuilder(
     column: $table.tagReasonCode,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get returnedInvoiceCount => $composableBuilder(
+    column: $table.returnedInvoiceCount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get onlyReturned => $composableBuilder(
+    column: $table.onlyReturned,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -26908,6 +27795,16 @@ class $$CustomersTableOrderingComposer
     column: $table.tagReasonCode,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<int> get returnedInvoiceCount => $composableBuilder(
+    column: $table.returnedInvoiceCount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get onlyReturned => $composableBuilder(
+    column: $table.onlyReturned,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$CustomersTableAnnotationComposer
@@ -27108,6 +28005,16 @@ class $$CustomersTableAnnotationComposer
     column: $table.tagReasonCode,
     builder: (column) => column,
   );
+
+  GeneratedColumn<int> get returnedInvoiceCount => $composableBuilder(
+    column: $table.returnedInvoiceCount,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get onlyReturned => $composableBuilder(
+    column: $table.onlyReturned,
+    builder: (column) => column,
+  );
 }
 
 class $$CustomersTableTableManager
@@ -27185,6 +28092,8 @@ class $$CustomersTableTableManager
                 Value<int> version = const Value.absent(),
                 Value<String?> activityJson = const Value.absent(),
                 Value<String?> tagReasonCode = const Value.absent(),
+                Value<int> returnedInvoiceCount = const Value.absent(),
+                Value<bool> onlyReturned = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => CustomersCompanion(
                 serverId: serverId,
@@ -27231,6 +28140,8 @@ class $$CustomersTableTableManager
                 version: version,
                 activityJson: activityJson,
                 tagReasonCode: tagReasonCode,
+                returnedInvoiceCount: returnedInvoiceCount,
+                onlyReturned: onlyReturned,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -27279,6 +28190,8 @@ class $$CustomersTableTableManager
                 Value<int> version = const Value.absent(),
                 Value<String?> activityJson = const Value.absent(),
                 Value<String?> tagReasonCode = const Value.absent(),
+                Value<int> returnedInvoiceCount = const Value.absent(),
+                Value<bool> onlyReturned = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => CustomersCompanion.insert(
                 serverId: serverId,
@@ -27325,6 +28238,8 @@ class $$CustomersTableTableManager
                 version: version,
                 activityJson: activityJson,
                 tagReasonCode: tagReasonCode,
+                returnedInvoiceCount: returnedInvoiceCount,
+                onlyReturned: onlyReturned,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -28253,6 +29168,7 @@ typedef $$ErpPaymentsTableCreateCompanionBuilder =
       Value<bool> advance,
       Value<int> discountPoisha,
       Value<String?> referrerName,
+      Value<bool> returned,
       Value<int> rowid,
     });
 typedef $$ErpPaymentsTableUpdateCompanionBuilder =
@@ -28271,6 +29187,7 @@ typedef $$ErpPaymentsTableUpdateCompanionBuilder =
       Value<bool> advance,
       Value<int> discountPoisha,
       Value<String?> referrerName,
+      Value<bool> returned,
       Value<int> rowid,
     });
 
@@ -28350,6 +29267,11 @@ class $$ErpPaymentsTableFilterComposer
 
   ColumnFilters<String> get referrerName => $composableBuilder(
     column: $table.referrerName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get returned => $composableBuilder(
+    column: $table.returned,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -28432,6 +29354,11 @@ class $$ErpPaymentsTableOrderingComposer
     column: $table.referrerName,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<bool> get returned => $composableBuilder(
+    column: $table.returned,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$ErpPaymentsTableAnnotationComposer
@@ -28498,6 +29425,9 @@ class $$ErpPaymentsTableAnnotationComposer
     column: $table.referrerName,
     builder: (column) => column,
   );
+
+  GeneratedColumn<bool> get returned =>
+      $composableBuilder(column: $table.returned, builder: (column) => column);
 }
 
 class $$ErpPaymentsTableTableManager
@@ -28545,6 +29475,7 @@ class $$ErpPaymentsTableTableManager
                 Value<bool> advance = const Value.absent(),
                 Value<int> discountPoisha = const Value.absent(),
                 Value<String?> referrerName = const Value.absent(),
+                Value<bool> returned = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => ErpPaymentsCompanion(
                 erpPaymentId: erpPaymentId,
@@ -28561,6 +29492,7 @@ class $$ErpPaymentsTableTableManager
                 advance: advance,
                 discountPoisha: discountPoisha,
                 referrerName: referrerName,
+                returned: returned,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -28579,6 +29511,7 @@ class $$ErpPaymentsTableTableManager
                 Value<bool> advance = const Value.absent(),
                 Value<int> discountPoisha = const Value.absent(),
                 Value<String?> referrerName = const Value.absent(),
+                Value<bool> returned = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => ErpPaymentsCompanion.insert(
                 erpPaymentId: erpPaymentId,
@@ -28595,6 +29528,7 @@ class $$ErpPaymentsTableTableManager
                 advance: advance,
                 discountPoisha: discountPoisha,
                 referrerName: referrerName,
+                returned: returned,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -28629,6 +29563,358 @@ typedef $$ErpPaymentsTableProcessedTableManager =
         BaseReferences<_$AppDatabase, $ErpPaymentsTable, ErpPaymentRow>,
       ),
       ErpPaymentRow,
+      PrefetchHooks Function()
+    >;
+typedef $$ReturnedPlansTableCreateCompanionBuilder =
+    ReturnedPlansCompanion Function({
+      required String erpPlanId,
+      required String customerId,
+      Value<String> product,
+      Value<String> kind,
+      Value<String?> invoiceNo,
+      Value<String?> saleDate,
+      Value<int> totalPayablePoisha,
+      Value<int> paidPoisha,
+      Value<int> outstandingPoisha,
+      Value<String> status,
+      Value<String?> itemsJson,
+      Value<String> paymentsJson,
+      Value<int> rowid,
+    });
+typedef $$ReturnedPlansTableUpdateCompanionBuilder =
+    ReturnedPlansCompanion Function({
+      Value<String> erpPlanId,
+      Value<String> customerId,
+      Value<String> product,
+      Value<String> kind,
+      Value<String?> invoiceNo,
+      Value<String?> saleDate,
+      Value<int> totalPayablePoisha,
+      Value<int> paidPoisha,
+      Value<int> outstandingPoisha,
+      Value<String> status,
+      Value<String?> itemsJson,
+      Value<String> paymentsJson,
+      Value<int> rowid,
+    });
+
+class $$ReturnedPlansTableFilterComposer
+    extends Composer<_$AppDatabase, $ReturnedPlansTable> {
+  $$ReturnedPlansTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get erpPlanId => $composableBuilder(
+    column: $table.erpPlanId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get customerId => $composableBuilder(
+    column: $table.customerId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get product => $composableBuilder(
+    column: $table.product,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get invoiceNo => $composableBuilder(
+    column: $table.invoiceNo,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get saleDate => $composableBuilder(
+    column: $table.saleDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get totalPayablePoisha => $composableBuilder(
+    column: $table.totalPayablePoisha,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get paidPoisha => $composableBuilder(
+    column: $table.paidPoisha,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get outstandingPoisha => $composableBuilder(
+    column: $table.outstandingPoisha,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get itemsJson => $composableBuilder(
+    column: $table.itemsJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get paymentsJson => $composableBuilder(
+    column: $table.paymentsJson,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$ReturnedPlansTableOrderingComposer
+    extends Composer<_$AppDatabase, $ReturnedPlansTable> {
+  $$ReturnedPlansTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get erpPlanId => $composableBuilder(
+    column: $table.erpPlanId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get customerId => $composableBuilder(
+    column: $table.customerId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get product => $composableBuilder(
+    column: $table.product,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get invoiceNo => $composableBuilder(
+    column: $table.invoiceNo,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get saleDate => $composableBuilder(
+    column: $table.saleDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get totalPayablePoisha => $composableBuilder(
+    column: $table.totalPayablePoisha,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get paidPoisha => $composableBuilder(
+    column: $table.paidPoisha,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get outstandingPoisha => $composableBuilder(
+    column: $table.outstandingPoisha,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get itemsJson => $composableBuilder(
+    column: $table.itemsJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get paymentsJson => $composableBuilder(
+    column: $table.paymentsJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$ReturnedPlansTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ReturnedPlansTable> {
+  $$ReturnedPlansTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get erpPlanId =>
+      $composableBuilder(column: $table.erpPlanId, builder: (column) => column);
+
+  GeneratedColumn<String> get customerId => $composableBuilder(
+    column: $table.customerId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get product =>
+      $composableBuilder(column: $table.product, builder: (column) => column);
+
+  GeneratedColumn<String> get kind =>
+      $composableBuilder(column: $table.kind, builder: (column) => column);
+
+  GeneratedColumn<String> get invoiceNo =>
+      $composableBuilder(column: $table.invoiceNo, builder: (column) => column);
+
+  GeneratedColumn<String> get saleDate =>
+      $composableBuilder(column: $table.saleDate, builder: (column) => column);
+
+  GeneratedColumn<int> get totalPayablePoisha => $composableBuilder(
+    column: $table.totalPayablePoisha,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get paidPoisha => $composableBuilder(
+    column: $table.paidPoisha,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get outstandingPoisha => $composableBuilder(
+    column: $table.outstandingPoisha,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<String> get itemsJson =>
+      $composableBuilder(column: $table.itemsJson, builder: (column) => column);
+
+  GeneratedColumn<String> get paymentsJson => $composableBuilder(
+    column: $table.paymentsJson,
+    builder: (column) => column,
+  );
+}
+
+class $$ReturnedPlansTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ReturnedPlansTable,
+          ReturnedPlanRow,
+          $$ReturnedPlansTableFilterComposer,
+          $$ReturnedPlansTableOrderingComposer,
+          $$ReturnedPlansTableAnnotationComposer,
+          $$ReturnedPlansTableCreateCompanionBuilder,
+          $$ReturnedPlansTableUpdateCompanionBuilder,
+          (
+            ReturnedPlanRow,
+            BaseReferences<_$AppDatabase, $ReturnedPlansTable, ReturnedPlanRow>,
+          ),
+          ReturnedPlanRow,
+          PrefetchHooks Function()
+        > {
+  $$ReturnedPlansTableTableManager(_$AppDatabase db, $ReturnedPlansTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ReturnedPlansTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ReturnedPlansTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ReturnedPlansTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> erpPlanId = const Value.absent(),
+                Value<String> customerId = const Value.absent(),
+                Value<String> product = const Value.absent(),
+                Value<String> kind = const Value.absent(),
+                Value<String?> invoiceNo = const Value.absent(),
+                Value<String?> saleDate = const Value.absent(),
+                Value<int> totalPayablePoisha = const Value.absent(),
+                Value<int> paidPoisha = const Value.absent(),
+                Value<int> outstandingPoisha = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<String?> itemsJson = const Value.absent(),
+                Value<String> paymentsJson = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ReturnedPlansCompanion(
+                erpPlanId: erpPlanId,
+                customerId: customerId,
+                product: product,
+                kind: kind,
+                invoiceNo: invoiceNo,
+                saleDate: saleDate,
+                totalPayablePoisha: totalPayablePoisha,
+                paidPoisha: paidPoisha,
+                outstandingPoisha: outstandingPoisha,
+                status: status,
+                itemsJson: itemsJson,
+                paymentsJson: paymentsJson,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String erpPlanId,
+                required String customerId,
+                Value<String> product = const Value.absent(),
+                Value<String> kind = const Value.absent(),
+                Value<String?> invoiceNo = const Value.absent(),
+                Value<String?> saleDate = const Value.absent(),
+                Value<int> totalPayablePoisha = const Value.absent(),
+                Value<int> paidPoisha = const Value.absent(),
+                Value<int> outstandingPoisha = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<String?> itemsJson = const Value.absent(),
+                Value<String> paymentsJson = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ReturnedPlansCompanion.insert(
+                erpPlanId: erpPlanId,
+                customerId: customerId,
+                product: product,
+                kind: kind,
+                invoiceNo: invoiceNo,
+                saleDate: saleDate,
+                totalPayablePoisha: totalPayablePoisha,
+                paidPoisha: paidPoisha,
+                outstandingPoisha: outstandingPoisha,
+                status: status,
+                itemsJson: itemsJson,
+                paymentsJson: paymentsJson,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$ReturnedPlansTable, ReturnedPlanRow>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $ReturnedPlansTable,
+                    ReturnedPlanRow
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$ReturnedPlansTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ReturnedPlansTable,
+      ReturnedPlanRow,
+      $$ReturnedPlansTableFilterComposer,
+      $$ReturnedPlansTableOrderingComposer,
+      $$ReturnedPlansTableAnnotationComposer,
+      $$ReturnedPlansTableCreateCompanionBuilder,
+      $$ReturnedPlansTableUpdateCompanionBuilder,
+      (
+        ReturnedPlanRow,
+        BaseReferences<_$AppDatabase, $ReturnedPlansTable, ReturnedPlanRow>,
+      ),
+      ReturnedPlanRow,
       PrefetchHooks Function()
     >;
 typedef $$LocationProposalsTableCreateCompanionBuilder =
@@ -38803,6 +40089,8 @@ class $AppDatabaseManager {
       $$ScheduleLinesTableTableManager(_db, _db.scheduleLines);
   $$ErpPaymentsTableTableManager get erpPayments =>
       $$ErpPaymentsTableTableManager(_db, _db.erpPayments);
+  $$ReturnedPlansTableTableManager get returnedPlans =>
+      $$ReturnedPlansTableTableManager(_db, _db.returnedPlans);
   $$LocationProposalsTableTableManager get locationProposals =>
       $$LocationProposalsTableTableManager(_db, _db.locationProposals);
   $$CollectionsTableTableManager get collections =>
