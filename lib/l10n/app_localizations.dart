@@ -950,6 +950,54 @@ abstract class AppLocalizations {
   /// **'No promises or dues left for today.'**
   String get todayAllDoneBody;
 
+  /// No description provided for @homeKpiPromised.
+  ///
+  /// In en, this message translates to:
+  /// **'Promised'**
+  String get homeKpiPromised;
+
+  /// No description provided for @homeKpiDue.
+  ///
+  /// In en, this message translates to:
+  /// **'Due today'**
+  String get homeKpiDue;
+
+  /// No description provided for @homeKpiOverdue.
+  ///
+  /// In en, this message translates to:
+  /// **'Overdue'**
+  String get homeKpiOverdue;
+
+  /// No description provided for @homeKpiLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{label}: {count} customers'**
+  String homeKpiLabel(String label, String count);
+
+  /// No description provided for @homeWorkListTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s work list'**
+  String get homeWorkListTitle;
+
+  /// No description provided for @homeWorkListBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Promised, due today, then nearest overdue'**
+  String get homeWorkListBody;
+
+  /// No description provided for @homeLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading…'**
+  String get homeLoading;
+
+  /// No description provided for @homeTargetPct.
+  ///
+  /// In en, this message translates to:
+  /// **'{pct}% done'**
+  String homeTargetPct(String pct);
+
   /// No description provided for @todayCashWarning.
   ///
   /// In en, this message translates to:
@@ -3031,6 +3079,144 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Got it'**
   String get oemGuideDone;
+
+  /// No description provided for @trackNotifReauth.
+  ///
+  /// In en, this message translates to:
+  /// **'Live location can\'t be sent. Please open the app once.'**
+  String get trackNotifReauth;
+
+  /// No description provided for @trackHealthOff.
+  ///
+  /// In en, this message translates to:
+  /// **'You are on duty, but live location is not running. Tap to fix.'**
+  String get trackHealthOff;
+
+  /// No description provided for @trackHealthAuth.
+  ///
+  /// In en, this message translates to:
+  /// **'Live location was paused and is reconnecting. Keep the internet on.'**
+  String get trackHealthAuth;
+
+  /// No description provided for @trackHealthBattery.
+  ///
+  /// In en, this message translates to:
+  /// **'Battery saver may stop live location. Tap to allow.'**
+  String get trackHealthBattery;
+
+  /// No description provided for @trackSetupTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Background location'**
+  String get trackSetupTitle;
+
+  /// No description provided for @trackSetupEntry.
+  ///
+  /// In en, this message translates to:
+  /// **'Background setup'**
+  String get trackSetupEntry;
+
+  /// No description provided for @trackSetupWhy.
+  ///
+  /// In en, this message translates to:
+  /// **'On duty, the office sees your live location even when the app is closed. Many phones stop apps to save battery, so please allow the settings below. Location is never collected off duty.'**
+  String get trackSetupWhy;
+
+  /// No description provided for @trackSetupBatteryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'1. Turn off battery optimisation'**
+  String get trackSetupBatteryTitle;
+
+  /// No description provided for @trackSetupBatteryBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Let the app run in the background so the phone does not stop it. On the next screen tap “Allow”.'**
+  String get trackSetupBatteryBody;
+
+  /// No description provided for @trackSetupAllow.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow'**
+  String get trackSetupAllow;
+
+  /// No description provided for @trackSetupAllowed.
+  ///
+  /// In en, this message translates to:
+  /// **'Allowed'**
+  String get trackSetupAllowed;
+
+  /// No description provided for @trackSetupNotAllowed.
+  ///
+  /// In en, this message translates to:
+  /// **'Not allowed'**
+  String get trackSetupNotAllowed;
+
+  /// No description provided for @trackSetupUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown'**
+  String get trackSetupUnknown;
+
+  /// No description provided for @trackSetupAutostartTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'2. Allow autostart and background running'**
+  String get trackSetupAutostartTitle;
+
+  /// No description provided for @trackSetupAutostartBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your phone: {brand}. Follow the steps below; “Open settings” goes straight to that screen where possible.'**
+  String trackSetupAutostartBody(String brand);
+
+  /// No description provided for @trackSetupOpenSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Open settings'**
+  String get trackSetupOpenSettings;
+
+  /// No description provided for @trackSetupOpenFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open the settings. Please follow the steps by hand.'**
+  String get trackSetupOpenFailed;
+
+  /// No description provided for @trackSetupAllBrands.
+  ///
+  /// In en, this message translates to:
+  /// **'Steps for other phones'**
+  String get trackSetupAllBrands;
+
+  /// No description provided for @trackSetupStatusTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'3. Right now'**
+  String get trackSetupStatusTitle;
+
+  /// No description provided for @trackSetupRunning.
+  ///
+  /// In en, this message translates to:
+  /// **'Live location is running'**
+  String get trackSetupRunning;
+
+  /// No description provided for @trackSetupNotRunning.
+  ///
+  /// In en, this message translates to:
+  /// **'On duty, but live location is not running'**
+  String get trackSetupNotRunning;
+
+  /// No description provided for @trackSetupOffDuty.
+  ///
+  /// In en, this message translates to:
+  /// **'Off duty — location is not collected'**
+  String get trackSetupOffDuty;
+
+  /// No description provided for @trackSetupAuthFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The server is not taking location; it fixes itself while the app is open'**
+  String get trackSetupAuthFailed;
 
   /// No description provided for @oemGuideXiaomiName.
   ///

@@ -6,6 +6,7 @@ import '../../../core/settings/ui_prefs.dart';
 import '../../../core/theme/status_colors.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/ui/common.dart';
+import '../../../core/ui/refreshable.dart';
 import '../../../l10n/app_localizations.dart';
 import 'notices_data.dart';
 
@@ -47,14 +48,17 @@ class NoticesScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: cs.surfaceContainerLowest,
       appBar: AppBar(title: Text(l.noticesTitle), backgroundColor: cs.surfaceContainer),
-      body: notices.isEmpty
-          ? Center(child: EmptyState(icon: Icons.campaign_rounded, title: l.noticesEmpty, body: l.noticesEmptyBody))
+      body: PullToRefresh(
+        child: notices.isEmpty
+          ? PullableFill(child: EmptyState(icon: Icons.campaign_rounded, title: l.noticesEmpty, body: l.noticesEmptyBody))
           : ListView.separated(
+              physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.fromLTRB(Space.screen, Space.s16, Space.screen, Space.s32),
               itemCount: notices.length,
               separatorBuilder: (_, _) => const SizedBox(height: Space.cardGap),
               itemBuilder: (_, i) => _NoticeTile(notice: notices[i]),
             ),
+      ),
     );
   }
 }
@@ -108,13 +112,15 @@ class NoticeDetailScreen extends ConsumerWidget {
     final lang = Localizations.localeOf(context).languageCode;
     final n = ref.watch(noticeProvider(id)).value;
     if (n == null) {
-      return Scaffold(appBar: AppBar(), body: Center(child: Text(l.noticesEmpty)));
+      return Scaffold(appBar: AppBar(), body: PullToRefresh(child: PullableFill(child: Text(l.noticesEmpty))));
     }
     final s = context.semanticColors;
     return Scaffold(
       backgroundColor: cs.surfaceContainerLowest,
       appBar: AppBar(title: Text(l.noticeTitle), backgroundColor: cs.surfaceContainer),
-      body: ListView(
+      body: PullToRefresh(
+        child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(Space.screen, Space.s16, Space.screen, Space.s32),
         children: [
           Align(alignment: AlignmentDirectional.centerStart, child: NoticeReadChip(notice: n)),
@@ -140,6 +146,7 @@ class NoticeDetailScreen extends ConsumerWidget {
             Text(l.noticeReadFailed, style: t.bodyMedium!.copyWith(color: s.danger.fg)),
           ],
         ],
+      ),
       ),
       bottomNavigationBar: n.read
           ? null

@@ -93,8 +93,9 @@ class LeaveScreen extends ConsumerWidget {
         label: Text(l.leaveNew),
       ),
       body: RefreshIndicator(
-        onRefresh: () async => ref.invalidate(myLeaveProvider),
+        onRefresh: () => ref.refresh(myLeaveProvider.future),
         child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.fromLTRB(Space.screen, Space.s16, Space.screen, 120),
           children: [
             if (res.isLoading && data == null) const Padding(padding: EdgeInsets.all(Space.s32), child: Center(child: CircularProgressIndicator())),
@@ -424,8 +425,9 @@ class _WorkCalendarScreenState extends ConsumerState<WorkCalendarScreen> {
       backgroundColor: cs.surfaceContainerLowest,
       appBar: AppBar(title: Text(l.calendarTitle), backgroundColor: cs.surfaceContainer),
       body: RefreshIndicator(
-        onRefresh: () async => ref.invalidate(_calendarProvider(_year)),
+        onRefresh: () => ref.refresh(_calendarProvider(_year).future),
         child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.fromLTRB(Space.screen, Space.s16, Space.screen, Space.s32),
           children: [
             if (offline) ...[

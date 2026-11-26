@@ -11,6 +11,7 @@ import '../../../core/settings/duty_settings.dart';
 import '../../../core/theme/status_colors.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/ui/common.dart';
+import '../../../core/ui/refreshable.dart';
 import '../../../l10n/app_localizations.dart';
 import 'attendance_data.dart';
 import 'attendance_domain.dart';
@@ -102,7 +103,9 @@ class _AttendanceHubState extends ConsumerState<AttendanceHubScreen> with Widget
 
     return Scaffold(
       backgroundColor: cs.surfaceContainerLowest,
-      body: CustomScrollView(
+      body: PullToRefresh(
+        child: CustomScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
           SliverAppBar(
             pinned: true,
@@ -168,6 +171,7 @@ class _AttendanceHubState extends ConsumerState<AttendanceHubScreen> with Widget
             ]),
           ),
         ],
+      ),
       ),
     );
   }

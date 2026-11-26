@@ -1,7 +1,9 @@
+import 'dart:ui' show Brightness;
+
 import 'package:flutter/animation.dart';
 import 'package:flutter/painting.dart';
 
-/// Shared design tokens v1.1 (v1.1 adds pay-state colours, not used in the app yet).
+/// Shared design tokens v1.2 (v1.1 added pay-state colours; v1.2 adds the `shadow.*` elevation tokens).
 ///
 /// Canonical source: admin-web/docs/03-design-guide.md §2 and
 /// docs/design-tokens.json. Values here MUST stay identical; the token test
@@ -95,6 +97,24 @@ abstract final class Radii {
   static const brLg = BorderRadius.all(Radius.circular(lg));
   static const brXl = BorderRadius.all(Radius.circular(xl));
   static const brXxl = BorderRadius.all(Radius.circular(xxl));
+}
+
+/// Elevation shadows (`shadow.*`, tokens v1.2): soft, cool-grey ink
+/// `rgb(16 24 40)`. Light theme only — in dark mode depth comes from the
+/// surface steps and the 1 px border, so [of] returns no shadow there.
+abstract final class Shadows {
+  static const sm = [
+    BoxShadow(color: Color(0x0F101828), offset: Offset(0, 1), blurRadius: 2),
+    BoxShadow(color: Color(0x14101828), offset: Offset(0, 1), blurRadius: 3),
+  ];
+  static const md = [
+    BoxShadow(color: Color(0x14101828), offset: Offset(0, 4), blurRadius: 12, spreadRadius: -2),
+    BoxShadow(color: Color(0x0A101828), offset: Offset(0, 2), blurRadius: 4, spreadRadius: -2),
+  ];
+  static const none = <BoxShadow>[];
+
+  /// The shadow for [brightness]: [level] in light mode, none in dark mode.
+  static List<BoxShadow> of(Brightness brightness, List<BoxShadow> level) => brightness == Brightness.dark ? none : level;
 }
 
 abstract final class Motion {

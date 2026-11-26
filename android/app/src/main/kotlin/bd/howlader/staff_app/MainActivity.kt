@@ -62,17 +62,23 @@ class MainActivity : FlutterActivity() {
                     result.success(true)
                 }
                 "storeTrackingCredentials" -> {
-                    val apiBaseUrl = call.argument<String>("apiBaseUrl") ?: ""
-                    val accessToken = call.argument<String>("accessToken") ?: ""
-                    val deviceId = call.argument<String>("deviceId") ?: ""
-                    LocationTrackingService.storeCredentials(this, apiBaseUrl, accessToken, deviceId)
+                    // FR-M-077: the points-only tracking token (contract 1.49.0), not the access token.
+                    LocationTrackingService.storeCredentials(
+                        this,
+                        call.argument<String>("apiBaseUrl") ?: "",
+                        call.argument<String>("trackingToken") ?: "",
+                        call.argument<Number>("expiresAtMs")?.toLong() ?: 0L,
+                        call.argument<String>("deviceId") ?: "",
+                        call.argument<String>("reauthText"),
+                    )
                     result.success(true)
                 }
-                "updateTrackingToken" -> {
-                    val accessToken = call.argument<String>("accessToken") ?: ""
-                    LocationTrackingService.updateToken(this, accessToken)
+                "clearTrackingCredentials" -> {
+                    LocationTrackingService.clearCredentials(this)
                     result.success(true)
                 }
+                "isTrackingAuthFailed" -> result.success(LocationTrackingService.isAuthFailed(this))
+                "manufacturer" -> result.success(Build.MANUFACTURER ?: "")
                 // ── Native location service ──
                 "startNativeTracking" -> {
                     val title = call.argument<String>("title") ?: "On duty"

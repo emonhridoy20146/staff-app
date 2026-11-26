@@ -39,6 +39,8 @@ class FakeFieldApi implements HttpClientAdapter {
 
   /// `POST /customers/{id}/refresh` calls (FR-M-063 tests).
   int customerRefreshCalls = 0;
+  /// Every answered request as `METHOD /path` (pull-to-refresh tests count `GET /sync/pull`).
+  final requestLog = <String>[];
   bool upgradeRequired = false;
   bool uploadsFail = false; // the storage host refuses photos (e.g. a misconfigured server)
   String trackingProvider = 'free'; // admin setting location.trackingProvider
@@ -99,6 +101,10 @@ class FakeFieldApi implements HttpClientAdapter {
   final storagePuts = <({String? contentType, String? contentLength, bool hadAuth, int bodyLength})>[];
   final locationPoints = <Json>[]; // tests
   final heartbeats = <Json>[]; // tests
+
+  /// Tokens issued by `POST /location/tracking-token` (1.49.0), oldest first; only the last one is live (each call
+  /// rotates). Tests read them.
+  final trackingTokenRequests = <String>[];
   var _password = 'demo1234';
   var _mustChange = true;
   var _cashOnHand = 820000; // ৳8,200 from yesterday
@@ -879,6 +885,7 @@ class FakeFieldApi implements HttpClientAdapter {
     final isStorage = o.uri.path.endsWith('/storage/o');
     final body = isStorage ? null : await _readBody(o, requestStream);
     final path = o.uri.path.replaceFirst(RegExp(r'^.*/api/v1'), '');
+    requestLog.add('${o.method} $path');
     if (upgradeRequired && path != '/meta/app-config') {
       return _json(426, _problem(426, 'UPGRADE_REQUIRED', 'Update required'));
     }
@@ -959,6 +966,11 @@ class FakeFieldApi implements HttpClientAdapter {
         final pts = ((body as Json)['points'] as List).cast<Json>();
         locationPoints.addAll(pts);
         return _json(200, {'accepted': pts.length, 'rejected': const <Json>[]});
+      case ('POST', '/location/tracking-token'):
+        // 1.49.0: no body; a points-only token bound to the session's device, valid about 24 h; rotates.
+        final token = 'trk_fake${trackingTokenRequests.length + 1}';
+        trackingTokenRequests.add(token);
+        return _json(200, {'token': token, 'expiresAt': clock.nowUtc().add(const Duration(hours: 24)).toIso8601String()});
       case ('POST', '/location/heartbeat'):
         heartbeats.add(body as Json);
         return _json(204, null);

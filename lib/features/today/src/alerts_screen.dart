@@ -7,6 +7,7 @@ import '../../../core/settings/ui_prefs.dart';
 import '../../../core/theme/status_colors.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/ui/common.dart';
+import '../../../core/ui/refreshable.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../customers/customers.dart';
 import 'team_activity.dart';
@@ -35,9 +36,11 @@ class AlertsScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: cs.surfaceContainerLowest,
       appBar: AppBar(title: Text(l.alertsTitle)),
-      body: alerts.isEmpty && team.isEmpty
-          ? EmptyState(icon: Icons.notifications_none_rounded, title: l.alertsEmptyTitle, body: l.alertsEmptyBody)
+      body: PullToRefresh(
+        child: alerts.isEmpty && team.isEmpty
+          ? PullableFill(alignment: Alignment.topCenter, child: EmptyState(icon: Icons.notifications_none_rounded, title: l.alertsEmptyTitle, body: l.alertsEmptyBody))
           : ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.fromLTRB(Space.screen, Space.s16, Space.screen, Space.s32),
               children: [
                 Card(
@@ -91,6 +94,7 @@ class AlertsScreen extends ConsumerWidget {
                 ],
               ],
             ),
+      ),
     );
   }
 }

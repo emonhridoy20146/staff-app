@@ -14,7 +14,7 @@ Design intent: **a tool you can use with one thumb, in sunlight, on a 5.5-inch �
 7. **Honest tracking.** When tracking is on, the user always sees it (status chip + persistent notification).
 8. **Forgiving.** Undo for non-money actions; drafts autosave; nothing lost when the app is killed.
 
-## 2. Shared design tokens v1.1 (identical to admin-web)
+## 2. Shared design tokens v1.2 (identical to admin-web)
 
 Canonical values: `admin-web/docs/03-design-guide.md §2`. Repeated here for the app team; **must stay identical**.
 
@@ -29,8 +29,11 @@ Canonical values: `admin-web/docs/03-design-guide.md §2`. Repeated here for the
 | Pay state dark (pin / fg / bg) | bad `#EF4444`/`#F87171`/`#2D1212` · missedMany `#F97316`/`#FB923C`/`#2E1A0C` · missedOne `#FACC15`/`#FDE047`/`#2E2A08` · dueToday `#60A5FA`/`#93C5FD`/`#0F1F3D` · onTrack `#4ADE80`/`#4ADE80`/`#0F2A1A` · paidOff `#94A3B8`/`#A9B1BF`/`#1A2030` |
 | Spacing (4-pt) | 0, 2, 4, 8, 12, 16, 20, 24, 32, 40, 48, 64 (dp) |
 | Radius | xs 4 · sm 6 · md 8 · lg 12 · xl 16 · xxl 28 (M3 large FAB/sheets) · full |
+| Shadow (v1.2) | sm `0 1px 2px rgb(16 24 40 / 0.06), 0 1px 3px rgb(16 24 40 / 0.08)` · md `0 4px 12px -2px rgb(16 24 40 / 0.08), 0 2px 4px -2px rgb(16 24 40 / 0.04)`; light theme only — dark mode has no shadow, depth comes from the surface steps and the 1 px border (`Shadows.of(brightness, level)`) |
 | Motion | fast 120 ms · base 200 ms · slow 300 ms; standard `cubic-bezier(.2,0,0,1)`; emphasized M3 curves for sheets |
 | Icons | Material Symbols Rounded, weight 400, fill 0 (fill 1 for selected nav) — mapping table in admin-web §2.7 |
+
+**Tokens v1.2 (2026-11-26, Home redesign, ADR-M41):** adds only the `shadow.sm` / `shadow.md` elevation group; no colour, spacing or radius changed. **admin-web shares tokens v1.x:** the canonical copy in `admin-web/docs/03-design-guide.md §2` and its `design-tokens.json` must take the same `shadow` group (web: `box-shadow` with the same values; dark: none) — follow-up for the admin-web session.
 
 **Pay state (v1.1, field-api `PayState`, ADR-035):** the colour of a customer's map pin and pay-state badge, worst first: bad = tagged bad or the full term is over with money left (glyph `!`); missedMany = 2+ installments missed (glyph = number missed); missedOne = one missed (glyph 1); dueToday = due today, nothing missed (dot); onTrack = everything due so far paid (check); paidOff = nothing left (check). The pin has the map-pin shape (round head, point on the spot), the pin colour as body with a 1.25 outline in the fg colour, a white face and the glyph in the fg colour; clusters take the worst state. admin-web uses these on its customer map since contract 1.14.0; the app's map still uses `status.*` glyph markers (§5.6) until it is moved to pay state.
 
@@ -120,28 +123,37 @@ Customer detail → Collect flow · Visit check-in (camera) · Promise sheet · 
 
 ## 5. Key screens (layout specs)
 
-### 5.1 Today
+### 5.1 Today (Home) — redesign 2026-11-26 (ADR-M41)
 ```
 ┌──────────────────────────────────────┐
-│ শুভ সকাল, রাকিব        ⟳ সিঙ্ক হয়েছে · 🔔 │  top app bar: greeting, sync chip, bell
-│ ● ডিউটিতে · ০৯:০৮ থেকে · বিরতি নিন      │  duty card (tap → break / work-out)
-├──────────────────────────────────────┤
-│ আজকের আদায়   ৳১৮,৫০০ / ৳৪০,০০০ ▓▓▓░░ │  progress card: collected vs target,
-│ ভিজিট ৭/২০ · হাতে নগদ ৳১২,০০০ (২৪%)   │  visits, cash meter (warning colour ≥80%)
-├──────────────────────────────────────┤
-│ ⚠ ২টি সমস্যা দেখুন                   │  problems banner (conflicts, rejected) — only if any
-│ ⇄ ১টি হস্তান্তর অপেক্ষমাণ              │  handover banner
-├──────────────────────────────────────┤
-│ প্রতিশ্রুতি আজ (৩)                     │  section headers with counts
-│ ┌ করিম উদ্দিন                ৳৩,৫০০ ┐│  line 1: name · only the amount at the far right
-│ │ গলাচিপা শাখা · INV-1042 · INV-1107 ││  line 2: branch · invoice numbers, full width
-│ │ [🚶][৳][🤝][📍]           [💳 আদায়] ││  line 3: 32 dp work marks · tonal Collect button (48 dp)
-│ │ ২ মাস ১৫ দিন বকেয়া                 ││  line 4: overdue, full width (overdue colour)
-│ └ 🤝 প্রতিশ্রুতি নিয়েছেন: করিম          ┘│  open promise: who took it (only when the name is known)
-│ আজ দেয় (৫) …                          │
-│ বকেয়া — কাছাকাছি (১২) …                 │  sorted by distance
+│ ▣ বরিশাল সদর        ● অনলাইন  📍  🔔 │  shell top bar (unchanged)
+│ শুভ সকাল, রাকিব              ⟳ সিঙ্ক  │  header: greeting headlineSmall w700 (wraps to 2 lines,
+│ 📅 ১৫ নভেম্বর ২০২৬                     │  never cut), date with icon; SyncChip right
+│ ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓ │  SUMMARY CARD ("hero"): 4 dp primary stripe on top,
+│ ┃ [▣] আজকের আদায়        বিস্তারিত ▾ ┃ │  surface, xl radius, border, shadow.md (light only)
+│ ┃ ৳৫,৫০০                              ┃ │  amount headlineMedium w700 tabular
+│ ┃ লক্ষ্য ৳৪০,০০০ · আমার টার্গেট         ┃ │  target line (wraps); "টার্গেট পূরণ" pill when met
+│ ┃ ▓▓░░░░░░░░░░░░░░░░░░    ১৩% পূরণ    ┃ │  10 dp bar + percent
+│ ┃ (open: visit target, cash/mobile/   ┃ │  details in an inner surfaceContainerLow panel
+│ ┃  visits, cash meter)                ┃ │
+│ ┠──────────────────────────────────┨ │
+│ ┃ [ ৫ প্রতিশ্রুতি ][ ৭ আজ দেয় ][ ১২ বকেয়া ]┃ │  KPI tiles in status colours (promised, dueToday,
+│ ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛ │  overdue); 0 = neutral; tap scrolls to the section
+│ ● ডিউটিতে · ১০:০০ থেকে       বিস্তারিত ▾ │  duty card (attendance feature)
+│ [ উপস্থিতি ✓ ][ আজকের কাজ ][ পারফরম্যান্স ] │  quick tiles: one height, surface card, 40 dp tonal icon
+│ ⚠ banners / feature cards (todayCards)  │  extension point; tracking health first (order −1)
+│ আজকের কাজের তালিকা                      │  titleLarge + one-line explanation
+│ [🤝] আজ প্রতিশ্রুতি (৫)                   │  section header: 32 dp toned icon square, titleMedium,
+│ ┌ work rows (CustomerWorkRow) ───────┐ │  toned count pill; rows in one surface card (shadow.sm)
+│ [📅] আজ দেয় (৭) …                       │
+│ [➤] বকেয়া · কাছের আগে (১২) … [আরও ৪ জন →]│  outlined "N more" button opens Customers → overdue
 └──────────────────────────────────────┘  no FAB (2026-11-23): each row has its own Collect
 ```
+- **Rhythm:** 16 dp screen margin, 12 dp between cards (`Space.cardGap`, collapsing when a feature card renders nothing), 32 dp before the work list, 20 dp above each section header.
+- **One card style:** surface, `Radii.xl`, 1 px `outlineVariant`, `Shadows.sm` (summary card `Shadows.md`); banners use `Radii.xl` too. Status colours appear only where they carry meaning (KPIs, section icons and counts, marks); the brand colour as a surface only in the summary stripe and icon chips.
+- **Loading:** three skeleton work rows (static `surfaceContainerHigh` bars shaped like name / amount / marks / Collect; no spinner, no shimmer animation; TalkBack reads "লোড হচ্ছে…"). **Empty / all done** and **error** sit in the same card style.
+- **Small phones (360 dp) and 1.3 text:** greeting, collected label, KPI labels and tile labels wrap to two lines instead of being cut; the target line wraps under the amount. Pull to refresh runs `syncNow` (AlwaysScrollable, also when the list is empty).
+- Screenshots: `test/screenshots/goldens/home/` (bn/en, light/dark, 360 dp, 1.3, full page, start of day); before: `docs/screenshots/home-before/`.
 
 **Home row (`CustomerWorkRow`, 2026-11-23, FR-M-067):** replaces `CustomerTile` on Today. No avatar, so lines 2 and 4 get the full width. Line 1 name (titleMedium, one line, …) and the outstanding (titleMedium tabular) at the far right. Line 2 bodySmall onSurfaceVariant: branch name and the open invoices' numbers (newest sale first, max 2 lines). Line 3 the four work marks at 32 dp with 20 dp icons (were 22/14) and, at the right end, `FilledButton.tonalIcon` "আদায়" with a payments icon, 48 dp high; it opens the collect screen for that customer. Line 4 "২ মাস ১৫ দিন বকেয়া" (bodyMedium w600, overdue fg) only when overdue. An open promise adds "প্রতিশ্রুতি নিয়েছেন: <name>" with a handshake icon in the promised colour; the name is the promise's `createdByName`, the user for a promise made on this phone, or a colleague's; unknown → no line. The extended "আদায়" FAB is gone.
 
@@ -183,6 +195,9 @@ Me tab card "আমার পারফরম্যান্স" (plus a "লি�
 ### 5.7 Me
 Attendance card (today timeline: in, breaks, out; buttons বিরতি শুরু/শেষ, কাজ শেষ); Cash card (on hand, limit meter, **Deposit everything** button, deposit history: amount, time, "N collections · mobile/bank ৳Y", badge জমা হয়েছে / ফোনে আছে / জমা হয়নি, older deposits keep posted / rejected / deleted by office; nothing says "waiting for verification"). Deposit sheet (FR-M-059): no amount field; the cash in hand as a fixed headlineSmall amount with words, mobile/bank amount with its count, "মোট N টি আদায়", a bodySmall hint that part deposits do not exist, destination segments, reference, a filled Deposit button; it opens an AlertDialog (savings icon) naming cash, mobile/bank and count, saying it goes to the ERP as payments (online now / as soon as the phone is online) and cannot be changed or deleted after; Cancel / জমা দিন. Cash-in-hand screen: an info banner while a deposit is unsent; a "মোবাইল / ব্যাংক আদায় (জমার সাথে যাবে)" section (method icon in its method colour) with the same Change / Delete menu. Problems: a refused deposit card (error icon, amount, reason in words, "the collections are back in your hand", text button আবার জমা দিন, no Retry); Handovers; Sync centre (queued counts by type, last sync, Problems list with explanations and "manager notified" state, Sync now); My performance (month); Settings (language, digits, theme, high contrast, text size preview, PIN/biometric, privacy notice, battery optimisation guide, about/version, logout).
 
+### 5.7b Background location set-up (2026-11-26, FR-M-078)
+Route `/location/background-setup`, from the Today tracking line and the Me tracking card ("ব্যাকগ্রাউন্ড সেটআপ"). An info banner says why (live location on duty even when the app is closed; phones stop apps to save battery; never off duty). Three `AppCard` steps: **1. battery optimisation** with a status pill (অনুমতি আছে success · অনুমতি নেই warning · জানা যায়নি neutral) and a filled "অনুমতি দিন" that opens Android's own dialog; **2. autostart and background** for the detected brand (`Build.MANUFACTURER`: Xiaomi/Redmi/POCO, Samsung, Oppo/Realme, Vivo/iQOO, Huawei/Honor, OnePlus, other) with its numbered steps, an outlined "সেটিংস খুলুন" deep link to the brand's screen (snackbar when none opens) and "অন্য ফোনের নিয়ম দেখুন" to the full guide; **3. right now**: running (success) / on duty but not running (danger) / reconnecting (warning) / off duty (neutral). Pull to read the phone again. The native notification shows a second line "লাইভ লোকেশন পাঠানো যাচ্ছে না। অ্যাপটি একবার খুলুন।" (amber) while the server refuses the tracking token.
+
 ### 5.8 Work-in / work-out
 Full-screen card: date, shift, GPS status, optional selfie (front camera), big button **কাজ শুরু**. Work-out shows end-of-day summary (collections by method, deposits, on hand, visits, promises created, unsynced items warning) → **কাজ শেষ**. Tracking state explained in one line.
 
@@ -198,6 +213,10 @@ Full-screen card: date, shift, GPS status, optional selfie (front camera), big b
 | `InvoiceKindLabel` | one chip per kind, radius 6, labelMedium, h-padding 8 / v-padding 2: installment on secondaryContainer / onSecondaryContainer, credit on tertiaryContainer / onTertiaryContainer, cash ("নগদ", contract 1.44.0; unknown kinds too) on primaryContainer / onPrimaryContainer; word for one invoice, counts for several (always counts with `counted`, the customer page) |
 | `AppBackButton` | `IconButton.filledTonal`, fixed 48 × 48 dp, `BackButtonIcon` at 28 dp, secondaryContainer / onSecondaryContainer, ink ripple (`InkRipple`, overlay onSecondaryContainer), 12 dp start inset; app bar `leadingWidth` 72; shown only when the route can pop |
 | `OnlineDot` | see §5.1b |
+| Home summary card / KPI tile | see §5.1 (2026-11-26); KPI tile: `Radii.lg`, status bg / fg, number titleLarge w700 tabular, label labelSmall (2 lines), ≥ 48 dp, TalkBack "<label>: <n> জন" |
+| Home section header | 32 dp toned icon square (`Radii.md`), titleMedium title, toned count pill (`Radii.full`); one semantics header "<title>, <n>" |
+| Tracking health line | `InfoBanner` first on Today while on duty and tracking is unhealthy: danger "not running", warning "reconnecting" / "battery saver"; tap → background set-up (FR-M-078) |
+| `RefreshIndicator` | every screen that shows synced or server data; scrollable uses `AlwaysScrollableScrollPhysics` (pull works on short and empty pages); triggers `syncNow` or the screen's online fetch (ADR-M42) |
 | `AmountKeypad` | 3×4 grid, keys 72 dp, haptic on press, backspace long-press clears |
 | `HoldToConfirmButton` | 56 dp, fills over 800 ms, cancel on release; accessible alternative: double-tap with TalkBack |
 | `BottomSheet` | M3 modal; radius 28; drag handle; max 90 % height |
@@ -207,7 +226,8 @@ Full-screen card: date, shift, GPS status, optional selfie (front camera), big b
 | `Snackbar` | for undo and confirmations ("নোট সংরক্ষিত · পূর্বাবস্থা") |
 
 ## 7. States & feedback
-- **Loading:** local DB makes most screens instant; network-only views (fresh balance refresh, route) show shimmer.
+- **Loading:** local DB makes most screens instant; Home shows static skeleton rows while its list loads; network-only views (fresh balance refresh, route) show shimmer.
+- **Refresh:** pull down on any data screen (ADR-M42); forms, the camera and local-only settings have none.
 - **Offline:** SyncChip "অফলাইন"; actions proceed; no blocking dialogs.
 - **Errors:** human message + what happens next; technical code under "বিস্তারিত".
 - **Haptics:** light on keypad, success pattern on saved collection, error buzz on validation.

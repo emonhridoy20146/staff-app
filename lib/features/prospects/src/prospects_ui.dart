@@ -10,6 +10,7 @@ import '../../../core/settings/ui_prefs.dart';
 import '../../../core/theme/status_colors.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/ui/common.dart';
+import '../../../core/ui/refreshable.dart';
 import '../../../core/ui/status_badge.dart';
 import '../../../l10n/app_localizations.dart';
 import 'prospects_data.dart';
@@ -88,14 +89,17 @@ class ProspectsScreen extends ConsumerWidget {
         icon: const Icon(Icons.person_add_alt_1_rounded),
         label: Text(l.prospectAdd),
       ),
-      body: rows.isEmpty
-          ? Center(child: EmptyState(icon: Icons.person_search_rounded, title: l.prospectsEmpty, body: l.prospectsEmptyBody))
+      body: PullToRefresh(
+        child: rows.isEmpty
+          ? PullableFill(child: EmptyState(icon: Icons.person_search_rounded, title: l.prospectsEmpty, body: l.prospectsEmptyBody))
           : ListView.separated(
+              physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.fromLTRB(Space.screen, Space.s8, Space.screen, 96),
               itemCount: rows.length,
               separatorBuilder: (_, _) => const SizedBox(height: Space.cardGap),
               itemBuilder: (_, i) => _ProspectCard(p: rows[i]),
             ),
+      ),
     );
   }
 }

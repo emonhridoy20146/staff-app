@@ -96,9 +96,10 @@ class InfoBanner extends StatelessWidget {
     };
     return Material(
       color: st.bg,
-      borderRadius: Radii.brLg,
+      // xl like the cards around it (Home redesign 2026-11-26), so banners and cards share one corner.
+      borderRadius: Radii.brXl,
       child: InkWell(
-        borderRadius: Radii.brLg,
+        borderRadius: Radii.brXl,
         onTap: onTap,
         child: ConstrainedBox(
           constraints: const BoxConstraints(minHeight: 56),

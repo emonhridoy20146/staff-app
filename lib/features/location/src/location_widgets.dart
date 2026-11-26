@@ -8,6 +8,8 @@ import '../../../core/theme/tokens.dart';
 import '../../../core/ui/common.dart';
 import '../../../l10n/app_localizations.dart';
 import 'location_tracker.dart';
+import 'tracking_health.dart';
+import 'tracking_setup_screen.dart';
 
 /// Today card: "Near (customer)? Record a visit" after a 5-minute dwell.
 class VisitSuggestionCard extends ConsumerWidget {
@@ -92,6 +94,15 @@ class TrackingStatusCard extends ConsumerWidget {
             const SizedBox(height: Space.s12),
             InfoBanner(icon: Icons.info_outline_rounded, tone: BannerTone.warning, text: l.trackingFallback),
           ],
+          // FR-M-078: the same health line as on Today, and the way to the background set-up.
+          if (ref.watch(trackingIssueProvider) != null) ...[const SizedBox(height: Space.s12), const TrackingHealthBanner()],
+          const SizedBox(height: Space.s12),
+          OutlinedButton.icon(
+            key: const Key('tracking-setup-entry'),
+            onPressed: () => context.push('/location/background-setup'),
+            icon: const Icon(Icons.settings_suggest_rounded),
+            label: Text(l.trackSetupEntry),
+          ),
         ],
       ),
     );

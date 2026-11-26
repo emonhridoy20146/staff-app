@@ -495,6 +495,34 @@ class AppLocalizationsEn extends AppLocalizations {
   String get todayAllDoneBody => 'No promises or dues left for today.';
 
   @override
+  String get homeKpiPromised => 'Promised';
+
+  @override
+  String get homeKpiDue => 'Due today';
+
+  @override
+  String get homeKpiOverdue => 'Overdue';
+
+  @override
+  String homeKpiLabel(String label, String count) {
+    return '$label: $count customers';
+  }
+
+  @override
+  String get homeWorkListTitle => 'Today\'s work list';
+
+  @override
+  String get homeWorkListBody => 'Promised, due today, then nearest overdue';
+
+  @override
+  String get homeLoading => 'Loading…';
+
+  @override
+  String homeTargetPct(String pct) {
+    return '$pct% done';
+  }
+
+  @override
   String todayCashWarning(String pct) {
     return 'Cash on hand is $pct% of your limit. Please deposit soon.';
   }
@@ -1662,6 +1690,87 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get oemGuideDone => 'Got it';
+
+  @override
+  String get trackNotifReauth =>
+      'Live location can\'t be sent. Please open the app once.';
+
+  @override
+  String get trackHealthOff =>
+      'You are on duty, but live location is not running. Tap to fix.';
+
+  @override
+  String get trackHealthAuth =>
+      'Live location was paused and is reconnecting. Keep the internet on.';
+
+  @override
+  String get trackHealthBattery =>
+      'Battery saver may stop live location. Tap to allow.';
+
+  @override
+  String get trackSetupTitle => 'Background location';
+
+  @override
+  String get trackSetupEntry => 'Background setup';
+
+  @override
+  String get trackSetupWhy =>
+      'On duty, the office sees your live location even when the app is closed. Many phones stop apps to save battery, so please allow the settings below. Location is never collected off duty.';
+
+  @override
+  String get trackSetupBatteryTitle => '1. Turn off battery optimisation';
+
+  @override
+  String get trackSetupBatteryBody =>
+      'Let the app run in the background so the phone does not stop it. On the next screen tap “Allow”.';
+
+  @override
+  String get trackSetupAllow => 'Allow';
+
+  @override
+  String get trackSetupAllowed => 'Allowed';
+
+  @override
+  String get trackSetupNotAllowed => 'Not allowed';
+
+  @override
+  String get trackSetupUnknown => 'Unknown';
+
+  @override
+  String get trackSetupAutostartTitle =>
+      '2. Allow autostart and background running';
+
+  @override
+  String trackSetupAutostartBody(String brand) {
+    return 'Your phone: $brand. Follow the steps below; “Open settings” goes straight to that screen where possible.';
+  }
+
+  @override
+  String get trackSetupOpenSettings => 'Open settings';
+
+  @override
+  String get trackSetupOpenFailed =>
+      'Could not open the settings. Please follow the steps by hand.';
+
+  @override
+  String get trackSetupAllBrands => 'Steps for other phones';
+
+  @override
+  String get trackSetupStatusTitle => '3. Right now';
+
+  @override
+  String get trackSetupRunning => 'Live location is running';
+
+  @override
+  String get trackSetupNotRunning =>
+      'On duty, but live location is not running';
+
+  @override
+  String get trackSetupOffDuty => 'Off duty — location is not collected';
+
+  @override
+  String get trackSetupAuthFailed =>
+      'The server is not taking location; it fixes itself while the app is open';
 
   @override
   String get oemGuideXiaomiName => 'Xiaomi / Redmi / POCO (MIUI)';

@@ -15,6 +15,7 @@ import '../../../../core/theme/status_colors.dart';
 import '../../../../core/theme/tokens.dart';
 import '../../../../core/ui/brand.dart';
 import '../../../../core/ui/common.dart';
+import '../../../../core/ui/refreshable.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../collection_providers.dart';
 import '../domain/collection_rules.dart';
@@ -193,15 +194,19 @@ class _ReceiptScreenState extends ConsumerState<ReceiptScreen> {
           : SafeArea(
               child: Column(children: [
                 Expanded(
-                  child: ListView(
-                    padding: const EdgeInsets.fromLTRB(Space.screen, Space.s16, Space.screen, Space.s16),
-                    children: [
-                      RepaintBoundary(key: _receiptKey, child: ReceiptCard(row: row)),
-                      if (row.receiptNo.contains('-OFF')) ...[
-                        const SizedBox(height: Space.s12),
-                        InfoBanner(icon: Icons.info_outline_rounded, text: l.collectOfflineReceipt),
+                  // Pull down: a sync brings the ERP posting state of this receipt.
+                  child: PullToRefresh(
+                    child: ListView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.fromLTRB(Space.screen, Space.s16, Space.screen, Space.s16),
+                      children: [
+                        RepaintBoundary(key: _receiptKey, child: ReceiptCard(row: row)),
+                        if (row.receiptNo.contains('-OFF')) ...[
+                          const SizedBox(height: Space.s12),
+                          InfoBanner(icon: Icons.info_outline_rounded, text: l.collectOfflineReceipt),
+                        ],
                       ],
-                    ],
+                    ),
                   ),
                 ),
                 Padding(
