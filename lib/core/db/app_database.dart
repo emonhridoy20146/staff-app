@@ -222,13 +222,18 @@ class AppDatabase extends _$AppDatabase {
   /// Rebuilds `customers.search_text` of every row from what the phone holds
   /// (names, code, phones incl. ones added here, address, every plan's invoice
   /// number). Schema 19 runs it once; it writes nothing but that column.
-  Future<void> reindexCustomerSearch() async {
+  /// [only] limits it to those customers (FR-CUS-023: a returned invoice
+  /// removed from a customer other than the one being pulled).
+  Future<void> reindexCustomerSearch({Iterable<String>? only}) async {
+    final ids = only?.toSet();
+    if (ids != null && ids.isEmpty) return;
     final invoices = <String, List<String>>{};
     for (final r in await customSelect('SELECT customer_id, invoice_no FROM plans WHERE invoice_no IS NOT NULL').get()) {
       invoices.putIfAbsent(r.read<String>('customer_id'), () => []).add(r.read<String>('invoice_no'));
     }
     final rows = await customSelect('SELECT server_id, name_bn, name_en, code, phones_json, address FROM customers').get();
     for (final r in rows) {
+      if (ids != null && !ids.contains(r.read<String>('server_id'))) continue;
       final id = r.read<String>('server_id');
       final text = customerSearchText(
         nameBn: r.read<String>('name_bn'),
