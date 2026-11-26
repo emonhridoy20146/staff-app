@@ -425,7 +425,8 @@ class LocationTrackingService : Service() {
         try {
             val request = Request.Builder()
                 .url("$apiBaseUrl/location/points")
-                .addHeader("Authorization", "Bearer $trackingToken")
+                // Contract 1.49.0 (field-api ADR-067): the tracking scheme, accepted only by this route.
+                .addHeader("Authorization", "Tracking $trackingToken")
                 .addHeader("Content-Type", "application/json")
                 .post(body.toString().toRequestBody("application/json".toMediaType()))
                 .build()
@@ -439,7 +440,8 @@ class LocationTrackingService : Service() {
 
             val code = response.code
             response.close()
-            // Refused token: points stay buffered (below) and the notification asks to open the app.
+            // Refused token (401 TRACKING_TOKEN_INVALID / _EXPIRED; never refreshed here): points stay buffered
+            // (below) and the notification asks to open the app, which issues a new one.
             if (code == 401 || code == 403) setAuthFailed(true)
             synchronized(this) {
                 val existing = file.readLines().filter { it.isNotBlank() }

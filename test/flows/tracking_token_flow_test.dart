@@ -52,9 +52,9 @@ void main() {
     await h.signIn();
     await workIn();
     expect(h.api.trackingTokenRequests, hasLength(1));
-    expect(h.api.trackingTokenRequests.single['deviceId'], isNotEmpty);
     final args = stored().last.arguments as Map;
-    expect(args['trackingToken'], startsWith('trk-'));
+    expect(args['trackingToken'], h.api.trackingTokenRequests.single);
+    expect(args['trackingToken'], startsWith('trk_'));
     expect(args.containsKey('accessToken'), isFalse);
     expect(args['expiresAtMs'], h.clock.nowUtc().add(const Duration(hours: 24)).millisecondsSinceEpoch);
     expect(args['reauthText'], isNotEmpty);
@@ -70,7 +70,7 @@ void main() {
     h.clock.advance(const Duration(hours: 13));
     await tracker().onAppResumed();
     expect(h.api.trackingTokenRequests, hasLength(2), reason: '11 h left');
-    expect((stored().last.arguments as Map)['trackingToken'], endsWith('-2'));
+    expect((stored().last.arguments as Map)['trackingToken'], endsWith('fake2'));
   });
 
   test('a refused token (native 401) is renewed at once on app open', () async {
@@ -87,8 +87,8 @@ void main() {
     h.clock.advance(const Duration(hours: 20));
     h.api.offline = true;
     await tracker().onAppResumed();
-    expect((await h.read(trackingTokenStoreProvider).read())!.token, endsWith('-1'));
-    expect((stored().last.arguments as Map)['trackingToken'], endsWith('-1'));
+    expect((await h.read(trackingTokenStoreProvider).read())!.token, endsWith('fake1'));
+    expect((stored().last.arguments as Map)['trackingToken'], endsWith('fake1'));
   });
 
   test('duty end clears the token on both sides and nothing is fetched off duty', () async {

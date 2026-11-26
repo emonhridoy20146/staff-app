@@ -83,6 +83,8 @@ Phases match `field-api/docs/09-progress.md`. Start each phase against the Prism
 | Customer page address: blank ERP address falls back to detailed address / area, else "no address" (FR-M-005) | ✅ 2026-11-23 unit test |
 | No reload every few minutes: sync and distance fix every 15 min, online only; resume syncs only when stale | ✅ 2026-11-23 |
 | Customer list in the Home row style with an arrow; compact collection card and duty card with a "বিস্তারিত" pill | ✅ 2026-11-23 flow tests; ☐ real phone check |
+| Home redesign: header, summary card with KPI tiles, one card style, toned section headers, skeleton loading; shadow tokens v1.2 (FR-M-004/005, ADR-M40) | ✅ 2026-11-26 widget tests + screenshots (bn/en, light/dark, 360 dp, 1.3); ☐ real phone check; ☐ admin-web to adopt `shadow` tokens |
+| Pull to refresh on every data screen, audit table, table-driven widget test (FR-M-078, ADR-M41) | ✅ 2026-11-26 widget test |
 **Acceptance:** M-E2…M-E7, M-E9, M-E10 green; manual device checklist (non-location sections) signed off on 4 OEM devices; pilot 5 staff × 2 weeks with zero lost/duplicate collections.
 
 ## Phase 2 — Location
@@ -97,7 +99,9 @@ LocationEngine spike (ADR-009) → duty-aware tracking, adaptive sampling, filte
 | Visit suggestion (5 min / 60 m) | ✅ flow test; Today card |
 | Tracking status card (Me) | ✅ screenshot |
 | Call logging (`contact_attempt`) | ✅ flow test |
-| OEM battery guide screen | ☐ |
+| OEM battery guide screen | ✅ screen; 2026-11-26 linked from the background set-up |
+| Closed-app tracking: native service uploads with a points-only tracking token, renewed on app open < 12 h, cleared at duty end / logout, 401 notice in the notification (FR-M-076, ADR-M39, contract 1.49.0) | ✅ 2026-11-26 flow tests (Dart side, channel mocked); ☐ Kotlin side on a real phone (45 min closed-app check, `07-test-plan §3`) |
+| Background set-up (battery optimisation, brand autostart with deep link) and on-duty health line on Today / Me (FR-M-077) | ✅ 2026-11-26 widget tests; ☐ deep links on Xiaomi, Oppo, Realme, Vivo, Samsung |
 | Battery level in heartbeat | ☐ blocked (`battery_plus` dependency conflict) |
 | Real-device checks (battery, OEM killing, reboot) | ☐ needs phones |
 | Places on the map: long-press add, labels, own edit, move request, offline (FR-M-063, contract 1.38.0) | ✅ flow + widget tests; ☐ real phone check |

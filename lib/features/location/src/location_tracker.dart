@@ -175,7 +175,7 @@ class LocationTracker {
       var t = await store.read();
       if (force || trackingTokenNeedsRenewal(t, _clock.nowUtc())) {
         try {
-          final r = await _ref.read(fieldApiProvider).trackingToken(deviceId: _ref.read(deviceIdentityProvider).deviceId);
+          final r = await _ref.read(fieldApiProvider).trackingToken();
           // Duty may have ended while the request was out: never leave a fresh token behind off duty.
           if (!_wantRunning) return;
           t = TrackingToken(token: r.token, expiresAt: r.expiresAt);

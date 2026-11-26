@@ -113,10 +113,12 @@ class FieldApi {
         (d) => (accepted: ((d as Json)['accepted'] as num?)?.toInt() ?? 0, nextSampling: d['nextSampling'] as Json?),
       );
 
-  /// Contract 1.49.0: a long-lived (about 24 h), points-only tracking token bound to this device. The native
-  /// location service uploads with it while the app is closed (the access token expires after 15 min).
-  Future<({String token, DateTime expiresAt})> trackingToken({required String deviceId}) => _call(
-        () => _dio.post<dynamic>('/location/tracking-token', data: {'deviceId': deviceId}),
+  /// Contract 1.49.0 (`issueTrackingToken`, field-api ADR-067): a long-lived (about 24 h), points-only tracking
+  /// token bound to this user, device and session, sent by the native service as `Authorization: Tracking <token>`
+  /// on POST /location/points while the app is closed (the access token expires after 15 min). No body; the
+  /// device comes from the session. Every call rotates: the previous token of this device stops at once.
+  Future<({String token, DateTime expiresAt})> trackingToken() => _call(
+        () => _dio.post<dynamic>('/location/tracking-token'),
         (d) => (token: (d as Json)['token'] as String, expiresAt: DateTime.parse(d['expiresAt'] as String).toUtc()),
       );
 
