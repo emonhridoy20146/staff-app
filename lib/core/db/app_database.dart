@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:drift/drift.dart';
 
+import '../text/search_text.dart';
 import 'tables.dart';
 
 export 'tables.dart';
@@ -53,7 +56,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 18;
+  int get schemaVersion => 19;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -206,11 +209,54 @@ class AppDatabase extends _$AppDatabase {
             if (!await _hasTable('request_comments')) await m.createTable(requestComments);
             await customStatement('CREATE INDEX IF NOT EXISTS idx_staff_requests_created ON staff_requests (created_at DESC)');
           }
+          // v19 (FR-M-076): customer search finds invoice numbers and numbers typed with spaces. No new column:
+          // search_text is rebuilt from the customers and plans tables already on the phone, offline. Only that
+          // one cached column changes; the outbox, collections, media and every other table are not touched.
+          if (from < 19) await reindexCustomerSearch();
         },
         beforeOpen: (details) async {
           await customStatement('PRAGMA foreign_keys = ON');
         },
       );
+
+  /// Rebuilds `customers.search_text` of every row from what the phone holds
+  /// (names, code, phones incl. ones added here, address, every plan's invoice
+  /// number). Schema 19 runs it once; it writes nothing but that column.
+  Future<void> reindexCustomerSearch() async {
+    final invoices = <String, List<String>>{};
+    for (final r in await customSelect('SELECT customer_id, invoice_no FROM plans WHERE invoice_no IS NOT NULL').get()) {
+      invoices.putIfAbsent(r.read<String>('customer_id'), () => []).add(r.read<String>('invoice_no'));
+    }
+    final rows = await customSelect('SELECT server_id, name_bn, name_en, code, phones_json, address FROM customers').get();
+    for (final r in rows) {
+      final id = r.read<String>('server_id');
+      final text = customerSearchText(
+        nameBn: r.read<String>('name_bn'),
+        nameEn: r.read<String?>('name_en'),
+        code: r.read<String>('code'),
+        phones: _storedPhoneNumbers(r.read<String>('phones_json')),
+        address: r.read<String?>('address'),
+        invoiceNos: invoices[id] ?? const [],
+      );
+      await customStatement('UPDATE customers SET search_text = ? WHERE server_id = ?', [text, id]);
+    }
+  }
+
+  /// The numbers in `customers.phones_json`: an ERP number is a plain string,
+  /// one added in the app is `{"n": number, ...}` (customers `domain/phones.dart`).
+  static List<String> _storedPhoneNumbers(String json) {
+    final Object? raw;
+    try {
+      raw = jsonDecode(json);
+    } on FormatException {
+      return const [];
+    }
+    if (raw is! List) return const [];
+    return [
+      for (final e in raw)
+        if (e is String && e.isNotEmpty) e else if (e is Map && e['n'] is String) e['n'] as String,
+    ];
+  }
 
   Future<bool> _hasTable(String name) async =>
       (await customSelect("SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?", variables: [Variable.withString(name)]).get()).isNotEmpty;

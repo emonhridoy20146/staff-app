@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+### Added (owner request 2026-11-26: find a customer by invoice or mobile number; FR-M-076, ADR-M39, schema 19)
+- **Customer search finds invoice numbers:** every invoice number of the customer's plans (all kinds, open or closed) is in `customers.search_text`, normalised like the rest, so "S-24052", "s24052", "24052" and "২৪০৫২" find the customer. A pull without `plans` keeps the numbers of the plans already on the phone; a pull with plans replaces them.
+- **Mobile numbers typed with spaces match:** "01712 345678", "0171-2345678" and "০১৭১২ ৩৪৫৬৭৮" find 01712345678. `search_text` now holds two lines, the normalised words and the same with no spaces; a query matches the words or, with its spaces removed, the space-free line. Built once when the row is written, so a keystroke over ~3000 customers is two `contains` per row. The collect customer picker uses the same match.
+- **Schema 19:** one migration step rebuilds `search_text` of every customer from the `customers` and `plans` tables already on the phone (names, code, ERP and added phone numbers, address, invoice numbers), offline. Only that column changes; outbox, collections, media queue and pending numbers are not touched. Migration test from 18 (and every older schema).
+- Search text helpers moved to `lib/core/text/search_text.dart` (`normalizeSearch`, `customerSearchText`, `addToSearchText`, `SearchQuery`), shared by the pull handler and the migration.
+- Search hint: "নাম, কোড, মোবাইল বা ইনভয়েস নম্বর" / "Name, code, mobile or invoice no.".
+- Tests: `test/features/customer_search_test.dart` (invoice with and without the dash, a closed plan's invoice, mobile with spaces, Bangla digits, plans kept / replaced, re-index of an old row keeping a pending number), `test/core/migration_test.dart`.
+
 ### Added (owner request 2026-11-24: staff requests, reports and complaints; FR-M-075, ADR-M38, contract 1.48.0, schema 18)
 - **New feature `requests`** (flag `module.requests`, permission `request.create`, registered in `lib/app/features.dart`): staff report, tell or ask the office in a traceable way.
   - **New request form** (Me → **আমার অনুরোধ** → "নতুন অনুরোধ", and **"অফিসকে জানান / Tell the office"** on the customer page with the customer filled in and removable): type (অনুরোধ, রিপোর্ট, জানানো, অভিযোগ), who it goes to as two clear choices — **"এরিয়া ম্যানেজারকে"** (`normal`) or **"সুপার অ্যাডমিনকে — খুব জরুরি"** (`important`) —, subject (≤ 160) and details (≤ 4000, sent as `body`), up to 5 **camera-only** photos (existing media queue, watermarked, kind `visit_photo` because 1.48.0 adds no request kind; no gallery). Errors in words; 48 dp targets.

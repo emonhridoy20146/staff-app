@@ -965,7 +965,7 @@ abstract class AppLocalizations {
   /// No description provided for @customersSearch.
   ///
   /// In en, this message translates to:
-  /// **'Search name, phone or code'**
+  /// **'Name, code, mobile or invoice no.'**
   String get customersSearch;
 
   /// No description provided for @filterAll.

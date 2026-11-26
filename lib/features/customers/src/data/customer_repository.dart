@@ -5,6 +5,7 @@ import 'package:drift/drift.dart';
 import '../../../../core/api/api_models.dart';
 import '../../../../core/db/app_database.dart';
 import '../../../../core/sync/sync_handlers.dart';
+import '../../../../core/text/search_text.dart';
 import '../domain/customer.dart';
 import '../domain/month_people.dart';
 import '../domain/phones.dart';
@@ -39,7 +40,23 @@ class CustomerPullHandler implements PullHandler {
     // 1.23.0 (FR-M-037): ERP numbers and added ones; a number typed on this phone and not yet sent stays in the list.
     final phoneList = keepPending(phonesFromServer(d), existing == null ? const [] : decodePhones(existing.phonesJson));
     final phones = [for (final p in phoneList) p.number];
-    final search = normalizeSearch([name.bn, name.en ?? '', d['code'] ?? '', ...phones, d['address'] ?? ''].join(' '));
+    // FR-M-076: every invoice number of the customer's plans (all kinds, open or closed). A payload without
+    // `plans` keeps the plans we have, so their numbers are read from the table.
+    final payloadPlans = (d['plans'] as List?)?.cast<Json>();
+    final invoiceNos = payloadPlans != null
+        ? [for (final p in payloadPlans) if (p['invoiceNo'] is String) p['invoiceNo'] as String]
+        : [
+            for (final p in await (db.select(db.plans)..where((t) => t.customerId.equals(id))).get())
+              if (p.invoiceNo != null) p.invoiceNo!,
+          ];
+    final search = customerSearchText(
+      nameBn: name.bn,
+      nameEn: name.en,
+      code: d['code'] as String?,
+      phones: phones,
+      address: d['address'] as String?,
+      invoiceNos: invoiceNos,
+    );
     final serverPending = (d['pendingFieldPoisha'] as num?)?.toInt() ?? 0;
 
     await db.into(db.customers).insertOnConflictUpdate(
@@ -91,7 +108,7 @@ class CustomerPullHandler implements PullHandler {
           ),
         );
 
-    final plans = (d['plans'] as List?)?.cast<Json>();
+    final plans = payloadPlans;
     if (plans != null) {
       final planIds = plans.map((p) => p['erpPlanId'] as String).toList();
       await (db.delete(db.scheduleLines)..where((t) => t.erpPlanId.isIn(planIds))).go();

@@ -20,6 +20,7 @@ Phases match `field-api/docs/09-progress.md`. Start each phase against the Prism
 | Item | Status |
 |---|---|
 | Customers (list, search, filters, detail, timeline), Map with pins and sheet | ✅ (tile cache not yet) |
+| Search by invoice number and by mobile typed with spaces / Bangla digits; one-time offline re-index (FR-M-076, schema 19) | ✅ 2026-11-26 unit and migration tests; ☐ real phone check on an upgraded install |
 | Map filters (multi-select) and Map/List toggle with distance | ✅ 0.5.0, flow test + screenshots |
 | Co-work: ask / accept / leave (online), Today and Me cards, joint-visit switch, partner visits, single/co-work split (contract 1.9.0) | ✅ 0.6.0, flow tests + screenshots; two-phone check pending |
 | Today screen with priorities and progress | ✅ |
