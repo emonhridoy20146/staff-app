@@ -9,6 +9,7 @@ import '../../../../core/ui/money_text.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../customer_providers.dart';
 import '../domain/customer.dart';
+import 'bad_tag_frame.dart';
 import 'invoice_kind_label.dart';
 import 'work_marks_row.dart';
 
@@ -20,6 +21,9 @@ import 'work_marks_row.dart';
 ///
 /// The Customers list uses the same row (owner request 2026-11-23) with [listDetails]: line 2 then also says the
 /// invoice type and how far away the customer is, and [action] is an arrow to the details page instead of Collect.
+///
+/// A customer with a bad tag (or whose latest visit says runaway) gets the frame and chip of its tag kind
+/// around these lines (FR-M-081, owner request 2026-11-26).
 class CustomerWorkRow extends ConsumerWidget {
   const CustomerWorkRow({super.key, required this.customer, this.onTap, this.action, this.listDetails = false});
   final Customer customer;
@@ -45,8 +49,9 @@ class CustomerWorkRow extends ConsumerWidget {
 
     return InkWell(
       onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(Space.s16, Space.s12, Space.s16, Space.s12),
+      // FR-M-081: a bad-tag customer's row sits in the frame of its tag kind, chip on the frame.
+      child: BadTagRowBody(
+        customer: customer,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [

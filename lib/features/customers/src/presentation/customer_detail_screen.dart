@@ -11,6 +11,7 @@ import '../../../../core/permissions/permission_service.dart';
 import '../../../../core/settings/ui_prefs.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/theme/status_colors.dart';
+import '../../../../core/theme/tag_colors.dart';
 import '../../../../core/theme/tokens.dart';
 import '../../../../core/time/clock.dart';
 import '../../../../core/ui/dashed_border.dart';
@@ -18,18 +19,21 @@ import '../../../../core/ui/back_button.dart';
 import '../../../../core/ui/common.dart';
 import '../../../../core/ui/money_text.dart';
 import '../../../../core/ui/status_badge.dart';
+import '../../../../core/ui/tag_mark.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../contact_attempts.dart';
 import '../customer_refresh.dart';
 import '../pin_correction.dart';
 import '../customer_providers.dart';
 import '../data/customer_repository.dart';
+import '../domain/bad_tag.dart';
 import '../domain/customer.dart';
 import '../domain/month_people.dart';
 import '../domain/phones.dart';
 import '../domain/schedule.dart';
 import '../domain/work_marks.dart';
 import '../phone_numbers.dart';
+import 'bad_tag_frame.dart';
 import 'invoice_kind_label.dart';
 
 Future<void> launchCall(String phone) => launchUrl(Uri(scheme: 'tel', path: phone));
@@ -152,6 +156,7 @@ class _DetailState extends ConsumerState<_Detail> {
               const SizedBox(height: Space.cardGap),
               _MonthCard(customer: customer),
               if (customer.guarantor != null) ...[const SizedBox(height: Space.cardGap), _GuarantorCard(customer: customer)],
+              if (customer.badTag?.source == BadTagSource.visit) ...[const SizedBox(height: Space.cardGap), _RunawayVisitCard(customer: customer)],
               if (customer.tagged || customer.row.badSuggested) ...[const SizedBox(height: Space.cardGap), _TagCard(customer: customer)],
               if (customer.row.openPromiseDate != null) ...[const SizedBox(height: Space.cardGap), _PromiseCard(customer: customer)],
               const SizedBox(height: Space.cardGap),
@@ -294,13 +299,13 @@ class _Header extends ConsumerWidget {
     final f = ref.watch(fmtProvider);
     final today = ref.watch(todayProvider);
     final phones = customer.phoneList;
-    final badges = customer.badges(today);
+    // FR-M-081: a bad-tag customer's header sits in the frame of its tag kind; the frame's chip says what the
+    // plain "tagged" badge said.
+    final bad = customer.badTag;
+    final badges = [for (final b in customer.badges(today)) if (bad == null || b != AppStatus.tagged) b];
     final access = ref.watch(accessProvider);
     final canPropose = access.flag('module.customers') && access.can(Perm.customerLocationPropose);
-    return Container(
-      color: cs.surfaceContainer,
-      padding: const EdgeInsets.fromLTRB(Space.screen, Space.s4, Space.screen, Space.s20),
-      child: Column(
+    final body = Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // FR-M-066: the open invoices by type at the right of the name ("১ কিস্তি · ২ বাকি").
@@ -395,6 +400,19 @@ class _Header extends ConsumerWidget {
           ),
           PinProposalStatus(customerId: customer.id),
         ],
+      );
+    if (bad == null) {
+      return Container(color: cs.surfaceContainer, padding: const EdgeInsets.fromLTRB(Space.screen, Space.s4, Space.screen, Space.s20), child: body);
+    }
+    return Container(
+      key: const Key('detail-header-framed'),
+      color: cs.surfaceContainer,
+      padding: const EdgeInsets.only(bottom: Space.s8),
+      child: TagFrame(
+        kind: bad.kind,
+        radius: Radii.lg,
+        semanticsLabel: badTagSemantics(l, bad),
+        child: Padding(padding: const EdgeInsets.fromLTRB(Space.s8, Space.s8, Space.s8, Space.s12), child: body),
       ),
     );
   }
@@ -603,19 +621,40 @@ class _TagCard extends ConsumerWidget {
     final t = Theme.of(context).textTheme;
     final f = ref.watch(fmtProvider);
     if (customer.tagged) {
-      final st = context.statusColors.of(AppStatus.tagged);
       final info = customer.row.tagReason == null ? const <String, dynamic>{} : jsonDecode(customer.row.tagReason!) as Map<String, dynamic>;
+      final by = l.detailTaggedBy((info['setBy'] as String?) ?? '—', (info['reason'] as String?) ?? '');
+      // FR-M-081: a bad or legal tag is shown in its kind's colours with the reason and the level in words;
+      // a watch tag keeps the plain tagged look.
+      final kind = tagKindOf(state: customer.row.tagState, severity: customer.row.tagSeverity, reasonCode: customer.row.tagReasonCode);
+      if (kind == null) {
+        final st = context.statusColors.of(AppStatus.tagged);
+        return Container(
+          padding: const EdgeInsets.all(Space.s16),
+          decoration: BoxDecoration(color: st.bg, borderRadius: Radii.brXl),
+          child: Row(children: [
+            Icon(Icons.flag_rounded, color: st.fg),
+            const SizedBox(width: Space.s12),
+            Expanded(child: Text(by, style: t.bodyMedium!.copyWith(color: st.fg, fontWeight: FontWeight.w600))),
+          ]),
+        );
+      }
+      final st = context.tagColors.of(kind);
+      final reason = tagKindForReason(customer.row.tagReasonCode);
+      final level = customer.row.tagSeverity == 'legal' ? l.tagSeverityLegal : l.tagSeverityBad;
       return Container(
+        key: const Key('detail-tag-card'),
         padding: const EdgeInsets.all(Space.s16),
-        decoration: BoxDecoration(color: st.bg, borderRadius: Radii.brXl),
-        child: Row(children: [
-          Icon(Icons.flag_rounded, color: st.fg),
+        decoration: BoxDecoration(color: st.bg, borderRadius: Radii.brXl, border: Border.all(color: st.fg, width: TagFrame.strokeOf(context, kind))),
+        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Icon(tagKindIcon(kind), color: st.fg),
           const SizedBox(width: Space.s12),
           Expanded(
-            child: Text(
-              l.detailTaggedBy((info['setBy'] as String?) ?? '—', (info['reason'] as String?) ?? ''),
-              style: t.bodyMedium!.copyWith(color: st.fg, fontWeight: FontWeight.w600),
-            ),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              // "দীর্ঘদিন বকেয়া · খারাপ"; a tag with no known reason says only its level.
+              Text(reason == TagKind.other ? level : '${tagKindLabel(l, reason)} · $level', style: t.titleSmall!.copyWith(color: st.fg)),
+              const SizedBox(height: Space.s2),
+              Text(by, style: t.bodyMedium!.copyWith(color: st.fg)),
+            ]),
           ),
         ]),
       );
@@ -648,6 +687,33 @@ class _TagCard extends ConsumerWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// The latest visit says runaway (FR-M-081): why the header carries the পলাতক frame without (or besides) a tag.
+class _RunawayVisitCard extends ConsumerWidget {
+  const _RunawayVisitCard({required this.customer});
+  final Customer customer;
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context);
+    final st = context.tagColors.of(TagKind.absconded);
+    final at = customer.lastVisit?.at;
+    return Container(
+      key: const Key('detail-runaway-visit'),
+      padding: const EdgeInsets.all(Space.s16),
+      decoration: BoxDecoration(color: st.bg, borderRadius: Radii.brXl, border: Border.all(color: st.fg, width: TagFrame.strokeOf(context, TagKind.absconded))),
+      child: Row(children: [
+        Icon(tagKindIcon(TagKind.absconded), color: st.fg),
+        const SizedBox(width: Space.s12),
+        Expanded(
+          child: Text(
+            l.detailRunawayVisit(at == null ? '—' : ref.watch(fmtProvider).dateTime(at.toUtc())),
+            style: Theme.of(context).textTheme.bodyMedium!.copyWith(color: st.fg, fontWeight: FontWeight.w600),
+          ),
+        ),
+      ]),
     );
   }
 }

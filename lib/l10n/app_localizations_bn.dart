@@ -4369,4 +4369,47 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get requestErrNoteLong => 'কারণ অনেক লম্বা (সর্বোচ্চ ১০০০ অক্ষর)';
+
+  @override
+  String get tagKindAbsconded => 'পলাতক';
+
+  @override
+  String get tagKindLegal => 'আইনি ব্যবস্থা';
+
+  @override
+  String get tagKindRefused => 'দিতে অস্বীকার';
+
+  @override
+  String get tagKindOther => 'খারাপ ট্যাগ';
+
+  @override
+  String get tagKindFraud => 'প্রতারণার সন্দেহ';
+
+  @override
+  String get tagKindBrokenPromise => 'বারবার কথা রাখেননি';
+
+  @override
+  String get tagKindPlanEnded => 'দীর্ঘদিন বকেয়া';
+
+  @override
+  String tagA11y(String kind) {
+    return 'খারাপ ট্যাগ: $kind';
+  }
+
+  @override
+  String tagVisitA11y(String kind) {
+    return 'শেষ ভিজিটে $kind';
+  }
+
+  @override
+  String get tagRowPreview => 'গ্রাহকের সারিতে এভাবে দেখাবে';
+
+  @override
+  String get tagWatchPreview =>
+      'নজরে রাখার চিহ্ন: তালিকায় শুধু \"চিহ্নিত\" দেখাবে, রঙিন ফ্রেম নয়।';
+
+  @override
+  String detailRunawayVisit(String when) {
+    return 'শেষ ভিজিটে পলাতক লেখা হয়েছে · $when';
+  }
 }

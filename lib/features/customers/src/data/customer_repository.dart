@@ -94,6 +94,11 @@ class CustomerPullHandler implements PullHandler {
             tagState: Value((tag['state'] as String?) ?? 'none'),
             tagSeverity: Value(tag['severity'] as String?),
             tagReason: Value(tag['reason'] == null ? null : jsonEncode({'reason': tag['reason'], 'setBy': tag['setBy'], 'setAt': tag['setAt']})),
+            // FR-M-081: the reason code gives the bad tag its colour. A payload that leaves it out for a tag that
+            // is still set keeps the code we have.
+            tagReasonCode: Value(tag['reasonCode'] is String
+                ? tag['reasonCode'] as String
+                : (tag['state'] == 'tagged' && existing?.tagState == 'tagged' ? existing?.tagReasonCode : null)),
             lastVisitAt: Value(d['lastVisitAt'] == null ? existing?.lastVisitAt : DateTime.parse(d['lastVisitAt'] as String).toUtc()),
             openPromiseId: Value(promise?['id'] as String?),
             openPromiseDate: Value(promise?['promisedDate'] as String?),
@@ -289,10 +294,16 @@ class CustomerRepository {
         "(SELECT COUNT(*) FROM plans p WHERE $_open AND p.kind = 'credit') AS open_credit, "
         '(SELECT COUNT(*) FROM plans p WHERE $_cash) AS open_cash, '
         "(SELECT GROUP_CONCAT(invoice_no, char(31)) FROM (SELECT p.invoice_no FROM plans p WHERE $_open AND p.invoice_no IS NOT NULL AND p.invoice_no != '' "
-        'ORDER BY p.sale_date DESC, p.invoice_no DESC)) AS open_invoice_nos '
+        'ORDER BY p.sale_date DESC, p.invoice_no DESC)) AS open_invoice_nos, '
+        // FR-M-081: the newest visit the phone holds, mine (visits) and a colleague's (colleague_activities),
+        // each through its (customer, time DESC) index. Read only; those tables belong to the visits feature.
+        '(SELECT v.outcome FROM visits v WHERE v.customer_id = c.server_id ORDER BY v.check_in_at DESC LIMIT 1) AS own_visit_outcome, '
+        '(SELECT v.check_in_at FROM visits v WHERE v.customer_id = c.server_id ORDER BY v.check_in_at DESC LIMIT 1) AS own_visit_at, '
+        "(SELECT a.outcome FROM colleague_activities a WHERE a.customer_id = c.server_id AND a.kind = 'visit' ORDER BY a.at DESC LIMIT 1) AS colleague_visit_outcome, "
+        "(SELECT a.at FROM colleague_activities a WHERE a.customer_id = c.server_id AND a.kind = 'visit' ORDER BY a.at DESC LIMIT 1) AS colleague_visit_at "
         'FROM customers c $tail',
         variables: vars,
-        readsFrom: {_db.customers, _db.plans},
+        readsFrom: {_db.customers, _db.plans, _db.visits, _db.colleagueActivities},
       );
 
   Customer _customerOf(QueryRow r) {
@@ -305,8 +316,14 @@ class CustomerRepository {
         cash: r.read<int>('open_cash'),
       ),
       invoiceNos: nos == null || nos.isEmpty ? const [] : nos.split(String.fromCharCode(31)),
+      lastVisit: latestVisit(
+        own: _visit(r.readNullable<String>('own_visit_outcome'), r.readNullable<DateTime>('own_visit_at')),
+        colleague: _visit(r.readNullable<String>('colleague_visit_outcome'), r.readNullable<DateTime>('colleague_visit_at')),
+      ),
     );
   }
+
+  static LastVisit? _visit(String? outcome, DateTime? at) => at == null ? null : (outcome: outcome ?? 'other', at: at);
 
   /// Who made the open promise of each customer that has one (Home row "promised by", FR-M-067): the
   /// promise's `createdByName` (contract 1.31.0; null on the phone means the user made it, shown as [myName]),
@@ -445,8 +462,8 @@ class CustomerRepository {
         CustomersCompanion(openPromiseId: Value(id), openPromiseDate: Value(date), openPromisePoisha: Value(amountPoisha)),
       );
 
-  Future<void> applyLocalTag(String customerId, {required String state, String? severity, String? reasonJson}) =>
+  Future<void> applyLocalTag(String customerId, {required String state, String? severity, String? reasonCode, String? reasonJson}) =>
       (_db.update(_db.customers)..where((t) => t.serverId.equals(customerId))).write(
-        CustomersCompanion(tagState: Value(state), tagSeverity: Value(severity), tagReason: Value(reasonJson)),
+        CustomersCompanion(tagState: Value(state), tagSeverity: Value(severity), tagReasonCode: Value(reasonCode), tagReason: Value(reasonJson)),
       );
 }

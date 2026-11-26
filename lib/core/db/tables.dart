@@ -57,6 +57,10 @@ class Customers extends Table {
   // v16 (contract 1.44.0, FR-M-068): the server's `CustomerActivity` as sent (who visited, paid and
   // promised this month), plus `lastVisitByName` of the list row. Null until a 1.44.0 server sends it.
   TextColumn get activityJson => text().nullable()();
+  // v20 (FR-M-081): the reason code of the tag as the contract sends it (`Tag.reasonCode`: absconded,
+  // refused_to_pay, fraud_suspected, repeated_broken_promise, plan_ended_unpaid, other; unknown kept as sent),
+  // so each bad-tag reason has its own colour. Null = not known yet (shown in the generic bad colour).
+  TextColumn get tagReasonCode => text().nullable()();
 
   @override
   Set<Column> get primaryKey => {serverId};

@@ -4,14 +4,27 @@ import '../../../../core/db/app_database.dart';
 import '../../../../core/location/location_engine.dart';
 import '../../../../core/text/search_text.dart';
 import '../../../../core/theme/status_colors.dart';
+import 'bad_tag.dart';
 import 'phones.dart';
 
 export '../../../../core/text/search_text.dart' show normalizeSearch, SearchQuery;
 
+/// The newest visit to a customer that the phone holds (the user's own or a colleague's): its outcome and when.
+typedef LastVisit = ({String outcome, DateTime at});
+
+/// The later of the user's own newest visit and a colleague's.
+LastVisit? latestVisit({LastVisit? own, LastVisit? colleague}) {
+  if (own == null || colleague == null) return own ?? colleague;
+  return colleague.at.isAfter(own.at) ? colleague : own;
+}
+
 /// Read model of a customer for lists, map and Today.
 class Customer {
-  Customer(this.row, {this.distanceM, this.kinds = InvoiceKinds.none, this.invoiceNos = const []});
+  Customer(this.row, {this.distanceM, this.kinds = InvoiceKinds.none, this.invoiceNos = const [], this.lastVisit});
   final CustomerRow row;
+
+  /// The newest visit on the phone (FR-M-081: a latest visit that says runaway marks the customer).
+  final LastVisit? lastVisit;
 
   /// Distance from the current fix (null when unknown / no pin).
   final int? distanceM;
@@ -42,6 +55,17 @@ class Customer {
   List<CustomerPhone> get phoneList => decodePhones(row.phonesJson);
   List<String> get phones => [for (final p in phoneList) p.number];
   bool get tagged => row.tagState == 'tagged';
+
+  /// The bad mark of this customer, or null (FR-M-081): a set tag with severity bad or legal, by its reason,
+  /// or a latest visit that says runaway. The rows draw their frame and chip from it.
+  late final BadTag? badTag = badTagOf(
+    tagState: row.tagState,
+    tagSeverity: row.tagSeverity,
+    tagReasonCode: row.tagReasonCode,
+    lastVisitOutcome: lastVisit?.outcome,
+    lastVisitAt: lastVisit?.at,
+    lastContactAt: row.lastVisitAt,
+  );
 
   /// The guarantor from the ERP (name and phone), or null when the ERP has
   /// neither. Kept on the phone with the customer, so it shows offline.
@@ -77,7 +101,7 @@ class Customer {
   /// Someone else's customer in the same branch (staff see the whole branch since 1.19.0).
   bool isOthers(String? myUserId) => myUserId != null && row.assigneeId != null && row.assigneeId != myUserId;
 
-  Customer withDistance(int? d) => Customer(row, distanceM: d, kinds: kinds, invoiceNos: invoiceNos);
+  Customer withDistance(int? d) => Customer(row, distanceM: d, kinds: kinds, invoiceNos: invoiceNos, lastVisit: lastVisit);
 
   /// Badges in display order (max 2 shown in a tile).
   List<AppStatus> badges(String today) => [

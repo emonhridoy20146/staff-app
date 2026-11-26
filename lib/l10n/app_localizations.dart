@@ -7663,6 +7663,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The reason is too long (at most 1000 letters)'**
   String get requestErrNoteLong;
+
+  /// No description provided for @tagKindAbsconded.
+  ///
+  /// In en, this message translates to:
+  /// **'Runaway'**
+  String get tagKindAbsconded;
+
+  /// No description provided for @tagKindLegal.
+  ///
+  /// In en, this message translates to:
+  /// **'Legal action'**
+  String get tagKindLegal;
+
+  /// No description provided for @tagKindRefused.
+  ///
+  /// In en, this message translates to:
+  /// **'Refuses to pay'**
+  String get tagKindRefused;
+
+  /// No description provided for @tagKindOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Bad tag'**
+  String get tagKindOther;
+
+  /// No description provided for @tagKindFraud.
+  ///
+  /// In en, this message translates to:
+  /// **'Fraud suspected'**
+  String get tagKindFraud;
+
+  /// No description provided for @tagKindBrokenPromise.
+  ///
+  /// In en, this message translates to:
+  /// **'Broken promises'**
+  String get tagKindBrokenPromise;
+
+  /// No description provided for @tagKindPlanEnded.
+  ///
+  /// In en, this message translates to:
+  /// **'Long overdue'**
+  String get tagKindPlanEnded;
+
+  /// No description provided for @tagA11y.
+  ///
+  /// In en, this message translates to:
+  /// **'Bad tag: {kind}'**
+  String tagA11y(String kind);
+
+  /// No description provided for @tagVisitA11y.
+  ///
+  /// In en, this message translates to:
+  /// **'Last visit: {kind}'**
+  String tagVisitA11y(String kind);
+
+  /// No description provided for @tagRowPreview.
+  ///
+  /// In en, this message translates to:
+  /// **'How the customer\'s row will look'**
+  String get tagRowPreview;
+
+  /// No description provided for @tagWatchPreview.
+  ///
+  /// In en, this message translates to:
+  /// **'Watch only: the list shows \"Tagged\", without a coloured frame.'**
+  String get tagWatchPreview;
+
+  /// No description provided for @detailRunawayVisit.
+  ///
+  /// In en, this message translates to:
+  /// **'The last visit says runaway · {when}'**
+  String detailRunawayVisit(String when);
 }
 
 class _AppLocalizationsDelegate

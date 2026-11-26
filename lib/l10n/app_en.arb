@@ -2532,5 +2532,20 @@
     "placeholders": { "code": { "type": "String" } }
   },
   "requestErrNote": "Write the reason",
-  "requestErrNoteLong": "The reason is too long (at most 1000 letters)"
+  "requestErrNoteLong": "The reason is too long (at most 1000 letters)",
+  "tagKindAbsconded": "Runaway",
+  "tagKindLegal": "Legal action",
+  "tagKindRefused": "Refuses to pay",
+  "tagKindOther": "Bad tag",
+  "tagKindFraud": "Fraud suspected",
+  "tagKindBrokenPromise": "Broken promises",
+  "tagKindPlanEnded": "Long overdue",
+  "tagA11y": "Bad tag: {kind}",
+  "@tagA11y": {"placeholders": {"kind": {"type": "String"}}},
+  "tagVisitA11y": "Last visit: {kind}",
+  "@tagVisitA11y": {"placeholders": {"kind": {"type": "String"}}},
+  "tagRowPreview": "How the customer's row will look",
+  "tagWatchPreview": "Watch only: the list shows \"Tagged\", without a coloured frame.",
+  "detailRunawayVisit": "The last visit says runaway · {when}",
+  "@detailRunawayVisit": {"placeholders": {"when": {"type": "String"}}}
 }

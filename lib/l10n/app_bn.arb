@@ -1288,5 +1288,17 @@
   "requestReopenOffline": "ইন্টারনেট নেই। নেট পেলে আবার চেষ্টা করুন।",
   "requestReopenFailed": "আবার খোলা যায়নি: {code}",
   "requestErrNote": "কারণ লিখুন",
-  "requestErrNoteLong": "কারণ অনেক লম্বা (সর্বোচ্চ ১০০০ অক্ষর)"
+  "requestErrNoteLong": "কারণ অনেক লম্বা (সর্বোচ্চ ১০০০ অক্ষর)",
+  "tagKindAbsconded": "পলাতক",
+  "tagKindLegal": "আইনি ব্যবস্থা",
+  "tagKindRefused": "দিতে অস্বীকার",
+  "tagKindOther": "খারাপ ট্যাগ",
+  "tagKindFraud": "প্রতারণার সন্দেহ",
+  "tagKindBrokenPromise": "বারবার কথা রাখেননি",
+  "tagKindPlanEnded": "দীর্ঘদিন বকেয়া",
+  "tagA11y": "খারাপ ট্যাগ: {kind}",
+  "tagVisitA11y": "শেষ ভিজিটে {kind}",
+  "tagRowPreview": "গ্রাহকের সারিতে এভাবে দেখাবে",
+  "tagWatchPreview": "নজরে রাখার চিহ্ন: তালিকায় শুধু \"চিহ্নিত\" দেখাবে, রঙিন ফ্রেম নয়।",
+  "detailRunawayVisit": "শেষ ভিজিটে পলাতক লেখা হয়েছে · {when}"
 }

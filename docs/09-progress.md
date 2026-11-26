@@ -22,6 +22,7 @@ Phases match `field-api/docs/09-progress.md`. Start each phase against the Prism
 | Customers (list, search, filters, detail, timeline), Map with pins and sheet | ✅ (tile cache not yet) |
 | Search by invoice number and by mobile typed with spaces / Bangla digits; one-time offline re-index (FR-M-076, schema 19) | ✅ 2026-11-26 unit and migration tests; ☐ real phone check on an upgraded install |
 | Returned invoices hidden: deleted on pull from `returnedPlanIds`, customer and unsynced work kept, search text rebuilt (FR-M-080, contract 1.50.0) | ✅ 2026-11-26 unit and flow tests |
+| Bad-tag customers framed by reason colour on every customer row, the customer page header and the tag sheet; runaway visits shown the same way; tokens v1.3 (FR-M-081, ADR-M44, schema 20) | ◐ 2026-11-26 unit, migration and widget tests; ☐ goldens not re-rendered; ☐ the rest of the same owner request is not started: Home filters, 3 × 3 quick-action grid, Home and Settings v2 (plan in `docs/design/home-settings-v2.md` §5–§7); ☐ real phone check |
 | Map filters (multi-select) and Map/List toggle with distance | ✅ 0.5.0, flow test + screenshots |
 | Co-work: ask / accept / leave (online), Today and Me cards, joint-visit switch, partner visits, single/co-work split (contract 1.9.0) | ✅ 0.6.0, flow tests + screenshots; two-phone check pending |
 | Today screen with priorities and progress | ✅ |

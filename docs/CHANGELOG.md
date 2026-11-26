@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+### Added (owner request 2026-11-26: bad-tag customers stand out; FR-M-081, ADR-M44, tokens v1.3, schema 20) — first part of the request; Home filters, the quick-action grid and Settings v2 are planned in `docs/design/home-settings-v2.md` and not built yet
+- **Frame and chip by tag reason:** a customer whose tag is set with severity bad or legal gets a frame in the reason's colour with an icon-and-word chip on the frame, on Home rows, the Customers list and its search results, the Collect picker, the Map list and sheets, and the customer page header. Kinds: পলাতক / absconded (strongest: 2 dp, filled chip), আইনি ব্যবস্থা / legal severity, দিতে অস্বীকার, প্রতারণার সন্দেহ, বারবার কথা রাখেননি, দীর্ঘদিন বকেয়া, and খারাপ ট্যাগ for `other` or a reason code the app does not know. A missing severity counts as bad; a `watch` tag keeps the plain badge.
+- **Runaway visits:** a customer whose latest visit on the phone says `runaway` (own or a colleague's), with no later visit or collection, is shown like absconded; the customer page says why.
+- **Tag sheet:** each reason is a 56 dp option with its swatch and colour; a live line previews the chip the row will get for the chosen level and reason; the reason code is saved with the tag at once.
+- **Tokens v1.3:** `status.tag.*` (7 kinds) and `action.*` (5 tones, for the coming Home grid) in `core/theme/tag_colors.dart`, `docs/design-tokens.json` and design guide §2; new `test/core/theme/tokens_test.dart` compares every Dart token with the JSON and checks AA contrast in light, high-contrast and dark. admin-web needs the same two groups.
+- **Schema 20:** `customers.tag_reason_code` (nullable). The pull stores `Tag.reasonCode`; the migration fills tags this phone set from its own `tag_events`, offline; nothing unsynced is touched. Tags set by others show the generic colour until that customer is next sent (ADR-M44, open point).
+- The customers query also reads each customer's newest visit (own and colleagues', indexed, read only).
+- Design plan for the whole request: `docs/design/home-settings-v2.md`.
+- Tests: `test/features/bad_tag_test.dart` (rule), `test/core/migration_test.dart` (19 → 20), `test/flows/bad_tag_rows_test.dart` (rows, header, tag sheet, saved code), `test/core/theme/tokens_test.dart`. Goldens are not re-rendered yet.
+
 ### Changed (owner request 2026-11-26: invoices returned in the ERP are not shown; FR-M-080, master FR-CUS-023, ADR-M43, contract 1.50.0)
 - **Contract 1.50.0** pinned (merged from `claude/contract-1-50`): returned invoices are left out of `plans`, invoice counts, search and the sync `customer` item; new `CustomerDetail.returnedPlanIds` lists the ids a device should delete.
 - **Customer pull** (pull and bootstrap): plans whose `erpPlanId` is in `returnedPlanIds` are deleted with their schedule lines, and the customer's `search_text` is rebuilt so the invoice number no longer finds them (also for another customer that held such a plan). From a ≥1.50 server (`returnedPlanIds` present) `plans: []` clears the stored plans; an older server's pull with no plans (missing or empty) keeps them as before. A replacing pull also removes the schedule lines of plans no longer in the list.

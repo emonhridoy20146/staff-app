@@ -4400,4 +4400,47 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get requestErrNoteLong =>
       'The reason is too long (at most 1000 letters)';
+
+  @override
+  String get tagKindAbsconded => 'Runaway';
+
+  @override
+  String get tagKindLegal => 'Legal action';
+
+  @override
+  String get tagKindRefused => 'Refuses to pay';
+
+  @override
+  String get tagKindOther => 'Bad tag';
+
+  @override
+  String get tagKindFraud => 'Fraud suspected';
+
+  @override
+  String get tagKindBrokenPromise => 'Broken promises';
+
+  @override
+  String get tagKindPlanEnded => 'Long overdue';
+
+  @override
+  String tagA11y(String kind) {
+    return 'Bad tag: $kind';
+  }
+
+  @override
+  String tagVisitA11y(String kind) {
+    return 'Last visit: $kind';
+  }
+
+  @override
+  String get tagRowPreview => 'How the customer\'s row will look';
+
+  @override
+  String get tagWatchPreview =>
+      'Watch only: the list shows \"Tagged\", without a coloured frame.';
+
+  @override
+  String detailRunawayVisit(String when) {
+    return 'The last visit says runaway · $when';
+  }
 }

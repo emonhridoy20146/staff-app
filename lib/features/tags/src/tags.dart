@@ -12,8 +12,10 @@ import '../../../core/location/location_engine.dart';
 import '../../../core/providers.dart';
 import '../../../core/sync/sync_handlers.dart';
 import '../../../core/theme/status_colors.dart';
+import '../../../core/theme/tag_colors.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/ui/common.dart';
+import '../../../core/ui/tag_mark.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../auth/auth.dart';
 import '../../customers/customers.dart';
@@ -85,7 +87,10 @@ Future<void> setTag(
         ));
     if (tag) {
       await repo.applyLocalTag(customerId,
-          state: 'tagged', severity: severity, reasonJson: jsonEncode({'reason': reason, 'setBy': me?.name.bn, 'setAt': at.toIso8601String(), 'pendingReview': true}));
+          state: 'tagged',
+          severity: severity,
+          reasonCode: reasonCode,
+          reasonJson: jsonEncode({'reason': reason, 'setBy': me?.name.bn, 'setAt': at.toIso8601String(), 'pendingReview': true}));
     }
     await ref.read(outboxWriterProvider).enqueue(mutationId: id, entity: 'tag', payload: {
       'clientId': id,
@@ -130,6 +135,9 @@ class _TagSheetState extends ConsumerState<_TagSheet> {
     final codes = untag ? untagReasonCodes : tagReasonCodes;
     final valid = _code != null && isValidTagReason(_reason.text);
     final st = context.statusColors.of(AppStatus.tagged);
+    // FR-M-081: what the customer's row will show for this level and reason (null = a watch tag: no frame).
+    final preview = untag || _code == null ? null : tagKindForChoice(severity: _severity, reasonCode: _code);
+    final previewStyle = preview == null ? null : context.tagColors.of(preview);
 
     return Padding(
       padding: EdgeInsets.fromLTRB(Space.s24, 0, Space.s24, MediaQuery.of(context).viewInsets.bottom + Space.s24),
@@ -154,11 +162,31 @@ class _TagSheetState extends ConsumerState<_TagSheet> {
           const SizedBox(height: Space.s16),
           Text(l.tagReason, style: t.titleSmall),
           const SizedBox(height: Space.s8),
-          Wrap(spacing: Space.s8, runSpacing: Space.s8, children: [
-            for (final c in codes)
-              ChoiceChip(showCheckmark: false, selected: _code == c, label: Text(tagReasonLabel(l, c)), onSelected: (_) => setState(() => _code = c)),
-          ]),
-          const SizedBox(height: Space.s16),
+          // Each reason shows the colour and icon a customer's row gets with it (FR-M-081), so the mapping is
+          // learnt where the tag is set. Removing a tag has no colours.
+          for (final c in codes) ...[
+            _ReasonOption(
+              key: ValueKey('tag-reason-$c'),
+              label: tagReasonLabel(l, c),
+              kind: untag ? null : tagKindForReason(c),
+              selected: _code == c,
+              onTap: () => setState(() => _code = c),
+            ),
+            const SizedBox(height: Space.s8),
+          ],
+          if (!untag && _code != null) ...[
+            const SizedBox(height: Space.s4),
+            Semantics(
+              liveRegion: true,
+              child: preview == null
+                  ? Text(l.tagWatchPreview, key: const Key('tag-preview-watch'), style: t.bodyMedium!.copyWith(color: cs.onSurfaceVariant))
+                  : Wrap(spacing: Space.s8, runSpacing: Space.s4, crossAxisAlignment: WrapCrossAlignment.center, children: [
+                      Text(l.tagRowPreview, style: t.bodyMedium!.copyWith(color: cs.onSurfaceVariant)),
+                      TagChip(preview, key: const Key('tag-preview-chip')),
+                    ]),
+            ),
+          ],
+          const SizedBox(height: Space.s12),
           TextField(
             controller: _reason,
             maxLines: 3,
@@ -171,7 +199,8 @@ class _TagSheetState extends ConsumerState<_TagSheet> {
           ),
           const SizedBox(height: Space.s12),
           FilledButton(
-            style: untag ? null : FilledButton.styleFrom(backgroundColor: st.fg, foregroundColor: st.bg),
+            // The button takes the colour the tag will have; before a reason is picked, and for a watch tag, the plain tagged look.
+            style: untag ? null : FilledButton.styleFrom(backgroundColor: previewStyle?.fg ?? st.bg, foregroundColor: previewStyle?.bg ?? st.fg),
             onPressed: !valid || _busy
                 ? null
                 : () async {
@@ -184,6 +213,65 @@ class _TagSheetState extends ConsumerState<_TagSheet> {
             child: Text(untag ? l.actionUntag : l.actionTag),
           ),
         ]),
+      ),
+    );
+  }
+}
+
+/// One reason in the tag sheet: a full-width, 56 dp option with the reason's swatch (its icon in its colour on
+/// its tint), its words, and a radio mark. Picked, it takes the frame colour and tint a customer's row gets.
+/// [kind] null (removing a tag) gives a plain option.
+class _ReasonOption extends StatelessWidget {
+  const _ReasonOption({super.key, required this.label, required this.kind, required this.selected, required this.onTap});
+  final String label;
+  final TagKind? kind;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = Theme.of(context).textTheme;
+    final cs = Theme.of(context).colorScheme;
+    final st = kind == null ? null : context.tagColors.of(kind!);
+    final line = st?.fg ?? cs.primary;
+    final radio = Icon(selected ? Icons.radio_button_checked_rounded : Icons.radio_button_unchecked_rounded, color: selected ? line : cs.outline);
+    return Semantics(
+      inMutuallyExclusiveGroup: true,
+      checked: selected,
+      button: true,
+      label: label,
+      excludeSemantics: true,
+      child: Material(
+        color: selected ? (st?.bg ?? cs.primaryContainer) : cs.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: Radii.brLg,
+          side: selected ? BorderSide(color: line, width: kind == null ? 1.5 : TagFrame.strokeOf(context, kind!)) : BorderSide(color: cs.outlineVariant),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: Sizes.primaryButton),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: Space.s12, vertical: Space.s8),
+              child: Row(children: [
+                if (st != null) ...[
+                  Container(
+                    key: ValueKey('tag-swatch-${kind!.name}'),
+                    width: Space.s32,
+                    height: Space.s32,
+                    decoration: BoxDecoration(color: kind!.strong ? st.fg : st.bg, borderRadius: Radii.brMd, border: Border.all(color: st.fg)),
+                    child: Icon(tagKindIcon(kind!), size: 20, color: kind!.strong ? st.bg : st.fg),
+                  ),
+                  const SizedBox(width: Space.s12),
+                ],
+                Expanded(child: Text(label, style: t.bodyLarge!.copyWith(color: cs.onSurface, fontWeight: selected ? FontWeight.w600 : null))),
+                const SizedBox(width: Space.s8),
+                radio,
+              ]),
+            ),
+          ),
+        ),
       ),
     );
   }
