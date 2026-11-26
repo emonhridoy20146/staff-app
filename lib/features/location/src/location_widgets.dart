@@ -94,7 +94,7 @@ class TrackingStatusCard extends ConsumerWidget {
             const SizedBox(height: Space.s12),
             InfoBanner(icon: Icons.info_outline_rounded, tone: BannerTone.warning, text: l.trackingFallback),
           ],
-          // FR-M-077: the same health line as on Today, and the way to the background set-up.
+          // FR-M-078: the same health line as on Today, and the way to the background set-up.
           if (ref.watch(trackingIssueProvider) != null) ...[const SizedBox(height: Space.s12), const TrackingHealthBanner()],
           const SizedBox(height: Space.s12),
           OutlinedButton.icon(

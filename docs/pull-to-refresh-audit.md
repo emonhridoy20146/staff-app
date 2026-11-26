@@ -44,7 +44,7 @@ Every route in `lib/app/router.dart` and `lib/features/*/manifest.dart`, plus fu
 | Task detail | `/tasks/:id` | **added** | Sync: the office's decision. The "not on phone" state is pullable too. |
 | Visit | `/visit/:customerId` | not needed | Form. |
 | OEM battery guide | `/location/battery-guide` | not needed | Static guide. |
-| Background location set-up | `/location/background-setup` | **added** (new screen) | Re-reads the phone's state (native running, battery optimisation, token refused, brand). FR-M-077. |
+| Background location set-up | `/location/background-setup` | **added** (new screen) | Re-reads the phone's state (native running, battery optimisation, token refused, brand). FR-M-078. |
 | Splash, login, change password, PIN set-up and PIN, consent, permissions primer, bootstrap, update required | `/splash`, `/login`, `/change-password`, `/pin/setup`, `/pin`, `/consent`, `/primer`, `/bootstrap`, `/update` | not needed | Gates and forms. |
 | Location gate | (overlay, `core/location`) | not needed | Gate (and `lib/core/location/` is out of scope here). |
 | Camera | (full-screen dialog, `core/media`) | not needed | Camera. |

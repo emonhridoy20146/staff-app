@@ -34,11 +34,11 @@ Devices (minimum set): **Xiaomi Redmi (MIUI/HyperOS, 2–3 GB)**, **Samsung Gala
 - [ ] Live build (`Live API (release)` or `staff-app-live-apk`): no demo ribbon, login with a staff user from the admin panel, first sync pulls the staff's customers; a second phone on the same account waits for approval under Devices
 - [ ] Fresh install, permissions primer, "While using the app" location flow works per Android version (no background permission asked)
 - [ ] Battery optimisation guide opens the correct OEM settings page
-- [ ] Closed-app tracking (FR-M-076): work in, swipe the app away, wait **45 min** (3× the access-token life) with the phone locked → the admin live map keeps moving; turn on airplane mode for 10 min and back → buffered points arrive; work out → no point after it, and the native prefs hold no `tracking_token`
-- [ ] Refused token (FR-M-076): revoke the device's tracking token in field-api (or wait past its expiry with the app closed) → the duty notification turns amber with "অ্যাপটি একবার খুলুন"; open the app → it renews, the line goes, buffered points upload
-- [ ] Background set-up (FR-M-077) on Xiaomi/Redmi, Oppo, Realme, Vivo and Samsung: the detected brand is right, "সেটিংস খুলুন" lands on the autostart / background screen (or the closest one), "অনুমতি দিন" shows Android's battery dialog and the pill turns "অনুমতি আছে"; on duty with the service killed from the brand's task manager, Today shows the red line within a minute; off duty nothing shows
+- [ ] Closed-app tracking (FR-M-077): work in, swipe the app away, wait **45 min** (3× the access-token life) with the phone locked → the admin live map keeps moving; turn on airplane mode for 10 min and back → buffered points arrive; work out → no point after it, and the native prefs hold no `tracking_token`
+- [ ] Refused token (FR-M-077): revoke the device's tracking token in field-api (or wait past its expiry with the app closed) → the duty notification turns amber with "অ্যাপটি একবার খুলুন"; open the app → it renews, the line goes, buffered points upload
+- [ ] Background set-up (FR-M-078) on Xiaomi/Redmi, Oppo, Realme, Vivo and Samsung: the detected brand is right, "সেটিংস খুলুন" lands on the autostart / background screen (or the closest one), "অনুমতি দিন" shows Android's battery dialog and the pill turns "অনুমতি আছে"; on duty with the service killed from the brand's task manager, Today shows the red line within a minute; off duty nothing shows
 - [ ] Home (2026-11-26) on a 360 dp phone at font scale 1.3 in bn and en, light and dark: nothing cut or overlapping; KPI tiles scroll to their section
-- [ ] Pull to refresh (FR-M-078) on each screen in the audit: works on an empty list too; forms have none
+- [ ] Pull to refresh (FR-M-079) on each screen in the audit: works on an empty list too; forms have none
 - [ ] Bangla renders correctly everywhere (conjuncts ক্ষ ঙ্গ ন্ত্র, reph, ya-phala, hasanta), no clipped matras at font scale 1.3
 **Offline & sync**
 - [ ] Airplane mode full day simulation (20 actions), then sync on 2G/EDGE (developer network throttling or real SIM)

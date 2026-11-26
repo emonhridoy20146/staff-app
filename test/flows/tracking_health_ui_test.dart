@@ -16,7 +16,7 @@ class _Probe implements TrackingProbe {
   Future<DeviceTrackingProbe> read() async => value;
 }
 
-/// FR-M-077: a clear in-app status when tracking is not healthy on duty, never off duty; the set-up screen.
+/// FR-M-078: a clear in-app status when tracking is not healthy on duty, never off duty; the set-up screen.
 void main() {
   Future<void> settle(WidgetTester t, {int rounds = 10}) async {
     for (var i = 0; i < rounds; i++) {

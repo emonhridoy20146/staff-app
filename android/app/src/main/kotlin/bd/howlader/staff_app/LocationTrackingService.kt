@@ -72,7 +72,7 @@ class LocationTrackingService : Service() {
         private var instance: LocationTrackingService? = null
 
         /**
-         * FR-M-076 (contract 1.49.0): the service uploads with a long-lived, points-only tracking token bound to
+         * FR-M-077 (contract 1.49.0): the service uploads with a long-lived, points-only tracking token bound to
          * the device — never the 15-minute access token, which nothing can refresh while the app is closed.
          */
         fun storeCredentials(
@@ -89,7 +89,7 @@ class LocationTrackingService : Service() {
                 .putLong("tracking_token_expires_at", expiresAtMs)
                 .putString("device_id", deviceId)
                 .putBoolean("auth_failed", false)
-                .remove("access_token") // written by builds before FR-M-076
+                .remove("access_token") // written by builds before FR-M-077
             if (!reauthText.isNullOrBlank()) editor.putString("reauth_text", reauthText)
             editor.apply()
             instance?.refreshNotification()
@@ -378,7 +378,7 @@ class LocationTrackingService : Service() {
         val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         val apiBaseUrl = prefs.getString("api_base_url", null) ?: return
         val deviceId = prefs.getString("device_id", null) ?: return
-        // FR-M-076: points go up only with the tracking token. None, or past its expiry: keep every point
+        // FR-M-077: points go up only with the tracking token. None, or past its expiry: keep every point
         // buffered and ask (in the notification) for the app to be opened, which renews the token.
         val trackingToken = prefs.getString("tracking_token", null)
         val expiresAt = prefs.getLong("tracking_token_expires_at", 0L)

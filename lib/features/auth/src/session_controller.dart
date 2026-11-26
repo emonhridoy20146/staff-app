@@ -290,7 +290,7 @@ class SessionController extends Notifier<SessionState> {
     } catch (_) {}
     final store = ref.read(secureStoreProvider);
     await ref.read(tokenStoreProvider).clear();
-    // FR-M-076: no tracking token survives a sign-out, on either side; the native service stops (no tracking
+    // FR-M-077: no tracking token survives a sign-out, on either side; the native service stops (no tracking
     // signed out). Points it buffered stay in its file until the next sign-in imports them.
     await ref.read(trackingTokenStoreProvider).clear();
     await NativeTrackingService.stop();

@@ -70,7 +70,7 @@ List<OemBrand> oemBrands(AppLocalizations l) => [
       OemBrand(id: OemBrandId.other, name: l.oemGuideOtherName, steps: [l.oemGuideOtherStep1, l.oemGuideOtherStep2]),
     ];
 
-/// Pure rule (unit-tested): which guide fits `Build.MANUFACTURER` (FR-M-077).
+/// Pure rule (unit-tested): which guide fits `Build.MANUFACTURER` (FR-M-078).
 OemBrandId oemBrandFor(String? manufacturer) {
   final m = (manufacturer ?? '').toLowerCase();
   bool any(List<String> names) => names.any(m.contains);

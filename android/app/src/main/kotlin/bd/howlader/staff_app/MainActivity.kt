@@ -62,7 +62,7 @@ class MainActivity : FlutterActivity() {
                     result.success(true)
                 }
                 "storeTrackingCredentials" -> {
-                    // FR-M-076: the points-only tracking token (contract 1.49.0), not the access token.
+                    // FR-M-077: the points-only tracking token (contract 1.49.0), not the access token.
                     LocationTrackingService.storeCredentials(
                         this,
                         call.argument<String>("apiBaseUrl") ?: "",

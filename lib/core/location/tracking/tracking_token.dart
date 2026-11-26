@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../auth/secure_store.dart';
 import '../../providers.dart';
 
-/// Renew the tracking token when it has less than this left (FR-M-076, ADR-M38): the token lives about 24 h,
+/// Renew the tracking token when it has less than this left (FR-M-077, ADR-M40): the token lives about 24 h,
 /// so a phone opened at least once a working day never lets it run out while the app is closed.
 const trackingTokenRenewWithin = Duration(hours: 12);
 

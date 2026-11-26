@@ -35,7 +35,7 @@ class NativeTrackingProbe implements TrackingProbe {
 
 final trackingProbeProvider = Provider<TrackingProbe>((ref) => const NativeTrackingProbe());
 
-/// The worst background-tracking problem while on duty (FR-M-077), most serious first.
+/// The worst background-tracking problem while on duty (FR-M-078), most serious first.
 enum TrackingIssue {
   /// On duty but nothing is tracking (the Dart tracker or the native service is not running).
   notRunning,
@@ -79,7 +79,7 @@ final trackingIssueProvider = Provider<TrackingIssue?>((ref) {
     trackerRunning: ref.watch(trackingStatusProvider).running,
     probe: probe,
   );
-  // A refused token is renewed at once while the app is open (FR-M-076).
+  // A refused token is renewed at once while the app is open (FR-M-077).
   if (issue == TrackingIssue.authRefused) unawaited(ref.read(locationTrackerProvider).ensureTrackingToken(force: true));
   return issue;
 });

@@ -9,7 +9,7 @@ import 'package:staff_app/features/location/location.dart';
 
 import 'helpers.dart';
 
-/// FR-M-076 (contract 1.49.0): the native service uploads with a long-lived tracking token that Dart obtains at
+/// FR-M-077 (contract 1.49.0): the native service uploads with a long-lived tracking token that Dart obtains at
 /// duty start, renews on app open when it runs out within 12 h (or was refused), and clears at duty end / logout.
 void main() {
   const channel = MethodChannel('com.howlader.staff/permissions');

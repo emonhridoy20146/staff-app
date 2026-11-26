@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 
-### Changed (owner request 2026-11-26: Home redesign; FR-M-004/005, ADR-M40, tokens v1.2)
+### Changed (owner request 2026-11-26: Home redesign; FR-M-004/005, ADR-M41, tokens v1.2)
 - **Home** keeps everything (greeting, duty card, collapsible collected card with the "বিস্তারিত" pill, quick actions, feature cards, promised / due / overdue sections with work rows and Collect, cash warning, broken promises without follow-up) in a clearer hierarchy: a **header** (greeting that wraps instead of being cut, date, sync chip) and a **summary card** — today's collection, target line, a 10 dp bar with "N% পূরণ", and three **KPI tiles** (প্রতিশ্রুতি / আজ দেয় / বকেয়া) in their status colours that scroll to their section (0 shows neutral). Details open in an inner panel.
 - One card style (surface, 16 dp corners, hairline border, soft shadow in light mode), 16 / 12 / 32 dp rhythm; quick tiles of one height with a tonal icon; banners use the same corner. A "আজকের কাজের তালিকা" title over the sections; each section header has a toned icon, title and count pill; "N more" is an outlined button.
 - **Loading** shows three skeleton work rows (no spinner); empty and error states sit in the same card style. Works at 360 dp and 1.3 text in bn and en, light and dark.
@@ -10,19 +10,19 @@
 - Screenshots: `test/screenshots/home_test.dart` → `test/screenshots/goldens/home/` (bn/en × light/dark, full page, 360 dp, 1.3 text, start of day); the before set is in `docs/screenshots/home-before/`. Shared screenshot set-up in `test/screenshots/shot_helpers.dart`.
 - l10n: `homeKpiPromised`, `homeKpiDue`, `homeKpiOverdue`, `homeKpiLabel`, `homeWorkListTitle`, `homeWorkListBody`, `homeLoading`, `homeTargetPct`.
 
-### Added (owner request 2026-11-26: pull to refresh everywhere it makes sense; FR-M-078, ADR-M41)
+### Added (owner request 2026-11-26: pull to refresh everywhere it makes sense; FR-M-079, ADR-M42)
 - Audit of every screen and route (`docs/pull-to-refresh-audit.md`). **Added** on Me, Sync centre, Alerts, Today's work, Attendance hub, Receipt, Handovers, Notices, Notice detail, Prospects, Requests, Request detail, Tasks, Task detail and the new background set-up (`syncNow`, or the screen's own read); **already had** Today, Customers, Customer detail, Leave, Work calendar, Cash in hand, Co-work, Performance, Leaderboard (explicit always-scrollable physics added; Leave and Work calendar now wait for the refetch); **not needed** on forms, the collect flow, work-in/out, map, map pin, place move, visit, camera, Settings (local only), OEM guide and the sign-in gates.
 - Scrollables use `AlwaysScrollableScrollPhysics`; empty and "not on this phone" states are pullable (`PullableFill`). Shared helper `lib/core/ui/refreshable.dart` (`PullToRefresh`, `syncNowFromPull`).
 - Fake API `requestLog`. Test `test/flows/pull_to_refresh_test.dart`: table-driven over every refreshable route — the indicator exists, nothing is fetched until pulled, then the refresh reaches the fake server; real flings on an empty and a short page.
 - Goldens re-rendered for the Home redesign and the banner corner.
 
-### Fixed (owner report 2026-11-26: live location froze ~15 min after the app was closed; FR-M-076, ADR-M39, contract 1.49.0)
+### Fixed (owner report 2026-11-26: live location froze ~15 min after the app was closed; FR-M-077, ADR-M40, contract 1.49.0)
 - The native `LocationTrackingService` now uploads with a **points-only tracking token** (`POST /location/tracking-token`, ≈ 24 h, bound to the device) instead of the 15-minute access token. Dart gets it at duty start, renews it on app open / resume when it expires within 12 h or the server refused it, and passes it with its expiry through `storeTrackingCredentials`; it is cleared on both sides (`clearTrackingCredentials`, keystore) at duty end and logout, so none exists off duty.
 - On 401/403 or an expired token the service keeps every point buffered (as before) and its notification turns amber with "লাইভ লোকেশন পাঠানো যাচ্ছে না। অ্যাপটি একবার খুলুন।" (localized, handed over with the token); the next successful upload clears it.
 - The tracker waits for today's attendance to load before deciding, so opening the app no longer stops the native service for a moment.
 - **Contract 1.49.0** pinned (copy merged from `claude/contract-1-49`): `POST /location/tracking-token` (`issueTrackingToken`, no body, 200 `TrackingToken { token: trk_…, expiresAt }`, every call rotates), and POST /location/points accepts `Authorization: Tracking <token>` — the scheme the native service now sends. `FieldApi.trackingToken`; the fake API issues rotating `trk_` tokens and records them.
 
-### Added (owner request 2026-11-26: background tracking on Android brands; FR-M-077)
+### Added (owner request 2026-11-26: background tracking on Android brands; FR-M-078)
 - **Background set-up** screen (`/location/background-setup`): why it is needed; 1. ignore battery optimisation (Android's dialog, status pill); 2. the detected brand's (Xiaomi/Redmi/POCO, Oppo/Realme, Vivo/iQOO, Samsung, Huawei/Honor, OnePlus, other) autostart / background steps with a deep link to its settings screen; 3. what runs right now. Pull to read the phone again.
 - **On-duty health line**: first on Today (and in the Me tracking card) while on duty and tracking is not running (danger), the token was refused (warning, renewed automatically) or battery optimisation is on (warning); a tap opens the set-up. Never shown off duty. The Me tracking card has a "ব্যাকগ্রাউন্ড সেটআপ" button.
 - Native channel: `isTrackingAuthFailed`, `manufacturer`, `clearTrackingCredentials`.

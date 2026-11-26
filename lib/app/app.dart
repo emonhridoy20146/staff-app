@@ -99,7 +99,7 @@ class _FieldAppState extends ConsumerState<FieldApp> with WidgetsBindingObserver
       final s = ref.read(syncEngineProvider).current;
       final last = s.lastSuccessAt;
       if (last == null || s.lastErrorCode != null || clock.nowUtc().difference(last) >= foregroundSyncEvery) _kick('resume');
-      // FR-M-076: renew the native service's tracking token when it runs out within 12 h (or was refused).
+      // FR-M-077: renew the native service's tracking token when it runs out within 12 h (or was refused).
       if (ref.read(sessionProvider).stage == SessionStage.ready) unawaited(ref.read(locationTrackerProvider).onAppResumed());
     }
   }

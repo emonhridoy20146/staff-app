@@ -11,7 +11,7 @@ import 'location_tracker.dart';
 import 'oem_battery_guide_screen.dart';
 import 'tracking_health.dart';
 
-/// Background location set-up (FR-M-077): why it is needed, then 1. ignore battery optimisation (Android's own
+/// Background location set-up (FR-M-078): why it is needed, then 1. ignore battery optimisation (Android's own
 /// dialog), 2. the phone brand's autostart / background screen with its steps and a deep link where one exists,
 /// 3. what is running right now. Pull to read the phone's state again. Tracking itself still only runs on duty.
 class TrackingSetupScreen extends ConsumerWidget {
@@ -166,7 +166,7 @@ class _StatusPill extends StatelessWidget {
       );
 }
 
-/// Today card (FR-M-077): shown only on duty when background tracking is not healthy; a tap opens the set-up.
+/// Today card (FR-M-078): shown only on duty when background tracking is not healthy; a tap opens the set-up.
 class TrackingHealthBanner extends ConsumerWidget {
   const TrackingHealthBanner({super.key});
 

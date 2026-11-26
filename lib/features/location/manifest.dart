@@ -13,11 +13,11 @@ final locationManifest = FeatureManifest(
   flag: 'module.location',
   routes: [
     GoRoute(path: '/location/battery-guide', builder: (_, _) => const OemBatteryGuideScreen()),
-    // FR-M-077: battery optimisation + brand autostart, with an explanation.
+    // FR-M-078: battery optimisation + brand autostart, with an explanation.
     GoRoute(path: '/location/background-setup', builder: (_, _) => const TrackingSetupScreen()),
   ],
   todayCards: [
-    // FR-M-077: on duty but tracking is not healthy — first thing on Today.
+    // FR-M-078: on duty but tracking is not healthy — first thing on Today.
     TodayCardDef(id: 'tracking-health', order: -1, builder: (_) => const TrackingHealthBanner()),
     TodayCardDef(id: 'visit-suggestion', order: 2, builder: (_) => const VisitSuggestionCard()),
   ],

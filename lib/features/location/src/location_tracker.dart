@@ -152,7 +152,7 @@ class LocationTracker {
     _uploadTimer = Timer.periodic(uploadEvery, (_) => unawaited(_everyFewMinutes()));
     _heartbeatTimer = Timer.periodic(heartbeatEvery, (_) => unawaited(_tick()));
     _ref.read(trackingStatusProvider.notifier).state = TrackingStatus(running: true, providerId: provider.id, fellBack: fellBack);
-    // FR-M-076: the native service uploads with a long-lived, points-only tracking token (contract 1.49.0),
+    // FR-M-077: the native service uploads with a long-lived, points-only tracking token (contract 1.49.0),
     // so live location keeps going while the app is closed. Obtained at duty start, renewed on app open.
     unawaited(ensureTrackingToken());
     // Import any points buffered by the native service while Flutter was dead.
@@ -165,7 +165,7 @@ class LocationTracker {
   bool _renewing = false;
 
   /// Makes sure the native service holds a tracking token with at least [trackingTokenRenewWithin] left
-  /// (FR-M-076): fetched when there is none (duty start), renewed when it expires soon or the native service
+  /// (FR-M-077): fetched when there is none (duty start), renewed when it expires soon or the native service
   /// reports that the server refused it ([force]). Only on duty; offline keeps the old token and tries later.
   Future<void> ensureTrackingToken({bool force = false}) async {
     if (!_wantRunning || _renewing) return;
@@ -198,7 +198,7 @@ class LocationTracker {
     }
   }
 
-  /// App opened or came back (FR-M-076): renew a token that runs out within 12 h, or at once when the native
+  /// App opened or came back (FR-M-077): renew a token that runs out within 12 h, or at once when the native
   /// service says the server refused it.
   Future<void> onAppResumed() async {
     if (!_wantRunning) return;
@@ -235,7 +235,7 @@ class LocationTracker {
     _prev = null;
     _anchor = null;
     if (p != null && p.isRunning) await p.stop();
-    // Stop the native service too, and forget the tracking token (FR-M-076: never kept off duty).
+    // Stop the native service too, and forget the tracking token (FR-M-077: never kept off duty).
     unawaited(NativeTrackingService.stop());
     unawaited(NativeTrackingService.clearCredentials());
     unawaited(_ref.read(trackingTokenStoreProvider).clear());

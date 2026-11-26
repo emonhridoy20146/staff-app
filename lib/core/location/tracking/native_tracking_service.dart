@@ -8,7 +8,7 @@ import 'package:flutter/services.dart';
 class NativeTrackingService {
   static const _channel = MethodChannel('com.howlader.staff/permissions');
 
-  /// Hands the native service what it needs to upload points while the app is closed (FR-M-076): the API base
+  /// Hands the native service what it needs to upload points while the app is closed (FR-M-077): the API base
   /// URL, the points-only tracking token (contract 1.49.0, never the 15-minute access token) with its expiry,
   /// the device id, and the notification line shown when the server refuses the token ([reauthText]).
   static Future<void> storeCredentials({

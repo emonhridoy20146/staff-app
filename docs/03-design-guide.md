@@ -33,7 +33,7 @@ Canonical values: `admin-web/docs/03-design-guide.md §2`. Repeated here for the
 | Motion | fast 120 ms · base 200 ms · slow 300 ms; standard `cubic-bezier(.2,0,0,1)`; emphasized M3 curves for sheets |
 | Icons | Material Symbols Rounded, weight 400, fill 0 (fill 1 for selected nav) — mapping table in admin-web §2.7 |
 
-**Tokens v1.2 (2026-11-26, Home redesign, ADR-M40):** adds only the `shadow.sm` / `shadow.md` elevation group; no colour, spacing or radius changed. **admin-web shares tokens v1.x:** the canonical copy in `admin-web/docs/03-design-guide.md §2` and its `design-tokens.json` must take the same `shadow` group (web: `box-shadow` with the same values; dark: none) — follow-up for the admin-web session.
+**Tokens v1.2 (2026-11-26, Home redesign, ADR-M41):** adds only the `shadow.sm` / `shadow.md` elevation group; no colour, spacing or radius changed. **admin-web shares tokens v1.x:** the canonical copy in `admin-web/docs/03-design-guide.md §2` and its `design-tokens.json` must take the same `shadow` group (web: `box-shadow` with the same values; dark: none) — follow-up for the admin-web session.
 
 **Pay state (v1.1, field-api `PayState`, ADR-035):** the colour of a customer's map pin and pay-state badge, worst first: bad = tagged bad or the full term is over with money left (glyph `!`); missedMany = 2+ installments missed (glyph = number missed); missedOne = one missed (glyph 1); dueToday = due today, nothing missed (dot); onTrack = everything due so far paid (check); paidOff = nothing left (check). The pin has the map-pin shape (round head, point on the spot), the pin colour as body with a 1.25 outline in the fg colour, a white face and the glyph in the fg colour; clusters take the worst state. admin-web uses these on its customer map since contract 1.14.0; the app's map still uses `status.*` glyph markers (§5.6) until it is moved to pay state.
 
@@ -123,7 +123,7 @@ Customer detail → Collect flow · Visit check-in (camera) · Promise sheet · 
 
 ## 5. Key screens (layout specs)
 
-### 5.1 Today (Home) — redesign 2026-11-26 (ADR-M40)
+### 5.1 Today (Home) — redesign 2026-11-26 (ADR-M41)
 ```
 ┌──────────────────────────────────────┐
 │ ▣ বরিশাল সদর        ● অনলাইন  📍  🔔 │  shell top bar (unchanged)
@@ -195,7 +195,7 @@ Me tab card "আমার পারফরম্যান্স" (plus a "লি�
 ### 5.7 Me
 Attendance card (today timeline: in, breaks, out; buttons বিরতি শুরু/শেষ, কাজ শেষ); Cash card (on hand, limit meter, **Deposit everything** button, deposit history: amount, time, "N collections · mobile/bank ৳Y", badge জমা হয়েছে / ফোনে আছে / জমা হয়নি, older deposits keep posted / rejected / deleted by office; nothing says "waiting for verification"). Deposit sheet (FR-M-059): no amount field; the cash in hand as a fixed headlineSmall amount with words, mobile/bank amount with its count, "মোট N টি আদায়", a bodySmall hint that part deposits do not exist, destination segments, reference, a filled Deposit button; it opens an AlertDialog (savings icon) naming cash, mobile/bank and count, saying it goes to the ERP as payments (online now / as soon as the phone is online) and cannot be changed or deleted after; Cancel / জমা দিন. Cash-in-hand screen: an info banner while a deposit is unsent; a "মোবাইল / ব্যাংক আদায় (জমার সাথে যাবে)" section (method icon in its method colour) with the same Change / Delete menu. Problems: a refused deposit card (error icon, amount, reason in words, "the collections are back in your hand", text button আবার জমা দিন, no Retry); Handovers; Sync centre (queued counts by type, last sync, Problems list with explanations and "manager notified" state, Sync now); My performance (month); Settings (language, digits, theme, high contrast, text size preview, PIN/biometric, privacy notice, battery optimisation guide, about/version, logout).
 
-### 5.7b Background location set-up (2026-11-26, FR-M-077)
+### 5.7b Background location set-up (2026-11-26, FR-M-078)
 Route `/location/background-setup`, from the Today tracking line and the Me tracking card ("ব্যাকগ্রাউন্ড সেটআপ"). An info banner says why (live location on duty even when the app is closed; phones stop apps to save battery; never off duty). Three `AppCard` steps: **1. battery optimisation** with a status pill (অনুমতি আছে success · অনুমতি নেই warning · জানা যায়নি neutral) and a filled "অনুমতি দিন" that opens Android's own dialog; **2. autostart and background** for the detected brand (`Build.MANUFACTURER`: Xiaomi/Redmi/POCO, Samsung, Oppo/Realme, Vivo/iQOO, Huawei/Honor, OnePlus, other) with its numbered steps, an outlined "সেটিংস খুলুন" deep link to the brand's screen (snackbar when none opens) and "অন্য ফোনের নিয়ম দেখুন" to the full guide; **3. right now**: running (success) / on duty but not running (danger) / reconnecting (warning) / off duty (neutral). Pull to read the phone again. The native notification shows a second line "লাইভ লোকেশন পাঠানো যাচ্ছে না। অ্যাপটি একবার খুলুন।" (amber) while the server refuses the tracking token.
 
 ### 5.8 Work-in / work-out
@@ -215,8 +215,8 @@ Full-screen card: date, shift, GPS status, optional selfie (front camera), big b
 | `OnlineDot` | see §5.1b |
 | Home summary card / KPI tile | see §5.1 (2026-11-26); KPI tile: `Radii.lg`, status bg / fg, number titleLarge w700 tabular, label labelSmall (2 lines), ≥ 48 dp, TalkBack "<label>: <n> জন" |
 | Home section header | 32 dp toned icon square (`Radii.md`), titleMedium title, toned count pill (`Radii.full`); one semantics header "<title>, <n>" |
-| Tracking health line | `InfoBanner` first on Today while on duty and tracking is unhealthy: danger "not running", warning "reconnecting" / "battery saver"; tap → background set-up (FR-M-077) |
-| `RefreshIndicator` | every screen that shows synced or server data; scrollable uses `AlwaysScrollableScrollPhysics` (pull works on short and empty pages); triggers `syncNow` or the screen's online fetch (ADR-M41) |
+| Tracking health line | `InfoBanner` first on Today while on duty and tracking is unhealthy: danger "not running", warning "reconnecting" / "battery saver"; tap → background set-up (FR-M-078) |
+| `RefreshIndicator` | every screen that shows synced or server data; scrollable uses `AlwaysScrollableScrollPhysics` (pull works on short and empty pages); triggers `syncNow` or the screen's online fetch (ADR-M42) |
 | `AmountKeypad` | 3×4 grid, keys 72 dp, haptic on press, backspace long-press clears |
 | `HoldToConfirmButton` | 56 dp, fills over 800 ms, cancel on release; accessible alternative: double-tap with TalkBack |
 | `BottomSheet` | M3 modal; radius 28; drag handle; max 90 % height |
@@ -227,7 +227,7 @@ Full-screen card: date, shift, GPS status, optional selfie (front camera), big b
 
 ## 7. States & feedback
 - **Loading:** local DB makes most screens instant; Home shows static skeleton rows while its list loads; network-only views (fresh balance refresh, route) show shimmer.
-- **Refresh:** pull down on any data screen (ADR-M41); forms, the camera and local-only settings have none.
+- **Refresh:** pull down on any data screen (ADR-M42); forms, the camera and local-only settings have none.
 - **Offline:** SyncChip "অফলাইন"; actions proceed; no blocking dialogs.
 - **Errors:** human message + what happens next; technical code under "বিস্তারিত".
 - **Haptics:** light on keypad, success pattern on saved collection, error buzz on validation.
