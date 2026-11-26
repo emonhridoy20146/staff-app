@@ -9,7 +9,9 @@ import '../../../../core/ui/money_text.dart';
 import '../../../../core/ui/status_badge.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../customer_providers.dart';
+import '../../../../core/theme/tag_colors.dart';
 import '../domain/customer.dart';
+import 'bad_tag_frame.dart';
 import 'invoice_kind_label.dart';
 import 'work_marks_row.dart';
 
@@ -34,8 +36,11 @@ class CustomerTile extends ConsumerWidget {
     final t = Theme.of(context).textTheme;
     final cs = Theme.of(context).colorScheme;
     final primary = customer.primaryStatus(today);
-    final st = context.statusColors.of(primary);
-    final badges = customer.badges(today).where((b) => b != AppStatus.current).take(2).toList();
+    // FR-M-081: a bad-tag customer's initial is in its tag kind's colours, and the frame's chip says what the
+    // plain "tagged" badge said.
+    final bad = customer.badTag;
+    final st = bad == null ? context.statusColors.of(primary) : context.tagColors.of(bad.kind);
+    final badges = customer.badges(today).where((b) => b != AppStatus.current && (bad == null || b != AppStatus.tagged)).take(2).toList();
     final name = customer.nameOf(lang);
     // Staff in several branches (1.19.0): each row says which branch it is in.
     final branch = ref.watch(multiBranchProvider) ? customer.branchName(lang) : null;
@@ -44,8 +49,8 @@ class CustomerTile extends ConsumerWidget {
       onTap: onTap,
       child: ConstrainedBox(
         constraints: const BoxConstraints(minHeight: Sizes.row3),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: Space.screen, vertical: Space.s12),
+        child: BadTagRowBody(
+          customer: customer,
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [

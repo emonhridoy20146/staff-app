@@ -3,7 +3,8 @@ import 'dart:ui' show Brightness;
 import 'package:flutter/animation.dart';
 import 'package:flutter/painting.dart';
 
-/// Shared design tokens v1.2 (v1.1 added pay-state colours; v1.2 adds the `shadow.*` elevation tokens).
+/// Shared design tokens v1.3 (v1.1 added pay-state colours; v1.2 the `shadow.*` elevation tokens; v1.3 the
+/// bad-tag kinds `status.tag.*` and the quick-action tones `action.*`, both in `tag_colors.dart`).
 ///
 /// Canonical source: admin-web/docs/03-design-guide.md §2 and
 /// docs/design-tokens.json. Values here MUST stay identical; the token test

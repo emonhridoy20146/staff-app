@@ -22,6 +22,7 @@ Phases match `field-api/docs/09-progress.md`. Start each phase against the Prism
 | Customers (list, search, filters, detail, timeline), Map with pins and sheet | ✅ (tile cache not yet) |
 | Search by invoice number and by mobile typed with spaces / Bangla digits; one-time offline re-index (FR-M-076, schema 19) | ✅ 2026-11-26 unit and migration tests; ☐ real phone check on an upgraded install |
 | Returned invoices hidden: deleted on pull from `returnedPlanIds`, customer and unsynced work kept, search text rebuilt (FR-M-080, contract 1.50.0) | ✅ 2026-11-26 unit and flow tests |
+| Bad-tag customers framed by reason colour on every customer row, the customer page header and the tag sheet; runaway visits shown the same way; tokens v1.3 (FR-M-081, ADR-M44, schema 20) | ✅ 2026-11-26 unit, migration and widget tests + screenshots (`goldens/tags/`); ☐ real phone check in sunlight; ☐ tags set by others keep the generic colour until that customer is next sent (ADR-M44 open point); ☐ admin-web to adopt tokens v1.3 |
 | Map filters (multi-select) and Map/List toggle with distance | ✅ 0.5.0, flow test + screenshots |
 | Co-work: ask / accept / leave (online), Today and Me cards, joint-visit switch, partner visits, single/co-work split (contract 1.9.0) | ✅ 0.6.0, flow tests + screenshots; two-phone check pending |
 | Today screen with priorities and progress | ✅ |
@@ -86,6 +87,8 @@ Phases match `field-api/docs/09-progress.md`. Start each phase against the Prism
 | No reload every few minutes: sync and distance fix every 15 min, online only; resume syncs only when stale | ✅ 2026-11-23 |
 | Customer list in the Home row style with an arrow; compact collection card and duty card with a "বিস্তারিত" pill | ✅ 2026-11-23 flow tests; ☐ real phone check |
 | Home redesign: header, summary card with KPI tiles, one card style, toned section headers, skeleton loading; shadow tokens v1.2 (FR-M-004/005, ADR-M41) | ✅ 2026-11-26 widget tests + screenshots (bn/en, light/dark, 360 dp, 1.3); ☐ real phone check; ☐ admin-web to adopt `shadow` tokens |
+| Home v2: filter chips with counts over the work list, role-aware scope, 3 × 3 quick-action grid from the manifests, alerts above the shortcuts (FR-M-082, FR-M-083, ADR-M45, tokens v1.3 `action.*`) | ✅ 2026-11-26 unit and widget tests + screenshots (bn/en, light/dark, 360 dp, 1.3); ☐ real phone check (one thumb, 2 GB phone with 300+ overdue) |
+| Settings v2: six sections of uniform rows with icon, hint and current value; feature rows through `settingsRows` (FR-M-084) | ✅ 2026-11-26 widget test + screenshots (bn light, en dark, 360 dp at 1.3); ☐ real phone check |
 | Pull to refresh on every data screen, audit table, table-driven widget test (FR-M-079, ADR-M42) | ✅ 2026-11-26 widget test |
 **Acceptance:** M-E2…M-E7, M-E9, M-E10 green; manual device checklist (non-location sections) signed off on 4 OEM devices; pilot 5 staff × 2 weeks with zero lost/duplicate collections.
 

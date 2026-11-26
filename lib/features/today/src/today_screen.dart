@@ -9,6 +9,7 @@ import '../../../core/providers.dart';
 import '../../../core/settings/ui_prefs.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/status_colors.dart';
+import '../../../core/theme/tag_colors.dart';
 import '../../../core/theme/tokens.dart';
 import '../../../core/ui/chips.dart';
 import '../../../core/ui/common.dart';
@@ -21,49 +22,51 @@ import '../../cash/cash.dart';
 import '../../collections/collections.dart';
 import '../../customers/customers.dart';
 import '../../visits/visits.dart';
+import 'home_work.dart';
 
-/// How many overdue customers Today shows before "N more".
+/// How many overdue customers the "All" list shows before "N more".
 const todayOverdueLimit = 8;
 
 String greetingFor(AppLocalizations l, int dhakaHour, String name) =>
     dhakaHour < 12 ? l.greetingMorning(name) : (dhakaHour < 17 ? l.greetingAfternoon(name) : l.greetingEvening(name));
 
-/// Today (FR-M-004, FR-M-005). Home redesign 2026-11-26 (owner request): a header (greeting, date, sync) and a
-/// summary card with today's collection and the three work counts (KPIs) lead; then duty, quick actions and the
-/// features' cards; then the work list in priority order — promised today, due today, overdue nearest first —
-/// each section with a toned header and its count. Skeleton rows while loading, a calm card when all is done.
+/// Today (FR-M-004, FR-M-005). Home v2 (owner request 2026-11-26, design guide §5.1, `docs/design/home-settings-v2.md`):
+/// header (greeting, date, sync) → summary card (today's collection and the three work counts) → duty → what is
+/// wrong or waiting (alerts) → the quick-action grid → the features' cards → the work list with its filter
+/// chips. A filter shows only that list; All keeps the three sections in priority order. Skeleton rows while
+/// loading, a calm card when a list is empty.
 class TodayScreen extends ConsumerStatefulWidget {
-  const TodayScreen({super.key, this.onSeeOverdue});
-
-  /// Opens the Customers tab filtered to overdue.
-  final VoidCallback? onSeeOverdue;
+  const TodayScreen({super.key});
 
   @override
   ConsumerState<TodayScreen> createState() => _TodayScreenState();
 }
 
 class _TodayScreenState extends ConsumerState<TodayScreen> {
-  final _sectionKeys = {for (final s in _Section.values) s: GlobalKey(debugLabel: 'today-${s.name}')};
+  final _listKey = GlobalKey(debugLabel: 'today-work-list');
 
-  /// A KPI tap brings its section into view (or opens the overdue list when the section is not shown).
-  void _jumpTo(_Section s) {
-    final ctx = _sectionKeys[s]!.currentContext;
-    if (ctx == null) {
-      if (s == _Section.overdue) widget.onSeeOverdue?.call();
-      return;
-    }
-    final reduce = MediaQuery.disableAnimationsOf(context);
-    Scrollable.ensureVisible(ctx, duration: reduce ? Duration.zero : Motion.slow, curve: Motion.standard, alignment: 0.02);
+  /// A count in the summary card, "N more" and "show all" pick a filter and bring the work list up.
+  void _show(HomeFilter f) {
+    ref.read(homeFilterProvider.notifier).pick(f);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final ctx = _listKey.currentContext;
+      if (!mounted || ctx == null) return;
+      final reduce = MediaQuery.disableAnimationsOf(context);
+      Scrollable.ensureVisible(ctx, duration: reduce ? Duration.zero : Motion.slow, curve: Motion.standard);
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
     final cs = Theme.of(context).colorScheme;
-    final f = ref.watch(fmtProvider);
     final access = ref.watch(accessProvider);
     ref.watch(minuteTickerProvider);
-    final prio = ref.watch(todayPrioritiesProvider);
+    final work = ref.watch(homeWorkProvider);
+    final filters = ref.watch(homeFiltersProvider);
+    final picked = ref.watch(homeFilterProvider);
+    // A filter that is no longer offered (its module was turned off) falls back to All.
+    final filter = filters.contains(picked) ? picked : HomeFilter.all;
     final cards = [
       for (final m in ref.watch(featureManifestsProvider))
         if (access.flag(m.flag))
@@ -84,38 +87,30 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
             SliverPadding(
               padding: const EdgeInsets.fromLTRB(Space.screen, 0, Space.screen, 0),
               sliver: SliverList.list(children: [
-                _ProgressCard(priorities: prio.value, onKpi: _jumpTo),
+                _ProgressCard(priorities: work.value?.priorities, onKpi: _show),
                 if (ref.watch(attendanceShownProvider)) const _Gap(child: DutyCard()),
-                _Gap(child: _QuickActions(access: access)),
-                for (final c in cards) _Gap(child: c.builder(context)),
+                // v2: what is wrong or waiting comes before the shortcuts, so nine tiles never push it under the fold.
+                for (final c in cards)
+                  if (c.alert) _Gap(child: c.builder(context)),
                 const _CashWarning(),
+                const _Gap(child: _QuickGrid()),
+                for (final c in cards)
+                  if (!c.alert) _Gap(child: c.builder(context)),
               ]),
             ),
-            const SliverToBoxAdapter(child: _WorkListTitle()),
-            ...prio.when(
+            SliverToBoxAdapter(child: KeyedSubtree(key: _listKey, child: const _WorkListTitle())),
+            ...work.when(
               loading: () => [const SliverToBoxAdapter(child: _WorkSkeleton())],
               error: (_, _) => [
                 SliverToBoxAdapter(child: _CalmCard(child: EmptyState(icon: Icons.error_outline_rounded, title: l.errorGeneric, body: ''))),
               ],
-              data: (p) => p.isEmpty
-                  ? [SliverToBoxAdapter(child: _CalmCard(child: EmptyState(icon: Icons.task_alt_rounded, title: l.todayAllDone, body: l.todayAllDoneBody)))]
-                  : [
-                      ..._section(context, _Section.promised, l.todayPromisedSection, Icons.handshake_rounded, p.promised, AppStatus.promised, canCollect),
-                      ..._section(context, _Section.due, l.todayDueSection, Icons.event_available_rounded, p.due, AppStatus.dueToday, canCollect),
-                      ..._section(context, _Section.overdue, l.todayOverdueSection, Icons.near_me_rounded, p.overdue.take(todayOverdueLimit).toList(), AppStatus.overdue, canCollect,
-                          total: p.overdue.length),
-                      if (p.overdue.length > todayOverdueLimit)
-                        SliverToBoxAdapter(
-                          child: Padding(
-                            padding: const EdgeInsets.fromLTRB(Space.screen, Space.s8, Space.screen, 0),
-                            child: OutlinedButton.icon(
-                              onPressed: widget.onSeeOverdue,
-                              icon: const Icon(Icons.arrow_forward_rounded),
-                              label: Text(l.todayMore(f.num(p.overdue.length - todayOverdueLimit))),
-                            ),
-                          ),
-                        ),
-                    ],
+              data: (w) => [
+                SliverPersistentHeader(
+                  pinned: true,
+                  delegate: _FilterBarDelegate(background: cs.surfaceContainerLowest, child: _FilterBar(filters: filters, picked: filter, work: w)),
+                ),
+                ..._list(context, w, filter, canCollect),
+              ],
             ),
             const SliverToBoxAdapter(child: SizedBox(height: Space.s48)),
           ],
@@ -124,37 +119,244 @@ class _TodayScreenState extends ConsumerState<TodayScreen> {
     );
   }
 
-  List<Widget> _section(BuildContext context, _Section key, String title, IconData icon, List<Customer> list, AppStatus tone, bool canCollect, {int? total}) {
-    if (list.isEmpty) return const [];
-    return [
-      SliverToBoxAdapter(
-        child: KeyedSubtree(
-          key: _sectionKeys[key],
-          child: _ToneHeader(title: title, icon: icon, count: total ?? list.length, style: context.statusColors.of(tone)),
-        ),
-      ),
-      SliverPadding(
-        padding: const EdgeInsets.symmetric(horizontal: Space.screen),
-        sliver: SliverToBoxAdapter(
-          child: _SurfaceCard(
-            child: Column(children: [
-              for (var i = 0; i < list.length; i++) ...[
-                if (i > 0) const Divider(height: 1, indent: Space.s16, endIndent: Space.s16),
-                CustomerWorkRow(
-                  customer: list[i],
-                  onTap: () => context.push('/customers/${list[i].id}'),
-                  action: canCollect ? _QuickCollect(customerId: list[i].id) : null,
-                ),
-              ],
-            ]),
+  /// All: the three sections in priority order, overdue cut at [todayOverdueLimit]. A filter: only that list, whole.
+  List<Widget> _list(BuildContext context, HomeWork w, HomeFilter filter, bool canCollect) {
+    final l = AppLocalizations.of(context);
+    if (filter == HomeFilter.all) {
+      final p = w.priorities;
+      if (p.isEmpty) {
+        return [SliverToBoxAdapter(child: _CalmCard(child: EmptyState(icon: Icons.task_alt_rounded, title: l.todayAllDone, body: l.todayAllDoneBody)))];
+      }
+      return [
+        ..._section(context, HomeFilter.promised, p.promised, canCollect),
+        ..._section(context, HomeFilter.due, p.due, canCollect),
+        ..._section(context, HomeFilter.overdue, p.overdue.take(todayOverdueLimit).toList(), canCollect, total: p.overdue.length),
+        if (p.overdue.length > todayOverdueLimit)
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(Space.screen, Space.s8, Space.screen, 0),
+              child: OutlinedButton.icon(
+                key: const Key('today-more'),
+                onPressed: () => _show(HomeFilter.overdue),
+                icon: const Icon(Icons.arrow_forward_rounded),
+                label: Text(l.todayMore(ref.read(fmtProvider).num(p.overdue.length - todayOverdueLimit))),
+              ),
+            ),
+          ),
+      ];
+    }
+    final list = w.listOf(filter);
+    if (list.isEmpty) {
+      return [
+        SliverToBoxAdapter(
+          child: _CalmCard(
+            child: EmptyState(
+              icon: Icons.inbox_rounded,
+              title: l.homeFilterEmpty,
+              body: l.homeFilterEmptyBody,
+              action: TextButton(key: const Key('home-filter-show-all'), onPressed: () => _show(HomeFilter.all), child: Text(l.homeFilterShowAll)),
+            ),
           ),
         ),
+      ];
+    }
+    return _section(context, filter, list, canCollect);
+  }
+
+  List<Widget> _section(BuildContext context, HomeFilter group, List<Customer> list, bool canCollect, {int? total}) {
+    if (list.isEmpty) return const [];
+    final look = _lookOf(context, group);
+    return [
+      SliverToBoxAdapter(child: _ToneHeader(title: look.title, icon: look.icon, count: total ?? list.length, style: look.style)),
+      SliverPadding(
+        padding: const EdgeInsets.symmetric(horizontal: Space.screen),
+        sliver: _RowsCard(customers: list, canCollect: canCollect),
       ),
     ];
   }
 }
 
-enum _Section { promised, due, overdue }
+/// How one list of the work list looks: its chip word, its section title, its icon and tone.
+typedef _Look = ({String chip, String title, IconData icon, StatusStyle style});
+
+_Look _lookOf(BuildContext context, HomeFilter f) {
+  final l = AppLocalizations.of(context);
+  final cs = Theme.of(context).colorScheme;
+  final st = context.statusColors;
+  return switch (f) {
+    HomeFilter.all => (chip: l.filterAll, title: l.homeWorkListTitle, icon: Icons.checklist_rounded, style: StatusStyle(fg: cs.onSurfaceVariant, bg: cs.surfaceContainerHigh)),
+    HomeFilter.promised => (chip: l.todayPromisedSection, title: l.todayPromisedSection, icon: Icons.handshake_rounded, style: st.of(AppStatus.promised)),
+    HomeFilter.due => (chip: l.todayDueSection, title: l.todayDueSection, icon: Icons.event_available_rounded, style: st.of(AppStatus.dueToday)),
+    HomeFilter.overdue => (chip: l.filterOverdue, title: l.todayOverdueSection, icon: Icons.near_me_rounded, style: st.of(AppStatus.overdue)),
+    HomeFilter.badTag => (chip: l.tagKindOther, title: l.tagKindOther, icon: Icons.flag_rounded, style: context.tagColors.of(TagKind.other)),
+    HomeFilter.brokenPromise => (chip: l.homeFilterBroken, title: l.homeFilterBroken, icon: Icons.heart_broken_rounded, style: context.semanticColors.danger),
+  };
+}
+
+/// The filter chips (FR-M-082): one choice, each with the number of rows it shows; the two lenses sit after a
+/// divider. Scrolls sideways; every chip is a 48 dp target.
+class _FilterBar extends ConsumerStatefulWidget {
+  const _FilterBar({required this.filters, required this.picked, required this.work});
+  final List<HomeFilter> filters;
+  final HomeFilter picked;
+  final HomeWork work;
+
+  @override
+  ConsumerState<_FilterBar> createState() => _FilterBarState();
+}
+
+class _FilterBarState extends ConsumerState<_FilterBar> {
+  final _scroll = ScrollController();
+  final _chipKeys = {for (final x in HomeFilter.values) x: GlobalKey(debugLabel: 'home-filter-${x.name}')};
+
+  @override
+  void initState() {
+    super.initState();
+    _reveal(animate: false);
+  }
+
+  @override
+  void didUpdateWidget(_FilterBar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.picked != widget.picked) _reveal(animate: true);
+  }
+
+  @override
+  void dispose() {
+    _scroll.dispose();
+    super.dispose();
+  }
+
+  /// The picked chip is always in sight: a count in the summary card, "N more" or the choice kept for the
+  /// session can pick one that sits past the edge. Only the chip row moves, never the page.
+  void _reveal({required bool animate}) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_scroll.hasClients) return;
+      final chip = _chipKeys[widget.picked]?.currentContext?.findRenderObject();
+      if (chip == null) return;
+      final still = !animate || MediaQuery.disableAnimationsOf(context);
+      _scroll.position.ensureVisible(chip, alignment: 0.5, duration: still ? Duration.zero : Motion.fast, curve: Motion.standard);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final t = Theme.of(context).textTheme;
+    final cs = Theme.of(context).colorScheme;
+    final f = ref.watch(fmtProvider);
+    final filters = widget.filters, picked = widget.picked, work = widget.work;
+    return Semantics(
+      container: true,
+      label: AppLocalizations.of(context).homeFiltersA11y,
+      // A Row, not a lazy list: there are at most six chips, and TalkBack must reach the ones past the edge.
+      child: SingleChildScrollView(
+        key: const Key('home-filters'),
+        controller: _scroll,
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: Space.screen, vertical: Space.s4),
+        child: Row(children: [
+          for (final x in filters) ...[
+            if (x == HomeFilter.badTag)
+              Padding(
+                padding: const EdgeInsets.only(right: Space.s8),
+                child: VerticalDivider(width: Space.s8, indent: Space.s8, endIndent: Space.s8, color: cs.outlineVariant),
+              ),
+            Padding(
+              key: _chipKeys[x],
+              padding: const EdgeInsets.only(right: Space.s8),
+              child: Builder(builder: (context) {
+                final look = _lookOf(context, x);
+                final on = x == picked;
+                return FilterChip(
+                  key: ValueKey('home-filter-${x.name}'),
+                  selected: on,
+                  showCheckmark: false,
+                  avatar: Icon(look.icon, size: 18, color: on ? cs.onPrimaryContainer : look.style.fg),
+                  label: Text.rich(TextSpan(children: [
+                    TextSpan(text: look.chip),
+                    TextSpan(text: '  ${f.num(work.count(x))}', style: AppTheme.tabular(t.labelMedium!).copyWith(fontWeight: FontWeight.w700)),
+                  ])),
+                  onSelected: (_) => ref.read(homeFilterProvider.notifier).pick(x),
+                );
+              }),
+            ),
+          ],
+        ]),
+      ),
+    );
+  }
+}
+
+/// Keeps the filter chips under the top bar while the list scrolls; a hairline shows once rows pass under it.
+class _FilterBarDelegate extends SliverPersistentHeaderDelegate {
+  _FilterBarDelegate({required this.background, required this.child});
+  final Color background;
+  final Widget child;
+
+  static const _height = Sizes.minTarget + Space.s8;
+
+  @override
+  double get minExtent => _height;
+  @override
+  double get maxExtent => _height;
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) => Material(
+        color: background,
+        child: DecoratedBox(
+          position: DecorationPosition.foreground,
+          decoration: BoxDecoration(border: Border(bottom: BorderSide(color: overlapsContent ? Theme.of(context).colorScheme.outlineVariant : Colors.transparent))),
+          child: child,
+        ),
+      );
+
+  @override
+  bool shouldRebuild(_FilterBarDelegate oldDelegate) => oldDelegate.child != child || oldDelegate.background != background;
+}
+
+/// The rows of one list in the Home card style, built lazily: a filter can hold hundreds of customers and
+/// only the rows on screen exist.
+class _RowsCard extends StatelessWidget {
+  const _RowsCard({required this.customers, required this.canCollect});
+  final List<Customer> customers;
+  final bool canCollect;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    const r = Radius.circular(Radii.xl);
+    return DecoratedSliver(
+      decoration: BoxDecoration(
+        color: cs.surface,
+        borderRadius: Radii.brXl,
+        border: Border.all(color: cs.outlineVariant),
+        boxShadow: Shadows.of(Theme.of(context).brightness, Shadows.sm),
+      ),
+      sliver: SliverList.separated(
+        itemCount: customers.length,
+        // Two frames in a row are already apart: a line between them would be one line too many.
+        separatorBuilder: (_, i) => customers[i].badTag != null && customers[i + 1].badTag != null
+            ? const SizedBox.shrink()
+            : const Divider(height: 1, indent: Space.s16, endIndent: Space.s16),
+        itemBuilder: (context, i) {
+          final c = customers[i];
+          final row = Material(
+            type: MaterialType.transparency,
+            child: CustomerWorkRow(
+              key: ValueKey('home-row-${c.id}'),
+              customer: c,
+              onTap: () => context.push('/customers/${c.id}'),
+              action: canCollect ? _QuickCollect(customerId: c.id) : null,
+            ),
+          );
+          final first = i == 0, last = i == customers.length - 1;
+          // The ripple of the first and last row follows the card's corners.
+          return first || last ? ClipRRect(borderRadius: BorderRadius.vertical(top: first ? r : Radius.zero, bottom: last ? r : Radius.zero), child: row) : row;
+        },
+      ),
+    );
+  }
+}
 
 /// Greeting, date and sync state; the greeting may wrap at large text sizes instead of being cut.
 class _HomeHeader extends ConsumerWidget {
@@ -370,101 +572,111 @@ class _QuickCollect extends StatelessWidget {
   }
 }
 
-/// Three quick-access tiles: Attendance hub, Today's Work log, Performance. One height, one style.
-class _QuickActions extends ConsumerWidget {
-  const _QuickActions({required this.access});
-  final AccessSnapshot access;
+/// Quick actions (FR-M-083, design guide §5.1): the shortcuts features give through their manifests
+/// (`quickActions`), as one card with full rows of three equal cells: nine, six or three. A feature that is
+/// off, or that the user may not use, gives none, and the rest move up.
+class _QuickGrid extends ConsumerWidget {
+  const _QuickGrid();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final l = AppLocalizations.of(context);
-    // FR-M-042: the attendance tile says whether today's attendance is still to be given.
-    final day = ref.watch(todayAttendanceProvider).value;
-    final attended = day != null && day.status != DayStatus.notStarted;
-    final showAttendance = ref.watch(attendanceShownProvider); // FR-M-070: never for a super admin
-    final showReports = access.flag('module.reports');
-    if (!showAttendance && !showReports) return const SizedBox.shrink();
-    return IntrinsicHeight(
-      child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        if (showAttendance) ...[
-          Expanded(
-            child: _QuickTile(
-              icon: Icons.work_history_rounded,
-              label: l.attendanceBtn,
-              mark: attended ? _TileMark.done : _TileMark.pending,
-              markLabel: attended ? l.attTileDone : l.attTilePending,
-              onTap: () => context.push('/attendance'),
-            ),
+    final access = ref.watch(accessProvider);
+    final all = [
+      for (final m in ref.watch(featureManifestsProvider))
+        if (access.flag(m.flag))
+          for (final a in m.quickActions)
+            if ((a.permission == null || access.can(a.permission!)) && (a.visible?.call(ref) ?? true)) a,
+    ]..sort((a, b) => a.order.compareTo(b.order));
+    final shown = all.take(quickGridCount(all.length)).toList();
+    if (shown.isEmpty) return const SizedBox.shrink();
+    final perRow = shown.length < 3 ? shown.length : 3;
+    return Semantics(
+      container: true,
+      label: AppLocalizations.of(context).quickActionsA11y,
+      child: _SurfaceCard(
+        child: Padding(
+          padding: const EdgeInsets.all(Space.s4),
+          // Every row as tall as the tallest: the cells are one size whatever their labels need.
+          child: IntrinsicHeight(
+            key: const Key('quick-grid'),
+            child: Column(children: [
+              for (var i = 0; i < shown.length; i += perRow)
+                Expanded(
+                  child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                    for (final a in shown.sublist(i, i + perRow)) Expanded(child: _QuickCell(action: a)),
+                  ]),
+                ),
+            ]),
           ),
-          const SizedBox(width: Space.s8),
-        ],
-        Expanded(child: _QuickTile(icon: Icons.list_alt_rounded, label: l.todayWorkBtn, onTap: () => context.push('/today-work'))),
-        if (showReports) ...[
-          const SizedBox(width: Space.s8),
-          Expanded(child: _QuickTile(icon: Icons.insights_rounded, label: l.performanceBtn, onTap: () => context.push('/performance'))),
-        ],
-      ]),
+        ),
+      ),
     );
   }
 }
 
-enum _TileMark { pending, done }
-
-class _QuickTile extends StatelessWidget {
-  const _QuickTile({required this.icon, required this.label, required this.onTap, this.mark, this.markLabel});
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-
-  /// A small corner mark: amber "still to do" or green "done" (colour, icon and a spoken label).
-  final _TileMark? mark;
-  final String? markLabel;
+/// One shortcut: the icon in its tone's circle (`action.*`), the label on up to two lines, a count badge for
+/// what waits behind it, and for attendance the done / still-to-do mark with its words.
+class _QuickCell extends ConsumerWidget {
+  const _QuickCell({required this.action});
+  final QuickActionDef action;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context);
     final t = Theme.of(context).textTheme;
     final cs = Theme.of(context).colorScheme;
-    final sem = context.semanticColors;
-    final markStyle = mark == _TileMark.done ? sem.success : sem.warning;
+    final f = ref.watch(fmtProvider);
+    final tone = context.actionColors.of(action.tone);
+    final label = action.label(l);
+    final count = action.badge?.call(ref) ?? 0;
+    final state = action.state?.call(ref, l);
+    final mark = state == null ? null : (state.done ? context.semanticColors.success : context.semanticColors.warning);
+    void open() => context.push(action.route);
     return Semantics(
-      label: markLabel,
       button: true,
-      child: _SurfaceCard(
-        child: InkWell(
-          onTap: onTap,
-          child: Stack(children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(Space.s4, Space.s12, Space.s4, Space.s12),
-              child: SizedBox(
-                width: double.infinity,
-                child: Column(mainAxisSize: MainAxisSize.min, children: [
+      label: [count > 0 ? l.quickBadgeA11y(label, f.num(count)) : label, if (state != null) state.label].join(', '),
+      excludeSemantics: true,
+      onTap: open,
+      child: InkWell(
+        key: ValueKey('quick-${action.id}'),
+        borderRadius: Radii.brLg,
+        onTap: open,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: Sizes.row3),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(Space.s4, Space.s12, Space.s4, Space.s12),
+            child: Column(mainAxisSize: MainAxisSize.min, children: [
+              Badge(
+                isLabelVisible: count > 0,
+                label: Text(f.num(count)),
+                child: Stack(clipBehavior: Clip.none, children: [
                   Container(
                     width: Space.s40,
                     height: Space.s40,
-                    decoration: BoxDecoration(color: cs.primaryContainer, shape: BoxShape.circle),
-                    child: Icon(icon, size: 22, color: cs.onPrimaryContainer),
+                    decoration: BoxDecoration(color: tone.bg, shape: BoxShape.circle),
+                    child: Icon(action.icon, size: 22, color: tone.fg),
                   ),
-                  const SizedBox(height: Space.s8),
-                  Text(label, style: t.labelMedium!.copyWith(color: cs.onSurface), textAlign: TextAlign.center, maxLines: 2, overflow: TextOverflow.ellipsis),
-                  if (mark != null && markLabel != null) ...[
-                    const SizedBox(height: Space.s2),
-                    Text(markLabel!, style: t.labelSmall!.copyWith(color: markStyle.fg, fontWeight: FontWeight.w700), textAlign: TextAlign.center, maxLines: 2, overflow: TextOverflow.ellipsis),
-                  ],
+                  if (state != null && mark != null)
+                    PositionedDirectional(
+                      top: -Space.s4,
+                      end: -Space.s8,
+                      child: Container(
+                        width: 18,
+                        height: 18,
+                        decoration: BoxDecoration(color: mark.bg, shape: BoxShape.circle, border: Border.all(color: mark.fg)),
+                        child: Icon(state.done ? Icons.check_rounded : Icons.priority_high_rounded, size: 12, color: mark.fg),
+                      ),
+                    ),
                 ]),
               ),
-            ),
-            if (mark != null)
-              PositionedDirectional(
-                top: Space.s8,
-                end: Space.s8,
-                child: Container(
-                  width: 18,
-                  height: 18,
-                  decoration: BoxDecoration(color: markStyle.bg, shape: BoxShape.circle, border: Border.all(color: markStyle.fg)),
-                  child: Icon(mark == _TileMark.done ? Icons.check_rounded : Icons.priority_high_rounded, size: 12, color: markStyle.fg),
-                ),
-              ),
-          ]),
+              const SizedBox(height: Space.s8),
+              Text(label, style: t.labelMedium!.copyWith(color: cs.onSurface), textAlign: TextAlign.center, maxLines: 2, overflow: TextOverflow.ellipsis),
+              if (state != null && mark != null) ...[
+                const SizedBox(height: Space.s2),
+                Text(state.label, style: t.labelSmall!.copyWith(color: mark.fg, fontWeight: FontWeight.w700), textAlign: TextAlign.center, maxLines: 2, overflow: TextOverflow.ellipsis),
+              ],
+            ]),
+          ),
         ),
       ),
     );
@@ -478,7 +690,7 @@ class _QuickTile extends StatelessWidget {
 class _ProgressCard extends ConsumerStatefulWidget {
   const _ProgressCard({required this.priorities, required this.onKpi});
   final TodayPriorities? priorities;
-  final ValueChanged<_Section> onKpi;
+  final ValueChanged<HomeFilter> onKpi;
   @override
   ConsumerState<_ProgressCard> createState() => _ProgressCardState();
 }
@@ -633,11 +845,11 @@ class _ProgressCardState extends ConsumerState<_ProgressCard> {
                 padding: const EdgeInsets.all(Space.s12),
                 child: IntrinsicHeight(
                   child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                    Expanded(child: _Kpi(label: l.homeKpiPromised, count: p.promised.length, style: st.of(AppStatus.promised), onTap: () => widget.onKpi(_Section.promised))),
+                    Expanded(child: _Kpi(label: l.homeKpiPromised, count: p.promised.length, style: st.of(AppStatus.promised), onTap: () => widget.onKpi(HomeFilter.promised))),
                     const SizedBox(width: Space.s8),
-                    Expanded(child: _Kpi(label: l.homeKpiDue, count: p.due.length, style: st.of(AppStatus.dueToday), onTap: () => widget.onKpi(_Section.due))),
+                    Expanded(child: _Kpi(label: l.homeKpiDue, count: p.due.length, style: st.of(AppStatus.dueToday), onTap: () => widget.onKpi(HomeFilter.due))),
                     const SizedBox(width: Space.s8),
-                    Expanded(child: _Kpi(label: l.homeKpiOverdue, count: p.overdue.length, style: st.of(AppStatus.overdue), onTap: () => widget.onKpi(_Section.overdue))),
+                    Expanded(child: _Kpi(label: l.homeKpiOverdue, count: p.overdue.length, style: st.of(AppStatus.overdue), onTap: () => widget.onKpi(HomeFilter.overdue))),
                   ]),
                 ),
               ),

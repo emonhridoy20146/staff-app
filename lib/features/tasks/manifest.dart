@@ -2,6 +2,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart' show Icons;
 
 import '../../core/feature/feature_manifest.dart';
+import '../../core/theme/tag_colors.dart' show ActionTone;
 import 'src/tasks_data.dart';
 import 'src/tasks_screens.dart';
 import 'src/work_log.dart';
@@ -29,6 +30,9 @@ final tasksManifest = FeatureManifest(
     ),
   ],
   workLogSources: const [WorkLogSourceDef(id: 'tasks', watch: watchTaskWorkLog)],
-  todayCards: [TodayCardDef(id: 'tasks', order: 1, permission: 'task.work', builder: (_) => const TasksTodayCard())],
+  todayCards: [TodayCardDef(id: 'tasks', order: 1, permission: 'task.work', alert: true, builder: (_) => const TasksTodayCard())],
   meEntries: [MeEntryDef(id: 'tasks', order: 5, permission: 'task.work', builder: (_) => const TasksMeEntry())],
+  quickActions: [
+    QuickActionDef(id: 'tasks', order: 40, icon: Icons.assignment_rounded, tone: ActionTone.violet, label: (l) => l.tasksTitle, route: '/tasks', permission: 'task.work', badge: (ref) => ref.watch(openTasksProvider).length),
+  ],
 );

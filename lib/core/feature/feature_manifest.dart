@@ -5,6 +5,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../l10n/app_localizations.dart';
 import '../settings/ui_prefs.dart';
 import '../sync/sync_handlers.dart';
+import '../theme/tag_colors.dart' show ActionTone;
 
 /// Context passed to customer-action builders (extension point).
 class CustomerActionContext {
@@ -37,11 +38,66 @@ class CustomerActionDef {
 
 /// A card on the Today screen contributed by a feature.
 class TodayCardDef {
-  const TodayCardDef({required this.id, required this.order, required this.builder, this.permission});
+  const TodayCardDef({required this.id, required this.order, required this.builder, this.permission, this.alert = false});
   final String id;
   final int order;
   final String? permission;
   final WidgetBuilder builder;
+
+  /// Something is wrong or waiting (tracking stopped, a must-read notice, a sync problem, a handover): Home
+  /// shows alerts above the quick actions, the other cards after them (design guide §5.1).
+  final bool alert;
+}
+
+/// The done / still-to-do mark of a quick action, with its words (attendance: given, or still to give).
+class QuickActionState {
+  const QuickActionState({required this.done, required this.label});
+  final bool done;
+  final String label;
+}
+
+/// A shortcut on Home (FR-M-083): one cell of the quick-action grid, given by the feature that owns the
+/// screen it opens. Home shows the first nine by [order] (six or three when fewer can be used); a feature
+/// whose flag is off, or whose [permission] the user lacks, gives none.
+class QuickActionDef {
+  const QuickActionDef({required this.id, required this.order, required this.icon, required this.tone, required this.label, required this.route, this.permission, this.visible, this.badge, this.state});
+  final String id;
+  final int order;
+  final String? permission;
+
+  /// Extra condition from server data; null = always, once flag and permission allow.
+  final bool Function(WidgetRef ref)? visible;
+  final IconData icon;
+
+  /// The tonal container of the icon (tokens `action.*`).
+  final ActionTone tone;
+  final String Function(AppLocalizations l) label;
+  final String route;
+
+  /// How many things wait behind it (unread notices, open tasks); 0 shows no badge.
+  final int Function(WidgetRef ref)? badge;
+  final QuickActionState? Function(WidgetRef ref, AppLocalizations l)? state;
+}
+
+/// The sections of the Settings screen (FR-M-084), in display order.
+enum SettingsSection { account, work, locationBattery, display, privacy, about }
+
+/// A row a feature adds to Settings: icon, title, one-line hint, current value, and where a tap goes.
+class SettingsRowDef {
+  const SettingsRowDef({required this.id, required this.section, required this.order, required this.icon, required this.title, this.tone = ActionTone.brand, this.hint, this.value, this.route, this.permission, this.visible});
+  final String id;
+  final SettingsSection section;
+  final int order;
+  final String? permission;
+  final bool Function(WidgetRef ref)? visible;
+  final IconData icon;
+  final ActionTone tone;
+  final String Function(AppLocalizations l) title;
+  final String Function(AppLocalizations l)? hint;
+
+  /// The current value in words, from the feature's own providers (so it stays live).
+  final String? Function(WidgetRef ref, AppLocalizations l, Fmt f)? value;
+  final String? route;
 }
 
 /// An entry in the Me tab.
@@ -182,6 +238,8 @@ class FeatureManifest {
     this.workLogSources = const [],
     this.alertSources = const [],
     this.mapLayers = const [],
+    this.quickActions = const [],
+    this.settingsRows = const [],
   });
 
   final String name;
@@ -201,6 +259,8 @@ class FeatureManifest {
   final List<WorkLogSourceDef> workLogSources;
   final List<AlertSourceDef> alertSources;
   final List<MapLayerDef> mapLayers;
+  final List<QuickActionDef> quickActions;
+  final List<SettingsRowDef> settingsRows;
 }
 
 /// The registered manifests (overridden at bootstrap from

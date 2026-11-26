@@ -1,7 +1,9 @@
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart' show Icons;
 
 import '../../core/feature/feature_manifest.dart';
 import '../../core/permissions/permission_service.dart';
+import '../../core/theme/tag_colors.dart' show ActionTone;
 import 'src/cash.dart';
 import 'src/cash_in_hand.dart';
 
@@ -15,4 +17,7 @@ final cashManifest = FeatureManifest(
   pullHandlers: [DepositPullHandler()],
   pushHandlers: [DepositPushHandler()],
   meEntries: [MeEntryDef(id: 'cash', order: 10, permission: Perm.cashView, builder: (_) => const CashCard())],
+  quickActions: [
+    QuickActionDef(id: 'cash', order: 30, icon: Icons.account_balance_wallet_rounded, tone: ActionTone.green, label: (l) => l.quickCash, route: '/cash/in-hand', permission: Perm.cashView),
+  ],
 );

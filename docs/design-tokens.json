@@ -1,5 +1,5 @@
 {
-  "version": "1.2.0",
+  "version": "1.3.0",
   "source": "admin-web/docs/03-design-guide.md §2 (canonical); must equal staff-app copy",
   "color": {
     "brand": {
@@ -120,7 +120,92 @@
         "fgDark": "#F472B6",
         "bgDark": "#2E1020",
         "icon": "shield-alert"
+      },
+      "tag": {
+        "absconded": {
+          "fg": "#7F1D1D",
+          "bg": "#FBDADA",
+          "fgDark": "#EF4444",
+          "bgDark": "#2D1212",
+          "icon": "person-running"
+        },
+        "legal": {
+          "fg": "#991B1B",
+          "bg": "#FDE3E3",
+          "fgDark": "#F87171",
+          "bgDark": "#2D1212",
+          "icon": "gavel"
+        },
+        "refused_to_pay": {
+          "fg": "#B91C1C",
+          "bg": "#FDECEC",
+          "fgDark": "#FCA5A5",
+          "bgDark": "#2D1212",
+          "icon": "ban"
+        },
+        "other": {
+          "fg": "#D42020",
+          "bg": "#FEF2F2",
+          "fgDark": "#FECACA",
+          "bgDark": "#2D1212",
+          "icon": "flag-filled"
+        },
+        "fraud_suspected": {
+          "fg": "#9D174D",
+          "bg": "#FCE7F3",
+          "fgDark": "#F472B6",
+          "bgDark": "#2E1020",
+          "icon": "shield-alert"
+        },
+        "repeated_broken_promise": {
+          "fg": "#6D28D9",
+          "bg": "#F1EAFE",
+          "fgDark": "#A78BFA",
+          "bgDark": "#1F1536",
+          "icon": "heart-crack"
+        },
+        "plan_ended_unpaid": {
+          "fg": "#C2410C",
+          "bg": "#FFF1E8",
+          "fgDark": "#FB923C",
+          "bgDark": "#2E1A0C",
+          "icon": "calendar-x"
+        },
+        "note": "v1.3. Frame, icon and chip text = fg; chip tint = bg. Keys are the tag reasonCode of the contract, plus legal (the severity). absconded is also used for a latest visit outcome runaway and is drawn strongest (2 px frame, filled chip: fg as fill, bg as text). other = generic bad colour, also for unknown codes. Order when several apply: absconded, legal, reason."
       }
+    },
+    "action": {
+      "brand": {
+        "fg": "#2437A6",
+        "bg": "#DCE5FF",
+        "fgDark": "#B9C6FF",
+        "bgDark": "#1B2757"
+      },
+      "teal": {
+        "fg": "#115E59",
+        "bg": "#D5F3F0",
+        "fgDark": "#5EEAD4",
+        "bgDark": "#0E2F2D"
+      },
+      "green": {
+        "fg": "#166534",
+        "bg": "#DDF3E4",
+        "fgDark": "#4ADE80",
+        "bgDark": "#0F2A1A"
+      },
+      "violet": {
+        "fg": "#5B21B6",
+        "bg": "#EBE5FD",
+        "fgDark": "#C4B5FD",
+        "bgDark": "#251A45"
+      },
+      "amber": {
+        "fg": "#92400E",
+        "bg": "#FEF0C7",
+        "fgDark": "#FBBF24",
+        "bgDark": "#2E2208"
+      },
+      "note": "v1.3. Tonal containers for shortcut icons: bg = the 40 px circle / square, fg = the icon. brand = duty and the office, teal = the field and people, green = money, violet = goals, amber = time and notices."
     },
     "dark": {
       "background": "#0B0E14",

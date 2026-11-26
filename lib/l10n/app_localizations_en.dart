@@ -1235,18 +1235,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsThemeDark => 'Dark';
 
   @override
-  String get settingsHighContrast => 'High contrast (for sunlight)';
-
-  @override
   String get settingsPrivacy => 'Privacy notice';
 
   @override
   String get settingsAbout => 'About';
-
-  @override
-  String settingsVersion(String version) {
-    return 'Version $version';
-  }
 
   @override
   String get logoutTitle => 'Sign out?';
@@ -1557,11 +1549,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsLanguageEn => 'English';
-
-  @override
-  String settingsDevice(String id) {
-    return 'Device $id';
-  }
 
   @override
   String meStaffCode(String code) {
@@ -4400,4 +4387,166 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get requestErrNoteLong =>
       'The reason is too long (at most 1000 letters)';
+
+  @override
+  String get tagKindAbsconded => 'Runaway';
+
+  @override
+  String get tagKindLegal => 'Legal action';
+
+  @override
+  String get tagKindRefused => 'Refuses to pay';
+
+  @override
+  String get tagKindOther => 'Bad tag';
+
+  @override
+  String get tagKindFraud => 'Fraud suspected';
+
+  @override
+  String get tagKindBrokenPromise => 'Broken promises';
+
+  @override
+  String get tagKindPlanEnded => 'Long overdue';
+
+  @override
+  String tagA11y(String kind) {
+    return 'Bad tag: $kind';
+  }
+
+  @override
+  String tagVisitA11y(String kind) {
+    return 'Last visit: $kind';
+  }
+
+  @override
+  String get tagRowPreview => 'How the customer\'s row will look';
+
+  @override
+  String get tagWatchPreview =>
+      'Watch only: the list shows \"Tagged\", without a coloured frame.';
+
+  @override
+  String detailRunawayVisit(String when) {
+    return 'The last visit says runaway · $when';
+  }
+
+  @override
+  String get homeFilterBroken => 'Broken promise';
+
+  @override
+  String get homeFilterEmpty => 'Nobody in this list';
+
+  @override
+  String get homeFilterEmptyBody => 'Pick another list above.';
+
+  @override
+  String get homeFilterShowAll => 'Show all';
+
+  @override
+  String get homeFiltersA11y => 'Work list filters';
+
+  @override
+  String get quickCash => 'Cash in hand';
+
+  @override
+  String get quickActionsA11y => 'Shortcuts';
+
+  @override
+  String quickBadgeA11y(String label, String count) {
+    return '$label: $count waiting';
+  }
+
+  @override
+  String get settingsSectionAccount => 'Account';
+
+  @override
+  String get settingsSectionWork => 'Work';
+
+  @override
+  String get settingsSectionLocation => 'Location & battery';
+
+  @override
+  String get settingsSectionDisplay => 'Display & language';
+
+  @override
+  String get settingsSectionPrivacy => 'Privacy';
+
+  @override
+  String get settingsSectionAbout => 'Help & about';
+
+  @override
+  String get roleFieldStaff => 'Field staff';
+
+  @override
+  String get roleBranchManager => 'Branch manager';
+
+  @override
+  String get roleAreaManager => 'Area manager';
+
+  @override
+  String get roleSuperAdmin => 'Super admin';
+
+  @override
+  String get roleViewer => 'Viewer';
+
+  @override
+  String get settingsLogoutHint => 'Everything must be synced first';
+
+  @override
+  String get settingsSyncHint => 'Sending status';
+
+  @override
+  String get settingsTrackingHint => 'Only while on duty';
+
+  @override
+  String get settingsTrackingOn => 'On';
+
+  @override
+  String get settingsTrackingOff => 'Off';
+
+  @override
+  String get settingsTrackingProblem => 'Needs attention';
+
+  @override
+  String get settingsBatteryGuideHint => 'Steps for your phone brand';
+
+  @override
+  String get settingsLanguageHint => 'The language of the app';
+
+  @override
+  String get settingsDigitsHint => 'Digit style';
+
+  @override
+  String get settingsThemeHint => 'Light or dark screen';
+
+  @override
+  String get settingsHighContrastTitle => 'High contrast';
+
+  @override
+  String get settingsHighContrastHint => 'Easier to read in sunlight';
+
+  @override
+  String get settingsDeviceTitle => 'Device ID';
+
+  @override
+  String get settingsDeviceHint => 'For the office, if asked';
+
+  @override
+  String get settingsServerTitle => 'Server';
+
+  @override
+  String get settingsServerHint => 'Where the app sends its work';
+
+  @override
+  String get settingsServerLive => 'Live';
+
+  @override
+  String get settingsServerDemo => 'Demo';
+
+  @override
+  String get settingsMeHint => 'Language, theme, location, privacy';
+
+  @override
+  String get settingsCalendarHint => 'Holidays and duty hours';
 }

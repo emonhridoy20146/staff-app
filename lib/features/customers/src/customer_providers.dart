@@ -58,6 +58,14 @@ final todayProvider = Provider<String>((ref) => ref.watch(clockProvider).busines
 /// The signed-in user's id (whose customers are "mine").
 final myCustomerUserIdProvider = Provider<String?>((ref) => ref.watch(sessionProvider.select((s) => s.user?.id)));
 
+/// Whose work Home lists (FR-M-082): a field staff member works their own and unassigned customers, so this
+/// is their id; a branch manager, area manager, viewer or super admin sees every customer of the branches the
+/// server gave them, so it is null (everyone in view). The branch picked in the top bar narrows both.
+final homeScopeUserIdProvider = Provider<String?>((ref) {
+  final user = ref.watch(sessionProvider.select((s) => s.user));
+  return user == null || user.role == 'field_staff' ? user?.id : null;
+});
+
 final allCustomersProvider = StreamProvider<List<Customer>>((ref) {
   final fix = ref.watch(currentFixProvider).value;
   return ref.watch(customerRepositoryProvider).watchAll().map((l) => withDistances(l, fix));
@@ -191,6 +199,6 @@ final branchListProvider = Provider<Map<String, String>>((ref) {
 
 final todayPrioritiesProvider = Provider<AsyncValue<TodayPriorities>>((ref) {
   final today = ref.watch(todayProvider);
-  final me = ref.watch(myCustomerUserIdProvider);
+  final me = ref.watch(homeScopeUserIdProvider);
   return ref.watch(branchCustomersProvider).whenData((l) => prioritize(l, today, myUserId: me));
 });

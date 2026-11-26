@@ -2294,12 +2294,6 @@ abstract class AppLocalizations {
   /// **'Dark'**
   String get settingsThemeDark;
 
-  /// No description provided for @settingsHighContrast.
-  ///
-  /// In en, this message translates to:
-  /// **'High contrast (for sunlight)'**
-  String get settingsHighContrast;
-
   /// No description provided for @settingsPrivacy.
   ///
   /// In en, this message translates to:
@@ -2311,12 +2305,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'About'**
   String get settingsAbout;
-
-  /// No description provided for @settingsVersion.
-  ///
-  /// In en, this message translates to:
-  /// **'Version {version}'**
-  String settingsVersion(String version);
 
   /// No description provided for @logoutTitle.
   ///
@@ -2857,12 +2845,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'English'**
   String get settingsLanguageEn;
-
-  /// No description provided for @settingsDevice.
-  ///
-  /// In en, this message translates to:
-  /// **'Device {id}'**
-  String settingsDevice(String id);
 
   /// No description provided for @meStaffCode.
   ///
@@ -7663,6 +7645,312 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The reason is too long (at most 1000 letters)'**
   String get requestErrNoteLong;
+
+  /// No description provided for @tagKindAbsconded.
+  ///
+  /// In en, this message translates to:
+  /// **'Runaway'**
+  String get tagKindAbsconded;
+
+  /// No description provided for @tagKindLegal.
+  ///
+  /// In en, this message translates to:
+  /// **'Legal action'**
+  String get tagKindLegal;
+
+  /// No description provided for @tagKindRefused.
+  ///
+  /// In en, this message translates to:
+  /// **'Refuses to pay'**
+  String get tagKindRefused;
+
+  /// No description provided for @tagKindOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Bad tag'**
+  String get tagKindOther;
+
+  /// No description provided for @tagKindFraud.
+  ///
+  /// In en, this message translates to:
+  /// **'Fraud suspected'**
+  String get tagKindFraud;
+
+  /// No description provided for @tagKindBrokenPromise.
+  ///
+  /// In en, this message translates to:
+  /// **'Broken promises'**
+  String get tagKindBrokenPromise;
+
+  /// No description provided for @tagKindPlanEnded.
+  ///
+  /// In en, this message translates to:
+  /// **'Long overdue'**
+  String get tagKindPlanEnded;
+
+  /// No description provided for @tagA11y.
+  ///
+  /// In en, this message translates to:
+  /// **'Bad tag: {kind}'**
+  String tagA11y(String kind);
+
+  /// No description provided for @tagVisitA11y.
+  ///
+  /// In en, this message translates to:
+  /// **'Last visit: {kind}'**
+  String tagVisitA11y(String kind);
+
+  /// No description provided for @tagRowPreview.
+  ///
+  /// In en, this message translates to:
+  /// **'How the customer\'s row will look'**
+  String get tagRowPreview;
+
+  /// No description provided for @tagWatchPreview.
+  ///
+  /// In en, this message translates to:
+  /// **'Watch only: the list shows \"Tagged\", without a coloured frame.'**
+  String get tagWatchPreview;
+
+  /// No description provided for @detailRunawayVisit.
+  ///
+  /// In en, this message translates to:
+  /// **'The last visit says runaway · {when}'**
+  String detailRunawayVisit(String when);
+
+  /// No description provided for @homeFilterBroken.
+  ///
+  /// In en, this message translates to:
+  /// **'Broken promise'**
+  String get homeFilterBroken;
+
+  /// No description provided for @homeFilterEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Nobody in this list'**
+  String get homeFilterEmpty;
+
+  /// No description provided for @homeFilterEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick another list above.'**
+  String get homeFilterEmptyBody;
+
+  /// No description provided for @homeFilterShowAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Show all'**
+  String get homeFilterShowAll;
+
+  /// No description provided for @homeFiltersA11y.
+  ///
+  /// In en, this message translates to:
+  /// **'Work list filters'**
+  String get homeFiltersA11y;
+
+  /// No description provided for @quickCash.
+  ///
+  /// In en, this message translates to:
+  /// **'Cash in hand'**
+  String get quickCash;
+
+  /// No description provided for @quickActionsA11y.
+  ///
+  /// In en, this message translates to:
+  /// **'Shortcuts'**
+  String get quickActionsA11y;
+
+  /// No description provided for @quickBadgeA11y.
+  ///
+  /// In en, this message translates to:
+  /// **'{label}: {count} waiting'**
+  String quickBadgeA11y(String label, String count);
+
+  /// No description provided for @settingsSectionAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Account'**
+  String get settingsSectionAccount;
+
+  /// No description provided for @settingsSectionWork.
+  ///
+  /// In en, this message translates to:
+  /// **'Work'**
+  String get settingsSectionWork;
+
+  /// No description provided for @settingsSectionLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Location & battery'**
+  String get settingsSectionLocation;
+
+  /// No description provided for @settingsSectionDisplay.
+  ///
+  /// In en, this message translates to:
+  /// **'Display & language'**
+  String get settingsSectionDisplay;
+
+  /// No description provided for @settingsSectionPrivacy.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy'**
+  String get settingsSectionPrivacy;
+
+  /// No description provided for @settingsSectionAbout.
+  ///
+  /// In en, this message translates to:
+  /// **'Help & about'**
+  String get settingsSectionAbout;
+
+  /// No description provided for @roleFieldStaff.
+  ///
+  /// In en, this message translates to:
+  /// **'Field staff'**
+  String get roleFieldStaff;
+
+  /// No description provided for @roleBranchManager.
+  ///
+  /// In en, this message translates to:
+  /// **'Branch manager'**
+  String get roleBranchManager;
+
+  /// No description provided for @roleAreaManager.
+  ///
+  /// In en, this message translates to:
+  /// **'Area manager'**
+  String get roleAreaManager;
+
+  /// No description provided for @roleSuperAdmin.
+  ///
+  /// In en, this message translates to:
+  /// **'Super admin'**
+  String get roleSuperAdmin;
+
+  /// No description provided for @roleViewer.
+  ///
+  /// In en, this message translates to:
+  /// **'Viewer'**
+  String get roleViewer;
+
+  /// No description provided for @settingsLogoutHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Everything must be synced first'**
+  String get settingsLogoutHint;
+
+  /// No description provided for @settingsSyncHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Sending status'**
+  String get settingsSyncHint;
+
+  /// No description provided for @settingsTrackingHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Only while on duty'**
+  String get settingsTrackingHint;
+
+  /// No description provided for @settingsTrackingOn.
+  ///
+  /// In en, this message translates to:
+  /// **'On'**
+  String get settingsTrackingOn;
+
+  /// No description provided for @settingsTrackingOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get settingsTrackingOff;
+
+  /// No description provided for @settingsTrackingProblem.
+  ///
+  /// In en, this message translates to:
+  /// **'Needs attention'**
+  String get settingsTrackingProblem;
+
+  /// No description provided for @settingsBatteryGuideHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Steps for your phone brand'**
+  String get settingsBatteryGuideHint;
+
+  /// No description provided for @settingsLanguageHint.
+  ///
+  /// In en, this message translates to:
+  /// **'The language of the app'**
+  String get settingsLanguageHint;
+
+  /// No description provided for @settingsDigitsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Digit style'**
+  String get settingsDigitsHint;
+
+  /// No description provided for @settingsThemeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Light or dark screen'**
+  String get settingsThemeHint;
+
+  /// No description provided for @settingsHighContrastTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'High contrast'**
+  String get settingsHighContrastTitle;
+
+  /// No description provided for @settingsHighContrastHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Easier to read in sunlight'**
+  String get settingsHighContrastHint;
+
+  /// No description provided for @settingsDeviceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Device ID'**
+  String get settingsDeviceTitle;
+
+  /// No description provided for @settingsDeviceHint.
+  ///
+  /// In en, this message translates to:
+  /// **'For the office, if asked'**
+  String get settingsDeviceHint;
+
+  /// No description provided for @settingsServerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Server'**
+  String get settingsServerTitle;
+
+  /// No description provided for @settingsServerHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Where the app sends its work'**
+  String get settingsServerHint;
+
+  /// No description provided for @settingsServerLive.
+  ///
+  /// In en, this message translates to:
+  /// **'Live'**
+  String get settingsServerLive;
+
+  /// No description provided for @settingsServerDemo.
+  ///
+  /// In en, this message translates to:
+  /// **'Demo'**
+  String get settingsServerDemo;
+
+  /// No description provided for @settingsMeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Language, theme, location, privacy'**
+  String get settingsMeHint;
+
+  /// No description provided for @settingsCalendarHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Holidays and duty hours'**
+  String get settingsCalendarHint;
 }
 
 class _AppLocalizationsDelegate

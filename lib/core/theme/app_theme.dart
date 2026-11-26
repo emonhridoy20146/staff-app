@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
 import 'status_colors.dart';
+import 'tag_colors.dart';
 import 'tokens.dart';
 
 /// Material 3 theme built from the shared tokens (design guide §3).
@@ -123,6 +124,9 @@ abstract final class AppTheme {
     final borderW = hc ? 1.5 : 1.0;
     final status = isDark ? StatusColors.dark : (hc ? StatusColors.light.highContrast() : StatusColors.light);
     final semantic = isDark ? SemanticColors.dark : SemanticColors.light;
+    // Tokens v1.3: the bad-tag kinds (`status.tag.*`) and the quick-action tones (`action.*`).
+    final tags = isDark ? TagColors.dark : (hc ? TagColors.light.highContrast() : TagColors.light);
+    final actions = isDark ? ActionColors.dark : ActionColors.light;
     const btnShape = RoundedRectangleBorder(borderRadius: Radii.brLg);
     const btnSize = Size(Sizes.minTarget, Sizes.primaryButton);
 
@@ -136,7 +140,7 @@ abstract final class AppTheme {
       scaffoldBackgroundColor: isDark ? DarkTokens.background : Neutral.c50,
       visualDensity: VisualDensity.standard,
       materialTapTargetSize: MaterialTapTargetSize.padded,
-      extensions: [status, semantic],
+      extensions: [status, semantic, tags, actions],
       splashFactory: InkSparkle.splashFactory,
       appBarTheme: AppBarTheme(
         backgroundColor: isDark ? DarkTokens.background : Neutral.c50,

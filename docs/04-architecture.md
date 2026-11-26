@@ -48,9 +48,11 @@ class FeatureManifest {
   final List<SyncEntityHandler> syncHandlers; // pull upsert/delete + push mutation types it owns
   final List<DriftMigrationStep> migrations;
   final List<CustomerActionDef> customerActions; // extension point: buttons on customer detail
-  final List<TodayCardDef> todayCards;            // extension point: cards on Today
+  final List<TodayCardDef> todayCards;            // extension point: cards on Today (`alert: true` = above the shortcuts)
   final List<WorkLogSourceDef> workLogSources;    // extension point: the user's own work of a day (Today's Work)
   final List<AlertSourceDef> alertSources;        // extension point: what waits for the user (the bell, FR-M-044)
+  final List<QuickActionDef> quickActions;        // extension point: shortcuts in Home's grid (FR-M-083)
+  final List<SettingsRowDef> settingsRows;        // extension point: rows in Settings, by section (FR-M-084)
 }
 ```
 

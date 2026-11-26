@@ -489,6 +489,17 @@ class $CustomersTable extends Customers
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _tagReasonCodeMeta = const VerificationMeta(
+    'tagReasonCode',
+  );
+  @override
+  late final GeneratedColumn<String> tagReasonCode = GeneratedColumn<String>(
+    'tag_reason_code',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     serverId,
@@ -534,6 +545,7 @@ class $CustomersTable extends Customers
     searchText,
     version,
     activityJson,
+    tagReasonCode,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -880,6 +892,15 @@ class $CustomersTable extends Customers
         ),
       );
     }
+    if (data.containsKey('tag_reason_code')) {
+      context.handle(
+        _tagReasonCodeMeta,
+        tagReasonCode.isAcceptableOrUnknown(
+          data['tag_reason_code']!,
+          _tagReasonCodeMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -1061,6 +1082,10 @@ class $CustomersTable extends Customers
         DriftSqlType.string,
         data['${effectivePrefix}activity_json'],
       ),
+      tagReasonCode: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}tag_reason_code'],
+      ),
     );
   }
 
@@ -1114,6 +1139,7 @@ class CustomerRow extends DataClass implements Insertable<CustomerRow> {
   final String searchText;
   final int version;
   final String? activityJson;
+  final String? tagReasonCode;
   const CustomerRow({
     required this.serverId,
     this.erpCustomerId,
@@ -1158,6 +1184,7 @@ class CustomerRow extends DataClass implements Insertable<CustomerRow> {
     required this.searchText,
     required this.version,
     this.activityJson,
+    this.tagReasonCode,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1261,6 +1288,9 @@ class CustomerRow extends DataClass implements Insertable<CustomerRow> {
     if (!nullToAbsent || activityJson != null) {
       map['activity_json'] = Variable<String>(activityJson);
     }
+    if (!nullToAbsent || tagReasonCode != null) {
+      map['tag_reason_code'] = Variable<String>(tagReasonCode);
+    }
     return map;
   }
 
@@ -1361,6 +1391,9 @@ class CustomerRow extends DataClass implements Insertable<CustomerRow> {
       activityJson: activityJson == null && nullToAbsent
           ? const Value.absent()
           : Value(activityJson),
+      tagReasonCode: tagReasonCode == null && nullToAbsent
+          ? const Value.absent()
+          : Value(tagReasonCode),
     );
   }
 
@@ -1415,6 +1448,7 @@ class CustomerRow extends DataClass implements Insertable<CustomerRow> {
       searchText: serializer.fromJson<String>(json['searchText']),
       version: serializer.fromJson<int>(json['version']),
       activityJson: serializer.fromJson<String?>(json['activityJson']),
+      tagReasonCode: serializer.fromJson<String?>(json['tagReasonCode']),
     );
   }
   @override
@@ -1464,6 +1498,7 @@ class CustomerRow extends DataClass implements Insertable<CustomerRow> {
       'searchText': serializer.toJson<String>(searchText),
       'version': serializer.toJson<int>(version),
       'activityJson': serializer.toJson<String?>(activityJson),
+      'tagReasonCode': serializer.toJson<String?>(tagReasonCode),
     };
   }
 
@@ -1511,6 +1546,7 @@ class CustomerRow extends DataClass implements Insertable<CustomerRow> {
     String? searchText,
     int? version,
     Value<String?> activityJson = const Value.absent(),
+    Value<String?> tagReasonCode = const Value.absent(),
   }) => CustomerRow(
     serverId: serverId ?? this.serverId,
     erpCustomerId: erpCustomerId.present
@@ -1572,6 +1608,9 @@ class CustomerRow extends DataClass implements Insertable<CustomerRow> {
     searchText: searchText ?? this.searchText,
     version: version ?? this.version,
     activityJson: activityJson.present ? activityJson.value : this.activityJson,
+    tagReasonCode: tagReasonCode.present
+        ? tagReasonCode.value
+        : this.tagReasonCode,
   );
   CustomerRow copyWithCompanion(CustomersCompanion data) {
     return CustomerRow(
@@ -1674,6 +1713,9 @@ class CustomerRow extends DataClass implements Insertable<CustomerRow> {
       activityJson: data.activityJson.present
           ? data.activityJson.value
           : this.activityJson,
+      tagReasonCode: data.tagReasonCode.present
+          ? data.tagReasonCode.value
+          : this.tagReasonCode,
     );
   }
 
@@ -1722,7 +1764,8 @@ class CustomerRow extends DataClass implements Insertable<CustomerRow> {
           ..write('assigneeName: $assigneeName, ')
           ..write('searchText: $searchText, ')
           ..write('version: $version, ')
-          ..write('activityJson: $activityJson')
+          ..write('activityJson: $activityJson, ')
+          ..write('tagReasonCode: $tagReasonCode')
           ..write(')'))
         .toString();
   }
@@ -1772,6 +1815,7 @@ class CustomerRow extends DataClass implements Insertable<CustomerRow> {
     searchText,
     version,
     activityJson,
+    tagReasonCode,
   ]);
   @override
   bool operator ==(Object other) =>
@@ -1819,7 +1863,8 @@ class CustomerRow extends DataClass implements Insertable<CustomerRow> {
           other.assigneeName == this.assigneeName &&
           other.searchText == this.searchText &&
           other.version == this.version &&
-          other.activityJson == this.activityJson);
+          other.activityJson == this.activityJson &&
+          other.tagReasonCode == this.tagReasonCode);
 }
 
 class CustomersCompanion extends UpdateCompanion<CustomerRow> {
@@ -1866,6 +1911,7 @@ class CustomersCompanion extends UpdateCompanion<CustomerRow> {
   final Value<String> searchText;
   final Value<int> version;
   final Value<String?> activityJson;
+  final Value<String?> tagReasonCode;
   final Value<int> rowid;
   const CustomersCompanion({
     this.serverId = const Value.absent(),
@@ -1911,6 +1957,7 @@ class CustomersCompanion extends UpdateCompanion<CustomerRow> {
     this.searchText = const Value.absent(),
     this.version = const Value.absent(),
     this.activityJson = const Value.absent(),
+    this.tagReasonCode = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   CustomersCompanion.insert({
@@ -1957,6 +2004,7 @@ class CustomersCompanion extends UpdateCompanion<CustomerRow> {
     this.searchText = const Value.absent(),
     this.version = const Value.absent(),
     this.activityJson = const Value.absent(),
+    this.tagReasonCode = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : serverId = Value(serverId),
        code = Value(code),
@@ -2005,6 +2053,7 @@ class CustomersCompanion extends UpdateCompanion<CustomerRow> {
     Expression<String>? searchText,
     Expression<int>? version,
     Expression<String>? activityJson,
+    Expression<String>? tagReasonCode,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -2053,6 +2102,7 @@ class CustomersCompanion extends UpdateCompanion<CustomerRow> {
       if (searchText != null) 'search_text': searchText,
       if (version != null) 'version': version,
       if (activityJson != null) 'activity_json': activityJson,
+      if (tagReasonCode != null) 'tag_reason_code': tagReasonCode,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -2101,6 +2151,7 @@ class CustomersCompanion extends UpdateCompanion<CustomerRow> {
     Value<String>? searchText,
     Value<int>? version,
     Value<String?>? activityJson,
+    Value<String?>? tagReasonCode,
     Value<int>? rowid,
   }) {
     return CustomersCompanion(
@@ -2148,6 +2199,7 @@ class CustomersCompanion extends UpdateCompanion<CustomerRow> {
       searchText: searchText ?? this.searchText,
       version: version ?? this.version,
       activityJson: activityJson ?? this.activityJson,
+      tagReasonCode: tagReasonCode ?? this.tagReasonCode,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -2286,6 +2338,9 @@ class CustomersCompanion extends UpdateCompanion<CustomerRow> {
     if (activityJson.present) {
       map['activity_json'] = Variable<String>(activityJson.value);
     }
+    if (tagReasonCode.present) {
+      map['tag_reason_code'] = Variable<String>(tagReasonCode.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -2338,6 +2393,7 @@ class CustomersCompanion extends UpdateCompanion<CustomerRow> {
           ..write('searchText: $searchText, ')
           ..write('version: $version, ')
           ..write('activityJson: $activityJson, ')
+          ..write('tagReasonCode: $tagReasonCode, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -26343,6 +26399,7 @@ typedef $$CustomersTableCreateCompanionBuilder = CustomersCompanion Function({
   Value<String> searchText,
   Value<int> version,
   Value<String?> activityJson,
+  Value<String?> tagReasonCode,
   Value<int> rowid,
 });
 typedef $$CustomersTableUpdateCompanionBuilder = CustomersCompanion Function({
@@ -26389,6 +26446,7 @@ typedef $$CustomersTableUpdateCompanionBuilder = CustomersCompanion Function({
   Value<String> searchText,
   Value<int> version,
   Value<String?> activityJson,
+  Value<String?> tagReasonCode,
   Value<int> rowid,
 });
 
@@ -26613,6 +26671,11 @@ class $$CustomersTableFilterComposer
 
   ColumnFilters<String> get activityJson => $composableBuilder(
     column: $table.activityJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get tagReasonCode => $composableBuilder(
+    column: $table.tagReasonCode,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -26840,6 +26903,11 @@ class $$CustomersTableOrderingComposer
     column: $table.activityJson,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get tagReasonCode => $composableBuilder(
+    column: $table.tagReasonCode,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$CustomersTableAnnotationComposer
@@ -27035,6 +27103,11 @@ class $$CustomersTableAnnotationComposer
     column: $table.activityJson,
     builder: (column) => column,
   );
+
+  GeneratedColumn<String> get tagReasonCode => $composableBuilder(
+    column: $table.tagReasonCode,
+    builder: (column) => column,
+  );
 }
 
 class $$CustomersTableTableManager
@@ -27111,6 +27184,7 @@ class $$CustomersTableTableManager
                 Value<String> searchText = const Value.absent(),
                 Value<int> version = const Value.absent(),
                 Value<String?> activityJson = const Value.absent(),
+                Value<String?> tagReasonCode = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => CustomersCompanion(
                 serverId: serverId,
@@ -27156,6 +27230,7 @@ class $$CustomersTableTableManager
                 searchText: searchText,
                 version: version,
                 activityJson: activityJson,
+                tagReasonCode: tagReasonCode,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -27203,6 +27278,7 @@ class $$CustomersTableTableManager
                 Value<String> searchText = const Value.absent(),
                 Value<int> version = const Value.absent(),
                 Value<String?> activityJson = const Value.absent(),
+                Value<String?> tagReasonCode = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => CustomersCompanion.insert(
                 serverId: serverId,
@@ -27248,6 +27324,7 @@ class $$CustomersTableTableManager
                 searchText: searchText,
                 version: version,
                 activityJson: activityJson,
+                tagReasonCode: tagReasonCode,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

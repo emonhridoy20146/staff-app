@@ -56,7 +56,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 19;
+  int get schemaVersion => 20;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -213,6 +213,14 @@ class AppDatabase extends _$AppDatabase {
           // search_text is rebuilt from the customers and plans tables already on the phone, offline. Only that
           // one cached column changes; the outbox, collections, media and every other table are not touched.
           if (from < 19) await reindexCustomerSearch();
+          // v20 (FR-M-081): the reason code of a customer's tag, so each bad-tag reason has its own colour. One
+          // nullable column. A tag this phone set is filled from its own `tag_events` here, offline; the others
+          // come with the customer's next pull and show the generic bad colour until then (ADR-M44). Nothing
+          // unsynced is touched.
+          if (from < 20) {
+            await _ensureColumn(m, customers, customers.tagReasonCode);
+            await backfillTagReasonCodes();
+          }
         },
         beforeOpen: (details) async {
           await customStatement('PRAGMA foreign_keys = ON');
@@ -244,6 +252,37 @@ class AppDatabase extends _$AppDatabase {
         invoiceNos: invoices[id] ?? const [],
       );
       await customStatement('UPDATE customers SET search_text = ? WHERE server_id = ?', [text, id]);
+    }
+  }
+
+  /// Fills `customers.tag_reason_code` of tagged customers that have none from this phone's own `tag_events`
+  /// (schema 20 runs it once, offline): the newest "tag" event of the customer names the reason when the tag
+  /// on the row is still the one set here (waiting for review), or carries the same reason text. A tag someone
+  /// else set stays null (generic colour) until the server sends its code. Writes nothing but that column.
+  Future<void> backfillTagReasonCodes() async {
+    final rows = await customSelect("SELECT server_id, tag_reason FROM customers WHERE tag_state = 'tagged' AND tag_reason_code IS NULL").get();
+    for (final r in rows) {
+      final id = r.read<String>('server_id');
+      final events = await customSelect(
+        'SELECT reason_code, reason, next_json FROM tag_events WHERE customer_id = ? ORDER BY at DESC',
+        variables: [Variable.withString(id)],
+      ).get();
+      final own = events.where((e) => _jsonMap(e.read<String>('next_json'))['state'] == 'tagged').firstOrNull;
+      if (own == null) continue;
+      final onRow = _jsonMap(r.read<String?>('tag_reason'));
+      final same = onRow['pendingReview'] == true || (onRow['reason'] is String && onRow['reason'] == own.read<String>('reason'));
+      if (!same) continue;
+      await customStatement('UPDATE customers SET tag_reason_code = ? WHERE server_id = ?', [own.read<String>('reason_code'), id]);
+    }
+  }
+
+  static Map<String, dynamic> _jsonMap(String? json) {
+    if (json == null || json.isEmpty) return const {};
+    try {
+      final v = jsonDecode(json);
+      return v is Map<String, dynamic> ? v : const {};
+    } on FormatException {
+      return const {};
     }
   }
 

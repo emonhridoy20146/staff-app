@@ -5,6 +5,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/feature/feature_manifest.dart';
 import '../../core/permissions/permission_service.dart';
 import '../../core/settings/ui_prefs.dart';
+import '../../core/theme/tag_colors.dart' show ActionTone;
 import '../../core/ui/common.dart';
 import '../../l10n/app_localizations.dart';
 import 'src/handovers.dart';
@@ -26,8 +27,11 @@ final handoversManifest = FeatureManifest(
       ],
     ),
   ],
-  todayCards: [TodayCardDef(id: 'handover-banner', order: 5, builder: (_) => const _HandoverBanner())],
+  todayCards: [TodayCardDef(id: 'handover-banner', order: 5, alert: true, builder: (_) => const _HandoverBanner())],
   meEntries: [MeEntryDef(id: 'handovers', order: 30, builder: (_) => const _HandoverMeEntry())],
+  quickActions: [
+    QuickActionDef(id: 'handovers', order: 130, icon: Icons.swap_horiz_rounded, tone: ActionTone.brand, label: (l) => l.meHandovers, route: '/handovers', badge: (ref) => ref.watch(pendingHandoversProvider).length),
+  ],
 );
 
 class _HandoverBanner extends ConsumerWidget {
