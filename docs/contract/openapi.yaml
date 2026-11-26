@@ -1,11 +1,15 @@
 openapi: 3.1.0
 info:
   title: Howlader Field Operations API
-  version: 1.48.0
+  version: 1.49.0
   description: |
     Contract owned by field-api. Consumers (admin-web, staff-app) generate types from this file.
     Conventions (auth, pagination, idempotency, errors) are described in docs/05-api-contract.md.
     Money is integer poisha. Times are UTC ISO-8601; business dates are YYYY-MM-DD in Asia/Dhaka.
+    1.49.0 (additive): tracking token for the staff app's native location service (FR-LOC-013, ADR-067).
+    POST /location/tracking-token issues `{ token, expiresAt }` (about 24 h, setting `location.trackingTokenTtlHours`);
+    POST /location/points also accepts `Authorization: Tracking <token>` (security scheme `trackingToken`). The token
+    works on no other route (401 UNAUTHENTICATED, `details.reason` TRACKING_TOKEN_NOT_ALLOWED).
     1.48.0 (additive): role `area_manager` (all branches; no user, role, password, flag or settings management; ADR-065);
     requests / tickets (`/requests`, sync entity `request`, sync mutations `request` and `request_comment`, flag
     `module.requests`, permissions request.create / request.view / request.manage / request.important.manage; ADR-066);
@@ -2182,10 +2186,41 @@ paths:
         '404': { $ref: '#/components/responses/Problem' }
         '409': { $ref: '#/components/responses/Problem' }
 
+  /location/tracking-token:
+    post:
+      tags: [location]
+      operationId: issueTrackingToken
+      summary: Issue (rotate) the tracking token for the native location service
+      description: |
+        1.49.0 (FR-LOC-013, ADR-067). Staff app only (`client: app` session with a device id) and only for users who may
+        post points (`attendance.record`). Returns an opaque token for `Authorization: Tracking <token>` on
+        POST /location/points, and nowhere else. The token is bound to the caller's user, device and session and lives
+        `location.trackingTokenTtlHours` (default 24) hours. Every call rotates: the previous token of this user and
+        device stops working at once. Logout, password change / reset, deactivation, device unbind and ending the
+        session revoke it. Needs a normal access token (a tracking token is refused here). No body.
+      responses:
+        '200':
+          description: Token issued; the previous one of this device is revoked
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TrackingToken' }
+              example: { token: 'trk_3q2Xb0Hk1n0bS8yJ1y8mV1y2Zl9pQe8lYw0bD7fK3cU', expiresAt: '2026-11-27T04:00:00.000Z' }
+        '401': { $ref: '#/components/responses/Problem' }
+        '403': { description: 'FORBIDDEN (`details.permission: attendance.record`, or `details.reason: APP_ONLY` for a web session or a session without a device), FEATURE_DISABLED, PASSWORD_CHANGE_REQUIRED', content: { application/problem+json: { schema: { $ref: '#/components/schemas/Problem' } } } }
+        '429': { $ref: '#/components/responses/Problem' }
   /location/points:
     post:
       tags: [location]
       operationId: ingestPoints
+      description: |
+        Since 1.49.0 (ADR-067) also accepts `Authorization: Tracking <token>` from POST /location/tracking-token, so the
+        native service keeps uploading after the app is closed and the access token has expired. With a tracking token
+        `deviceId` must be the token's device; the user must still be active, the session live and the device approved,
+        else 401 UNAUTHENTICATED (`details.reason`: TRACKING_TOKEN_INVALID or TRACKING_TOKEN_EXPIRED; do not refresh,
+        keep the points buffered until the app issues a new token). Duty-hours rules are unchanged (OFF_DUTY per point).
+      security:
+        - bearerAuth: []
+        - trackingToken: []
       requestBody:
         required: true
         content:
@@ -2202,6 +2237,8 @@ paths:
           content:
             application/json:
               schema: { type: object, properties: { accepted: { type: integer }, rejected: { type: array, items: { type: object, properties: { index: { type: integer }, reason: { type: string, enum: [LOW_ACCURACY, IMPOSSIBLE_SPEED, FUTURE_TIME, DUPLICATE, OFF_DUTY] } } } }, nextSampling: { $ref: '#/components/schemas/SamplingConfig' } } }
+        '401': { $ref: '#/components/responses/Problem' }
+        '403': { $ref: '#/components/responses/Problem' }
   /location/heartbeat:
     post:
       tags: [location]
@@ -2544,6 +2581,7 @@ paths:
 components:
   securitySchemes:
     bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+    trackingToken: { type: http, scheme: tracking, description: '1.49.0 (ADR-067): `Authorization: Tracking <token>` from POST /location/tracking-token. Accepted only by POST /location/points.' }
   parameters:
     Id: { name: id, in: path, required: true, schema: { type: string } }
     BranchId: { name: branchId, in: query, schema: { type: string } }
@@ -2563,6 +2601,13 @@ components:
         application/problem+json:
           schema: { $ref: '#/components/schemas/Problem' }
   schemas:
+    TrackingToken:
+      type: object
+      required: [token, expiresAt]
+      description: 1.49.0 (ADR-067). Opaque; store it where the native service can read it; never log it.
+      properties:
+        token: { type: string, description: 'Opaque, starts with `trk_`. Send as `Authorization: Tracking <token>`' }
+        expiresAt: { type: string, format: date-time }
     Problem:
       type: object
       required: [status, code, title]
