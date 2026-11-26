@@ -705,6 +705,19 @@ class FakeFieldApi implements HttpClientAdapter {
   /// The customer as the server has it now (latest change).
   Json? _customer(String id) => _log.lastWhere((c) => c.entity == 'customer' && c.id == id, orElse: () => _Change('customer', id, 'upsert', null)).data;
 
+  final _returnedPlans = <String>{};
+
+  /// Tests / demo (1.50.0, FR-CUS-023): the ERP returns an invoice. The customer stays and comes again on the
+  /// change feed without that plan, its id in `returnedPlanIds`.
+  void returnInvoice(String customerId, String erpPlanId) {
+    final c = _customer(customerId);
+    if (c == null) return;
+    _returnedPlans.add(erpPlanId);
+    final plans = [for (final p in ((c['plans'] as List?) ?? const []).cast<Json>()) if (p['erpPlanId'] != erpPlanId) p];
+    final returned = {...((c['returnedPlanIds'] as List?) ?? const []).cast<String>(), erpPlanId};
+    serverChange('customer', customerId, {...c, 'plans': plans, 'returnedPlanIds': returned.toList()});
+  }
+
   /// An applied pin reaches the phone as a customer change (1.11.0).
   void _applyPin(String customerId, double lat, double lng) {
     final c = _customer(customerId);
@@ -1390,7 +1403,19 @@ class FakeFieldApi implements HttpClientAdapter {
       }
       appliedPayloads[id] = payload;
       Json r;
-      if (entity == 'collection' && payload['customerId'] == 'c-1008') {
+      if (entity == 'collection' && _returnedPlans.contains(payload['erpPlanId'])) {
+        // FR-CUS-023: a collection recorded offline against an invoice that was returned meanwhile.
+        r = {
+          'mutationId': id,
+          'result': 'conflict',
+          'entityId': 'col-$id',
+          'status': 'conflict',
+          'conflict': {
+            'code': 'PLAN_CLOSED',
+            'message': {'bn': 'এই ইনভয়েস আর খোলা নেই', 'en': 'This invoice is no longer open'},
+          },
+        };
+      } else if (entity == 'collection' && payload['customerId'] == 'c-1008') {
         r = {
           'mutationId': id,
           'result': 'conflict',

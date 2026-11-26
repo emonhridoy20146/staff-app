@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+### Changed (owner request 2026-11-26: invoices returned in the ERP are not shown; FR-M-080, master FR-CUS-023, ADR-M43, contract 1.50.0)
+- **Contract 1.50.0** pinned (merged from `claude/contract-1-50`): returned invoices are left out of `plans`, invoice counts, search and the sync `customer` item; new `CustomerDetail.returnedPlanIds` lists the ids a device should delete.
+- **Customer pull** (pull and bootstrap): plans whose `erpPlanId` is in `returnedPlanIds` are deleted with their schedule lines, and the customer's `search_text` is rebuilt so the invoice number no longer finds them (also for another customer that held such a plan). From a ≥1.50 server (`returnedPlanIds` present) `plans: []` clears the stored plans; an older server's pull with no plans (missing or empty) keeps them as before. A replacing pull also removes the schedule lines of plans no longer in the list.
+- The customer is never deleted for this. Collections, outbox items (pending/failed) and photos that name a returned plan stay (CLAUDE.md §2.3); an offline collection still goes up and becomes a `PLAN_CLOSED` conflict in Problems. No schema change, no resync.
+- `AppDatabase.reindexCustomerSearch(only:)` rebuilds the search text of the given customers only.
+- Fake API: `returnInvoice(customerId, erpPlanId)` and a `PLAN_CLOSED` conflict for a collection against a returned plan.
+- Tests: `test/features/returned_invoices_test.dart` (returned plan removed with its schedule, customer and unsynced collections kept, `plans: []` from 1.50 clears, older server keeps, search no longer finds the invoice number), `test/flows/returned_invoice_flow_test.dart` (offline collection → returned on the server → pull → `PLAN_CLOSED` in Problems).
+
 ### Added (owner request 2026-11-26: find a customer by invoice or mobile number; FR-M-076, ADR-M39, schema 19)
 - **Customer search finds invoice numbers:** every invoice number of the customer's plans (all kinds, open or closed) is in `customers.search_text`, normalised like the rest, so "S-24052", "s24052", "24052" and "২৪০৫২" find the customer. A pull without `plans` keeps the numbers of the plans already on the phone; a pull with plans replaces them.
 - **Mobile numbers typed with spaces match:** "01712 345678", "0171-2345678" and "০১৭১২ ৩৪৫৬৭৮" find 01712345678. `search_text` now holds two lines, the normalised words and the same with no spaces; a query matches the words or, with its spaces removed, the space-free line. Built once when the row is written, so a keystroke over ~3000 customers is two `contains` per row. The collect customer picker uses the same match.

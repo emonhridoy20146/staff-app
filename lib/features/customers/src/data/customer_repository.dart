@@ -40,14 +40,23 @@ class CustomerPullHandler implements PullHandler {
     // 1.23.0 (FR-M-037): ERP numbers and added ones; a number typed on this phone and not yet sent stays in the list.
     final phoneList = keepPending(phonesFromServer(d), existing == null ? const [] : decodePhones(existing.phonesJson));
     final phones = [for (final p in phoneList) p.number];
-    // FR-M-076: every invoice number of the customer's plans (all kinds, open or closed). A payload without
-    // `plans` keeps the plans we have, so their numbers are read from the table.
-    final payloadPlans = (d['plans'] as List?)?.cast<Json>();
-    final invoiceNos = payloadPlans != null
+    // FR-CUS-023, FR-M-080 (1.50.0, ADR-M43): invoices returned in the ERP are never shown. `returnedPlanIds` lists the
+    // ones to delete; its presence marks a ≥1.50 server, whose `plans` is the complete list, so `plans: []`
+    // clears them. An older server omits the key: a payload with no plans (missing or empty) keeps ours.
+    final returned = ((d['returnedPlanIds'] as List?) ?? const []).whereType<String>().toSet();
+    final payloadPlans = [
+      for (final p in ((d['plans'] as List?) ?? const []).cast<Json>())
+        if (!returned.contains(p['erpPlanId'])) p,
+    ];
+    final replacePlans = d.containsKey('returnedPlanIds') ? d['plans'] is List : payloadPlans.isNotEmpty;
+    final storedPlans = await (db.select(db.plans)..where((t) => t.customerId.equals(id))).get();
+    // FR-M-076: every invoice number of the customer's plans (all kinds, open or closed); kept plans are read
+    // from the table. A returned invoice's number is never in it.
+    final invoiceNos = replacePlans
         ? [for (final p in payloadPlans) if (p['invoiceNo'] is String) p['invoiceNo'] as String]
         : [
-            for (final p in await (db.select(db.plans)..where((t) => t.customerId.equals(id))).get())
-              if (p.invoiceNo != null) p.invoiceNo!,
+            for (final p in storedPlans)
+              if (p.invoiceNo != null && !returned.contains(p.erpPlanId)) p.invoiceNo!,
           ];
     final search = customerSearchText(
       nameBn: name.bn,
@@ -108,9 +117,18 @@ class CustomerPullHandler implements PullHandler {
           ),
         );
 
+    // FR-CUS-023: only ERP-derived rows go (plans, schedule lines). Collections, outbox and media that name a
+    // returned plan stay (CLAUDE.md §2.3); the server answers them with PLAN_CLOSED, shown in Problems.
+    if (returned.isNotEmpty) {
+      final elsewhere = await (db.select(db.plans)..where((t) => t.erpPlanId.isIn(returned) & t.customerId.equals(id).not())).get();
+      await (db.delete(db.scheduleLines)..where((t) => t.erpPlanId.isIn(returned))).go();
+      await (db.delete(db.plans)..where((t) => t.erpPlanId.isIn(returned))).go();
+      // A returned plan held under another customer here: that customer's search text drops its number too.
+      await db.reindexCustomerSearch(only: {for (final p in elsewhere) p.customerId});
+    }
     final plans = payloadPlans;
-    if (plans != null) {
-      final planIds = plans.map((p) => p['erpPlanId'] as String).toList();
+    if (replacePlans) {
+      final planIds = {...plans.map((p) => p['erpPlanId'] as String), ...storedPlans.map((p) => p.erpPlanId)};
       await (db.delete(db.scheduleLines)..where((t) => t.erpPlanId.isIn(planIds))).go();
       await (db.delete(db.plans)..where((t) => t.customerId.equals(id))).go();
       for (final p in plans) {
