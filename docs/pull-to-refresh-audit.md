@@ -8,7 +8,7 @@ Every route in `lib/app/router.dart` and `lib/features/*/manifest.dart`, plus fu
 
 | Screen | Route | Result | Why / what refresh it triggers |
 |---|---|---|---|
-| Today (Home) | `/today` | already had | Sync (`today_screen.dart`, left alone: Home is being redesigned elsewhere). It is a primary vertical `CustomScrollView`, which Flutter makes always-scrollable by default. |
+| Today (Home) | `/today` | already had | Sync; the redesigned Home sets `AlwaysScrollableScrollPhysics` explicitly. |
 | Customers | `/customers` | already had | Sync (`reload`). Its empty, error and list states were already always-scrollable. No change. |
 | Customer detail | `/customers/:id` | already had | `POST /customers/{id}/refresh` (FR-M-063), then sync. Already always-scrollable. No change. |
 | Map | `/map` | not needed | Map pan and zoom take the drag gesture. Customers sync from the Customers tab or Today. |
@@ -43,7 +43,8 @@ Every route in `lib/app/router.dart` and `lib/features/*/manifest.dart`, plus fu
 | Tasks | `/tasks` | **added** | Sync: new and decided tasks. Empty state is pullable. |
 | Task detail | `/tasks/:id` | **added** | Sync: the office's decision. The "not on phone" state is pullable too. |
 | Visit | `/visit/:customerId` | not needed | Form. |
-| OEM battery guide | `/location/battery-guide` | not needed | Static guide (and `lib/features/location/` is out of scope here). |
+| OEM battery guide | `/location/battery-guide` | not needed | Static guide. |
+| Background location set-up | `/location/background-setup` | **added** (new screen) | Re-reads the phone's state (native running, battery optimisation, token refused, brand). FR-M-077. |
 | Splash, login, change password, PIN set-up and PIN, consent, permissions primer, bootstrap, update required | `/splash`, `/login`, `/change-password`, `/pin/setup`, `/pin`, `/consent`, `/primer`, `/bootstrap`, `/update` | not needed | Gates and forms. |
 | Location gate | (overlay, `core/location`) | not needed | Gate (and `lib/core/location/` is out of scope here). |
 | Camera | (full-screen dialog, `core/media`) | not needed | Camera. |
